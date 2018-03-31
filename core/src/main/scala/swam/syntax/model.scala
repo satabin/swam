@@ -15,7 +15,7 @@
  */
 
 package swam
-package binary
+package syntax
 
 import scodec.bits.ByteVector
 
@@ -66,6 +66,6 @@ object ImportEntry {
 
 case class ExportEntry(fieldName: String, kind: ExternalKind, index: Int)
 
-case class FuncBody(locals: Vector[LocalEntry], code: ByteVector)
+case class FuncBody(locals: Vector[LocalEntry], code: Expr)
 
 case class LocalEntry(count: Int, tpe: ValType)

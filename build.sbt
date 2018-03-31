@@ -64,6 +64,7 @@ lazy val core = project.in(file("core"))
     name := "swam-core",
     libraryDependencies ++= Seq(
       "com.beachape" %% "enumeratum" % "1.5.13",
+      "org.scodec" %% "scodec-stream" % "1.1.0",
       "org.scodec" %% "scodec-core" % "1.10.3"))
 
 lazy val vm = project.in(file("vm"))

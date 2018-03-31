@@ -29,9 +29,9 @@ object OpCode extends IntEnum[OpCode] {
   case object Block extends OpCode(0x02)
   case object Loop extends OpCode(0x03)
   case object If extends OpCode(0x04)
-  case object Else extends OpCode(0x05)
+  //case object Else extends OpCode(0x05)
   // reserved 0x06-0x0a
-  case object End extends OpCode(0x0b)
+  //case object End extends OpCode(0x0b)
   case object Br extends OpCode(0x0c)
   case object BrIf extends OpCode(0x0d)
   case object BrTable extends OpCode(0x0e)

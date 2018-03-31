@@ -27,84 +27,19 @@ import scodec.codecs.literals._
 
 import scala.annotation.tailrec
 
-object WasmCodec {
+object WasmCodec extends InstCodec {
 
-  private val varuint1: Codec[Int] = new Varuint(1)
-
-  private val varuint7: Codec[Int] = new Varuint(7)
-
-  private val varint7: Codec[Int] = new Varint(7)
-
-  private val varuint32: Codec[Int] = new Varuint(31)
-
-  private val varint32: Codec[Int] = new Varint(32)
-
-  private val varint64: Codec[Long] = new Varlong(64)
-
-  private val valType: Codec[ValType] =
-    mappedEnum(
-      byte,
-      Map[ValType, Byte](
-        ValType.I32 -> 0x7f,
-        ValType.I64 -> 0x7e,
-        ValType.F32 -> 0x7d,
-        ValType.F64 -> 0x7c))
-
-  private val blockType: Codec[Option[ValType]] =
-    mappedEnum(
-      byte,
-      Map[Option[ValType], Byte](
-        Some(ValType.I32) -> 0x7f,
-        Some(ValType.I64) -> 0x7e,
-        Some(ValType.F32) -> 0x7d,
-        Some(ValType.F64) -> 0x7c,
-        None -> 0x40))
-
-  private val elemType: Codec[ElemType] =
-    mappedEnum(
-      byte,
-      Map[ElemType, Byte](
-        ElemType.AnyFunc -> 0x70))
-
-  private val funcType: Codec[FuncType] =
-    mappedEnum(
-      byte,
-      Map[Unit, Byte](
-        () -> 0x60)) ~>
-      (("parameters" | vectorOfN(varuint32, valType)) ::
-        ("return" | vectorOfN(varuint1, valType))).as[FuncType]
-
-  private val globalType: Codec[GlobalType] =
-    (("content_type" | valType) ::
-      ("mutability" | mappedEnum(
-        byte,
-        Map[Mut, Byte](
-          Mut.Const -> 0x00,
-          Mut.Var -> 0x01)))).as[GlobalType]
-
-  private val limits: Codec[Limits] =
-    discriminated[Limits].by(varuint1)
-      .|(0) { case Limits(min, None) => min }(Limits(_, None))(varuint32)
-      .|(1) { case Limits(min, Some(max)) => (min, max) }(Limits.tupled)(varuint32 ~ varuint32)
-
-  private val tableType: Codec[TableType] =
-    (("element_type" | elemType) ::
-      ("limits" | limits)).as[TableType]
-
-  private val memoryType: Codec[MemType] =
-    ("limits" | limits).as[MemType]
-
-  private val externalKind: Codec[ExternalKind] =
+  protected val externalKind: Codec[ExternalKind] =
     mappedEnum(byte, Map[ExternalKind, Byte](
       ExternalKind.Function -> 0,
       ExternalKind.Table -> 1,
       ExternalKind.Memory -> 2,
       ExternalKind.Global -> 3))
 
-  private val types: Codec[Vector[FuncType]] =
+  protected val types: Codec[Vector[FuncType]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, funcType))
 
-  private val importEntry: Codec[String ~ String ~ ImportEntry] =
+  protected val importEntry: Codec[String ~ String ~ ImportEntry] =
     (("module" | variableSizeBytes(varuint32, utf8)) ~
       ("field" | variableSizeBytes(varuint32, utf8))).flatZip {
         case (module, field) =>
@@ -115,70 +50,64 @@ object WasmCodec {
             .|(ExternalKind.Global) { case ImportEntry.Global(_, _, tpe) => tpe }(ImportEntry.Global(module, field, _))(globalType)
       }
 
-  private val imports: Codec[Vector[ImportEntry]] =
+  protected val imports: Codec[Vector[ImportEntry]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, importEntry.xmap({ case (_, e) => e }, { case e @ ImportEntry(mod, fld) => ((mod, fld), e) })))
 
-  private val functions: Codec[Vector[Int]] =
+  protected val functions: Codec[Vector[Int]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, varuint32))
 
-  private val tables: Codec[Vector[TableType]] =
+  protected val tables: Codec[Vector[TableType]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, tableType))
 
-  private val mems: Codec[Vector[MemType]] =
+  protected val mems: Codec[Vector[MemType]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, memoryType))
 
-  private val end: Codec[Unit] =
-    constant(0x0b)
-
-  private val expr: Codec[Expr] =
-    ???
-
-  private val globalVariable: Codec[Global] =
+  protected val globalVariable: Codec[Global] =
     (globalType :: expr).as[Global]
 
-  private val globals: Codec[Vector[Global]] =
+  protected val globals: Codec[Vector[Global]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, globalVariable))
 
-  private val elemSegment: Codec[Elem] =
+  protected val elemSegment: Codec[Elem] =
     (("index" | varuint32) ::
       ("offset" | expr) ::
       ("elems" | vectorOfN(varuint32, varuint32))).as[Elem]
 
-  private val elem: Codec[Vector[Elem]] =
+  protected val elem: Codec[Vector[Elem]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, elemSegment))
 
-  private val dataSegment: Codec[Data] =
+  protected val dataSegment: Codec[Data] =
     (("index" | varuint32) ::
       ("offset" | expr) ::
       ("data" | variableSizeBytes(varuint32, bytes))).as[Data]
 
-  private val data: Codec[Vector[Data]] =
+  protected val data: Codec[Vector[Data]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, dataSegment))
 
-  private val start: Codec[FuncIdx] =
+  protected val start: Codec[FuncIdx] =
     variableSizeBytes(varuint32, varuint32)
 
-  private val localEntry: Codec[LocalEntry] =
+  protected val localEntry: Codec[LocalEntry] =
     (varuint32 :: valType).as[LocalEntry]
 
-  private val funcBody: Codec[FuncBody] =
+  protected val funcBody: Codec[FuncBody] =
     variableSizeBytes(
       varuint32,
       (("locals" | vectorOfN(varuint32, localEntry)) ::
-        ("code" | bytes)).as[FuncBody])
+        ("code" | expr)).as[FuncBody])
 
-  private val code: Codec[Vector[FuncBody]] =
+  protected val code: Codec[Vector[FuncBody]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, funcBody))
 
-  private val exportEntry: Codec[ExportEntry] =
+  protected val exportEntry: Codec[ExportEntry] =
     (("field" | variableSizeBytes(varuint32, utf8)) ::
       ("kind" | externalKind) ::
       ("index" | varuint32)).as[ExportEntry]
 
-  private val exports: Codec[Vector[ExportEntry]] =
+  protected val exports: Codec[Vector[ExportEntry]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, exportEntry))
 
-  private val custom: Codec[(String, ByteVector)] =
+  protected val custom: Codec[(String, ByteVector)] =
     variableSizeBytes(
       varuint32,
       (("name" | variableSizeBytes(varuint32, utf8)) ~

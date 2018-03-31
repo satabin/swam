@@ -36,12 +36,6 @@ case class Func(
     locals: Vector[ValType],
     body: Expr)
 
-case class Global(tpe: GlobalType, init: Expr)
-
-case class Elem(table: TableIdx, offset: Expr, init: Vector[FuncIdx])
-
-case class Data(data: MemIdx, offset: Expr, init: ByteVector)
-
 case class Import(module: Name, name: Name, desc: ImportDesc)
 
 sealed trait ImportDesc
