@@ -35,25 +35,3 @@ case class Func(
     tpe: TypeIdx,
     locals: Vector[ValType],
     body: Expr)
-
-case class Import(module: Name, name: Name, desc: ImportDesc)
-
-sealed trait ImportDesc
-
-object ImportDesc {
-  case class Func(idx: TypeIdx) extends ImportDesc
-  case class Table(idx: TableIdx) extends ImportDesc
-  case class Mem(idx: MemIdx) extends ImportDesc
-  case class Global(idx: GlobalIdx) extends ImportDesc
-}
-
-case class Export(module: Name, name: Name, desc: ExportDesc)
-
-sealed trait ExportDesc
-
-object ExportDesc {
-  case class Func(idx: TypeIdx) extends ExportDesc
-  case class Table(idx: TableIdx) extends ExportDesc
-  case class Mem(idx: MemIdx) extends ExportDesc
-  case class Global(idx: GlobalIdx) extends ExportDesc
-}

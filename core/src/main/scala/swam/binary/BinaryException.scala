@@ -15,21 +15,6 @@
  */
 
 package swam
+package binary
 
-package object syntax {
-
-  val EmptyModule = Module(
-    Vector.empty[FuncType],
-    Vector.empty[Func],
-    Vector.empty[TableType],
-    Vector.empty[MemType],
-    Vector.empty[Global],
-    Vector.empty[Elem],
-    Vector.empty[Data],
-    Option.empty[FuncIdx],
-    Vector.empty[Import],
-    Vector.empty[Export])
-
-  type Expr = Vector[Inst]
-
-}
+class BinaryException(msg: String) extends SwamException(msg)

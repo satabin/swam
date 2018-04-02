@@ -39,19 +39,19 @@ object WasmCodec extends InstCodec {
   protected val types: Codec[Vector[FuncType]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, funcType))
 
-  protected val importEntry: Codec[String ~ String ~ ImportEntry] =
+  protected val importEntry: Codec[String ~ String ~ Import] =
     (("module" | variableSizeBytes(varuint32, utf8)) ~
       ("field" | variableSizeBytes(varuint32, utf8))).flatZip {
         case (module, field) =>
-          discriminated[ImportEntry].by(externalKind)
-            .|(ExternalKind.Function) { case ImportEntry.Function(_, _, tpe) => tpe }(ImportEntry.Function(module, field, _))(varuint32)
-            .|(ExternalKind.Table) { case ImportEntry.Table(_, _, tpe) => tpe }(ImportEntry.Table(module, field, _))(tableType)
-            .|(ExternalKind.Memory) { case ImportEntry.Memory(_, _, tpe) => tpe }(ImportEntry.Memory(module, field, _))(memoryType)
-            .|(ExternalKind.Global) { case ImportEntry.Global(_, _, tpe) => tpe }(ImportEntry.Global(module, field, _))(globalType)
+          discriminated[Import].by(externalKind)
+            .|(ExternalKind.Function) { case Import.Function(_, _, tpe) => tpe }(Import.Function(module, field, _))(varuint32)
+            .|(ExternalKind.Table) { case Import.Table(_, _, tpe) => tpe }(Import.Table(module, field, _))(tableType)
+            .|(ExternalKind.Memory) { case Import.Memory(_, _, tpe) => tpe }(Import.Memory(module, field, _))(memoryType)
+            .|(ExternalKind.Global) { case Import.Global(_, _, tpe) => tpe }(Import.Global(module, field, _))(globalType)
       }
 
-  protected val imports: Codec[Vector[ImportEntry]] =
-    variableSizeBytes(varuint32, vectorOfN(varuint32, importEntry.xmap({ case (_, e) => e }, { case e @ ImportEntry(mod, fld) => ((mod, fld), e) })))
+  protected val imports: Codec[Vector[Import]] =
+    variableSizeBytes(varuint32, vectorOfN(varuint32, importEntry.xmap({ case (_, e) => e }, { case e @ Import(mod, fld) => ((mod, fld), e) })))
 
   protected val functions: Codec[Vector[Int]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, varuint32))
@@ -99,12 +99,12 @@ object WasmCodec extends InstCodec {
   protected val code: Codec[Vector[FuncBody]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, funcBody))
 
-  protected val exportEntry: Codec[ExportEntry] =
+  protected val exportEntry: Codec[Export] =
     (("field" | variableSizeBytes(varuint32, utf8)) ::
       ("kind" | externalKind) ::
-      ("index" | varuint32)).as[ExportEntry]
+      ("index" | varuint32)).as[Export]
 
-  protected val exports: Codec[Vector[ExportEntry]] =
+  protected val exports: Codec[Vector[Export]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, exportEntry))
 
   protected val custom: Codec[(String, ByteVector)] =
