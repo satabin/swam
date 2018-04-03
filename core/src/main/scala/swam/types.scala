@@ -18,13 +18,13 @@ package swam
 
 sealed trait Type
 
-sealed trait ValType extends Type
+sealed abstract class ValType(val width: Int) extends Type
 
 object ValType {
-  case object I32 extends ValType
-  case object I64 extends ValType
-  case object F32 extends ValType
-  case object F64 extends ValType
+  case object I32 extends ValType(32)
+  case object I64 extends ValType(64)
+  case object F32 extends ValType(32)
+  case object F64 extends ValType(64)
 }
 
 case class ResultType(t: Option[ValType]) extends Type
@@ -48,7 +48,7 @@ object ElemType {
   case object AnyFunc extends ElemType
 }
 
-case class GlobalType(valtype: ValType, mut: Mut) extends Type
+case class GlobalType(tpe: ValType, mut: Mut) extends Type
 
 sealed trait Mut
 

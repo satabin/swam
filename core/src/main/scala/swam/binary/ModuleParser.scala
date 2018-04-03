@@ -18,6 +18,7 @@ package swam
 package binary
 
 import syntax._
+import validation._
 
 import cats.effect._
 import cats.implicits._
@@ -29,56 +30,100 @@ import scala.language.higherKinds
 import java.io.FileInputStream
 
 /** A binary section stream parser.
- *  The parser may validate the streams as they come if wished.
+ *  The parser uses the validator to validate the stream.
+ *  If no validation is wished, use the [[validation.NoopValidator NoopValidator]].
  */
-class SwamParser(validating: Boolean) {
+class SwamParser[F[_]](implicit F: Sync[F]) {
 
   /** Parses a section stream into a module.
    *  When this method returns, the stream has not been begin execution,
-   *  you must call on of the `Sync` run method on the result to start actual parsing.
+   *  you must call one of the `Sync` run method on the result to start actual parsing.
    */
-  def parse[F[_]](stream: Stream[F, Section])(implicit F: Sync[F]): F[Module] =
+  def parse(stream: Stream[F, Section], validator: Validator[F] = new SpecValidator[F]): F[Module] =
     stream
-      // drop custom sections
-      .filter(_.id > 0)
       // compile the section stream
       .compile
       // accept sections in order
-      .fold((0, Vector.empty[TypeIdx], EmptyModule)) {
-        case ((idx, _, _), sec) if sec.id <= idx =>
-          throw new BinaryException(s"${nameOf(sec.id)} section may not appear after ${nameOf(idx)} section")
-        case ((_, tpes, mod), sec @ Section.Types(functypes)) =>
-          (sec.id, tpes, mod.copy(types = functypes))
-        case ((_, tpes, mod), sec @ Section.Imports(imports)) =>
-          (sec.id, tpes, mod.copy(imports = imports))
-        case ((_, _, mod), sec @ Section.Functions(tpes)) =>
-          (sec.id, tpes, mod)
-        case ((_, tpes, mod), sec @ Section.Tables(tables)) =>
-          (sec.id, tpes, mod.copy(tables = tables))
-        case ((_, tpes, mod), sec @ Section.Memories(mems)) =>
-          (sec.id, tpes, mod.copy(mems = mems))
-        case ((_, tpes, mod), sec @ Section.Globals(globals)) =>
-          (sec.id, tpes, mod.copy(globals = globals))
-        case ((_, tpes, mod), sec @ Section.Exports(exports)) =>
-          (sec.id, tpes, mod.copy(exports = exports))
-        case ((_, tpes, mod), sec @ Section.Start(start)) =>
-          (sec.id, tpes, mod.copy(start = Some(start)))
-        case ((_, tpes, mod), sec @ Section.Elements(elem)) =>
-          (sec.id, tpes, mod.copy(elem = elem))
-        case ((_, tpes, mod), sec @ Section.Code(code)) =>
-          if (code.size != tpes.size)
-            throw new BinaryException("code and function sections must have the same number of elements")
-          val funcs = code.zip(tpes).map {
-            case (FuncBody(locals, code), typeIdx) =>
-              val locs = locals.flatMap {
-                case LocalEntry(count, tpe) => Vector.fill(count)(tpe)
-              }
-              Func(typeIdx, locs, code)
-          }
-          (sec.id, Vector.empty, mod.copy(funcs = funcs))
-        case ((_, tpes, mod), sec @ Section.Datas(data)) =>
-          (sec.id, tpes, mod.copy(data = data))
+      .fold(F.pure((0, Vector.empty[TypeIdx], EmptyModule, EmptyContext[F]))) { (acc, sec) =>
+        acc.flatMap {
+          case (idx, tpes, mod, ctx) =>
+            if (sec.id > 0 && sec.id <= idx)
+              F.raiseError(new BinaryException(s"${nameOf(sec.id)} section may not appear after ${nameOf(idx)} section"))
+            else sec match {
+              case Section.Types(functypes) =>
+                for (_ <- validator.validateAll(functypes, validator.validateFuncType))
+                  yield (sec.id, tpes, mod.copy(types = functypes), ctx.copy(types = functypes))
+              case Section.Imports(imports) =>
+                for (_ <- validator.validateAll(imports, ctx, validator.validateImport)) yield {
+                  val mod1 = mod.copy(imports = imports)
+                  val ctx1 = ctx.copy[F](
+                    funcs = mod1.imported.funcs,
+                    tables = mod1.imported.tables,
+                    mems = mod1.imported.mems,
+                    globals = mod1.imported.globals)
+                  (sec.id, tpes, mod1, ctx1)
+                }
+              case Section.Functions(tpes) =>
+                F.pure {
+                  val funcs = tpes.map(mod.types(_))
+                  (sec.id, tpes, mod, ctx.copy(funcs = ctx.funcs ++ funcs))
+                }
+              case Section.Tables(tables) =>
+                if (tables.size > 1)
+                  F.raiseError(new ValidationException("at most one table is allowed."))
+                else
+                  for (_ <- validator.validateAll(tables, validator.validateTableType))
+                    yield (sec.id, tpes, mod.copy(tables = tables), ctx.copy(tables = ctx.tables ++ tables))
+              case Section.Memories(mems) =>
+                if (mems.size > 1)
+                  F.raiseError(new ValidationException("at most one memory is allowed."))
+                else
+                  for (_ <- validator.validateAll(mems, validator.validateMemType))
+                    yield (sec.id, tpes, mod.copy(mems = mems), ctx.copy(mems = ctx.mems ++ mems))
+              case Section.Globals(globals) =>
+                for (_ <- validator.validateAll(globals, EmptyContext[F].copy(globals = mod.imported.globals), validator.validateGlobal))
+                  yield (sec.id, tpes, mod.copy(globals = globals), ctx.copy(globals = ctx.globals ++ globals.map(_.tpe)))
+              case Section.Exports(exports) =>
+                val duplicate = exports
+                  .groupBy(_.fieldName)
+                  .mapValues(_.size)
+                  .find(_._2 > 1)
+                duplicate match {
+                  case Some((name, _)) => F.raiseError(new ValidationException(s"duplicate export name $name."))
+                  case None =>
+                    for (_ <- validator.validateAll(exports, ctx, validator.validateExport))
+                      yield (sec.id, tpes, mod.copy(exports = exports), ctx)
+                }
+              case Section.Start(start) =>
+                for (_ <- validator.validateStart(start, ctx))
+                  yield (sec.id, tpes, mod.copy(start = Some(start)), ctx)
+              case Section.Elements(elem) =>
+                for (_ <- validator.validateAll(elem, ctx, validator.validateElem))
+                  yield (sec.id, tpes, mod.copy(elem = elem), ctx)
+              case Section.Code(code) =>
+                if (code.size != tpes.size)
+                  F.raiseError(new BinaryException("code and function sections must have the same number of elements"))
+                else {
+                  val funcs = code.zip(tpes).map {
+                    case (FuncBody(locals, code), typeIdx) =>
+                      val locs = locals.flatMap {
+                        case LocalEntry(count, tpe) => Vector.fill(count)(tpe)
+                      }
+                      Func(typeIdx, locs, code)
+                  }
+                  for (_ <- validator.validateAll(funcs, ctx, validator.validateFunction))
+                    yield (sec.id, Vector.empty, mod.copy(funcs = funcs), ctx)
+                }
+              case Section.Datas(data) =>
+                for (_ <- validator.validateAll(data, ctx, validator.validateData))
+                  yield (sec.id, tpes, mod.copy(data = data), ctx)
+              case Section.Custom(_, _) =>
+                // ignore the custom sections
+                F.pure((idx, tpes, mod, ctx))
+            }
+        }
       }
+      .flatten
       // drop the section index and type indexes, just to keep the compiled module
       .map(_._3)
 

@@ -29,7 +29,29 @@ case class Module(
     data: Vector[Data],
     start: Option[FuncIdx],
     imports: Vector[Import],
-    exports: Vector[Export])
+    exports: Vector[Export]) {
+
+  object imported {
+
+    def funcs: Vector[FuncType] = imports.collect {
+      case Import.Function(_, _, idx) => types(idx)
+    }
+
+    def tables: Vector[TableType] = imports.collect {
+      case Import.Table(_, _, tpe) => tpe
+    }
+
+    def mems: Vector[MemType] = imports.collect {
+      case Import.Memory(_, _, tpe) => tpe
+    }
+
+    def globals: Vector[GlobalType] = imports.collect {
+      case Import.Global(_, _, tpe) => tpe
+    }
+
+  }
+
+}
 
 case class Func(
     tpe: TypeIdx,
