@@ -14,23 +14,8 @@
  * limitations under the License.
  */
 
-package swam
-package runtime
+package swam.vm
 
-import syntax.Module
-
-/** The module loader is responsible for loading the static
- *  structure of a module by its name.
- *
- *  Module loading can be made from file system, from a resource, from an URL, etc.
- *  The loader is used by the VM to locate and then instantiate a module.
- */
-trait ModuleLoader {
-
-  /** Loads and returns the module representation by its name.
-   *
-   *  @throws ModuleNotFoundException if the module name does not identify any module
-   */
-  def load(name: String): Module
-
-}
+sealed trait Result
+case class Values(values: Vector[Value]) extends Result
+case object Trap extends Result

@@ -310,8 +310,8 @@ case class TeeLocal(idx: LocalIdx) extends Inst(OpCode.TeeLocal)
 case class GetGlobal(idx: LocalIdx) extends Inst(OpCode.GetGlobal)
 case class SetGlobal(idx: LocalIdx) extends Inst(OpCode.SetGlobal)
 
-case object CurrentMemory extends Inst(OpCode.CurrentMemory)
-case object GrowMemory extends Inst(OpCode.GrowMemory)
+case object MemorySize extends Inst(OpCode.MemorySize)
+case object MemoryGrow extends Inst(OpCode.MemoryGrow)
 
 case object Nop extends Inst(OpCode.Nop)
 case object Unreachable extends Inst(OpCode.Unreachable)

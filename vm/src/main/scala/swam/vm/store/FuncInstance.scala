@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
-package swam.runtime.stack
+package swam
+package vm.store
 
-class StackUnderflowException extends Exception("Cannot pop element from empty stack", null, false, false)
+import java.nio.ByteBuffer
+
+class FuncInstance(val tpe: FuncType, val code: ByteBuffer, val locals: Array[ValType])

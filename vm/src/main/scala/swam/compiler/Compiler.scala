@@ -17,10 +17,6 @@
 package swam
 package compiler
 
-import runtime.{
-  Function => RFunction,
-  Module => RModule
-}
 import syntax._
 
 /** Validates and compiles a module.
@@ -28,9 +24,6 @@ import syntax._
 class Compiler(module: Module) {
 
   def validate(): Unit =
-    ???
-
-  def compile(): RModule =
     ???
 
 }

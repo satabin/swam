@@ -18,6 +18,8 @@ package object swam {
 
   val pageSize = 65536
 
+  type OpCode = Int
+
   type TypeIdx = Int
   type FuncIdx = Int
   type TableIdx = Int

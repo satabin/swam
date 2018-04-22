@@ -20,4 +20,16 @@ package object runtime {
 
   type Word = Long
 
+  def truncate(f: Float): Float =
+    if (f < 0)
+      f.ceil
+    else
+      f.floor
+
+  def truncate(d: Double): Double =
+    if (d < 0)
+      d.ceil
+    else
+      d.floor
+
 }

@@ -14,31 +14,8 @@
  * limitations under the License.
  */
 
-package swam.runtime
-package stack
+package swam
+package vm
+package store
 
-import java.nio.ByteBuffer
-
-class ByteBufferStack(capacity: Int) extends Stack {
-
-  private val stack = ByteBuffer.allocate(capacity)
-
-  private var top = 0
-
-  def push(word: Word): Unit =
-    if (top >= stack.capacity) {
-      throw new StackOverflowException
-    } else {
-      stack.putLong(top, word)
-      top += 1
-    }
-
-  def pop(): Word =
-    if (top <= 0) {
-      throw new StackUnderflowException
-    } else {
-      top -= 1
-      stack.getLong(top)
-    }
-
-}
+class GlobalInstance(val mutable: Boolean, var value: Value)

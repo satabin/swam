@@ -1,8 +1,10 @@
 import scalariform.formatter.preferences._
 
+val paradiseVersion = "2.1.1"
+
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
-  scalaVersion := "2.12.4",
+  scalaVersion := "2.12.5",
   resolvers +=
     "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
   headerLicense := Some(HeaderLicense.ALv2("2018", "Lucas Satabin")),

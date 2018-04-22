@@ -14,7 +14,20 @@
  * limitations under the License.
  */
 
-package swam.runtime
+package swam
+package vm
 
-class Function(val address: Long) extends AnyVal {
+sealed trait Value
+object Value {
+  case class Int32(i: Int) extends Value
+  case class Int64(l: Long) extends Value
+  case class Float32(f: Float) extends Value
+  case class Float64(d: Double) extends Value
+
+  def zero(tpe: ValType): Value = tpe match {
+    case ValType.I32 => Int32(0)
+    case ValType.I64 => Int64(0l)
+    case ValType.F32 => Float32(0.0f)
+    case ValType.F64 => Float64(0.0d)
+  }
 }

@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-package swam.runtime
+package swam.vm.store
 
-class Type(val address: Long) extends AnyVal {
+class TableInstance(max: Int) {
+  private val elems = Array.ofDim[Address](0)
+
+  def size = elems.size
+
+  def apply(idx: Int): Address =
+    elems(idx)
+
 }

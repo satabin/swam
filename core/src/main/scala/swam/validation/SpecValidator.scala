@@ -174,12 +174,12 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
               F.raiseError(new ValidationException(s"alignment must not be larger than $n."))
           case None => F.raiseError(new ValidationException("unknown memory 0."))
         }
-      case CurrentMemory =>
+      case MemorySize =>
         ctx.mems.lift(0) match {
           case Some(_) => F.pure(ctx.push(ValType.I32))
           case None    => F.raiseError(new ValidationException("unknown memory 0."))
         }
-      case GrowMemory =>
+      case MemoryGrow =>
         ctx.mems.lift(0) match {
           case Some(_) => for (_ <- ctx.pop(ValType.I32)) yield ctx
           case None    => F.raiseError(new ValidationException("unknown memory 0."))

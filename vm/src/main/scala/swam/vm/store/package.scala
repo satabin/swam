@@ -14,29 +14,15 @@
  * limitations under the License.
  */
 
-package swam.runtime.store
+package swam
+package vm
 
 import java.nio.ByteBuffer
 
-/** A memory backed by a [[java.nio.ByteBuffer ByteBuffer]].
- */
-class ByteBufferStore(capacity: Int) extends Store {
+package object store {
 
-  private val buffer = ByteBuffer.allocate(capacity)
+  type Address = Int
 
-  def allocate(size: Int): Long =
-    if (buffer.capacity < buffer.position + size + 4) {
-      -1
-    } else {
-      // a block is of size `size + 4` bytes.
-      // the first 4 bytes are used to register the size of the following block
-      buffer.putInt(size)
-      val addr = buffer.position
-      buffer.position(buffer.position + size + 4)
-      addr
-    }
-
-  def getLong(addr: Long): Long =
-    buffer.getLong(addr.toInt)
+  val NULL = -1
 
 }

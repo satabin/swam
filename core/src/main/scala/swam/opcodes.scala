@@ -16,189 +16,366 @@
 
 package swam
 
-import enumeratum.values._
+object OpCode {
 
-sealed abstract class OpCode(val value: Int) extends IntEnumEntry
-
-object OpCode extends IntEnum[OpCode] {
-
-  val values = findValues
-
-  case object Unreachable extends OpCode(0x00)
-  case object Nop extends OpCode(0x01)
-  case object Block extends OpCode(0x02)
-  case object Loop extends OpCode(0x03)
-  case object If extends OpCode(0x04)
-  //case object Else extends OpCode(0x05)
+  final val Unreachable = 0x00
+  final val Nop = 0x01
+  final val Block = 0x02
+  final val Loop = 0x03
+  final val If = 0x04
+  final val Else = 0x05
   // reserved 0x06-0x0a
-  //case object End extends OpCode(0x0b)
-  case object Br extends OpCode(0x0c)
-  case object BrIf extends OpCode(0x0d)
-  case object BrTable extends OpCode(0x0e)
-  case object Return extends OpCode(0x0f)
-  case object Call extends OpCode(0x10)
-  case object CallIndirect extends OpCode(0x11)
+  final val End = 0x0b
+  final val Br = 0x0c
+  final val BrIf = 0x0d
+  final val BrTable = 0x0e
+  final val Return = 0x0f
+  final val Call = 0x10
+  final val CallIndirect = 0x11
   // reserved 0x12-0x19
-  case object Drop extends OpCode(0x1a)
-  case object Select extends OpCode(0x1b)
+  final val Drop = 0x1a
+  final val Select = 0x1b
   // reserved 0x1c-0x1f
-  case object GetLocal extends OpCode(0x20)
-  case object SetLocal extends OpCode(0x21)
-  case object TeeLocal extends OpCode(0x22)
-  case object GetGlobal extends OpCode(0x23)
-  case object SetGlobal extends OpCode(0x24)
+  final val GetLocal = 0x20
+  final val SetLocal = 0x21
+  final val TeeLocal = 0x22
+  final val GetGlobal = 0x23
+  final val SetGlobal = 0x24
   // reserved 0x25-0x27
-  case object I32Load extends OpCode(0x28)
-  case object I64Load extends OpCode(0x29)
-  case object F32Load extends OpCode(0x2a)
-  case object F64Load extends OpCode(0x2b)
-  case object I32Load8S extends OpCode(0x2c)
-  case object I32Load8U extends OpCode(0x2d)
-  case object I32Load16S extends OpCode(0x2e)
-  case object I32Load16U extends OpCode(0x2f)
-  case object I64Load8S extends OpCode(0x30)
-  case object I64Load8U extends OpCode(0x31)
-  case object I64Load16S extends OpCode(0x32)
-  case object I64Load16U extends OpCode(0x33)
-  case object I64Load32S extends OpCode(0x34)
-  case object I64Load32U extends OpCode(0x35)
-  case object I32Store extends OpCode(0x36)
-  case object I64Store extends OpCode(0x37)
-  case object F32Store extends OpCode(0x38)
-  case object F64Store extends OpCode(0x39)
-  case object I32Store8 extends OpCode(0x3a)
-  case object I32Store16 extends OpCode(0x3b)
-  case object I64Store8 extends OpCode(0x3c)
-  case object I64Store16 extends OpCode(0x3d)
-  case object I64Store32 extends OpCode(0x3e)
-  case object CurrentMemory extends OpCode(0x3f)
-  case object GrowMemory extends OpCode(0x40)
-  case object I32Const extends OpCode(0x41)
-  case object I64Const extends OpCode(0x42)
-  case object F32Const extends OpCode(0x43)
-  case object F64Const extends OpCode(0x44)
-  case object I32Eqz extends OpCode(0x45)
-  case object I32Eq extends OpCode(0x46)
-  case object I32Ne extends OpCode(0x47)
-  case object I32LtS extends OpCode(0x48)
-  case object I32LtU extends OpCode(0x49)
-  case object I32GtS extends OpCode(0x4a)
-  case object I32GtU extends OpCode(0x4b)
-  case object I32LeS extends OpCode(0x4c)
-  case object I32LeU extends OpCode(0x4d)
-  case object I32GeS extends OpCode(0x4e)
-  case object I32GeU extends OpCode(0x4f)
-  case object I64Eqz extends OpCode(0x50)
-  case object I64Eq extends OpCode(0x51)
-  case object I64Ne extends OpCode(0x52)
-  case object I64LtS extends OpCode(0x53)
-  case object I64LtU extends OpCode(0x54)
-  case object I64GtS extends OpCode(0x55)
-  case object I64GtU extends OpCode(0x56)
-  case object I64LeS extends OpCode(0x57)
-  case object I64LeU extends OpCode(0x58)
-  case object I64GeS extends OpCode(0x59)
-  case object I64GeU extends OpCode(0x5a)
-  case object F32Eq extends OpCode(0x5b)
-  case object F32Ne extends OpCode(0x5c)
-  case object F32Lt extends OpCode(0x5d)
-  case object F32Gt extends OpCode(0x5e)
-  case object F32Le extends OpCode(0x5f)
-  case object F32Ge extends OpCode(0x60)
-  case object F64Eq extends OpCode(0x61)
-  case object F64Ne extends OpCode(0x62)
-  case object F64Lt extends OpCode(0x63)
-  case object F64Gt extends OpCode(0x64)
-  case object F64Le extends OpCode(0x65)
-  case object F64Ge extends OpCode(0x66)
-  case object I32Clz extends OpCode(0x67)
-  case object I32Ctz extends OpCode(0x68)
-  case object I32Popcnt extends OpCode(0x69)
-  case object I32Add extends OpCode(0x6a)
-  case object I32Sub extends OpCode(0x6b)
-  case object I32Mul extends OpCode(0x6c)
-  case object I32DivS extends OpCode(0x6d)
-  case object I32DivU extends OpCode(0x6e)
-  case object I32RemS extends OpCode(0x6f)
-  case object I32RemU extends OpCode(0x70)
-  case object I32And extends OpCode(0x71)
-  case object I32Or extends OpCode(0x72)
-  case object I32Xor extends OpCode(0x73)
-  case object I32Shl extends OpCode(0x74)
-  case object I32ShrS extends OpCode(0x75)
-  case object I32ShrU extends OpCode(0x76)
-  case object I32Rotl extends OpCode(0x77)
-  case object I32Rotr extends OpCode(0x78)
-  case object I64Clz extends OpCode(0x79)
-  case object I64Ctz extends OpCode(0x7a)
-  case object I64Popcnt extends OpCode(0x7b)
-  case object I64Add extends OpCode(0x7c)
-  case object I64Sub extends OpCode(0x7d)
-  case object I64Mul extends OpCode(0x7e)
-  case object I64DivS extends OpCode(0x7f)
-  case object I64DivU extends OpCode(0x80)
-  case object I64RemS extends OpCode(0x81)
-  case object I64RemU extends OpCode(0x82)
-  case object I64And extends OpCode(0x83)
-  case object I64Or extends OpCode(0x84)
-  case object I64Xor extends OpCode(0x85)
-  case object I64Shl extends OpCode(0x86)
-  case object I64ShrS extends OpCode(0x87)
-  case object I64ShrU extends OpCode(0x88)
-  case object I64Rotl extends OpCode(0x89)
-  case object I64Rotr extends OpCode(0x8a)
-  case object F32Abs extends OpCode(0x8b)
-  case object F32Neg extends OpCode(0x8c)
-  case object F32Ceil extends OpCode(0x8d)
-  case object F32Floor extends OpCode(0x8e)
-  case object F32Trunc extends OpCode(0x8f)
-  case object F32Nearest extends OpCode(0x90)
-  case object F32Sqrt extends OpCode(0x91)
-  case object F32Add extends OpCode(0x92)
-  case object F32Sub extends OpCode(0x93)
-  case object F32Mul extends OpCode(0x94)
-  case object F32Div extends OpCode(0x95)
-  case object F32Min extends OpCode(0x96)
-  case object F32Max extends OpCode(0x97)
-  case object F32Copysign extends OpCode(0x98)
-  case object F64Abs extends OpCode(0x99)
-  case object F64Neg extends OpCode(0x9a)
-  case object F64Ceil extends OpCode(0x9b)
-  case object F64Floor extends OpCode(0x9c)
-  case object F64Trunc extends OpCode(0x9d)
-  case object F64Nearest extends OpCode(0x9e)
-  case object F64Sqrt extends OpCode(0x9f)
-  case object F64Add extends OpCode(0xa0)
-  case object F64Sub extends OpCode(0xa1)
-  case object F64Mul extends OpCode(0xa2)
-  case object F64Div extends OpCode(0xa3)
-  case object F64Min extends OpCode(0xa4)
-  case object F64Max extends OpCode(0xa5)
-  case object F64Copysign extends OpCode(0xa6)
-  case object I32WrapI64 extends OpCode(0xa7)
-  case object I32TruncSF32 extends OpCode(0xa8)
-  case object I32TruncUF32 extends OpCode(0xa9)
-  case object I32TruncSF64 extends OpCode(0xaa)
-  case object I32TruncUF64 extends OpCode(0xab)
-  case object I64ExtendSI32 extends OpCode(0xac)
-  case object I64ExtendUI32 extends OpCode(0xad)
-  case object I64TruncSF32 extends OpCode(0xae)
-  case object I64TruncUF32 extends OpCode(0xaf)
-  case object I64TruncSF64 extends OpCode(0xb0)
-  case object I64TruncUF64 extends OpCode(0xb1)
-  case object F32ConvertSI32 extends OpCode(0xb2)
-  case object F32ConvertUI32 extends OpCode(0xb3)
-  case object F32ConvertSI64 extends OpCode(0xb4)
-  case object F32ConvertUI64 extends OpCode(0xb5)
-  case object F32DemoteF64 extends OpCode(0xb6)
-  case object F64ConvertSI32 extends OpCode(0xb7)
-  case object F64ConvertUI32 extends OpCode(0xb8)
-  case object F64ConvertSI64 extends OpCode(0xb9)
-  case object F64ConvertUI64 extends OpCode(0xba)
-  case object F64PromoteF32 extends OpCode(0xbb)
-  case object I32ReinterpretF32 extends OpCode(0xbc)
-  case object I64ReinterpretF64 extends OpCode(0xbd)
-  case object F32ReinterpretI32 extends OpCode(0xbe)
-  case object F64ReinterpretI64 extends OpCode(0xbf)
+  final val I32Load = 0x28
+  final val I64Load = 0x29
+  final val F32Load = 0x2a
+  final val F64Load = 0x2b
+  final val I32Load8S = 0x2c
+  final val I32Load8U = 0x2d
+  final val I32Load16S = 0x2e
+  final val I32Load16U = 0x2f
+  final val I64Load8S = 0x30
+  final val I64Load8U = 0x31
+  final val I64Load16S = 0x32
+  final val I64Load16U = 0x33
+  final val I64Load32S = 0x34
+  final val I64Load32U = 0x35
+  final val I32Store = 0x36
+  final val I64Store = 0x37
+  final val F32Store = 0x38
+  final val F64Store = 0x39
+  final val I32Store8 = 0x3a
+  final val I32Store16 = 0x3b
+  final val I64Store8 = 0x3c
+  final val I64Store16 = 0x3d
+  final val I64Store32 = 0x3e
+  final val MemorySize = 0x3f
+  final val MemoryGrow = 0x40
+  final val I32Const = 0x41
+  final val I64Const = 0x42
+  final val F32Const = 0x43
+  final val F64Const = 0x44
+  final val I32Eqz = 0x45
+  final val I32Eq = 0x46
+  final val I32Ne = 0x47
+  final val I32LtS = 0x48
+  final val I32LtU = 0x49
+  final val I32GtS = 0x4a
+  final val I32GtU = 0x4b
+  final val I32LeS = 0x4c
+  final val I32LeU = 0x4d
+  final val I32GeS = 0x4e
+  final val I32GeU = 0x4f
+  final val I64Eqz = 0x50
+  final val I64Eq = 0x51
+  final val I64Ne = 0x52
+  final val I64LtS = 0x53
+  final val I64LtU = 0x54
+  final val I64GtS = 0x55
+  final val I64GtU = 0x56
+  final val I64LeS = 0x57
+  final val I64LeU = 0x58
+  final val I64GeS = 0x59
+  final val I64GeU = 0x5a
+  final val F32Eq = 0x5b
+  final val F32Ne = 0x5c
+  final val F32Lt = 0x5d
+  final val F32Gt = 0x5e
+  final val F32Le = 0x5f
+  final val F32Ge = 0x60
+  final val F64Eq = 0x61
+  final val F64Ne = 0x62
+  final val F64Lt = 0x63
+  final val F64Gt = 0x64
+  final val F64Le = 0x65
+  final val F64Ge = 0x66
+  final val I32Clz = 0x67
+  final val I32Ctz = 0x68
+  final val I32Popcnt = 0x69
+  final val I32Add = 0x6a
+  final val I32Sub = 0x6b
+  final val I32Mul = 0x6c
+  final val I32DivS = 0x6d
+  final val I32DivU = 0x6e
+  final val I32RemS = 0x6f
+  final val I32RemU = 0x70
+  final val I32And = 0x71
+  final val I32Or = 0x72
+  final val I32Xor = 0x73
+  final val I32Shl = 0x74
+  final val I32ShrS = 0x75
+  final val I32ShrU = 0x76
+  final val I32Rotl = 0x77
+  final val I32Rotr = 0x78
+  final val I64Clz = 0x79
+  final val I64Ctz = 0x7a
+  final val I64Popcnt = 0x7b
+  final val I64Add = 0x7c
+  final val I64Sub = 0x7d
+  final val I64Mul = 0x7e
+  final val I64DivS = 0x7f
+  final val I64DivU = 0x80
+  final val I64RemS = 0x81
+  final val I64RemU = 0x82
+  final val I64And = 0x83
+  final val I64Or = 0x84
+  final val I64Xor = 0x85
+  final val I64Shl = 0x86
+  final val I64ShrS = 0x87
+  final val I64ShrU = 0x88
+  final val I64Rotl = 0x89
+  final val I64Rotr = 0x8a
+  final val F32Abs = 0x8b
+  final val F32Neg = 0x8c
+  final val F32Ceil = 0x8d
+  final val F32Floor = 0x8e
+  final val F32Trunc = 0x8f
+  final val F32Nearest = 0x90
+  final val F32Sqrt = 0x91
+  final val F32Add = 0x92
+  final val F32Sub = 0x93
+  final val F32Mul = 0x94
+  final val F32Div = 0x95
+  final val F32Min = 0x96
+  final val F32Max = 0x97
+  final val F32Copysign = 0x98
+  final val F64Abs = 0x99
+  final val F64Neg = 0x9a
+  final val F64Ceil = 0x9b
+  final val F64Floor = 0x9c
+  final val F64Trunc = 0x9d
+  final val F64Nearest = 0x9e
+  final val F64Sqrt = 0x9f
+  final val F64Add = 0xa0
+  final val F64Sub = 0xa1
+  final val F64Mul = 0xa2
+  final val F64Div = 0xa3
+  final val F64Min = 0xa4
+  final val F64Max = 0xa5
+  final val F64Copysign = 0xa6
+  final val I32WrapI64 = 0xa7
+  final val I32TruncSF32 = 0xa8
+  final val I32TruncUF32 = 0xa9
+  final val I32TruncSF64 = 0xaa
+  final val I32TruncUF64 = 0xab
+  final val I64ExtendSI32 = 0xac
+  final val I64ExtendUI32 = 0xad
+  final val I64TruncSF32 = 0xae
+  final val I64TruncUF32 = 0xaf
+  final val I64TruncSF64 = 0xb0
+  final val I64TruncUF64 = 0xb1
+  final val F32ConvertSI32 = 0xb2
+  final val F32ConvertUI32 = 0xb3
+  final val F32ConvertSI64 = 0xb4
+  final val F32ConvertUI64 = 0xb5
+  final val F32DemoteF64 = 0xb6
+  final val F64ConvertSI32 = 0xb7
+  final val F64ConvertUI32 = 0xb8
+  final val F64ConvertSI64 = 0xb9
+  final val F64ConvertUI64 = 0xba
+  final val F64PromoteF32 = 0xbb
+  final val I32ReinterpretF32 = 0xbc
+  final val I64ReinterpretF64 = 0xbd
+  final val F32ReinterpretI32 = 0xbe
+  final val F64ReinterpretI64 = 0xbf
 
+  def withValueOpt(i: Int): Option[OpCode] =
+    if (all.contains(i))
+      Some(i)
+    else
+      None
+
+  val all = Set(
+    0x00,
+    0x01,
+    0x02,
+    0x03,
+    0x04,
+    0x05,
+    // reserved 0x06-0x0a
+    0x0b,
+    0x0c,
+    0x0d,
+    0x0e,
+    0x0f,
+    0x10,
+    0x11,
+    // reserved 0x12-0x19
+    0x1a,
+    0x1b,
+    // reserved 0x1c-0x1f
+    0x20,
+    0x21,
+    0x22,
+    0x23,
+    0x24,
+    // reserved 0x25-0x27
+    0x28,
+    0x29,
+    0x2a,
+    0x2b,
+    0x2c,
+    0x2d,
+    0x2e,
+    0x2f,
+    0x30,
+    0x31,
+    0x32,
+    0x33,
+    0x34,
+    0x35,
+    0x36,
+    0x37,
+    0x38,
+    0x39,
+    0x3a,
+    0x3b,
+    0x3c,
+    0x3d,
+    0x3e,
+    0x3f,
+    0x40,
+    0x41,
+    0x42,
+    0x43,
+    0x44,
+    0x45,
+    0x46,
+    0x47,
+    0x48,
+    0x49,
+    0x4a,
+    0x4b,
+    0x4c,
+    0x4d,
+    0x4e,
+    0x4f,
+    0x50,
+    0x51,
+    0x52,
+    0x53,
+    0x54,
+    0x55,
+    0x56,
+    0x57,
+    0x58,
+    0x59,
+    0x5a,
+    0x5b,
+    0x5c,
+    0x5d,
+    0x5e,
+    0x5f,
+    0x60,
+    0x61,
+    0x62,
+    0x63,
+    0x64,
+    0x65,
+    0x66,
+    0x67,
+    0x68,
+    0x69,
+    0x6a,
+    0x6b,
+    0x6c,
+    0x6d,
+    0x6e,
+    0x6f,
+    0x70,
+    0x71,
+    0x72,
+    0x73,
+    0x74,
+    0x75,
+    0x76,
+    0x77,
+    0x78,
+    0x79,
+    0x7a,
+    0x7b,
+    0x7c,
+    0x7d,
+    0x7e,
+    0x7f,
+    0x80,
+    0x81,
+    0x82,
+    0x83,
+    0x84,
+    0x85,
+    0x86,
+    0x87,
+    0x88,
+    0x89,
+    0x8a,
+    0x8b,
+    0x8c,
+    0x8d,
+    0x8e,
+    0x8f,
+    0x90,
+    0x91,
+    0x92,
+    0x93,
+    0x94,
+    0x95,
+    0x96,
+    0x97,
+    0x98,
+    0x99,
+    0x9a,
+    0x9b,
+    0x9c,
+    0x9d,
+    0x9e,
+    0x9f,
+    0xa0,
+    0xa1,
+    0xa2,
+    0xa3,
+    0xa4,
+    0xa5,
+    0xa6,
+    0xa7,
+    0xa8,
+    0xa9,
+    0xaa,
+    0xab,
+    0xac,
+    0xad,
+    0xae,
+    0xaf,
+    0xb0,
+    0xb1,
+    0xb2,
+    0xb3,
+    0xb4,
+    0xb5,
+    0xb6,
+    0xb7,
+    0xb8,
+    0xb9,
+    0xba,
+    0xbb,
+    0xbc,
+    0xbd,
+    0xbe,
+    0xbf)
 }

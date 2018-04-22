@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package swam.runtime
+package swam
+package vm
+package store
 
-class Module(val address: Long) extends AnyVal {
-}
+class ExportInstance
