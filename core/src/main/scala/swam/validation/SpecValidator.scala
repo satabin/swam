@@ -312,12 +312,13 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
         out.headOption match {
           case ret @ Some(tpe) =>
             for {
-              ctxb <- validate(body, ctx.copy[F](locals = ins ++ locals, labels = Vector(ResultType(ret)), ret = Some(ResultType(ret))))
+              ctxb <- validate(body, ctx.copy[F](locals = ins ++ locals, labels = Vector(ResultType(ret)), ret = Some(ResultType(ret)), operands = Nil))
               _ <- ctxb.pop(tpe)
+              _ <- ctxb.emptyOperands
             } yield ()
           case None =>
             for {
-              ctxb <- validate(body, ctx.copy[F](locals = ins ++ locals, labels = Vector(ResultType(None)), ret = Some(ResultType(None))))
+              ctxb <- validate(body, ctx.copy[F](locals = ins ++ locals, labels = Vector(ResultType(None)), ret = Some(ResultType(None)), operands = Nil))
               _ <- ctxb.emptyOperands
             } yield ()
         }
