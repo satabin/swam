@@ -1037,10 +1037,11 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val sz = mem.size / pageSize
         val n = frame.stack.popInt()
         if (mem.grow(n)) {
-          run()
+          frame.stack.pushInt(sz)
         } else {
-          Trap
+          frame.stack.pushInt(-1)
         }
+        run()
       // === control instructions ===
       case OpCode.Nop =>
         run()
