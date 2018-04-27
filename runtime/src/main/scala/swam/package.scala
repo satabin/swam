@@ -18,8 +18,6 @@ package swam
 
 package object runtime {
 
-  type Word = Long
-
   def truncate(f: Float): Float =
     if (f < 0)
       f.ceil

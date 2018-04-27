@@ -1,7 +1,5 @@
 import scalariform.formatter.preferences._
 
-val paradiseVersion = "2.1.1"
-
 lazy val commonSettings = Seq(
   organization := "org.gnieh",
   scalaVersion := "2.12.5",
@@ -58,7 +56,7 @@ lazy val root = project.in(file("."))
   .settings(commonSettings)
   .settings(
     name := "swam")
-  .aggregate(core, vm)
+  .aggregate(core, runtime, vm)
 
 lazy val core = project.in(file("core"))
   .settings(commonSettings)
@@ -73,4 +71,9 @@ lazy val vm = project.in(file("vm"))
   .settings(commonSettings)
   .settings(
     name := "swam-vm")
-  .dependsOn(core)
+  .dependsOn(core, runtime)
+
+lazy val runtime = project.in(file("runtime"))
+  .settings(commonSettings)
+  .settings(
+    name := "swam-runtime")
