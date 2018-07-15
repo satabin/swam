@@ -25,7 +25,7 @@ import java.nio.ByteBuffer
 
 /** A call frame containing the local stack of operands.
   */
-class Frame private (parent: Frame,
+sealed class Frame private (parent: Frame,
                      code: ByteBuffer,
                      val locals: Array[Value],
                      val arity: Int,
@@ -34,39 +34,39 @@ class Frame private (parent: Frame,
 
   import Frame._
 
-  var pc = 0
+  private[vm] var pc = 0
 
-  def readByte(): Byte = {
+  private[vm] def readByte(): Byte = {
     val b = code.get(pc)
     pc += 1
     b
   }
 
-  def readInt(): Int = {
+  private[vm] def readInt(): Int = {
     val i = code.getInt(pc)
     pc += 4
     i
   }
 
-  def readLong(): Long = {
+  private[vm] def readLong(): Long = {
     val l = code.getLong(pc)
     pc += 8
     l
   }
 
-  def readFloat(): Float = {
+  private[vm] def readFloat(): Float = {
     val f = code.getFloat(pc)
     pc += 8
     f
   }
 
-  def readDouble(): Double = {
+  private[vm] def readDouble(): Double = {
     val d = code.getDouble(pc)
     pc += 8
     d
   }
 
-  object stack {
+  private[vm] object stack {
 
     private val stack = Array.ofDim[Byte](256)
     private val istack = Array.ofDim[Int](256)
@@ -235,5 +235,8 @@ object Frame {
   private final val FLOAT32 = 2
   private final val FLOAT64 = 3
   private final val LABEL = 4
+
+  def makeToplevel(): Frame =
+    new Frame(null, null, null, 0, null)
 
 }

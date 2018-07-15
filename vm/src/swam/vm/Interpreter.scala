@@ -131,7 +131,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i2 = frame.stack.popInt()
         val i1 = frame.stack.popInt()
         if (i1 == 0) {
-          Trap("div by zero")
+          Trap(frame, "div by zero")
         } else {
           frame.stack.pushInt(JInt.divideUnsigned(i1, i2))
           run()
@@ -140,11 +140,11 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i2 = frame.stack.popInt()
         val i1 = frame.stack.popInt()
         if (i1 == 0) {
-          Trap("div by zero")
+          Trap(frame, "div by zero")
         } else {
           val res = i1 / i2
           if (i1 >= 0 && i2 > 0 && res < 0) {
-            Trap("overflow")
+            Trap(frame, "overflow")
           } else {
             frame.stack.pushInt(i1 / i2)
             run()
@@ -154,7 +154,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i2 = frame.stack.popInt()
         val i1 = frame.stack.popInt()
         if (i1 == 0) {
-          Trap("div by zero")
+          Trap(frame, "div by zero")
         } else {
           frame.stack.pushInt(JInt.remainderUnsigned(i1, i2))
           run()
@@ -163,7 +163,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i2 = frame.stack.popInt()
         val i1 = frame.stack.popInt()
         if (i1 == 0) {
-          Trap("div by zero")
+          Trap(frame, "div by zero")
         } else {
           frame.stack.pushInt(i1 % i2)
           run()
@@ -227,7 +227,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i2 = frame.stack.popLong()
         val i1 = frame.stack.popLong()
         if (i1 == 0) {
-          Trap("div by zero")
+          Trap(frame, "div by zero")
         } else {
           frame.stack.pushLong(JLong.divideUnsigned(i1, i2))
           run()
@@ -236,11 +236,11 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i2 = frame.stack.popLong()
         val i1 = frame.stack.popLong()
         if (i1 == 0) {
-          Trap("div by zero")
+          Trap(frame, "div by zero")
         } else {
           val res = i1 / i2
           if (i1 >= 0 && i2 > 0 && res < 0) {
-            Trap("overflow")
+            Trap(frame, "overflow")
           } else {
             frame.stack.pushLong(i1 / i2)
             run()
@@ -250,7 +250,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i2 = frame.stack.popLong()
         val i1 = frame.stack.popLong()
         if (i1 == 0) {
-          Trap("div by zero")
+          Trap(frame, "div by zero")
         } else {
           frame.stack.pushLong(JLong.remainderUnsigned(i1, i2))
           run()
@@ -259,7 +259,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i2 = frame.stack.popLong()
         val i1 = frame.stack.popLong()
         if (i1 == 0) {
-          Trap("div by zero")
+          Trap(frame, "div by zero")
         } else {
           frame.stack.pushLong(i1 % i2)
           run()
@@ -565,10 +565,10 @@ class Interpreter(private var frame: Frame, private val store: Store) {
             frame.stack.pushInt(t)
             run()
           } else {
-            Trap("invalid unsigned i32")
+            Trap(frame, "invalid unsigned i32")
           }
         } else {
-          Trap("invalid unsigned i32")
+          Trap(frame, "invalid unsigned i32")
         }
       case OpCode.I32TruncSF32 =>
         val f = frame.stack.popFloat()
@@ -577,7 +577,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
           frame.stack.pushInt(t.toInt)
           run()
         } else {
-          Trap("invalid signed i32")
+          Trap(frame, "invalid signed i32")
         }
       case OpCode.I32TruncUF64 =>
         val f = frame.stack.popDouble()
@@ -587,10 +587,10 @@ class Interpreter(private var frame: Frame, private val store: Store) {
             frame.stack.pushInt(t.toInt)
             run()
           } else {
-            Trap("invalid unsigned i32")
+            Trap(frame, "invalid unsigned i32")
           }
         } else {
-          Trap("invalid unsigned i32")
+          Trap(frame, "invalid unsigned i32")
         }
       case OpCode.I32TruncSF64 =>
         val f = frame.stack.popDouble()
@@ -599,7 +599,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
           frame.stack.pushInt(t.toInt)
           run()
         } else {
-          Trap("invalid signed i32")
+          Trap(frame, "invalid signed i32")
         }
       case OpCode.I64TruncUF32 =>
         val f = frame.stack.popFloat()
@@ -609,10 +609,10 @@ class Interpreter(private var frame: Frame, private val store: Store) {
             frame.stack.pushLong(t)
             run()
           } else {
-            Trap("invalid unsigned i64")
+            Trap(frame, "invalid unsigned i64")
           }
         } else {
-          Trap("invalid unsigned i64")
+          Trap(frame, "invalid unsigned i64")
         }
       case OpCode.I64TruncSF32 =>
         val f = frame.stack.popFloat()
@@ -621,7 +621,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
           frame.stack.pushLong(t.toLong)
           run()
         } else {
-          Trap("invalid signed i64")
+          Trap(frame, "invalid signed i64")
         }
       case OpCode.I64TruncUF64 =>
         val f = frame.stack.popDouble()
@@ -630,7 +630,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
           frame.stack.pushInt(t.toInt)
           run()
         } else {
-          Trap("invalid unsigned i64")
+          Trap(frame, "invalid unsigned i64")
         }
       case OpCode.I64TruncSF64 =>
         val f = frame.stack.popDouble()
@@ -639,7 +639,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
           frame.stack.pushLong(t.toLong)
           run()
         } else {
-          Trap("invalid signed i64")
+          Trap(frame, "invalid signed i64")
         }
       case OpCode.F32DemoteF64 =>
         val f = frame.stack.popDouble()
@@ -744,7 +744,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 4 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readInt(ea)
           frame.stack.pushInt(c)
@@ -756,7 +756,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 4 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readByte(ea)
           frame.stack.pushInt(c & 0xff)
@@ -768,7 +768,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 4 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readByte(ea)
           frame.stack.pushInt(c)
@@ -780,7 +780,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 4 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readShort(ea)
           frame.stack.pushInt(c & 0xffff)
@@ -792,7 +792,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 4 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readShort(ea)
           frame.stack.pushInt(c)
@@ -804,7 +804,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readLong(ea)
           frame.stack.pushLong(c)
@@ -816,7 +816,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readByte(ea)
           frame.stack.pushLong(c & 0xffl)
@@ -828,7 +828,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readByte(ea)
           frame.stack.pushLong(c)
@@ -840,7 +840,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readShort(ea)
           frame.stack.pushLong(c & 0xffffl)
@@ -852,7 +852,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readShort(ea)
           frame.stack.pushLong(c)
@@ -864,7 +864,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readInt(ea)
           frame.stack.pushLong(c & 0xffffffffl)
@@ -876,7 +876,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readInt(ea)
           frame.stack.pushLong(c)
@@ -888,7 +888,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 4 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readFloat(ea)
           frame.stack.pushFloat(c)
@@ -900,7 +900,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c = mem.readDouble(ea)
           frame.stack.pushDouble(c)
@@ -913,7 +913,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 4 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           mem.writeInt(ea, c)
           run()
@@ -925,7 +925,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 4 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c1 = c % (1 << 8)
           mem.writeInt(ea, c1)
@@ -938,7 +938,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 4 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c1 = c % (1 << 16)
           mem.writeInt(ea, c1)
@@ -951,7 +951,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           mem.writeLong(ea, c)
           run()
@@ -963,7 +963,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c1 = c % (1l << 8)
           mem.writeLong(ea, c1)
@@ -976,7 +976,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c1 = c % (1l << 16)
           mem.writeLong(ea, c1)
@@ -989,7 +989,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           val c1 = c % (1l << 32)
           mem.writeLong(ea, c1)
@@ -1002,7 +1002,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 4 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           mem.writeFloat(ea, c)
           run()
@@ -1014,7 +1014,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val i = frame.stack.popInt()
         val ea = i + offset
         if (ea + 8 > mem.size) {
-          Trap("invalid memory access")
+          Trap(frame, "invalid memory access")
         } else {
           mem.writeDouble(ea, c)
           run()
@@ -1038,7 +1038,7 @@ class Interpreter(private var frame: Frame, private val store: Store) {
       case OpCode.Nop =>
         run()
       case OpCode.Unreachable =>
-        Trap("unreachable")
+        Trap(frame, "unreachable")
       case OpCode.Block =>
         // next byte is the block return type
         val tpe = frame.readByte()
@@ -1191,19 +1191,19 @@ class Interpreter(private var frame: Frame, private val store: Store) {
         val expectedt = frame.instance.tpe(tidx)
         val i = frame.stack.popInt()
         if (i >= tab.size || tab(i) == NULL) {
-          Trap("invalid indirect call")
+          Trap(frame, "invalid indirect call")
         } else {
           val f = store.function(tab(i))
           val actualt = f.tpe
           if (expectedt != actualt) {
-            Trap("unexpected type")
+            Trap(frame, "unexpected type")
           } else {
             invoke(f)
             run()
           }
         }
       case opcode =>
-        Trap("unknown opcode")
+        Trap(frame, "unknown opcode")
     }
   }
 
