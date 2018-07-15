@@ -255,8 +255,8 @@ object f32 {
 
   case object ReinterpretI32 extends Convertop(ValType.I32, ValType.F32, OpCode.F32ReinterpretI32)
 
-  case class Load(offset: Int, align: Int) extends LoadInst(ValType.I32, OpCode.F32Load)
-  case class Store(offset: Int, align: Int) extends MemoryInst(OpCode.F32Store)
+  case class Load(offset: Int, align: Int) extends LoadInst(ValType.F32, OpCode.F32Load)
+  case class Store(offset: Int, align: Int) extends StoreInst(ValType.F32, OpCode.F32Store)
 
 }
 
@@ -296,8 +296,8 @@ object f64 {
 
   case object ReinterpretI64 extends Convertop(ValType.I64, ValType.F64, OpCode.F64ReinterpretI64)
 
-  case class Load(offset: Int, align: Int) extends LoadInst(ValType.I32, OpCode.F64Load)
-  case class Store(offset: Int, align: Int) extends MemoryInst(OpCode.F64Store)
+  case class Load(offset: Int, align: Int) extends LoadInst(ValType.F64, OpCode.F64Load)
+  case class Store(offset: Int, align: Int) extends StoreInst(ValType.F64, OpCode.F64Store)
 
 }
 

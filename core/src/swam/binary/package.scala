@@ -26,8 +26,10 @@ import scala.collection.immutable.VectorBuilder
 package object binary {
 
   val noop: Codec[Unit] = new Codec[Unit] {
-    def decode(bits: BitVector): Attempt[DecodeResult[Unit]] = Attempt.successful(DecodeResult((), bits))
-    def encode(value: Unit): Attempt[BitVector] = Attempt.successful(BitVector.empty)
+    def decode(bits: BitVector): Attempt[DecodeResult[Unit]] =
+      Attempt.successful(DecodeResult((), bits))
+    def encode(value: Unit): Attempt[BitVector] =
+      Attempt.successful(BitVector.empty)
     def sizeBound: SizeBound = SizeBound.exact(0l)
   }
 
@@ -41,7 +43,8 @@ package object binary {
         seq foreach { a =>
           element.encode(a) match {
             case Attempt.Successful(aa) => buf += aa
-            case Attempt.Failure(err)   => return Attempt.failure(err.pushContext(buf.size.toString))
+            case Attempt.Failure(err) =>
+              return Attempt.failure(err.pushContext(buf.size.toString))
           }
         }
         def merge(offset: Int, size: Int): BitVector = size match {

@@ -34,8 +34,9 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
 
   def validateLimits(limits: Limits): F[Unit] =
     limits match {
-      case Limits(min, Some(max)) if max < min => F.raiseError(new ValidationException("limits minimum must be greater or equal to minimum."))
-      case _                                   => Ok
+      case Limits(min, Some(max)) if max < min =>
+        F.raiseError(new ValidationException("limits minimum must be greater or equal to minimum."))
+      case _ => Ok
     }
 
   def validateMemType(tpe: MemType): F[Unit] =
@@ -103,34 +104,40 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
         for {
           ctx <- ctx.pop(ValType.I32)
           ctx <- ctx.pop
-          t = ctx._1
-          ctx <- ctx._2.pop(t)
+          (t, ctxb) = ctx
+          ctx <- ctxb.pop(t)
         } yield ctx.push(t)
       case GetLocal(x) =>
         ctx.locals.lift(x) match {
           case Some(t) => F.pure(ctx.push(t))
-          case None    => F.raiseError(new ValidationException(s"unknown local $x."))
+          case None =>
+            F.raiseError(new ValidationException(s"unknown local $x."))
         }
       case SetLocal(x) =>
         ctx.locals.lift(x) match {
           case Some(t) => for (ctx <- ctx.pop(t)) yield ctx
-          case None    => F.raiseError(new ValidationException(s"unknown local $x."))
+          case None =>
+            F.raiseError(new ValidationException(s"unknown local $x."))
         }
       case TeeLocal(x) =>
         ctx.locals.lift(x) match {
           case Some(t) => F.pure(ctx)
-          case None    => F.raiseError(new ValidationException(s"unknown local $x."))
+          case None =>
+            F.raiseError(new ValidationException(s"unknown local $x."))
         }
       case GetGlobal(x) =>
         ctx.globals.lift(x) match {
           case Some(GlobalType(t, _)) => F.pure(ctx.push(t))
-          case None                   => F.raiseError(new ValidationException(s"unknown global $x."))
+          case None =>
+            F.raiseError(new ValidationException(s"unknown global $x."))
         }
       case SetGlobal(x) =>
         ctx.globals.lift(x) match {
           case Some(GlobalType(t, Mut.Var)) => for (ctx <- ctx.pop(t)) yield ctx
-          case Some(_)                      => F.raiseError(new ValidationException(s"global variable $x is not mutable"))
-          case None                         => F.raiseError(new ValidationException(s"unknown global $x."))
+          case Some(_) =>
+            F.raiseError(new ValidationException(s"global variable $x is not mutable"))
+          case None =>
+            F.raiseError(new ValidationException(s"unknown global $x."))
         }
       case Load(t, offset, align) =>
         ctx.mems.lift(0) match {
@@ -139,7 +146,8 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
               for (ctx <- ctx.pop(ValType.I32)) yield ctx.push(t)
             else
               F.raiseError(new ValidationException(s"alignment must not be larger than ${t.width}."))
-          case None => F.raiseError(new ValidationException("unknown memory 0."))
+          case None =>
+            F.raiseError(new ValidationException("unknown memory 0."))
         }
       case LoadN(t, n, offset, align) =>
         ctx.mems.lift(0) match {
@@ -148,7 +156,8 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
               for (ctx <- ctx.pop(ValType.I32)) yield ctx.push(t)
             else
               F.raiseError(new ValidationException(s"alignment must not be larger than $n."))
-          case None => F.raiseError(new ValidationException("unknown memory 0."))
+          case None =>
+            F.raiseError(new ValidationException("unknown memory 0."))
         }
       case Store(t, offset, align) =>
         ctx.mems.lift(0) match {
@@ -160,7 +169,8 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
               } yield ctx
             else
               F.raiseError(new ValidationException(s"alignment must not be larger than ${t.width}."))
-          case None => F.raiseError(new ValidationException("unknown memory 0."))
+          case None =>
+            F.raiseError(new ValidationException("unknown memory 0."))
         }
       case StoreN(t, n, offset, align) =>
         ctx.mems.lift(0) match {
@@ -172,22 +182,25 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
               } yield ctx
             else
               F.raiseError(new ValidationException(s"alignment must not be larger than $n."))
-          case None => F.raiseError(new ValidationException("unknown memory 0."))
+          case None =>
+            F.raiseError(new ValidationException("unknown memory 0."))
         }
       case MemorySize =>
         ctx.mems.lift(0) match {
           case Some(_) => F.pure(ctx.push(ValType.I32))
-          case None    => F.raiseError(new ValidationException("unknown memory 0."))
+          case None =>
+            F.raiseError(new ValidationException("unknown memory 0."))
         }
       case MemoryGrow =>
         ctx.mems.lift(0) match {
           case Some(_) => for (_ <- ctx.pop(ValType.I32)) yield ctx
-          case None    => F.raiseError(new ValidationException("unknown memory 0."))
+          case None =>
+            F.raiseError(new ValidationException("unknown memory 0."))
         }
       case Nop =>
         F.pure(ctx)
       case Unreachable =>
-        F.pure(ctx.push(Unknown))
+        F.pure(ctx.markUnreachable)
       case Block(rt @ ResultType(Some(tpe)), instr) =>
         for {
           ctxb <- validate(instr, ctx.withLabels(Vector(rt)).withFreshOperands)
@@ -232,9 +245,11 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
         } yield ctx
       case Br(l) =>
         ctx.labels.lift(l) match {
-          case Some(ResultType(Some(tpe))) => for (ctx <- ctx.pop(tpe)) yield ctx.push(Unknown)
-          case Some(ResultType(None))      => F.pure(ctx.push(Unknown))
-          case None                        => F.raiseError(new ValidationException(s"unknown label $l."))
+          case Some(ResultType(Some(tpe))) =>
+            for (ctx <- ctx.pop(tpe)) yield ctx.markUnreachable
+          case Some(ResultType(None)) => F.pure(ctx.markUnreachable)
+          case None =>
+            F.raiseError(new ValidationException(s"unknown label $l."))
         }
       case BrIf(l) =>
         ctx.labels.lift(l) match {
@@ -257,14 +272,14 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
               for {
                 ctx <- ctx.pop(ValType.I32)
                 ctx <- ctx.pop(tpe)
-              } yield ctx.push(Unknown)
+              } yield ctx.markUnreachable
             else
               F.raiseError(new ValidationException(s"all table labels must be of the same return type $tpe."))
           case rt @ Some(ResultType(None)) =>
             if (table.forall(ctx.labels.lift(_) == rt))
               for {
                 ctx <- ctx.pop(ValType.I32)
-              } yield ctx.push(Unknown)
+              } yield ctx.markUnreachable
             else
               F.raiseError(new ValidationException(s"all table labels must be of empty return type."))
           case None =>
@@ -273,9 +288,9 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
       case Return =>
         ctx.ret match {
           case Some(ResultType(Some(tpe))) =>
-            for (ctx <- ctx.pop(tpe)) yield ctx.push(Unknown)
+            for (ctx <- ctx.pop(tpe)) yield ctx.markUnreachable
           case Some(ResultType(None)) =>
-            F.pure(ctx.push(Unknown))
+            F.pure(ctx.markUnreachable)
           case None =>
             F.raiseError(new ValidationException("return must occur in a function context."))
         }
@@ -312,13 +327,21 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
         out.headOption match {
           case ret @ Some(tpe) =>
             for {
-              ctxb <- validate(body, ctx.copy[F](locals = ins ++ locals, labels = Vector(ResultType(ret)), ret = Some(ResultType(ret)), operands = Nil))
-              _ <- ctxb.pop(tpe)
+              ctxb <- validate(body,
+                               ctx.copy[F](locals = ins ++ locals,
+                                           labels = Vector(ResultType(ret)),
+                                           ret = Some(ResultType(ret)),
+                                           operands = Nil))
+              ctxb <- ctxb.pop(tpe)
               _ <- ctxb.emptyOperands
             } yield ()
           case None =>
             for {
-              ctxb <- validate(body, ctx.copy[F](locals = ins ++ locals, labels = Vector(ResultType(None)), ret = Some(ResultType(None)), operands = Nil))
+              ctxb <- validate(body,
+                               ctx.copy[F](locals = ins ++ locals,
+                                           labels = Vector(ResultType(None)),
+                                           ret = Some(ResultType(None)),
+                                           operands = Nil))
               _ <- ctxb.emptyOperands
             } yield ()
         }
@@ -338,8 +361,8 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
     for {
       _ <- validateGlobalType(gtpe)
       _ <- validateConst(init, ctx)
-      ctx1 <- validate(init, ctx)
-      ctx1 <- ctx1.pop(tpe)
+      ctx <- validate(init, ctx)
+      ctx <- ctx.pop(tpe)
       _ <- ctx.emptyOperands
     } yield ()
   }

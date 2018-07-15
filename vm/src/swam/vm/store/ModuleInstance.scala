@@ -18,13 +18,12 @@ package swam
 package vm
 package store
 
-class ModuleInstance(
-    types: Vector[FuncType],
-    funcaddrs: Vector[Address],
-    tableaddrs: Vector[Address],
-    memaddrs: Vector[Address],
-    globaladdrs: Vector[Address],
-    exports: Vector[ExportInstance])(implicit store: Store) {
+class ModuleInstance(types: Vector[FuncType],
+                     funcaddrs: Vector[Address],
+                     tableaddrs: Vector[Address],
+                     memaddrs: Vector[Address],
+                     globaladdrs: Vector[Address],
+                     exports: Vector[ExportInstance])(implicit store: Store) {
 
   object global {
     def apply(idx: Int): Value =

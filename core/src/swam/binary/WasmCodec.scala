@@ -30,11 +30,11 @@ import scala.annotation.tailrec
 object WasmCodec extends InstCodec {
 
   protected val externalKind: Codec[ExternalKind] =
-    mappedEnum(byte, Map[ExternalKind, Byte](
-      ExternalKind.Function -> 0,
-      ExternalKind.Table -> 1,
-      ExternalKind.Memory -> 2,
-      ExternalKind.Global -> 3))
+    mappedEnum(byte,
+               Map[ExternalKind, Byte](ExternalKind.Function -> 0,
+                                       ExternalKind.Table -> 1,
+                                       ExternalKind.Memory -> 2,
+                                       ExternalKind.Global -> 3))
 
   protected val types: Codec[Vector[FuncType]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, funcType))
@@ -42,16 +42,21 @@ object WasmCodec extends InstCodec {
   protected val importEntry: Codec[String ~ String ~ Import] =
     (("module" | variableSizeBytes(varuint32, utf8)) ~
       ("field" | variableSizeBytes(varuint32, utf8))).flatZip {
-        case (module, field) =>
-          discriminated[Import].by(externalKind)
-            .|(ExternalKind.Function) { case Import.Function(_, _, tpe) => tpe }(Import.Function(module, field, _))(varuint32)
-            .|(ExternalKind.Table) { case Import.Table(_, _, tpe) => tpe }(Import.Table(module, field, _))(tableType)
-            .|(ExternalKind.Memory) { case Import.Memory(_, _, tpe) => tpe }(Import.Memory(module, field, _))(memoryType)
-            .|(ExternalKind.Global) { case Import.Global(_, _, tpe) => tpe }(Import.Global(module, field, _))(globalType)
-      }
+      case (module, field) =>
+        discriminated[Import]
+          .by(externalKind)
+          .|(ExternalKind.Function) { case Import.Function(_, _, tpe) => tpe }(Import.Function(module, field, _))(
+            varuint32
+          )
+          .|(ExternalKind.Table) { case Import.Table(_, _, tpe) => tpe }(Import.Table(module, field, _))(tableType)
+          .|(ExternalKind.Memory) { case Import.Memory(_, _, tpe) => tpe }(Import.Memory(module, field, _))(memoryType)
+          .|(ExternalKind.Global) { case Import.Global(_, _, tpe) => tpe }(Import.Global(module, field, _))(globalType)
+    }
 
   protected val imports: Codec[Vector[Import]] =
-    variableSizeBytes(varuint32, vectorOfN(varuint32, importEntry.xmap({ case (_, e) => e }, { case e @ Import(mod, fld) => ((mod, fld), e) })))
+    variableSizeBytes(varuint32, vectorOfN(varuint32, importEntry.xmap({
+      case (_, e)                  => e
+    }, { case e @ Import(mod, fld) => ((mod, fld), e) })))
 
   protected val functions: Codec[Vector[Int]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, varuint32))
@@ -91,10 +96,9 @@ object WasmCodec extends InstCodec {
     (varuint32 :: valType).as[LocalEntry]
 
   protected val funcBody: Codec[FuncBody] =
-    variableSizeBytes(
-      varuint32,
-      (("locals" | vectorOfN(varuint32, localEntry)) ::
-        ("code" | expr)).as[FuncBody])
+    variableSizeBytes(varuint32,
+                      (("locals" | vectorOfN(varuint32, localEntry)) ::
+                        ("code" | expr)).as[FuncBody])
 
   protected val code: Codec[Vector[FuncBody]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, funcBody))
@@ -108,13 +112,13 @@ object WasmCodec extends InstCodec {
     variableSizeBytes(varuint32, vectorOfN(varuint32, exportEntry))
 
   protected val custom: Codec[(String, ByteVector)] =
-    variableSizeBytes(
-      varuint32,
-      (("name" | variableSizeBytes(varuint32, utf8)) ~
-        ("payload" | bytes)))
+    variableSizeBytes(varuint32,
+                      (("name" | variableSizeBytes(varuint32, utf8)) ~
+                        ("payload" | bytes)))
 
   val section =
-    discriminated[Section].by(varuint7)
+    discriminated[Section]
+      .by(varuint7)
       .|(0) { case Section.Custom(name, payload) => (name, payload) }(Section.Custom.tupled)(custom)
       .|(1) { case Section.Types(types) => types }(Section.Types)(types)
       .|(2) { case Section.Imports(imports) => imports }(Section.Imports)(imports)

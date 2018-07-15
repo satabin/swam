@@ -28,7 +28,8 @@ package object syntax {
     Vector.empty[Data],
     Option.empty[FuncIdx],
     Vector.empty[Import],
-    Vector.empty[Export])
+    Vector.empty[Export]
+  )
 
   type Expr = Vector[Inst]
 

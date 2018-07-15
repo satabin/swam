@@ -19,16 +19,17 @@ package vm
 
 import store._
 
-import scala.annotation.{
-  tailrec,
-  switch
-}
+import scala.annotation.{tailrec, switch}
 
 import java.nio.ByteBuffer
 
 /** A call frame containing the local stack of operands.
- */
-class Frame private (parent: Frame, code: ByteBuffer, val locals: Array[Value], val arity: Int, val instance: ModuleInstance) {
+  */
+class Frame private (parent: Frame,
+                     code: ByteBuffer,
+                     val locals: Array[Value],
+                     val arity: Int,
+                     val instance: ModuleInstance) {
   self =>
 
   import Frame._
