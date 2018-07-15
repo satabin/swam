@@ -19,17 +19,16 @@ package syntax
 
 import scodec.bits.ByteVector
 
-case class Module(
-    types: Vector[FuncType],
-    funcs: Vector[Func],
-    tables: Vector[TableType],
-    mems: Vector[MemType],
-    globals: Vector[Global],
-    elem: Vector[Elem],
-    data: Vector[Data],
-    start: Option[FuncIdx],
-    imports: Vector[Import],
-    exports: Vector[Export]) {
+case class Module(types: Vector[FuncType],
+                  funcs: Vector[Func],
+                  tables: Vector[TableType],
+                  mems: Vector[MemType],
+                  globals: Vector[Global],
+                  elem: Vector[Elem],
+                  data: Vector[Data],
+                  start: Option[FuncIdx],
+                  imports: Vector[Import],
+                  exports: Vector[Export]) {
 
   object imported {
 
@@ -53,7 +52,18 @@ case class Module(
 
 }
 
-case class Func(
-    tpe: TypeIdx,
-    locals: Vector[ValType],
-    body: Expr)
+object Module {
+  val empty: Module =
+    Module(Vector.empty,
+           Vector.empty,
+           Vector.empty,
+           Vector.empty,
+           Vector.empty,
+           Vector.empty,
+           Vector.empty,
+           None,
+           Vector.empty,
+           Vector.empty)
+}
+
+case class Func(tpe: TypeIdx, locals: Vector[ValType], body: Expr)

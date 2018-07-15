@@ -1,0 +1,333 @@
+/*
+ * Copyright 2018 Lucas Satabin
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package swam
+package text
+package unresolved
+
+sealed trait Inst {
+  val pos: Int
+}
+
+sealed abstract class Unop(val tpe: ValType) extends Inst
+object Unop {
+  def unapply(unop: Unop): Option[ValType] =
+    Some(unop.tpe)
+}
+
+sealed abstract class Binop(val tpe: ValType) extends Inst
+object Binop {
+  def unapply(binop: Binop): Option[ValType] =
+    Some(binop.tpe)
+}
+
+sealed abstract class Testop(val tpe: ValType) extends Inst
+object Testop {
+  def unapply(testop: Testop): Option[ValType] =
+    Some(testop.tpe)
+}
+
+sealed abstract class Relop(val tpe: ValType) extends Inst
+object Relop {
+  def unapply(relop: Relop): Option[ValType] =
+    Some(relop.tpe)
+}
+
+sealed abstract class Convertop(val from: ValType, val to: ValType) extends Inst
+object Convertop {
+  def unapply(op: Convertop): Option[(ValType, ValType)] =
+    Some(op.from -> op.to)
+}
+
+sealed abstract class IUnop(tpe: ValType) extends Unop(tpe)
+
+sealed abstract class IBinop(tpe: ValType) extends Binop(tpe)
+
+sealed abstract class ITestop(tpe: ValType) extends Testop(tpe)
+
+sealed abstract class IRelop(tpe: ValType) extends Relop(tpe)
+
+sealed abstract class FUnop(tpe: ValType) extends Unop(tpe)
+
+sealed abstract class FBinop(tpe: ValType) extends Binop(tpe)
+
+sealed abstract class FRelop(tpe: ValType) extends Relop(tpe)
+
+sealed trait MemoryInst extends Inst {
+  val offset: Int
+  val align: Int
+}
+
+object MemoryInst {
+  def unapply(inst: MemoryInst): Option[(Int, Int)] =
+    Some(inst.offset -> inst.align)
+}
+
+sealed abstract class LoadInst(val tpe: ValType) extends MemoryInst
+object Load {
+  def unapply(op: LoadInst): Option[(ValType, Int, Int)] =
+    Some((op.tpe, op.offset, op.align))
+}
+
+sealed abstract class LoadNInst(val tpe: ValType, val n: Int) extends MemoryInst
+object LoadN {
+  def unapply(op: LoadNInst): Option[(ValType, Int, Int, Int)] =
+    Some((op.tpe, op.n, op.offset, op.align))
+}
+
+sealed abstract class StoreInst(val tpe: ValType) extends MemoryInst
+object Store {
+  def unapply(op: StoreInst): Option[(ValType, Int, Int)] =
+    Some((op.tpe, op.offset, op.align))
+}
+
+sealed abstract class StoreNInst(val tpe: ValType, val n: Int) extends MemoryInst
+object StoreN {
+  def unapply(op: StoreNInst): Option[(ValType, Int, Int, Int)] =
+    Some((op.tpe, op.n, op.offset, op.align))
+}
+
+object i32 {
+
+  case class Const(v: Int)(val pos: Int) extends Inst
+
+  case class Clz()(val pos: Int) extends IUnop(ValType.I32)
+  case class Ctz()(val pos: Int) extends IUnop(ValType.I32)
+  case class Popcnt()(val pos: Int) extends IUnop(ValType.I32)
+
+  case class Add()(val pos: Int) extends IBinop(ValType.I32)
+  case class Sub()(val pos: Int) extends IBinop(ValType.I32)
+  case class Mul()(val pos: Int) extends IBinop(ValType.I32)
+  case class DivS()(val pos: Int) extends IBinop(ValType.I32)
+  case class DivU()(val pos: Int) extends IBinop(ValType.I32)
+  case class RemS()(val pos: Int) extends IBinop(ValType.I32)
+  case class RemU()(val pos: Int) extends IBinop(ValType.I32)
+  case class And()(val pos: Int) extends IBinop(ValType.I32)
+  case class Or()(val pos: Int) extends IBinop(ValType.I32)
+  case class Xor()(val pos: Int) extends IBinop(ValType.I32)
+  case class Shl()(val pos: Int) extends IBinop(ValType.I32)
+  case class ShrS()(val pos: Int) extends IBinop(ValType.I32)
+  case class ShrU()(val pos: Int) extends IBinop(ValType.I32)
+  case class Rotl()(val pos: Int) extends IBinop(ValType.I32)
+  case class Rotr()(val pos: Int) extends IBinop(ValType.I32)
+
+  case class Eqz()(val pos: Int) extends ITestop(ValType.I32)
+
+  case class Eq()(val pos: Int) extends IRelop(ValType.I32)
+  case class Ne()(val pos: Int) extends IRelop(ValType.I32)
+  case class LtS()(val pos: Int) extends IRelop(ValType.I32)
+  case class LtU()(val pos: Int) extends IRelop(ValType.I32)
+  case class GtS()(val pos: Int) extends IRelop(ValType.I32)
+  case class GtU()(val pos: Int) extends IRelop(ValType.I32)
+  case class LeS()(val pos: Int) extends IRelop(ValType.I32)
+  case class LeU()(val pos: Int) extends IRelop(ValType.I32)
+  case class GeS()(val pos: Int) extends IRelop(ValType.I32)
+  case class GeU()(val pos: Int) extends IRelop(ValType.I32)
+
+  case class WrapI64()(val pos: Int) extends Convertop(ValType.I64, ValType.I32)
+
+  case class TruncSF32()(val pos: Int) extends Convertop(ValType.F32, ValType.I32)
+  case class TruncUF32()(val pos: Int) extends Convertop(ValType.F32, ValType.I32)
+  case class TruncSF64()(val pos: Int) extends Convertop(ValType.F64, ValType.I32)
+  case class TruncUF64()(val pos: Int) extends Convertop(ValType.F64, ValType.I32)
+
+  case class ReinterpretF32()(val pos: Int) extends Convertop(ValType.F32, ValType.I32)
+
+  case class Load(offset: Int, align: Int)(val pos: Int) extends LoadInst(ValType.I32)
+  case class Store(offset: Int, align: Int)(val pos: Int) extends StoreInst(ValType.I32)
+
+  case class Load8S(offset: Int, align: Int)(val pos: Int) extends LoadNInst(ValType.I32, 8)
+  case class Load8U(offset: Int, align: Int)(val pos: Int) extends LoadNInst(ValType.I32, 8)
+  case class Load16S(offset: Int, align: Int)(val pos: Int) extends LoadNInst(ValType.I32, 16)
+  case class Load16U(offset: Int, align: Int)(val pos: Int) extends LoadNInst(ValType.I32, 16)
+
+  case class Store8(offset: Int, align: Int)(val pos: Int) extends StoreNInst(ValType.I32, 8)
+  case class Store16(offset: Int, align: Int)(val pos: Int) extends StoreNInst(ValType.I32, 16)
+
+}
+
+object i64 {
+
+  case class Const(v: Long)(val pos: Int) extends Inst
+
+  case class Clz()(val pos: Int) extends IUnop(ValType.I64)
+  case class Ctz()(val pos: Int) extends IUnop(ValType.I64)
+  case class Popcnt()(val pos: Int) extends IUnop(ValType.I64)
+
+  case class Add()(val pos: Int) extends IBinop(ValType.I64)
+  case class Sub()(val pos: Int) extends IBinop(ValType.I64)
+  case class Mul()(val pos: Int) extends IBinop(ValType.I64)
+  case class DivS()(val pos: Int) extends IBinop(ValType.I64)
+  case class DivU()(val pos: Int) extends IBinop(ValType.I64)
+  case class RemS()(val pos: Int) extends IBinop(ValType.I64)
+  case class RemU()(val pos: Int) extends IBinop(ValType.I64)
+  case class And()(val pos: Int) extends IBinop(ValType.I64)
+  case class Or()(val pos: Int) extends IBinop(ValType.I64)
+  case class Xor()(val pos: Int) extends IBinop(ValType.I64)
+  case class Shl()(val pos: Int) extends IBinop(ValType.I64)
+  case class ShrS()(val pos: Int) extends IBinop(ValType.I64)
+  case class ShrU()(val pos: Int) extends IBinop(ValType.I64)
+  case class Rotl()(val pos: Int) extends IBinop(ValType.I64)
+  case class Rotr()(val pos: Int) extends IBinop(ValType.I64)
+
+  case class Eqz()(val pos: Int) extends ITestop(ValType.I64)
+
+  case class Eq()(val pos: Int) extends IRelop(ValType.I64)
+  case class Ne()(val pos: Int) extends IRelop(ValType.I64)
+  case class LtS()(val pos: Int) extends IRelop(ValType.I64)
+  case class LtU()(val pos: Int) extends IRelop(ValType.I64)
+  case class GtS()(val pos: Int) extends IRelop(ValType.I64)
+  case class GtU()(val pos: Int) extends IRelop(ValType.I64)
+  case class LeS()(val pos: Int) extends IRelop(ValType.I64)
+  case class LeU()(val pos: Int) extends IRelop(ValType.I64)
+  case class GeS()(val pos: Int) extends IRelop(ValType.I64)
+  case class GeU()(val pos: Int) extends IRelop(ValType.I64)
+
+  case class ExtendSI32()(val pos: Int) extends Convertop(ValType.I32, ValType.I64)
+  case class ExtendUI32()(val pos: Int) extends Convertop(ValType.I32, ValType.I64)
+
+  case class TruncSF32()(val pos: Int) extends Convertop(ValType.F32, ValType.I64)
+  case class TruncUF32()(val pos: Int) extends Convertop(ValType.F32, ValType.I64)
+  case class TruncSF64()(val pos: Int) extends Convertop(ValType.F64, ValType.I64)
+  case class TruncUF64()(val pos: Int) extends Convertop(ValType.F64, ValType.I64)
+
+  case class ReinterpretF64()(val pos: Int) extends Convertop(ValType.F64, ValType.I64)
+
+  case class Load(offset: Int, align: Int)(val pos: Int) extends LoadInst(ValType.I64)
+  case class Store(offset: Int, align: Int)(val pos: Int) extends StoreInst(ValType.I64)
+
+  case class Load8S(offset: Int, align: Int)(val pos: Int) extends LoadNInst(ValType.I64, 8)
+  case class Load8U(offset: Int, align: Int)(val pos: Int) extends LoadNInst(ValType.I64, 8)
+  case class Load16S(offset: Int, align: Int)(val pos: Int) extends LoadNInst(ValType.I64, 16)
+  case class Load16U(offset: Int, align: Int)(val pos: Int) extends LoadNInst(ValType.I64, 16)
+  case class Load32S(offset: Int, align: Int)(val pos: Int) extends LoadNInst(ValType.I64, 32)
+  case class Load32U(offset: Int, align: Int)(val pos: Int) extends LoadNInst(ValType.I64, 32)
+
+  case class Store8(offset: Int, align: Int)(val pos: Int) extends StoreNInst(ValType.I64, 8)
+  case class Store16(offset: Int, align: Int)(val pos: Int) extends StoreNInst(ValType.I64, 16)
+  case class Store32(offset: Int, align: Int)(val pos: Int) extends StoreNInst(ValType.I64, 32)
+
+}
+
+object f32 {
+
+  case class Const(v: Float)(val pos: Int) extends Inst
+
+  case class Abs()(val pos: Int) extends FUnop(ValType.F32)
+  case class Neg()(val pos: Int) extends FUnop(ValType.F32)
+  case class Sqrt()(val pos: Int) extends FUnop(ValType.F32)
+  case class Ceil()(val pos: Int) extends FUnop(ValType.F32)
+  case class Floor()(val pos: Int) extends FUnop(ValType.F32)
+  case class Trunc()(val pos: Int) extends FUnop(ValType.F32)
+  case class Nearest()(val pos: Int) extends FUnop(ValType.F32)
+
+  case class Add()(val pos: Int) extends FBinop(ValType.F32)
+  case class Sub()(val pos: Int) extends FBinop(ValType.F32)
+  case class Mul()(val pos: Int) extends FBinop(ValType.F32)
+  case class Div()(val pos: Int) extends FBinop(ValType.F32)
+  case class Min()(val pos: Int) extends FBinop(ValType.F32)
+  case class Max()(val pos: Int) extends FBinop(ValType.F32)
+  case class Copysign()(val pos: Int) extends FBinop(ValType.F32)
+
+  case class Eq()(val pos: Int) extends FRelop(ValType.F32)
+  case class Ne()(val pos: Int) extends FRelop(ValType.F32)
+  case class Lt()(val pos: Int) extends FRelop(ValType.F32)
+  case class Gt()(val pos: Int) extends FRelop(ValType.F32)
+  case class Le()(val pos: Int) extends FRelop(ValType.F32)
+  case class Ge()(val pos: Int) extends FRelop(ValType.F32)
+
+  case class DemoteF64()(val pos: Int) extends Convertop(ValType.F64, ValType.F32)
+
+  case class ConvertSI32()(val pos: Int) extends Convertop(ValType.I32, ValType.F32)
+  case class ConvertUI32()(val pos: Int) extends Convertop(ValType.I32, ValType.F32)
+  case class ConvertSI64()(val pos: Int) extends Convertop(ValType.I64, ValType.F32)
+  case class ConvertUI64()(val pos: Int) extends Convertop(ValType.I64, ValType.F32)
+
+  case class ReinterpretI32()(val pos: Int) extends Convertop(ValType.I32, ValType.F32)
+
+  case class Load(offset: Int, align: Int)(val pos: Int) extends LoadInst(ValType.I32)
+  case class Store(offset: Int, align: Int)(val pos: Int) extends MemoryInst
+
+}
+
+object f64 {
+
+  case class Const(v: Double)(val pos: Int) extends Inst
+
+  case class Abs()(val pos: Int) extends FUnop(ValType.F64)
+  case class Neg()(val pos: Int) extends FUnop(ValType.F64)
+  case class Sqrt()(val pos: Int) extends FUnop(ValType.F64)
+  case class Ceil()(val pos: Int) extends FUnop(ValType.F64)
+  case class Floor()(val pos: Int) extends FUnop(ValType.F64)
+  case class Trunc()(val pos: Int) extends FUnop(ValType.F64)
+  case class Nearest()(val pos: Int) extends FUnop(ValType.F64)
+
+  case class Add()(val pos: Int) extends FBinop(ValType.F64)
+  case class Sub()(val pos: Int) extends FBinop(ValType.F64)
+  case class Mul()(val pos: Int) extends FBinop(ValType.F64)
+  case class Div()(val pos: Int) extends FBinop(ValType.F64)
+  case class Min()(val pos: Int) extends FBinop(ValType.F64)
+  case class Max()(val pos: Int) extends FBinop(ValType.F64)
+  case class Copysign()(val pos: Int) extends FBinop(ValType.F64)
+
+  case class Eq()(val pos: Int) extends FRelop(ValType.F64)
+  case class Ne()(val pos: Int) extends FRelop(ValType.F64)
+  case class Lt()(val pos: Int) extends FRelop(ValType.F64)
+  case class Gt()(val pos: Int) extends FRelop(ValType.F64)
+  case class Le()(val pos: Int) extends FRelop(ValType.F64)
+  case class Ge()(val pos: Int) extends FRelop(ValType.F64)
+
+  case class PromoteF32()(val pos: Int) extends Convertop(ValType.F32, ValType.F64)
+
+  case class ConvertSI32()(val pos: Int) extends Convertop(ValType.I32, ValType.F64)
+  case class ConvertUI32()(val pos: Int) extends Convertop(ValType.I32, ValType.F64)
+  case class ConvertSI64()(val pos: Int) extends Convertop(ValType.I64, ValType.F64)
+  case class ConvertUI64()(val pos: Int) extends Convertop(ValType.I64, ValType.F64)
+
+  case class ReinterpretI64()(val pos: Int) extends Convertop(ValType.I64, ValType.F64)
+
+  case class Load(offset: Int, align: Int)(val pos: Int) extends LoadInst(ValType.I32)
+  case class Store(offset: Int, align: Int)(val pos: Int) extends MemoryInst
+
+}
+
+case class Drop()(val pos: Int) extends Inst
+case class Select()(val pos: Int) extends Inst
+
+case class GetLocal(idx: Index)(val pos: Int) extends Inst
+case class SetLocal(idx: Index)(val pos: Int) extends Inst
+case class TeeLocal(idx: Index)(val pos: Int) extends Inst
+case class GetGlobal(idx: Index)(val pos: Int) extends Inst
+case class SetGlobal(idx: Index)(val pos: Int) extends Inst
+
+case class MemorySize()(val pos: Int) extends Inst
+case class MemoryGrow()(val pos: Int) extends Inst
+
+case class Nop()(val pos: Int) extends Inst
+case class Unreachable()(val pos: Int) extends Inst
+case class Block(label: Id, tpe: ResultType, instr: Seq[Inst], endlabel: Id)(val pos: Int) extends Inst
+case class Loop(label: Id, tpe: ResultType, instr: Seq[Inst], endlabel: Id)(val pos: Int) extends Inst
+case class If(label: Id, tpe: ResultType, thenInstr: Seq[Inst], elselabel: Id, elseInstr: Seq[Inst], endlabel: Id)(
+    val pos: Int)
+    extends Inst
+case class Br(lbl: Index)(val pos: Int) extends Inst
+case class BrIf(lbl: Index)(val pos: Int) extends Inst
+case class BrTable(table: Vector[Index], lbl: Index)(val pos: Int) extends Inst
+case class Return()(val pos: Int) extends Inst
+case class Call(funcidx: Index)(val pos: Int) extends Inst
+case class CallIndirect(typeuse: TypeUse)(val pos: Int) extends Inst
+
+case class TypeUse(tpe: Option[Index], params: Vector[Param], results: Vector[ValType])

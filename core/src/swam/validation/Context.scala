@@ -23,17 +23,17 @@ import cats.implicits._
 import scala.language.higherKinds
 
 /** A validation context, used when performing module and instruction validation.
- */
-case class Context[F[_]](
-    types: Vector[FuncType],
-    funcs: Vector[FuncType],
-    tables: Vector[TableType],
-    mems: Vector[MemType],
-    globals: Vector[GlobalType],
-    locals: Vector[ValType],
-    labels: Vector[ResultType],
-    ret: Option[ResultType],
-    operands: List[OperandType])(implicit val F: MonadError[F, Throwable]) {
+  */
+case class Context[F[_]](types: Vector[FuncType],
+                         funcs: Vector[FuncType],
+                         tables: Vector[TableType],
+                         mems: Vector[MemType],
+                         globals: Vector[GlobalType],
+                         locals: Vector[ValType],
+                         labels: Vector[ResultType],
+                         ret: Option[ResultType],
+                         operands: List[OperandType],
+                         unreachable: Boolean)(implicit val F: MonadError[F, Throwable]) {
 
   def withTypes(tps: Vector[FuncType]): Context[F] =
     copy(types = tps ++ types)
@@ -97,9 +97,12 @@ case class Context[F[_]](
 
   def pop: F[(OperandType, Context[F])] =
     operands match {
-      case Unknown :: _ => F.pure(Unknown -> this)
-      case tpe :: rest  => F.pure(tpe -> copy(operands = rest))
-      case Nil          => F.raiseError(new ValidationException("cannot pop from empty operand stack."))
+      case tpe :: rest => F.pure(tpe -> copy(operands = rest))
+      case Nil =>
+        if (unreachable)
+          F.pure(Unknown -> this)
+        else
+          F.raiseError(new ValidationException("cannot pop from empty operand stack."))
     }
 
   private val ok = F.pure(())
@@ -111,7 +114,10 @@ case class Context[F[_]](
       F.raiseError(new ValidationException("expected empty operand stack."))
 
   def withFreshOperands: Context[F] =
-    copy(operands = Nil)
+    copy(operands = Nil, unreachable = false)
+
+  def markUnreachable: Context[F] =
+    copy(operands = Nil, unreachable = true)
 
 }
 

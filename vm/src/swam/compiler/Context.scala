@@ -26,9 +26,9 @@ class Context private (parent: Option[Context]) {
     new Context(Some(this))
 
   /** Closes this context and returns its parent.
-   *  The root context cannot be closed and is returned whenever
-   *  it is tried to close it.
-   */
+    *  The root context cannot be closed and is returned whenever
+    *  it is tried to close it.
+    */
   def close(): Context =
     parent match {
       case Some(ctx) => ctx

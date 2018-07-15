@@ -20,7 +20,7 @@ package compiler
 import syntax._
 
 /** Validates and compiles a module.
- */
+  */
 class Compiler(module: Module) {
 
   def validate(): Unit =

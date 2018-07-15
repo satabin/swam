@@ -19,12 +19,12 @@ package vm
 package store
 
 /** A memory backed by arrays.
- */
-class SimpleStore(
-    funcs: Array[FuncInstance],
-    tables: Array[TableInstance],
-    mems: Array[MemoryInstance],
-    globals: Array[GlobalInstance]) extends Store {
+  */
+class SimpleStore(funcs: Array[FuncInstance],
+                  tables: Array[TableInstance],
+                  mems: Array[MemoryInstance],
+                  globals: Array[GlobalInstance])
+    extends Store {
 
   def globalValue(addr: Address): Value =
     globals(addr).value

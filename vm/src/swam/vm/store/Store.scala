@@ -18,15 +18,15 @@ package swam.vm
 package store
 
 /** An abstract representation of the VM store.
- */
+  */
 trait Store {
 
   /** Returns the global value at the given address. */
   def globalValue(addr: Address): Value
 
   /** Sets the value to the global. If it is not mutable,
-   *  an exception is thrown.
-   */
+    *  an exception is thrown.
+    */
   def updateGlobalValue(addr: Address, v: Value): Unit
 
   /** Returns the memory instance at the given address. */

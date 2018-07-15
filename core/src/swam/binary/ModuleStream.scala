@@ -27,11 +27,11 @@ import scodec.codecs._
 import scodec.codecs.literals._
 
 /** The module streams expose way to encode and decode WebAssembly modules in
- *  binary format.
- *  Section are streamed in the order they arrive, which may not be correct when
- *  a module is parsed.
- *  It is up to the client code to check section constraints.
- */
+  *  binary format.
+  *  Section are streamed in the order they arrive, which may not be correct when
+  *  a module is parsed.
+  *  It is up to the client code to check section constraints.
+  */
 object ModuleStream {
 
   private val header: Codec[Unit] =
@@ -39,9 +39,9 @@ object ModuleStream {
       ("version" | hex"01000000")
 
   val sections: StreamCodec[Section] =
-    StreamCodec.instance(
-      encode.once(WasmCodec.section),
-      decode.once(WasmCodec.section)).many
+    StreamCodec
+      .instance(encode.once(WasmCodec.section), decode.once(WasmCodec.section))
+      .many
 
   val decoder: StreamDecoder[Section] =
     for {
