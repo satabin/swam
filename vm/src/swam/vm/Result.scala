@@ -18,4 +18,4 @@ package swam.vm
 
 sealed trait Result
 case class Values(values: Vector[Value]) extends Result
-case object Trap extends Result
+case class Trap(msg: String) extends Result
