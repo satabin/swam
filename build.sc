@@ -45,6 +45,15 @@ object core extends SwamModule {
 
 }
 
+object cli extends SwamModule {
+
+  def moduleDeps = Seq(core)
+
+  def ivyDeps = Agg(
+    ivy"com.monovore::decline:0.4.0-RC2")
+
+}
+
 object runtime extends SwamModule
 
 object vm extends SwamModule {

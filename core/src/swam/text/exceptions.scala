@@ -19,6 +19,11 @@ package text
 
 abstract class TextCompilerException(msg: String, val positions: Seq[Int]) extends SwamException(msg)
 
+object TextCompilerException {
+  def unapply(e: TextCompilerException): Option[(String, Seq[Int])] =
+    Some((e.getMessage, e.positions))
+}
+
 class ParserException(msg: String, position: Int) extends TextCompilerException(msg, Seq(position))
 
 class ResolutionException(msg: String, positions: Seq[Int]) extends TextCompilerException(msg, positions)
