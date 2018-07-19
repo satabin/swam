@@ -22,70 +22,17 @@ import syntax._
 import cats._
 import cats.implicits._
 
+import fs2._
+
 import scala.language.higherKinds
 
+/** A validator makes it possible to validate sections in a stream. */
 abstract class Validator[F[_]](implicit val F: MonadError[F, Throwable]) {
 
-  type Ctx = Context[F]
-
-  protected val Ok = F.unit
-
-  def validateAll[T](elements: Vector[T], validation: T => F[Unit]): F[Unit] =
-    F.tailRecM(0) { idx =>
-      if (idx < elements.size)
-        validation(elements(idx)).map(_ => Left(idx + 1))
-      else
-        F.pure(Right(()))
-    }
-
-  def validateAll[T](elements: Vector[T], ctx: Ctx, validation: (T, Ctx) => F[Unit]): F[Unit] =
-    F.tailRecM(0) { idx =>
-      if (idx < elements.size)
-        validation(elements(idx), ctx).map(_ => Left(idx + 1))
-      else
-        F.pure(Right(()))
-    }
-
-  def validateValType(tpe: ValType): F[Unit]
-
-  def validateResultType(tpe: ResultType): F[Unit]
-
-  def validateLimits(limits: Limits): F[Unit]
-
-  def validateMemType(tpe: MemType): F[Unit]
-
-  def validateFuncType(tpe: FuncType): F[Unit]
-
-  def validateTableType(tpe: TableType): F[Unit]
-
-  def validateElemType(tpe: ElemType): F[Unit]
-
-  def validateGlobalType(tpe: GlobalType): F[Unit]
-
-  def validateExternType(tpe: ExternType): F[Unit]
-
-  def validate(inst: Inst, ctx: Ctx): F[Ctx]
-
-  def validateFunction(tpe: Func, ctx: Ctx): F[Unit]
-
-  def validateTable(tpe: TableType, ctx: Ctx): F[Unit]
-
-  def validateMem(tpe: MemType, ctx: Ctx): F[Unit]
-
-  def validateGlobal(global: Global, ctx: Ctx): F[Unit]
-
-  def validateElem(elem: Elem, ctx: Ctx): F[Unit]
-
-  def validateData(data: Data, ctx: Ctx): F[Unit]
-
-  def validateStart(start: FuncIdx, ctx: Ctx): F[Unit]
-
-  def validateImport(imp: Import, ctx: Ctx): F[Unit]
-
-  def validateExport(exp: Export, ctx: Ctx): F[Unit]
-
-  def validateConst(intr: Vector[Inst], ctx: Ctx): F[Unit]
-
-  def validateConst(intr: Inst, ctx: Ctx): F[Unit]
+  /** Performs validation of the section stream on the fly.
+   *  The sections are returned unchanged if validation succeeds, otherwise
+   *  the stream fails.
+   */
+  def validate(stream: Stream[F, Section]): Stream[F, Section]
 
 }
