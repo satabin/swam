@@ -17,13 +17,13 @@
 package swam
 package syntax
 
-import scodec.bits.ByteVector
+import scodec.bits.BitVector
 
 case class Global(tpe: GlobalType, init: Expr)
 
 case class Elem(table: TableIdx, offset: Expr, init: Vector[FuncIdx])
 
-case class Data(data: MemIdx, offset: Expr, init: ByteVector)
+case class Data(data: MemIdx, offset: Expr, init: BitVector)
 
 sealed trait ExternalKind
 object ExternalKind {
@@ -46,7 +46,7 @@ object Section {
   case class Elements(elements: Vector[Elem]) extends Section(9)
   case class Code(bodies: Vector[FuncBody]) extends Section(10)
   case class Datas(data: Vector[Data]) extends Section(11)
-  case class Custom(name: String, payload: ByteVector) extends Section(0)
+  case class Custom(name: String, payload: BitVector) extends Section(0)
 }
 
 sealed trait Import {

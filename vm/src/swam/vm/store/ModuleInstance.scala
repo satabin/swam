@@ -18,6 +18,8 @@ package swam
 package vm
 package store
 
+import runtime._
+
 class ModuleInstance(types: Vector[FuncType],
                      funcaddrs: Vector[Address],
                      tableaddrs: Vector[Address],

@@ -18,6 +18,7 @@ package swam
 package vm
 
 import store._
+import runtime._
 
 import scala.annotation.{tailrec, switch}
 
@@ -26,10 +27,10 @@ import java.nio.ByteBuffer
 /** A call frame containing the local stack of operands.
   */
 sealed class Frame private (parent: Frame,
-                     code: ByteBuffer,
-                     val locals: Array[Value],
-                     val arity: Int,
-                     val instance: ModuleInstance) {
+                            code: ByteBuffer,
+                            val locals: Array[Value],
+                            val arity: Int,
+                            val instance: ModuleInstance) {
   self =>
 
   import Frame._

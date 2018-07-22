@@ -18,6 +18,8 @@ package swam
 package vm
 package store
 
+import runtime._
+
 /** A memory backed by arrays.
   */
 class SimpleStore(funcs: Array[FuncInstance],

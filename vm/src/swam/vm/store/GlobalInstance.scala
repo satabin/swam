@@ -18,4 +18,6 @@ package swam
 package vm
 package store
 
+import runtime._
+
 class GlobalInstance(val mutable: Boolean, var value: Value)

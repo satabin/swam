@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package swam.vm
+package swam
+package vm
 package store
+
+import runtime._
 
 /** An abstract representation of the VM store.
   */

@@ -84,7 +84,7 @@ object WasmCodec extends InstCodec {
   protected val dataSegment: Codec[Data] =
     (("index" | varuint32) ::
       ("offset" | expr) ::
-      ("data" | variableSizeBytes(varuint32, bytes))).as[Data]
+      ("data" | variableSizeBytes(varuint32, scodec.codecs.bits))).as[Data]
 
   protected val data: Codec[Vector[Data]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, dataSegment))
@@ -111,10 +111,10 @@ object WasmCodec extends InstCodec {
   protected val exports: Codec[Vector[Export]] =
     variableSizeBytes(varuint32, vectorOfN(varuint32, exportEntry))
 
-  protected val custom: Codec[(String, ByteVector)] =
+  protected val custom: Codec[(String, BitVector)] =
     variableSizeBytes(varuint32,
                       (("name" | variableSizeBytes(varuint32, utf8)) ~
-                        ("payload" | bytes)))
+                        ("payload" | scodec.codecs.bits)))
 
   val section =
     discriminated[Section]

@@ -45,10 +45,8 @@ object core extends SwamModule {
 
 }
 
-object runtime extends SwamModule
-
 object vm extends SwamModule {
 
-  def moduleDeps = Seq(runtime, core)
+  def moduleDeps = Seq(core)
 
 }

@@ -401,6 +401,8 @@ trait InstCodec extends TypeCodec {
               Attempt.successful(DecodeResult(f32.ReinterpretI32, remainder))
             case OpCode.F64ReinterpretI64 =>
               Attempt.successful(DecodeResult(f64.ReinterpretI64, remainder))
+            case _ =>
+              Attempt.Failure(Err(f"Unknown opcode 0x$opcode%02x"))
           }
       }
 
@@ -732,6 +734,6 @@ trait InstCodec extends TypeCodec {
     vectorLookahead(lookahead(opcode.map(_ => ()).decodeOnly), instruction)
 
   val expr: Codec[Expr] =
-    lazily(instructions <~ end)
+    instructions <~ end
 
 }

@@ -579,7 +579,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                   (ctx,
                    fields,
                    resolved.copy(data = resolved.data :+ r
-                     .Data(midx, offset, ByteVector(data.getBytes)))))
+                     .Data(midx, offset, BitVector(data.getBytes)))))
           }
       }
     }

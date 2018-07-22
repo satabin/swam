@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package swam.vm
+package swam
+package vm
+
+import runtime._
 
 sealed trait Result
 case class Values(values: Vector[Value]) extends Result
