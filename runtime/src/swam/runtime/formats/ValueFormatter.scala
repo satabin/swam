@@ -15,19 +15,9 @@
  */
 
 package swam
+package runtime
+package formats
 
-package object vm {
-
-  type Label = Long
-
-  implicit class LabelOps(val l: Label) extends AnyVal {
-    def arity: Int = ((l >> 32) & 0xffffffff).toInt
-    def cont: Int = (l & 0xffffffff).toInt
-  }
-
-  object Label {
-    def apply(arity: Int, cont: Int): Label =
-      (arity << 32l) | cont
-  }
-
-}
+/** A formatter is both a [[ValueReader]] and a [[ValueWriter]].
+  */
+trait ValueFormatter[T] extends ValueReader[T] with ValueWriter[T]

@@ -15,7 +15,8 @@
  */
 
 package swam
-package vm
+package internals
+package interpreter
 
 import store._
 import runtime._
@@ -24,50 +25,52 @@ import scala.annotation.{tailrec, switch}
 
 import java.nio.ByteBuffer
 
+import scala.language.higherKinds
+
 /** A call frame containing the local stack of operands.
   */
-sealed class Frame private (parent: Frame,
-                            code: ByteBuffer,
-                            val locals: Array[Value],
-                            val arity: Int,
-                            val instance: ModuleInstance) {
+sealed class Frame[F[_]] private (parent: Frame[F],
+                                  code: ByteBuffer,
+                                  val locals: Array[Value],
+                                  val arity: Int,
+                                  val instance: Instance[F]) {
   self =>
 
   import Frame._
 
-  private[vm] var pc = 0
+  private[interpreter] var pc = 0
 
-  private[vm] def readByte(): Byte = {
+  private[interpreter] def readByte(): Byte = {
     val b = code.get(pc)
     pc += 1
     b
   }
 
-  private[vm] def readInt(): Int = {
+  private[interpreter] def readInt(): Int = {
     val i = code.getInt(pc)
     pc += 4
     i
   }
 
-  private[vm] def readLong(): Long = {
+  private[interpreter] def readLong(): Long = {
     val l = code.getLong(pc)
     pc += 8
     l
   }
 
-  private[vm] def readFloat(): Float = {
+  private[interpreter] def readFloat(): Float = {
     val f = code.getFloat(pc)
     pc += 8
     f
   }
 
-  private[vm] def readDouble(): Double = {
+  private[interpreter] def readDouble(): Double = {
     val d = code.getDouble(pc)
     pc += 8
     d
   }
 
-  private[vm] object stack {
+  private[interpreter] object stack {
 
     private val stack = Array.ofDim[Byte](256)
     private val istack = Array.ofDim[Int](256)
@@ -220,12 +223,15 @@ sealed class Frame private (parent: Frame,
     def getLabel(idx: Int): Label =
       lblstack(lbltop - 1 - idx)
 
-    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Value]): Frame =
-      new Frame(self, code, locals, arity, instance)
+    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Value]): Frame[F] =
+      new Frame[F](self, code, locals, arity, instance)
 
-    def popFrame(): Frame =
+    def popFrame(): Frame[F] =
       parent
   }
+
+  private[interpreter] def isToplevel: Boolean =
+    parent == null
 
 }
 
@@ -237,7 +243,7 @@ object Frame {
   private final val FLOAT64 = 3
   private final val LABEL = 4
 
-  def makeToplevel(): Frame =
-    new Frame(null, null, null, 0, null)
+  def makeToplevel[F[_]](instance: Instance[F]): Frame[F] =
+    new Frame[F](null, null, null, 0, instance)
 
 }

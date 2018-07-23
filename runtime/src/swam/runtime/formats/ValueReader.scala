@@ -15,10 +15,20 @@
  */
 
 package swam
-package vm
+package runtime
+package formats
 
-import runtime._
+import cats._
 
-sealed trait Result
-case class Values(values: Vector[Value]) extends Result
-case class Trap(ctx: Frame, msg: String) extends Result
+import scala.language.higherKinds
+
+/** A reader is used to transform a web assembly value into a
+  *  scala object.
+  */
+trait ValueReader[T] {
+
+  def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[T]
+
+  val swamType: ValType
+
+}

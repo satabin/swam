@@ -19,9 +19,21 @@ package runtime
 
 import scodec.bits._
 
+import scala.language.higherKinds
+
 /** The runtime representation of a loaded module.
   */
-case class Module(exports: Vector[Export], imports: Vector[Import], customs: Vector[Custom])
+class Module[F[_]](val types: Vector[FuncType],
+                   val exports: Vector[Export],
+                   val imports: Vector[Import],
+                   val customs: Vector[Custom],
+                   engine: SwamEngine[F],
+                   private[swam] val address: Int) {
+
+  def newInstance(imports: Imports[F] = Map.empty): F[Instance[F]] =
+    engine.instantiate(this, imports)
+
+}
 
 sealed trait Import {
   val moduleName: String

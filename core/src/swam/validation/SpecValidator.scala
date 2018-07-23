@@ -80,9 +80,6 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
   def validateGlobalType(tpe: GlobalType): F[Unit] =
     Ok
 
-  def validateExternType(tpe: ExternType): F[Unit] =
-    Ok
-
   def validate(inst: Vector[Inst], ctx: Ctx): F[Ctx] = {
     F.tailRecM((0, ctx)) {
       case (idx, ctx) =>

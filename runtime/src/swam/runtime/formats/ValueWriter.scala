@@ -15,24 +15,16 @@
  */
 
 package swam
-package compiler
+package runtime
+package formats
 
-class Context private (parent: Option[Context]) {
+/** A writer is used to transform a scala value into a
+  *  web assembly value.
+  */
+trait ValueWriter[T] {
 
-  def this() = this(None)
+  def write(v: T): Value
 
-  /** Opens a new child context. */
-  def open(): Context =
-    new Context(Some(this))
-
-  /** Closes this context and returns its parent.
-    *  The root context cannot be closed and is returned whenever
-    *  it is tried to close it.
-    */
-  def close(): Context =
-    parent match {
-      case Some(ctx) => ctx
-      case None      => this
-    }
+  val swamType: ValType
 
 }

@@ -15,13 +15,13 @@
  */
 
 package swam
-package runtime
+package internals
+package interpreter
 
-/** A writer is used to transform a scala value into a
-  *  web assembly value.
-  */
-trait ValueWriter[T] {
+import runtime._
 
-  def write(v: T): Value
+import scala.language.higherKinds
 
-}
+sealed trait Result
+case class Values(values: Vector[Value]) extends Result
+case class Trap[F[_]](ctx: Frame[F], msg: String) extends Result

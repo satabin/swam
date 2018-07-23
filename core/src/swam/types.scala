@@ -56,14 +56,3 @@ object Mut {
   case object Const extends Mut
   case object Var extends Mut
 }
-
-sealed trait ExternType extends Type
-
-object ExternType {
-
-  case class Func(functype: FuncType) extends ExternType
-  case class Table(tabletype: TableType) extends ExternType
-  case class Mem(memtype: MemType) extends ExternType
-  case class Global(globaltype: GlobalType) extends ExternType
-
-}

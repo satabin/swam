@@ -15,8 +15,14 @@
  */
 
 package swam
-package runtime
+package internals
 
-/** A formatter is both a [[ValueReader]] and a [[ValueWriter]].
-  */
-trait ValueFormatter[T] extends ValueReader[T] with ValueWriter[T]
+import java.nio.ByteBuffer
+
+package object store {
+
+  type Address = Int
+
+  val NULL = -1
+
+}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package swam.vm.store
+package swam.internals.store
 
 class TableInstance(max: Int) {
   private val elems = Array.ofDim[Address](0)

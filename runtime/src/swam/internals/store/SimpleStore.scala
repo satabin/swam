@@ -15,7 +15,7 @@
  */
 
 package swam
-package vm
+package internals
 package store
 
 import runtime._

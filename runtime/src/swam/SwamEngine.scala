@@ -16,11 +16,13 @@
 
 package swam
 
-import vm._
 import binary._
 import runtime._
-import compiler._
 import validation._
+import internals.store._
+import internals.compiler._
+import internals.instantiation._
+import internals.interpreter._
 
 import cats._
 import cats.implicits._
@@ -39,9 +41,15 @@ import java.nio.file.Path
   */
 class SwamEngine[F[_]](implicit F: Effect[F]) {
 
+  private val store: Store = null
+
   private val validator = new SpecValidator[F]
 
-  private val compiler = new Compiler[F]
+  private val compiler = new Compiler[F](this)
+
+  private val interpreter = new Interpreter[F](store)
+
+  private val instantiator = new Instantiator[F](interpreter)
 
   private def readPath(path: Path): BitVector =
     BitVector.fromChannel(new java.io.FileInputStream(path.toFile).getChannel)
@@ -59,14 +67,24 @@ class SwamEngine[F[_]](implicit F: Effect[F]) {
       .compile
       .drain
 
-  def compile(path: Path): F[Module] =
+  def compile(path: Path): F[Module[F]] =
     compile(readPath(path))
 
-  def compile(bytes: BitVector): F[Module] =
+  def compile(bytes: BitVector): F[Module[F]] =
     readStream(bytes)
       .through(validator.validate)
       .through(compiler.compile)
       .compile
-      .last.map(_.get)
+      .last
+      .map(_.get)
+
+  def instantiate(path: Path, imports: Imports[F]): F[Instance[F]] =
+    instantiate(readPath(path), imports)
+
+  def instantiate(bytes: BitVector, imports: Imports[F]): F[Instance[F]] =
+    compile(bytes).flatMap(instantiate(_, imports))
+
+  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] =
+    instantiator.instantiate(module, imports)
 
 }

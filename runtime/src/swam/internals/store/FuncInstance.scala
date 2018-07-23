@@ -15,7 +15,8 @@
  */
 
 package swam
-package vm.store
+package internals
+package store
 
 import java.nio.ByteBuffer
 

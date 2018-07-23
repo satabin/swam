@@ -17,6 +17,6 @@
 package swam
 package runtime
 
-abstract class RuntimeException(msg: String, inner: Throwable = null) extends SwamException(msg, inner)
+class RuntimeException(msg: String, inner: Throwable = null) extends SwamException(msg, inner)
 
 class ConversionException(msg: String) extends RuntimeException(msg)

@@ -17,12 +17,12 @@
 package swam
 package runtime
 
-sealed trait Value
+sealed abstract class Value(val tpe: ValType)
 object Value {
-  case class Int32(i: Int) extends Value
-  case class Int64(l: Long) extends Value
-  case class Float32(f: Float) extends Value
-  case class Float64(d: Double) extends Value
+  case class Int32(i: Int) extends Value(ValType.I32)
+  case class Int64(l: Long) extends Value(ValType.I64)
+  case class Float32(f: Float) extends Value(ValType.F32)
+  case class Float64(d: Double) extends Value(ValType.F64)
 
   def zero(tpe: ValType): Value = tpe match {
     case ValType.I32 => Int32(0)
@@ -30,12 +30,4 @@ object Value {
     case ValType.F32 => Float32(0.0f)
     case ValType.F64 => Float64(0.0d)
   }
-
-  def tpe(v: Value): ValType =
-    v match {
-      case Int32(_) => ValType.I32
-      case Int64(_) => ValType.I64
-      case Float32(_) => ValType.F32
-      case Float64(_) => ValType.F64
-    }
 }

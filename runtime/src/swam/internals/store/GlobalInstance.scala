@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-package swam.vm.store
+package swam
+package internals
+package store
 
-abstract class MemoryInstance {
-  def size: Int
-  def grow(by: Int): Boolean
-  def readByte(idx: Int): Byte
-  def readShort(idx: Int): Short
-  def readInt(idx: Int): Int
-  def readLong(idx: Int): Long
-  def readFloat(idx: Int): Float
-  def readDouble(idx: Int): Double
-  def writeByte(idx: Int, v: Byte): Unit
-  def writeShort(idx: Int, v: Short): Unit
-  def writeInt(idx: Int, v: Int): Unit
-  def writeLong(idx: Int, v: Long): Unit
-  def writeFloat(idx: Int, v: Float): Unit
-  def writeDouble(idx: Int, v: Double): Unit
-}
+import runtime._
+
+class GlobalInstance(val mutable: Boolean, var value: Value)

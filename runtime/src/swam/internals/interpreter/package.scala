@@ -15,7 +15,20 @@
  */
 
 package swam
-package vm
-package store
+package internals
 
-class ExportInstance
+package object interpreter {
+
+  type Label = Long
+
+  implicit class LabelOps(val l: Label) extends AnyVal {
+    def arity: Int = ((l >> 32) & 0xffffffff).toInt
+    def cont: Int = (l & 0xffffffff).toInt
+  }
+
+  object Label {
+    def apply(arity: Int, cont: Int): Label =
+      (arity << 32l) | cont
+  }
+
+}

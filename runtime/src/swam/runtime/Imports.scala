@@ -17,15 +17,31 @@
 package swam
 package runtime
 
-import cats._
+import formats._
+import functions._
 
 import scala.language.higherKinds
 
-/** A reader is used to transform a web assembly value into a
-  *  scala object.
-  */
-trait ValueReader[T] {
+sealed trait ImportedModule[F[_]]
 
-  def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[T]
+case class SwamModule[F[_]](module: Module[F]) extends ImportedModule[F]
+
+case class ScalaModule[F[_]](val fields: Map[String, ScalaImport[F]]) extends ImportedModule[F]
+
+sealed trait ScalaImport[F[_]]
+
+class ScalaFunction[F[_]](val f: Importable[F]) extends ScalaImport[F]
+
+class ScalaVar[T, F[_]](private var _value: T)(implicit format: ValueFormatter[T]) extends ScalaImport[F] {
+
+  def tpe: ValType = format.swamType
+
+  def apply(): T = _value
+
+  def value: T = _value
+
+  def update(v: T): Unit = _value = v
+
+  def :=(v: T): Unit = _value = v
 
 }

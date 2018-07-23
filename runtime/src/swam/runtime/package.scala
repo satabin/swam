@@ -16,7 +16,16 @@
 
 package swam
 
+import scala.language.higherKinds
+
 package object runtime {
+
+/** Represents the imported elements of an instance.
+  *  These can either be other module [[Instance]]s or Scala
+  *  functions and variables made available to interact between
+  *  both worlds.
+  */
+  type Imports[F[_]] = Map[String, ImportedModule[F]]
 
   def truncate(f: Float): Float =
     if (f < 0)
