@@ -22,16 +22,30 @@ import scodec.bits._
 import scala.language.higherKinds
 
 /** The runtime representation of a loaded module.
+  *
   */
-class Module[F[_]](val types: Vector[FuncType],
-                   val exports: Vector[Export],
+class Module[F[_]](val exports: Vector[Export],
                    val imports: Vector[Import],
                    val customs: Vector[Custom],
-                   engine: SwamEngine[F],
-                   private[swam] val address: Int) {
+                   private[runtime] val types: Vector[FuncType],
+                   private[runtime] val engine: SwamEngine[F],
+                   private[runtime] val address: Int,
+                   private[runtime] val funcOffset: Int) {
 
   def newInstance(imports: Imports[F] = Map.empty): F[Instance[F]] =
     engine.instantiate(this, imports)
+
+  override def finalize(): Unit = {
+    val mod = engine.store.static.readMemory(address)
+    // deallocate allocated function code
+    val nbf = mod.getInt(funcOffset)
+    for (idx <- 0 until nbf) {
+      val faddr = mod.getInt(funcOffset + 4 + 4 * idx)
+      engine.store.static.free(faddr)
+    }
+    // deallocate module memory
+    engine.store.static.free(address)
+  }
 
 }
 

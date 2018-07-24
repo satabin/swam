@@ -66,7 +66,8 @@ class Compiler[F[_]](engine: SwamEngine[F]) {
           // TODO perform actual compilation
           ctx
       }
-      .map(ctx => new runtime.Module(ctx.types, ctx.exports.result, ctx.imports.result, ctx.customs.result, engine, -1))
+      .map(ctx =>
+        new runtime.Module(ctx.exports.result, ctx.imports.result, ctx.customs.result, ctx.types, engine, -1, -1))
 
   private def toRuntime(types: Vector[FuncType])(i: Import): runtime.Import =
     i match {

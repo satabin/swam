@@ -41,7 +41,7 @@ import java.nio.file.Path
   */
 class SwamEngine[F[_]](implicit F: Effect[F]) {
 
-  private val store: Store = null
+  private[runtime] val store = new Store[F]
 
   private val validator = new SpecValidator[F]
 

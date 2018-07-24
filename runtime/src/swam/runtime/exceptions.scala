@@ -20,3 +20,5 @@ package runtime
 class RuntimeException(msg: String, inner: Throwable = null) extends SwamException(msg, inner)
 
 class ConversionException(msg: String) extends RuntimeException(msg)
+
+class MemoryException(msg: String) extends RuntimeException(msg)
