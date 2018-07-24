@@ -15,9 +15,9 @@
  */
 
 package swam
+package runtime
 
 import binary._
-import runtime._
 import validation._
 import internals.store._
 import internals.compiler._

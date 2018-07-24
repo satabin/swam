@@ -15,11 +15,11 @@
  */
 
 package swam
+package runtime
 package internals
 package interpreter
 
 import store._
-import runtime._
 
 import scala.annotation.{tailrec, switch}
 

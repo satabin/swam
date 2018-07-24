@@ -15,6 +15,7 @@
  */
 
 package swam
+package runtime
 package internals
 package compiler
 

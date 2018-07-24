@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-package swam.internals.store
+package swam
+package runtime
+package internals
+package store
 
-class TableInstance(max: Int) {
-  private val elems = Array.ofDim[Address](0)
-
-  def size = elems.size
-
-  def apply(idx: Int): Address =
-    elems(idx)
-
-}
+class GlobalInstance(val mutable: Boolean, var value: Value)

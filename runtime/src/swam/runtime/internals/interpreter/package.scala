@@ -15,18 +15,21 @@
  */
 
 package swam
+package runtime
 package internals
-package instantiation
 
-import interpreter._
+package object interpreter {
 
-import runtime._
+  type Label = Long
 
-import scala.language.higherKinds
+  implicit class LabelOps(val l: Label) extends AnyVal {
+    def arity: Int = ((l >> 32) & 0xffffffff).toInt
+    def cont: Int = (l & 0xffffffff).toInt
+  }
 
-class Instantiator[F[_]](interpreter: Interpreter[F]) {
-
-  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] =
-    ???
+  object Label {
+    def apply(arity: Int, cont: Int): Label =
+      (arity << 32l) | cont
+  }
 
 }

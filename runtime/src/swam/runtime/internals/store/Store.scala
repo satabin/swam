@@ -15,9 +15,31 @@
  */
 
 package swam
+package runtime
 package internals
 package store
 
 import runtime._
 
-class GlobalInstance(val mutable: Boolean, var value: Value)
+/** An abstract representation of the VM store.
+  */
+trait Store {
+
+  /** Returns the global value at the given address. */
+  def globalValue(addr: Address): Value
+
+  /** Sets the value to the global. If it is not mutable,
+    *  an exception is thrown.
+    */
+  def updateGlobalValue(addr: Address, v: Value): Unit
+
+  /** Returns the memory instance at the given address. */
+  def memory(addr: Address): MemoryInstance
+
+  /** Returns the function instance at the given address. */
+  def function(addr: Address): FuncInstance
+
+  /** Returns the table instance at the given address. */
+  def table(addr: Address): TableInstance
+
+}

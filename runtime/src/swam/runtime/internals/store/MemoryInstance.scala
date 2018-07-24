@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-package swam
-package internals
+package swam.runtime.internals.store
 
-import java.nio.ByteBuffer
-
-package object store {
-
-  type Address = Int
-
-  val NULL = -1
-
+abstract class MemoryInstance {
+  def size: Int
+  def grow(by: Int): Boolean
+  def readByte(idx: Int): Byte
+  def readShort(idx: Int): Short
+  def readInt(idx: Int): Int
+  def readLong(idx: Int): Long
+  def readFloat(idx: Int): Float
+  def readDouble(idx: Int): Double
+  def writeByte(idx: Int, v: Byte): Unit
+  def writeShort(idx: Int, v: Short): Unit
+  def writeInt(idx: Int, v: Int): Unit
+  def writeLong(idx: Int, v: Long): Unit
+  def writeFloat(idx: Int, v: Float): Unit
+  def writeDouble(idx: Int, v: Double): Unit
 }

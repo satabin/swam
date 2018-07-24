@@ -15,13 +15,19 @@
  */
 
 package swam
+package runtime
 package internals
-package interpreter
+package instantiation
+
+import interpreter._
 
 import runtime._
 
 import scala.language.higherKinds
 
-sealed trait Result
-case class Values(values: Vector[Value]) extends Result
-case class Trap[F[_]](ctx: Frame[F], msg: String) extends Result
+class Instantiator[F[_]](interpreter: Interpreter[F]) {
+
+  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] =
+    ???
+
+}
