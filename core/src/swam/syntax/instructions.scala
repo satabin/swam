@@ -97,6 +97,15 @@ object StoreN {
     Some((op.tpe, op.n, op.offset, op.align))
 }
 
+sealed abstract class VarInst(opcode: OpCode) extends Inst(opcode) {
+  val idx: Int
+}
+
+object VarInst {
+  def unapply(op: VarInst): Option[Int] =
+    Some(op.idx)
+}
+
 object i32 {
 
   case class Const(v: Int) extends Inst(OpCode.I32Const)
@@ -304,11 +313,11 @@ object f64 {
 case object Drop extends Inst(OpCode.Drop)
 case object Select extends Inst(OpCode.Select)
 
-case class GetLocal(idx: LocalIdx) extends Inst(OpCode.GetLocal)
-case class SetLocal(idx: LocalIdx) extends Inst(OpCode.SetLocal)
-case class TeeLocal(idx: LocalIdx) extends Inst(OpCode.TeeLocal)
-case class GetGlobal(idx: LocalIdx) extends Inst(OpCode.GetGlobal)
-case class SetGlobal(idx: LocalIdx) extends Inst(OpCode.SetGlobal)
+case class GetLocal(idx: LocalIdx) extends VarInst(OpCode.GetLocal)
+case class SetLocal(idx: LocalIdx) extends VarInst(OpCode.SetLocal)
+case class TeeLocal(idx: LocalIdx) extends VarInst(OpCode.TeeLocal)
+case class GetGlobal(idx: LocalIdx) extends VarInst(OpCode.GetGlobal)
+case class SetGlobal(idx: LocalIdx) extends VarInst(OpCode.SetGlobal)
 
 case object MemorySize extends Inst(OpCode.MemorySize)
 case object MemoryGrow extends Inst(OpCode.MemoryGrow)

@@ -54,7 +54,7 @@ sealed trait Import {
   val fieldName: String
 }
 object Import {
-  case class Function(moduleName: String, fieldName: String, tpe: FuncType) extends Import
+  case class Function(moduleName: String, fieldName: String, tpeidx: Int, tpe: FuncType) extends Import
   case class Table(moduleName: String, fieldName: String, tpe: TableType) extends Import
   case class Memory(moduleName: String, fieldName: String, tpe: MemType) extends Import
   case class Global(moduleName: String, fieldName: String, tpe: GlobalType) extends Import

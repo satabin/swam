@@ -553,13 +553,13 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
                     ((sec.id, tpes, imports, ctx.copy[F](funcs = ctx.funcs ++ funcs)), sec)
                   }
                 case Section.Tables(tables) =>
-                  if (tables.size > 1)
+                  if (ctx.tables.size + tables.size > 1)
                     F.raiseError[Acc](new ValidationException("at most one table is allowed."))
                   else
                     for (_ <- validateAll(tables, validateTableType))
                       yield ((sec.id, tpes, imports, ctx.copy[F](tables = ctx.tables ++ tables)), sec)
                 case Section.Memories(mems) =>
-                  if (mems.size > 1)
+                  if (ctx.mems.size + mems.size > 1)
                     F.raiseError[Acc](new ValidationException("at most one memory is allowed."))
                   else
                     for (_ <- validateAll(mems, validateMemType))

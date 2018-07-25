@@ -1053,14 +1053,10 @@ class Interpreter[F[_]](store: Store[F])(implicit F: MonadError[F, Throwable]) {
         case OpCode.Unreachable =>
           F.raiseError(new InterpreterException(frame, "unreachable"))
         case OpCode.Block =>
-          // next byte is the block return type
-          val tpe = frame.readByte()
+          // next int is the block arity
+          val arity = frame.readInt()
           // next int is the block size
           val blockSize = frame.readInt()
-          val arity = tpe match {
-            case 0x40 => 0
-            case _    => 1
-          }
           frame.stack.pushLabel(Label(arity, frame.pc + blockSize + 1 /* end */ ))
           // frame.pc is now on the first instruction of the block
           F.pure(Left(frame))
@@ -1075,23 +1071,19 @@ class Interpreter[F[_]](store: Store[F])(implicit F: MonadError[F, Throwable]) {
         case OpCode.Loop =>
           // continuation will be the frame.pc of the loop opcode
           val cont = frame.pc - 1
-          // skip the block return type
-          frame.readByte()
+          // skip the block arity
+          frame.readInt()
           // push loop label
           frame.stack.pushLabel(Label(0, cont))
           // frame.pc is now on the first instruction of the loop
           F.pure(Left(frame))
         case OpCode.If =>
-          // next byte is the block return type
-          val tpe = frame.readByte()
+          // next int is the block arity
+          val arity = frame.readInt()
           // next int gives the size of the then branch in bytes
           val thenSize = frame.readInt()
           // next int gives the size of the else branch in bytes
           val elseSize = frame.readInt()
-          val arity = tpe match {
-            case 0x40 => 0
-            case _    => 1
-          }
           val c = frame.stack.popBool()
           val lbl = Label(arity, frame.pc + thenSize + 1 /* else */ + 4 /* else size */ + elseSize + 1 /* end */ )
           frame.stack.pushLabel(lbl)
