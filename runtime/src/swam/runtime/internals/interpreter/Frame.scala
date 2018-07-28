@@ -19,6 +19,8 @@ package runtime
 package internals
 package interpreter
 
+import config._
+
 import scala.annotation.{tailrec, switch}
 
 import java.nio.ByteBuffer
@@ -28,6 +30,7 @@ import scala.language.higherKinds
 /** A call frame containing the local stack of operands.
   */
 sealed class Frame[F[_]] private (parent: Frame[F],
+                                  stackSize: Int,
                                   code: ByteBuffer,
                                   val locals: Array[Value],
                                   val arity: Int,
@@ -222,7 +225,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
       lblstack(lbltop - 1 - idx)
 
     def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Value]): Frame[F] =
-      new Frame[F](self, code, locals, arity, instance)
+      new Frame[F](self, stackSize, code, locals, arity, instance)
 
     def popFrame(): Frame[F] =
       parent
@@ -241,7 +244,7 @@ object Frame {
   private final val FLOAT64 = 3
   private final val LABEL = 4
 
-  def makeToplevel[F[_]](instance: Instance[F]): Frame[F] =
-    new Frame[F](null, null, null, 0, instance)
+  def makeToplevel[F[_]](instance: Instance[F], conf: EngineConfiguration): Frame[F] =
+    new Frame[F](null, conf.stack.height, null, null, 0, instance)
 
 }

@@ -49,4 +49,7 @@ object runtime extends SwamModule {
 
   def moduleDeps = Seq(core)
 
+  def ivyDeps = Agg(
+    ivy"com.typesafe:config:1.3.2")
+
 }
