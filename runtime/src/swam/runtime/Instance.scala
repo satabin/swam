@@ -29,20 +29,26 @@ import scala.language.{higherKinds, dynamics}
 
 class Instance[F[_]](val module: Module[F],
                      _exports: Map[String, ExportedField],
-                     store: Store,
+                     store: Store[F],
                      interpreter: Interpreter[F],
-                     globals: Vector[Address],
-                     memories: Vector[Address],
+                     globals: Store[F]#Globals,
+                     memories: Vector[Store[F]#Memory],
                      funcs: Vector[Address],
                      tables: Vector[Address]) {
   self =>
 
+  override def finalize(): Unit = {
+    store.instances.free(globals.address)
+    for (mem <- memories)
+      store.instances.free(mem.address)
+  }
+
   object exports {
     def asVar[T](name: String)(implicit F: MonadError[F, Throwable], format: ValueFormatter[T]): F[Var[F, T]] =
       _exports.get(name) match {
-        case Some(ExportedField.Global(GlobalType(tpe, Mut.Var), address)) =>
+        case Some(ExportedField.Global(GlobalType(tpe, Mut.Var), index)) =>
           if (format.swamType == tpe)
-            F.pure(new Var(store, address))
+            F.pure(new Var(globals, index))
           else
             F.raiseError(new ConversionException(s"expected type $tpe but got type ${format.swamType}"))
         case Some(ExportedField.Global(_, _)) =>
@@ -55,9 +61,9 @@ class Instance[F[_]](val module: Module[F],
 
     def asVal[T](name: String)(implicit F: MonadError[F, Throwable], format: ValueFormatter[T]): F[Val[F, T]] =
       _exports.get(name) match {
-        case Some(ExportedField.Global(GlobalType(tpe, _), address)) =>
+        case Some(ExportedField.Global(GlobalType(tpe, _), index)) =>
           if (format.swamType == tpe)
-            F.pure(new Var(store, address))
+            F.pure(new Var(globals, index))
           else
             F.raiseError(new ConversionException(s"expected type $tpe but got type ${format.swamType}"))
         case Some(fld) =>
@@ -88,8 +94,7 @@ class Instance[F[_]](val module: Module[F],
         case Some(ExportedField.Function(FuncType(Vector(), Vector()), idx)) =>
           F.pure(() => interpreter.interpret(idx, Vector(), self).flatMap(res => wrapUnit(res)))
         case Some(ExportedField.Function(functype, idx)) =>
-          F.raiseError(
-            new RuntimeException(s"invalid function type (expected () => Unit but got $functype)"))
+          F.raiseError(new RuntimeException(s"invalid function type (expected () => Unit but got $functype)"))
         case Some(fld) =>
           F.raiseError(new RuntimeException(s"cannot get a function for type ${fld.tpe}"))
         case None =>
@@ -116,14 +121,14 @@ class Instance[F[_]](val module: Module[F],
 
   private[swam] object global {
     def apply(idx: Int): Value =
-      store.globalValue(globals(idx))
+      globals.read(idx)
 
     def update(idx: Int, v: Value): Unit =
-      store.updateGlobalValue(globals(idx), v)
+      globals.write(idx, v)
   }
 
-  private[swam] def memory(idx: Int): MemoryInstance =
-    store.memory(memories(idx))
+  private[swam] def memory(idx: Int): Store[F]#Memory =
+    memories(idx)
 
   private[swam] def function(idx: Int): FuncInstance =
     store.function(funcs(idx))
@@ -141,25 +146,27 @@ private sealed trait ExportedField {
 }
 
 private object ExportedField {
-  case class Global(tpe: GlobalType, address: Int) extends ExportedField
+  case class Global(tpe: GlobalType, idx: Int) extends ExportedField
   case class Function(tpe: FuncType, idx: Int) extends ExportedField
 }
 
-class Val[F[_], T](store: Store, address: Int)(implicit F: MonadError[F, Throwable], format: ValueReader[T]) {
+class Val[F[_], T](globals: Store[F]#Globals, index: Int)(implicit F: MonadError[F, Throwable],
+                                                          format: ValueReader[T]) {
 
   def apply(): F[T] =
-    format.read[F](store.globalValue(address))
+    format.read[F](globals.read(index))
 
   def value: F[T] =
     apply()
 
 }
 
-class Var[F[_], T](store: Store, address: Int)(implicit F: MonadError[F, Throwable], format: ValueFormatter[T])
-    extends Val[F, T](store, address) {
+class Var[F[_], T](globals: Store[F]#Globals, index: Int)(implicit F: MonadError[F, Throwable],
+                                                          format: ValueFormatter[T])
+    extends Val[F, T](globals, index) {
 
   def update(v: T): F[Unit] =
-    F.pure(store.updateGlobalValue(address, format.write(v)))
+    F.pure(globals.write(index, format.write(v)))
 
   def :=(v: T): F[Unit] =
     update(v)
