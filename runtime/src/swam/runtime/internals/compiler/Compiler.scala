@@ -20,13 +20,12 @@ package internals
 package compiler
 
 import syntax._
-import store._
 
 import cats._
 
 import fs2._
 
-import scodec._
+import java.nio.ByteBuffer
 
 import scala.collection.mutable.ArrayBuilder
 
@@ -34,12 +33,12 @@ import scala.language.higherKinds
 
 case class Context(types: Vector[FuncType] = Vector.empty,
                    funcs: Vector[Int] = Vector.empty,
-                   code: Vector[Int] = Vector.empty,
+                   code: Vector[CompiledFunction] = Vector.empty,
                    tables: Vector[TableType] = Vector.empty,
                    mems: Vector[MemType] = Vector.empty,
                    globals: Vector[GlobalType] = Vector.empty,
-                   elems: Vector[(Int, Vector[Int])] = Vector.empty,
-                   data: Vector[(Int, Vector[Byte])] = Vector.empty,
+                   elems: Vector[CompiledElem] = Vector.empty,
+                   data: Vector[CompiledData] = Vector.empty,
                    start: Option[Int] = None,
                    exports: Vector[runtime.Export] = Vector.empty,
                    imports: Vector[runtime.Import] = Vector.empty,
@@ -75,70 +74,46 @@ class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]
         case (ctx, Section.Types(types)) =>
           ctx.copy(types = types)
         case (ctx, Section.Code(codes)) =>
-          val funcAddresses =
-            codes.map {
-              case (FuncBody(locals, code)) =>
-                val bytes = compile(code, true)
-                val addr = engine.store.static.allocate(bytes.length)
-                engine.store.static.writeBytes(addr, bytes)
-                addr
+          val code =
+            codes.zipWithIndex.map {
+              case ((FuncBody(locals, code)), idx) =>
+                val ccode = ByteBuffer.wrap(compile(code, true))
+                val clocals = locals.flatMap(e => Vector.fill(e.count)(e.tpe))
+                InterpretedFunction(ctx.types(ctx.funcs(idx)), clocals, ccode)
             }
-          ctx.copy(code = funcAddresses)
+          ctx.copy(code = code)
         case (ctx, Section.Elements(elems)) =>
-          val compiledElems =
+          val celems =
             elems.map {
               case Elem(_, offset, init) =>
-                val offsetAddress = {
-                  val bytes = compile(offset, true)
-                  val addr = engine.store.static.allocate(bytes.length)
-                  engine.store.static.writeBytes(addr, bytes)
-                  addr
-                }
-                // get the function addresses from indices
-                val faddrs = init.map(ctx.code(_))
-                (offsetAddress, faddrs)
+                val coffset = ByteBuffer.wrap(compile(offset, true))
+                CompiledElem(coffset, init.map(ctx.code(_)))
             }
-          ctx.copy(elems = compiledElems)
+          ctx.copy(elems = celems)
         case (ctx, Section.Datas(data)) =>
-          val compileData =
+          val cdata =
             data.map {
               case Data(_, offset, bytes) =>
-                val offsetAddress = {
-                  val bytes = compile(offset, true)
-                  val addr = engine.store.static.allocate(bytes.length)
-                  engine.store.static.writeBytes(addr, bytes)
-                  addr
-                }
-                (offsetAddress, bytes.toByteArray.toVector)
+                val coffset = ByteBuffer.wrap(compile(offset, true))
+                CompiledData(coffset, bytes.toByteBuffer)
             }
-          ctx.copy(data = compileData)
+          ctx.copy(data = cdata)
         case (ctx, Section.Start(idx)) =>
           ctx.copy(start = Some(ctx.funcs(idx)))
       }
-      .evalMap { ctx =>
-        val tablemin = ctx.tables.headOption.map(_.limits.min).getOrElse(-1)
-        val tablemax = ctx.tables.headOption.flatMap(_.limits.max).getOrElse(-1)
-        val memmin = ctx.mems.headOption.map(_.limits.min).getOrElse(-1)
-        val memmax = ctx.mems.headOption.flatMap(_.limits.max).getOrElse(-1)
-        val start = ctx.start.getOrElse(-1)
-        val globals = ctx.globals.map(gt => type2byte(gt.tpe))
-        val stored = StoredModule(tablemin, tablemax, memmin, memmax, start, globals, ctx.code, ctx.elems, ctx.data)
-        StoredModule.codec.encode(stored) match {
-          case Attempt.Successful(bytes) =>
-            val bytea = bytes.toByteArray
-            val address = engine.store.static.allocate(bytea.length)
-            engine.store.static.writeBytes(address, bytea)
-            F.pure(
-              new runtime.Module(ctx.exports,
-                                 ctx.imports,
-                                 ctx.customs,
-                                 ctx.types,
-                                 engine,
-                                 address,
-                                 20 + ctx.globals.size * 4))
-          case Attempt.Failure(f) =>
-            F.raiseError[runtime.Module[F]](new MemoryException(f.message))
-        }
+      .map { ctx =>
+        new runtime.Module(ctx.exports,
+                           ctx.imports,
+                           ctx.customs,
+                           ctx.types,
+                           engine,
+                           ctx.globals,
+                           ctx.tables,
+                           ctx.mems,
+                           ctx.start,
+                           ctx.code,
+                           ctx.elems,
+                           ctx.data)
       }
 
   private def compile(insts: Vector[Inst], toplevel: Boolean): Array[Byte] = {

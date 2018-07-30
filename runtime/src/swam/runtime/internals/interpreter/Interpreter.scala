@@ -19,7 +19,7 @@ package runtime
 package internals
 package interpreter
 
-import store._
+import instance._
 
 import java.lang.{Integer => JInt, Long => JLong, Float => JFloat, Double => JDouble}
 
@@ -32,13 +32,13 @@ import cats._
 import scala.language.higherKinds
 
 /** An interpreter is spwan each time the execution of a method is required. */
-class Interpreter[F[_]](store: Store[F])(implicit F: MonadError[F, Throwable]) {
+class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
 
   def interpret(funcidx: Int, parameters: Vector[Value], instance: Instance[F]): F[Vector[Value]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance)
     // push the parameters in the stack
-    parameters.foreach(p => frame.stack.pushValue(p))
+    frame.stack.pushValues(parameters)
     // invoke the function
     val frame1 = invoke(frame, instance.function(funcidx))
     // and run
@@ -1198,7 +1198,7 @@ class Interpreter[F[_]](store: Store[F])(implicit F: MonadError[F, Throwable]) {
           if (i >= tab.size || tab(i) == NULL) {
             F.raiseError(new InterpreterException(frame, "invalid indirect call"))
           } else {
-            val f = store.function(tab(i))
+            val f = frame.instance.function(tab(i))
             val actualt = f.tpe
             if (expectedt != actualt) {
               F.raiseError(new InterpreterException(frame, "unexpected type"))
@@ -1212,19 +1212,22 @@ class Interpreter[F[_]](store: Store[F])(implicit F: MonadError[F, Throwable]) {
       }
     }
 
-  private def invoke(frame: Frame[F], f: FuncInstance): Frame[F] = {
-    val tpe = f.tpe
-    val locals = Array.ofDim[Value](f.locals.size + tpe.params.size)
-    val zlocals = f.locals.map(Value.zero(_))
-    Array.copy(zlocals, 0, locals, tpe.params.size, zlocals.length)
-    // pop the parameters from the stack
-    val params = frame.stack.popValues(tpe.params.size).toArray
-    Array.copy(params, 0, locals, 0, params.length)
-    val frame1 = frame.stack.pushFrame(tpe.t.size, f.code, locals)
-    // push the implicit block label on the called frame
-    frame1.stack.pushLabel(Label(tpe.t.size, -1))
-    frame1
-  }
+  private def invoke(frame: Frame[F], f: CompiledFunction): Frame[F] =
+    f match {
+      case InterpretedFunction(tpe, locals, code) =>
+        val ilocals = Array.ofDim[Value](locals.size + tpe.params.size)
+        val zlocals = locals.map(Value.zero(_))
+        Array.copy(zlocals, 0, locals, tpe.params.size, zlocals.length)
+        // pop the parameters from the stack
+        val params = frame.stack.popValues(tpe.params.size).toArray
+        Array.copy(params, 0, locals, 0, params.length)
+        val frame1 = frame.stack.pushFrame(tpe.t.size, code, ilocals)
+        // push the implicit block label on the called frame
+        frame1.stack.pushLabel(Label(tpe.t.size, -1))
+        frame1
+      case HostFunction(tpe) =>
+        ???
+    }
 
 }
 

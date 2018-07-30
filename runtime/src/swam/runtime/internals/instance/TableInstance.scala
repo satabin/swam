@@ -14,26 +14,14 @@
  * limitations under the License.
  */
 
-package swam
-package runtime
-package internals
+package swam.runtime.internals.instance
 
-package object interpreter {
+class TableInstance(min: Int, max: Option[Int]) {
+  private val elems = Array.ofDim[Int](min)
 
-  type Label = Long
+  def size = elems.length
 
-  val NULL = -1
-
-  val pageSize = 65536
-
-  implicit class LabelOps(val l: Label) extends AnyVal {
-    def arity: Int = ((l >> 32) & 0xffffffff).toInt
-    def cont: Int = (l & 0xffffffff).toInt
-  }
-
-  object Label {
-    def apply(arity: Int, cont: Int): Label =
-      (arity << 32l) | cont
-  }
+  def apply(idx: Int): Int =
+    elems(idx)
 
 }

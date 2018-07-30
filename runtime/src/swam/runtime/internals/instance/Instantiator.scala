@@ -17,8 +17,17 @@
 package swam
 package runtime
 package internals
-package store
+package instance
 
-import java.nio.ByteBuffer
+import interpreter._
 
-class FuncInstance(val tpe: FuncType, val code: ByteBuffer, val locals: Array[ValType])
+import runtime._
+
+import scala.language.higherKinds
+
+class Instantiator[F[_]](interpreter: Interpreter[F]) {
+
+  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] =
+    ???
+
+}

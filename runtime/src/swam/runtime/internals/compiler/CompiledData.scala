@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-package swam.runtime.internals.store
+package swam
+package runtime
 
-class TableInstance(max: Int) {
-  private val elems = Array.ofDim[Address](0)
+import java.nio.ByteBuffer
 
-  def size = elems.size
-
-  def apply(idx: Int): Address =
-    elems(idx)
-
-}
+case class CompiledData(offset: ByteBuffer, init: ByteBuffer)

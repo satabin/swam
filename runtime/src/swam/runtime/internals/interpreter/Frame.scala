@@ -19,8 +19,6 @@ package runtime
 package internals
 package interpreter
 
-import store._
-
 import scala.annotation.{tailrec, switch}
 
 import java.nio.ByteBuffer

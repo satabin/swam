@@ -16,24 +16,7 @@
 
 package swam
 package runtime
-package internals
 
-package object interpreter {
+import java.nio.ByteBuffer
 
-  type Label = Long
-
-  val NULL = -1
-
-  val pageSize = 65536
-
-  implicit class LabelOps(val l: Label) extends AnyVal {
-    def arity: Int = ((l >> 32) & 0xffffffff).toInt
-    def cont: Int = (l & 0xffffffff).toInt
-  }
-
-  object Label {
-    def apply(arity: Int, cont: Int): Label =
-      (arity << 32l) | cont
-  }
-
-}
+case class CompiledElem(offset: ByteBuffer, init: Vector[CompiledFunction])

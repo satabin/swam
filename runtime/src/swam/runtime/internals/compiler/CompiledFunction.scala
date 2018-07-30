@@ -16,14 +16,14 @@
 
 package swam
 package runtime
-package internals
 
 import java.nio.ByteBuffer
 
-package object store {
-
-  type Address = Int
-
-  val NULL = -1
-
+private[runtime] sealed trait CompiledFunction {
+  val tpe: FuncType
 }
+
+private[runtime] case class InterpretedFunction(tpe: FuncType, locals: Vector[ValType], code: ByteBuffer)
+    extends CompiledFunction
+
+private[runtime] case class HostFunction(tpe: FuncType) extends CompiledFunction

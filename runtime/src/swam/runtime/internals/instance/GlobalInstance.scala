@@ -17,17 +17,10 @@
 package swam
 package runtime
 package internals
-package instantiation
+package instance
 
-import interpreter._
+private[runtime] class GlobalInstance(tpe: ValType) {
 
-import runtime._
-
-import scala.language.higherKinds
-
-class Instantiator[F[_]](interpreter: Interpreter[F]) {
-
-  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] =
-    ???
+  var value: Value = Value.zero(tpe)
 
 }
