@@ -17,13 +17,17 @@
 package swam
 package runtime
 package internals
+package instance
 
-import java.nio.ByteBuffer
+import interpreter._
 
-package object store {
+import runtime._
 
-  type Address = Int
+import scala.language.higherKinds
 
-  val NULL = -1
+class Instantiator[F[_]](interpreter: Interpreter[F]) {
+
+  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] =
+    ???
 
 }

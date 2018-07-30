@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package swam
-package runtime
-package internals
-package store
+package swam.runtime.internals.instance
 
-import java.nio.ByteBuffer
+class TableInstance(min: Int, max: Option[Int]) {
+  private val elems = Array.ofDim[Int](min)
 
-class FuncInstance(val tpe: FuncType, val code: ByteBuffer, val locals: Array[ValType])
+  def size = elems.length
+
+  def apply(idx: Int): Int =
+    elems(idx)
+
+}

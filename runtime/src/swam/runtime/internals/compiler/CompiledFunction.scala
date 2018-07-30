@@ -19,6 +19,11 @@ package runtime
 
 import java.nio.ByteBuffer
 
-private[runtime] trait CompiledFunction
+private[runtime] sealed trait CompiledFunction {
+  val tpe: FuncType
+}
 
-private[runtime] case class InterpretedFunction(tpe: FuncType, locals: Vector[ValType], code: ByteBuffer) extends CompiledFunction
+private[runtime] case class InterpretedFunction(tpe: FuncType, locals: Vector[ValType], code: ByteBuffer)
+    extends CompiledFunction
+
+private[runtime] case class HostFunction(tpe: FuncType) extends CompiledFunction

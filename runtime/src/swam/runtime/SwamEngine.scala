@@ -19,9 +19,8 @@ package runtime
 
 import binary._
 import validation._
-import internals.store._
 import internals.compiler._
-import internals.instantiation._
+import internals.instance._
 import internals.interpreter._
 
 import cats._
@@ -41,13 +40,11 @@ import java.nio.file.Path
   */
 class SwamEngine[F[_]](implicit F: Effect[F]) {
 
-  private[runtime] val store = new Store[F]
-
   private val validator = new SpecValidator[F]
 
   private val compiler = new Compiler[F](this)
 
-  private val interpreter = new Interpreter[F](store)
+  private val interpreter = new Interpreter[F]
 
   private val instantiator = new Instantiator[F](interpreter)
 
