@@ -69,27 +69,6 @@ private[runtime] class Store[F[_]](implicit F: MonadError[F, Throwable]) {
       }
   }
 
-  /** Allocates memory for the given module global variables and returns
-    *  a way to access them. Globals are zeroed when allocated.
-    */
-  private[internals] def allocateGlobals(m: Module[F]): F[Globals] = {
-    // get the number of global variables
-    val nb = static.readInt(m.address + 16)
-    val types = for (i <- 0 until nb) yield (i, byte2type(static.read(m.address + 16 + 4 + i)))
-    // to allow for efficient indexing, all globals are encoded
-    // on 9 bytes:
-    // - first byte is a type tag
-    // - 8 remaining bytes are the data
-    val address = instances.allocate(nb * 9)
-    if (address >= 0) {
-      val g = new Globals(address)
-      for ((idx, tpe) <- types) g.write(idx, Value.zero(tpe))
-      F.pure(g)
-    } else {
-      F.raiseError(new MemoryException("Not enough space left in instance memory"))
-    }
-  }
-
   class Memory(var address: Address) {
     def size: Int =
       instances.readInt(address + 4)
@@ -138,21 +117,6 @@ private[runtime] class Store[F[_]](implicit F: MonadError[F, Throwable]) {
       instances.writeFloat(address + 8 + idx, v)
     def writeDouble(idx: Int, v: Double): Unit =
       instances.writeDouble(address + 8 + idx, v)
-  }
-
-  def allocateMemory(m: Module[F]): F[Memory] = {
-    val min = static.readInt(m.address)
-    val max = static.readInt(m.address + 4)
-    val address = instances.allocate(min)
-    if (address >= 0) {
-      val mem = new Memory(address)
-      instances.writeInt(address, max)
-      instances.writeInt(address + 4, min)
-      instances.zero(address + 8, min)
-      F.pure(mem)
-    } else {
-      F.raiseError(new MemoryException("Not enough space left in instance memory"))
-    }
   }
 
   /** Returns the function instance at the given address. */
