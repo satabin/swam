@@ -19,8 +19,16 @@ package runtime
 package internals
 package instance
 
-private[runtime] class GlobalInstance(tpe: ValType) {
+import scala.language.higherKinds
 
-  var value: Value = Value.zero(tpe)
+private[runtime] trait GlobalInstance[F[_]] extends ImportableInstance[F] {
+  val tpe: GlobalType
+  def value: Value
+  def value_=(v: Value): Unit
+}
+
+private[runtime] class InterpretedGlobalInstance[F[_]](val tpe: GlobalType) extends GlobalInstance[F] {
+
+  var value: Value = Value.zero(tpe.tpe)
 
 }

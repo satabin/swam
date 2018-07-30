@@ -16,20 +16,13 @@
 
 package swam
 package runtime
-package internals
-package instance
 
-import scala.language.higherKinds
+import java.nio.ByteBuffer
 
-private[runtime] class TableInstance[F[_]](min: Int, max: Option[Int]) {
-  private val elems = Array.ofDim[CompiledFunction[F]](min)
-
-  def size = elems.length
-
-  def apply(idx: Int): CompiledFunction[F] =
-    elems(idx)
-
-  def update(idx: Int, f: CompiledFunction[F]) =
-    elems(idx) = f
-
+private[runtime] sealed trait CompiledGlobal {
+  val tpe: GlobalType
 }
+
+private[runtime] case class InterpretedCompiledGlobal(tpe: GlobalType, init: ByteBuffer) extends CompiledGlobal
+
+private[runtime] case class ProvidedCompiledGlobal(tpe: GlobalType) extends CompiledGlobal

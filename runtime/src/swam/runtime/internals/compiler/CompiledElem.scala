@@ -19,4 +19,6 @@ package runtime
 
 import java.nio.ByteBuffer
 
-case class CompiledElem(offset: ByteBuffer, init: Vector[CompiledFunction])
+import scala.language.higherKinds
+
+case class CompiledElem[F[_]](offset: ByteBuffer, init: Vector[CompiledFunction[F]])

@@ -17,12 +17,25 @@
 package swam
 package runtime
 
-sealed abstract class Value(val tpe: ValType)
+sealed abstract class Value(val tpe: ValType) {
+  def asInt: Int = throw new ConversionException("Cannot be converted to Int")
+  def asLong: Long = throw new ConversionException("Cannot be converted to Long")
+  def asFloat: Float = throw new ConversionException("Cannot be converted to Float")
+  def asDouble: Double = throw new ConversionException("Cannot be converted to Double")
+}
 object Value {
-  case class Int32(i: Int) extends Value(ValType.I32)
-  case class Int64(l: Long) extends Value(ValType.I64)
-  case class Float32(f: Float) extends Value(ValType.F32)
-  case class Float64(d: Double) extends Value(ValType.F64)
+  case class Int32(i: Int) extends Value(ValType.I32) {
+    override def asInt = i
+  }
+  case class Int64(l: Long) extends Value(ValType.I64) {
+    override def asLong = l
+  }
+  case class Float32(f: Float) extends Value(ValType.F32) {
+    override def asFloat = f
+  }
+  case class Float64(d: Double) extends Value(ValType.F64) {
+    override def asDouble = d
+  }
 
   def zero(tpe: ValType): Value = tpe match {
     case ValType.I32 => Int32(0)

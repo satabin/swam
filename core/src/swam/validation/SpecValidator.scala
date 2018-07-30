@@ -48,7 +48,6 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
         F.pure(Right(()))
     }
 
-
   def validateValType(tpe: ValType): F[Unit] =
     Ok
 

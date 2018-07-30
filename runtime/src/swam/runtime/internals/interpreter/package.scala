@@ -22,8 +22,6 @@ package object interpreter {
 
   type Label = Long
 
-  val NULL = -1
-
   val pageSize = 65536
 
   implicit class LabelOps(val l: Label) extends AnyVal {

@@ -19,29 +19,52 @@ package runtime
 
 import formats._
 import functions._
+import internals.instance._
+
+import cats._
 
 import scala.language.higherKinds
 
-sealed trait ImportedModule[F[_]]
+private[runtime] trait ImportedModule[F[_]] {
 
-case class SwamModule[F[_]](module: Module[F]) extends ImportedModule[F]
+  def find(field: String)(implicit F: MonadError[F, Throwable]): F[ImportableInstance[F]]
 
-case class ScalaModule[F[_]](val fields: Map[String, ScalaImport[F]]) extends ImportedModule[F]
+}
 
-sealed trait ScalaImport[F[_]]
+private[runtime] case class ScalaModule[F[_]](val fields: Map[String, ScalaImport[F]]) extends ImportedModule[F] {
 
-class ScalaFunction[F[_]](val f: Importable[F]) extends ScalaImport[F]
+  def find(field: String)(implicit F: MonadError[F, Throwable]): F[ImportableInstance[F]] = fields.get(field) match {
+    case Some(f) => F.pure(f)
+    case None    => F.raiseError(new RuntimeException(s"Unknown field $field"))
+  }
 
-class ScalaVar[T, F[_]](private var _value: T)(implicit format: ValueFormatter[T]) extends ScalaImport[F] {
+}
 
-  def tpe: ValType = format.swamType
+private[runtime] sealed trait ScalaImport[F[_]] extends ImportableInstance[F]
 
-  def apply(): T = _value
+private[runtime] class ScalaFunction[F[_]](val f: Importable[F]) extends ScalaImport[F] with HostFunction[F] {
+  val tpe = f.tpe
 
-  def value: T = _value
+  def invoke(parameters: Seq[Value]): F[Option[Value]] =
+    f.apply(parameters: _*)
 
-  def update(v: T): Unit = _value = v
+}
 
-  def :=(v: T): Unit = _value = v
+private[runtime] class ScalaVar[T, F[_]](var value: Value)(implicit format: ValueFormatter[T],
+                                                           F: MonadError[F, Throwable])
+    extends ScalaImport[F]
+    with GlobalInstance[F] {
+
+  val tpe: GlobalType =
+    GlobalType(format.swamType, Mut.Var)
+
+  def apply(): F[T] =
+    format.read(value)
+
+  def update(v: T): Unit =
+    value = format.write(v)
+
+  def :=(v: T): Unit =
+    value = format.write(v)
 
 }
