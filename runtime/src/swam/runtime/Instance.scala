@@ -34,7 +34,7 @@ class Instance[F[_]](val module: Module[F],
                      interpreter: Interpreter[F],
                      globals: Vector[GlobalInstance[F]],
                      private[runtime] val memories: Vector[MemoryInstance],
-                     funcs: Vector[CompiledFunction[F]],
+                     private[runtime] val funcs: Vector[CompiledFunction[F]],
                      private[runtime] val tables: Vector[TableInstance[F]])
     extends ImportedModule[F] {
   self =>

@@ -28,7 +28,10 @@ import runtime._
 
 import scala.language.higherKinds
 
-private[runtime] class Instantiator[F[_]](interpreter: Interpreter[F])(implicit F: MonadError[F, Throwable]) {
+private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]) {
+
+  private val interpreter = engine.interpreter
+  private val dataOnHeap = engine.conf.data.onHeap
 
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
@@ -111,7 +114,7 @@ private[runtime] class Instantiator[F[_]](interpreter: Interpreter[F])(implicit 
       case TableType(_, limits) => new TableInstance[F](limits.min, limits.max)
     }
     val minstances = imemories ++ module.memories.map {
-      case MemType(limits) => new MemoryInstance(limits.min, limits.max)
+      case MemType(limits) => new MemoryInstance(limits.min, limits.max, dataOnHeap)
     }
     val exported = module.exports.map {
       case Export.Function(name, tpe, idx) => (name, ExportedField.Function[F](tpe, finstances(idx)))
@@ -136,7 +139,7 @@ private[runtime] class Instantiator[F[_]](interpreter: Interpreter[F])(implicit 
                 F.raiseError(new RuntimeException("Overflow in table initialization"))
               } else {
                 for (initi <- 0 until init.size)
-                  instance.tables(0)(offset + initi) = init(initi)
+                  instance.tables(0)(offset + initi) = instance.funcs(init(initi))
                 F.pure(Left(idx + 1))
               }
             }

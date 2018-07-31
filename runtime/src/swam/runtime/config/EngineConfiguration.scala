@@ -16,9 +16,29 @@
 
 package swam
 package runtime
+package config
 
-import java.nio.ByteBuffer
+import com.typesafe.config.Config
 
-import scala.language.higherKinds
+/** Holds all the configurable values. */
+trait EngineConfiguration {
 
-case class CompiledElem(offset: ByteBuffer, init: Vector[Int])
+  /** Configures how the stack behaves. */
+  val stack: StackConfiguration
+
+  /** Configures how the data part behaves. */
+  val data: DataConfiguration
+
+}
+
+trait StackConfiguration {
+
+    def height: Int
+
+}
+
+trait DataConfiguration {
+
+  def onHeap: Boolean
+
+}

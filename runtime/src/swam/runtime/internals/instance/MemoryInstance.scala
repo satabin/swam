@@ -21,9 +21,15 @@ package instance
 
 import java.nio.ByteBuffer
 
-private[runtime] class MemoryInstance(min: Int, max: Option[Int]) {
+private[runtime] class MemoryInstance(min: Int, max: Option[Int], onHead: Boolean) {
 
-  var buffer = ByteBuffer.allocate(min)
+  var buffer = allocate(min)
+
+  def allocate(size: Int) =
+    if(onHead)
+      ByteBuffer.allocate(size)
+    else
+      ByteBuffer.allocateDirect(size)
 
   def size = buffer.capacity
 
@@ -70,7 +76,7 @@ private[runtime] class MemoryInstance(min: Int, max: Option[Int]) {
 
   def doGrow(size: Int): Boolean = {
     val old = buffer
-    buffer = ByteBuffer.allocate(size)
+    buffer = allocate(size)
     buffer.put(old)
     true
   }

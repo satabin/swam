@@ -16,9 +16,23 @@
 
 package swam
 package runtime
+package config
 
-import java.nio.ByteBuffer
+import com.typesafe.config.Config
 
-import scala.language.higherKinds
+class ConfigEngineConfiguration(wrapped: Config) extends EngineConfiguration {
 
-case class CompiledElem(offset: ByteBuffer, init: Vector[Int])
+  object stack extends StackConfiguration {
+
+    def height = wrapped.getInt("swam.runtime.stack.size")
+
+  }
+
+  object data extends DataConfiguration {
+
+    def onHeap = wrapped.getBoolean("swam.runtime.data.on-heap")
+
+  }
+
+}
+

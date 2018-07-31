@@ -17,6 +17,7 @@
 package swam
 package runtime
 
+import config._
 import binary._
 import validation._
 import internals.compiler._
@@ -38,15 +39,15 @@ import java.nio.file.Path
 /** This is the engine used to compile, instantiate and run modules.
   *  It exposes all the needed interface to interact with modules.
   */
-class SwamEngine[F[_]](implicit F: Effect[F]) {
+class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(implicit F: Effect[F]) {
 
-  private val validator = new SpecValidator[F]
+  private[runtime] val validator = new SpecValidator[F]
 
-  private val compiler = new Compiler[F](this)
+  private[runtime] val compiler = new Compiler[F](this)
 
-  private val interpreter = new Interpreter[F]
+  private[runtime] val interpreter = new Interpreter[F](this)
 
-  private val instantiator = new Instantiator[F](interpreter)
+  private[runtime] val instantiator = new Instantiator[F](this)
 
   private def readPath(path: Path): BitVector =
     BitVector.fromChannel(new java.io.FileInputStream(path.toFile).getChannel)

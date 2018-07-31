@@ -17,8 +17,10 @@
 package swam
 package runtime
 
-import java.nio.ByteBuffer
+import com.typesafe.config.ConfigFactory
 
-import scala.language.higherKinds
+package object config {
 
-case class CompiledElem(offset: ByteBuffer, init: Vector[Int])
+  def defaultConfiguration = new ConfigEngineConfiguration(ConfigFactory.load)
+
+}

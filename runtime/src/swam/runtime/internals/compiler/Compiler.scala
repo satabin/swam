@@ -39,7 +39,7 @@ case class Context[F[_]](types: Vector[FuncType] = Vector.empty,
                          tables: Vector[TableType] = Vector.empty,
                          mems: Vector[MemType] = Vector.empty,
                          globals: Vector[CompiledGlobal] = Vector.empty,
-                         elems: Vector[CompiledElem[F]] = Vector.empty,
+                         elems: Vector[CompiledElem] = Vector.empty,
                          data: Vector[CompiledData] = Vector.empty,
                          start: Option[Int] = None,
                          exports: Vector[runtime.Export] = Vector.empty,
@@ -49,6 +49,8 @@ case class Context[F[_]](types: Vector[FuncType] = Vector.empty,
 /** Validates and compiles a module.
   */
 class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]) {
+
+  private val dataOnHeap = engine.conf.data.onHeap
 
   def compile(sections: Stream[F, Section]): Stream[F, runtime.Module[F]] =
     sections
@@ -96,19 +98,27 @@ class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]
             elems.map {
               case Elem(_, offset, init) =>
                 val coffset = ByteBuffer.wrap(compile(offset, true))
-                CompiledElem[F](coffset, init.map(ctx.code(_)))
+                CompiledElem(coffset, init)
             }
           ctx.copy(elems = celems)
         case (ctx, Section.Datas(data)) =>
           val cdata =
             data.map {
               case Data(_, offset, bytes) =>
-                val coffset = ByteBuffer.wrap(compile(offset, true))
+                val compiled = compile(offset, true)
+                val coffset =
+                  if(dataOnHeap) {
+                    ByteBuffer.wrap(compiled)
+                  } else {
+                    val buf = ByteBuffer.allocateDirect(compiled.length)
+                    buf.put(compiled)
+                    buf
+                  }
                 CompiledData(coffset, bytes.toByteBuffer)
             }
           ctx.copy(data = cdata)
         case (ctx, Section.Start(idx)) =>
-          ctx.copy(start = Some(ctx.funcs(idx)))
+          ctx.copy(start = Some(idx))
       }
       .map { ctx =>
         new runtime.Module(ctx.exports,
@@ -119,7 +129,7 @@ class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]
                            ctx.globals,
                            ctx.tables,
                            ctx.mems,
-                           ctx.start.map(ctx.code(_)),
+                           ctx.start,
                            ctx.code,
                            ctx.elems,
                            ctx.data)
