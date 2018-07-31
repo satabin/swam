@@ -43,7 +43,7 @@ private[runtime] class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
     // invoke the function
     invoke(frame, instance.function(funcidx))
     // and run
-    .flatMap(run(_))
+      .flatMap(run(_))
   }
 
   def interpret(func: CompiledFunction[F], parameters: Vector[Value], instance: Instance[F]): F[Vector[Value]] = {
@@ -54,7 +54,7 @@ private[runtime] class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
     // invoke the function
     invoke(frame, func)
     // and run
-    .flatMap(run(_))
+      .flatMap(run(_))
   }
 
   def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F]): F[Vector[Value]] = {
@@ -68,7 +68,8 @@ private[runtime] class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
 
   private def run(frame: Frame[F]): F[Vector[Value]] =
     F.tailRecM(frame) { frame =>
-      ((frame.readByte() & 0xff): @switch) match {
+      val opcode = frame.readByte() & 0xff
+      (opcode: @switch) match {
         // === constants ===
         case OpCode.I32Const =>
           frame.stack.pushInt(frame.readInt())
@@ -1111,7 +1112,7 @@ private[runtime] class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
           // frame.pc is now on the first instruction of the then branch
           if (!c) {
             // move frame.pc to the first instruction of the else branch
-            frame.pc += thenSize + 1
+            frame.pc += thenSize + 1 + 4
           }
           F.pure(Left(frame))
         case OpCode.Else =>
@@ -1236,10 +1237,10 @@ private[runtime] class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
       case InterpretedFunction(tpe, locals, code) =>
         val ilocals = Array.ofDim[Value](locals.size + tpe.params.size)
         val zlocals = locals.map(Value.zero(_))
-        Array.copy(zlocals, 0, locals, tpe.params.size, zlocals.length)
+        Array.copy(zlocals, 0, ilocals, tpe.params.size, zlocals.length)
         // pop the parameters from the stack
         val params = frame.stack.popValues(tpe.params.size).toArray
-        Array.copy(params, 0, locals, 0, params.length)
+        Array.copy(params, 0, ilocals, 0, params.length)
         val frame1 = frame.stack.pushFrame(tpe.t.size, code, ilocals)
         // push the implicit block label on the called frame
         frame1.stack.pushLabel(Label(tpe.t.size, -1))
@@ -1252,7 +1253,7 @@ private[runtime] class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
           case Some(v) =>
             frame.stack.pushValue(v)
             frame
-          case None    =>
+          case None =>
             frame
         }
     }

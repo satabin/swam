@@ -58,7 +58,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
 
   private[interpreter] def readFloat(): Float = {
     val f = code.getFloat(pc)
-    pc += 8
+    pc += 4
     f
   }
 

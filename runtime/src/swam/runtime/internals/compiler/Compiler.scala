@@ -31,18 +31,20 @@ import scala.collection.mutable.ArrayBuilder
 
 import scala.language.higherKinds
 
+import java.lang.{Float => JFloat, Double => JDouble}
+
 case class Context[F[_]](types: Vector[FuncType] = Vector.empty,
-                   funcs: Vector[Int] = Vector.empty,
-                   code: Vector[CompiledFunction[F]] = Vector.empty,
-                   tables: Vector[TableType] = Vector.empty,
-                   mems: Vector[MemType] = Vector.empty,
-                   globals: Vector[CompiledGlobal] = Vector.empty,
-                   elems: Vector[CompiledElem[F]] = Vector.empty,
-                   data: Vector[CompiledData] = Vector.empty,
-                   start: Option[Int] = None,
-                   exports: Vector[runtime.Export] = Vector.empty,
-                   imports: Vector[runtime.Import] = Vector.empty,
-                   customs: Vector[runtime.Custom] = Vector.empty)
+                         funcs: Vector[Int] = Vector.empty,
+                         code: Vector[CompiledFunction[F]] = Vector.empty,
+                         tables: Vector[TableType] = Vector.empty,
+                         mems: Vector[MemType] = Vector.empty,
+                         globals: Vector[CompiledGlobal] = Vector.empty,
+                         elems: Vector[CompiledElem[F]] = Vector.empty,
+                         data: Vector[CompiledData] = Vector.empty,
+                         start: Option[Int] = None,
+                         exports: Vector[runtime.Export] = Vector.empty,
+                         imports: Vector[runtime.Import] = Vector.empty,
+                         customs: Vector[runtime.Custom] = Vector.empty)
 
 /** Validates and compiles a module.
   */
@@ -126,6 +128,22 @@ class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]
   private def compile(insts: Vector[Inst], toplevel: Boolean): Array[Byte] = {
     val (builder, hasReturn) =
       insts.foldLeft((ArrayBuilder.make[Byte], false)) {
+        case ((builder, _), op @ i32.Const(v)) =>
+          builder += op.opcode.toByte
+          storeInt(builder, v)
+          (builder, false)
+        case ((builder, _), op @ i64.Const(v)) =>
+          builder += op.opcode.toByte
+          storeLong(builder, v)
+          (builder, false)
+        case ((builder, _), op @ f32.Const(v)) =>
+          builder += op.opcode.toByte
+          storeInt(builder, JFloat.floatToRawIntBits(v))
+          (builder, false)
+        case ((builder, _), op @ f64.Const(v)) =>
+          builder += op.opcode.toByte
+          storeLong(builder, JDouble.doubleToRawLongBits(v))
+          (builder, false)
         case ((builder, _), op @ MemoryInst(offset, align)) =>
           builder += op.opcode.toByte
           storeInt(builder, offset)
@@ -219,11 +237,23 @@ class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]
     }
 
   private def storeInt(builder: ArrayBuilder[Byte], i: Int): ArrayBuilder[Byte] = {
-    // store integers in little-endian
-    builder += (i & 0xff).toByte
-    builder += ((i >> 8) & 0xff).toByte
-    builder += ((i >> 16) & 0xff).toByte
+    // store integers in big-endian
     builder += ((i >> 24) & 0xff).toByte
+    builder += ((i >> 16) & 0xff).toByte
+    builder += ((i >> 8) & 0xff).toByte
+    builder += (i & 0xff).toByte
+  }
+
+  private def storeLong(builder: ArrayBuilder[Byte], l: Long): ArrayBuilder[Byte] = {
+    // store integers in big-endian
+    builder += ((l >> 56) & 0xff).toByte
+    builder += ((l >> 48) & 0xff).toByte
+    builder += ((l >> 40) & 0xff).toByte
+    builder += ((l >> 32) & 0xff).toByte
+    builder += ((l >> 24) & 0xff).toByte
+    builder += ((l >> 16) & 0xff).toByte
+    builder += ((l >> 8) & 0xff).toByte
+    builder += (l & 0xff).toByte
   }
 
   private def toRuntime(types: Vector[FuncType])(i: Import): runtime.Import =
