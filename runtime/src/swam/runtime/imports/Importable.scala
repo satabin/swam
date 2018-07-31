@@ -15,23 +15,25 @@
  */
 
 package swam
+package runtime
+package imports
 
 import cats._
 
 import scala.language.higherKinds
 
-package object runtime {
+  /** Represents the imported elements of an instance.
+    *  These can either be other module [[Instance]]s or Scala
+    *  functions and variables made available to interact between
+    *  both worlds.
+    */
+trait Imports[T, F[_]] {
 
-  def truncate(f: Float): Float =
-    if (f < 0)
-      f.ceil
-    else
-      f.floor
+  def find(t: T, module: String, field: String)(implicit F: MonadError[F, Throwable]): F[Importable[F]]
 
-  def truncate(d: Double): Double =
-    if (d < 0)
-      d.ceil
-    else
-      d.floor
+}
 
+/** A field that can be imported. */
+trait Importable[F[_]] {
+  def tpe: Type
 }

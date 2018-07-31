@@ -15,23 +15,25 @@
  */
 
 package swam
+package runtime
+package exports
+
+import formats._
+import internals.instance._
 
 import cats._
 
 import scala.language.higherKinds
 
-package object runtime {
+/** An exported global value wrapper.
+ *  Makes it possible to interact with global immutable values from Scala.
+ */
+class Val[F[_], T](global: GlobalInstance[F])(implicit F: MonadError[F, Throwable], format: ValueReader[T]) {
 
-  def truncate(f: Float): Float =
-    if (f < 0)
-      f.ceil
-    else
-      f.floor
+  def apply(): F[T] =
+    format.read[F](global.value)
 
-  def truncate(d: Double): Double =
-    if (d < 0)
-      d.ceil
-    else
-      d.floor
+  def value: F[T] =
+    apply()
 
 }

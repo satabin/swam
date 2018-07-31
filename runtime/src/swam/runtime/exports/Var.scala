@@ -15,23 +15,26 @@
  */
 
 package swam
+package runtime
+package exports
+
+import formats._
+import internals.instance._
 
 import cats._
 
 import scala.language.higherKinds
 
-package object runtime {
+/** An exported global variable wrapper.
+ *  Makes it possible to interact with global mutable variables from Scala.
+ */
+class Var[F[_], T](global: GlobalInstance[F])(implicit F: MonadError[F, Throwable], format: ValueFormatter[T])
+    extends Val[F, T](global) {
 
-  def truncate(f: Float): Float =
-    if (f < 0)
-      f.ceil
-    else
-      f.floor
+  def update(v: T): F[Unit] =
+    F.pure(global.value = format.write(v))
 
-  def truncate(d: Double): Double =
-    if (d < 0)
-      d.ceil
-    else
-      d.floor
+  def :=(v: T): F[Unit] =
+    update(v)
 
 }

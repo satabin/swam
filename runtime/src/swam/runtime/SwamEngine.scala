@@ -19,6 +19,7 @@ package runtime
 
 import config._
 import binary._
+import imports._
 import validation._
 import internals.compiler._
 import internals.instance._
@@ -76,13 +77,13 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
       .last
       .map(_.get)
 
-  def instantiate(path: Path, imports: Imports[F]): F[Instance[F]] =
+  def instantiate[I](path: Path, imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
     instantiate(readPath(path), imports)
 
-  def instantiate(bytes: BitVector, imports: Imports[F]): F[Instance[F]] =
+  def instantiate[I](bytes: BitVector, imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
     compile(bytes).flatMap(instantiate(_, imports))
 
-  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] =
+  def instantiate[I](module: Module[F], imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
     instantiator.instantiate(module, imports)
 
 }

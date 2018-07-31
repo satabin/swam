@@ -19,6 +19,7 @@ package runtime
 package internals
 package instance
 
+import imports._
 import interpreter._
 
 import cats._
@@ -33,7 +34,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
 
-  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
+  def instantiate[I](module: Module[F], imports: I)(implicit I: Imports[I, F]): F[Instance[F]] = {
     for {
       // check and order the imports
       imports <- check(module.imports, imports)
@@ -50,14 +51,14 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
     } yield instance
   }
 
-  private def check(mimports: Vector[Import], provided: Imports[F]): F[Vector[ImportableInstance[F]]] =
-    F.tailRecM((0, Vector.empty[ImportableInstance[F]])) {
+  private def check[I](mimports: Vector[Import], provided: I)(implicit I: Imports[I, F]): F[Vector[Importable[F]]] =
+    F.tailRecM((0, Vector.empty[Importable[F]])) {
       case (idx, acc) =>
         if (idx >= mimports.size) {
           F.pure(Right(acc))
         } else {
           val imp = mimports(idx)
-          provided.findField(imp.moduleName, imp.fieldName).flatMap { provided =>
+          I.find(provided, imp.moduleName, imp.fieldName).flatMap { provided =>
             if (provided.tpe <:< imp.tpe) {
               F.pure(Left((idx + 1, acc :+ provided)))
             } else {
@@ -68,7 +69,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
     }
 
   private def initialize(globals: Vector[CompiledGlobal],
-                         imports: Vector[ImportableInstance[F]]): F[Vector[GlobalInstance[F]]] = {
+                         imports: Vector[Importable[F]]): F[Vector[GlobalInstance[F]]] = {
     val impglobals = imports.collect {
       case g: GlobalInstance[F] => g
     }
@@ -93,7 +94,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
 
   private def allocate(module: Module[F],
                        globals: Vector[GlobalInstance[F]],
-                       imports: Vector[ImportableInstance[F]]): F[Instance[F]] = {
+                       imports: Vector[Importable[F]]): F[Instance[F]] = {
     val (ifunctions, iglobals, itables, imemories) = imports.foldLeft(
       (Vector.empty[CompiledFunction[F]],
        Vector.empty[GlobalInstance[F]],
