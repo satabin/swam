@@ -68,17 +68,22 @@ private[runtime] class MemoryInstance(min: Int, max: Option[Int]) {
     check(size) && doGrow(size)
   }
 
-  private def doGrow(size: Int): Boolean = {
+  def doGrow(size: Int): Boolean = {
     val old = buffer
     buffer = ByteBuffer.allocate(size)
     buffer.put(old)
     true
   }
 
-  private def check(size: Int): Boolean =
+  def check(size: Int): Boolean =
     max match {
       case Some(max) => size <= max
       case None      => true
     }
+
+  def writeBytes(idx: Int, bytes: ByteBuffer): Unit = {
+    buffer.position(idx)
+    buffer.put(bytes)
+  }
 
 }

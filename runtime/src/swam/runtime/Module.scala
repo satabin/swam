@@ -31,22 +31,47 @@ class Module[F[_]](val exports: Vector[Export],
                    val customs: Vector[Custom],
                    private[runtime] val types: Vector[FuncType],
                    private[runtime] val engine: SwamEngine[F],
-                   private[runtime] val globals: Vector[GlobalType],
+                   private[runtime] val globals: Vector[CompiledGlobal],
                    private[runtime] val tables: Vector[TableType],
                    private[runtime] val memories: Vector[MemType],
-                   private[runtime] val start: Option[Int],
-                   private[runtime] val functions: Vector[CompiledFunction],
-                   private[runtime] val elems: Vector[CompiledElem],
+                   private[runtime] val start: Option[CompiledFunction[F]],
+                   private[runtime] val functions: Vector[CompiledFunction[F]],
+                   private[runtime] val elems: Vector[CompiledElem[F]],
                    private[runtime] val data: Vector[CompiledData]) {
 
   def newInstance(imports: Imports[F] = Map.empty): F[Instance[F]] =
     engine.instantiate(this, imports)
+
+  object imported {
+
+    def functions: Vector[Import.Function] =
+      imports.collect {
+        case f @ Import.Function(_, _, _, _) => f
+      }
+
+    def globals: Vector[Import.Global] =
+      imports.collect {
+        case f @ Import.Global(_, _, _) => f
+      }
+
+    def tables: Vector[Import.Table] =
+      imports.collect {
+        case f @ Import.Table(_, _, _) => f
+      }
+
+    def memories: Vector[Import.Memory] =
+      imports.collect {
+        case f @ Import.Memory(_, _, _) => f
+      }
+
+  }
 
 }
 
 sealed trait Import {
   val moduleName: String
   val fieldName: String
+  val tpe: Type
 }
 object Import {
   case class Function(moduleName: String, fieldName: String, tpeidx: Int, tpe: FuncType) extends Import
@@ -59,10 +84,10 @@ sealed trait Export {
   val fieldName: String
 }
 object Export {
-  case class Function(fieldName: String, tpe: FuncType) extends Export
-  case class Table(fieldName: String, tpe: TableType) extends Export
-  case class Memory(fieldName: String, tpe: MemType) extends Export
-  case class Global(fieldName: String, tpe: GlobalType) extends Export
+  case class Function(fieldName: String, tpe: FuncType, idx: Int) extends Export
+  case class Table(fieldName: String, tpe: TableType, idx: Int) extends Export
+  case class Memory(fieldName: String, tpe: MemType, idx: Int) extends Export
+  case class Global(fieldName: String, tpe: GlobalType, idx: Int) extends Export
 }
 
 case class Custom(name: String, payload: BitVector)

@@ -28,11 +28,12 @@ import scala.annotation.{tailrec, switch}
 import java.nio.ByteBuffer
 
 import cats._
+import cats.implicits._
 
 import scala.language.higherKinds
 
 /** An interpreter is spwan each time the execution of a method is required. */
-class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
+private[runtime] class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
 
   def interpret(funcidx: Int, parameters: Vector[Value], instance: Instance[F]): F[Vector[Value]] = {
     // instantiate the top-level frame
@@ -40,14 +41,35 @@ class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
     // push the parameters in the stack
     frame.stack.pushValues(parameters)
     // invoke the function
-    val frame1 = invoke(frame, instance.function(funcidx))
+    invoke(frame, instance.function(funcidx))
     // and run
-    run(frame1)
+      .flatMap(run(_))
+  }
+
+  def interpret(func: CompiledFunction[F], parameters: Vector[Value], instance: Instance[F]): F[Vector[Value]] = {
+    // instantiate the top-level frame
+    val frame = Frame.makeToplevel[F](instance)
+    // push the parameters in the stack
+    frame.stack.pushValues(parameters)
+    // invoke the function
+    invoke(frame, func)
+    // and run
+      .flatMap(run(_))
+  }
+
+  def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F]): F[Vector[Value]] = {
+    // instantiate the top-level frame
+    val frame = Frame.makeToplevel[F](instance)
+    // invoke the function
+    invoke(frame, InterpretedFunction(FuncType(Vector(), Vector(tpe)), Vector(), code))
+    // and run
+      .flatMap(run(_))
   }
 
   private def run(frame: Frame[F]): F[Vector[Value]] =
     F.tailRecM(frame) { frame =>
-      ((frame.readByte() & 0xff): @switch) match {
+      val opcode = frame.readByte() & 0xff
+      (opcode: @switch) match {
         // === constants ===
         case OpCode.I32Const =>
           frame.stack.pushInt(frame.readInt())
@@ -1090,7 +1112,7 @@ class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
           // frame.pc is now on the first instruction of the then branch
           if (!c) {
             // move frame.pc to the first instruction of the else branch
-            frame.pc += thenSize + 1
+            frame.pc += thenSize + 1 + 4
           }
           F.pure(Left(frame))
         case OpCode.Else =>
@@ -1187,24 +1209,22 @@ class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
           // next integer is the function index
           val fidx = frame.readInt()
           val f = frame.instance.function(fidx)
-          val frame1 = invoke(frame, f)
-          F.pure(Left(frame1))
+          invoke(frame, f).map(Left(_))
         case OpCode.CallIndirect =>
           // next integer is the typ index
           val tidx = frame.readInt()
           val tab = frame.instance.table(0)
           val expectedt = frame.instance.tpe(tidx)
           val i = frame.stack.popInt()
-          if (i >= tab.size || tab(i) == NULL) {
+          if (i >= tab.size || tab(i) == null) {
             F.raiseError(new InterpreterException(frame, "invalid indirect call"))
           } else {
-            val f = frame.instance.function(tab(i))
+            val f = tab(i)
             val actualt = f.tpe
             if (expectedt != actualt) {
               F.raiseError(new InterpreterException(frame, "unexpected type"))
             } else {
-              val frame1 = invoke(frame, f)
-              F.pure(Left(frame1))
+              invoke(frame, f).map(Left(_))
             }
           }
         case opcode =>
@@ -1212,21 +1232,30 @@ class Interpreter[F[_]](implicit F: MonadError[F, Throwable]) {
       }
     }
 
-  private def invoke(frame: Frame[F], f: CompiledFunction): Frame[F] =
+  private def invoke(frame: Frame[F], f: CompiledFunction[F]): F[Frame[F]] =
     f match {
       case InterpretedFunction(tpe, locals, code) =>
         val ilocals = Array.ofDim[Value](locals.size + tpe.params.size)
         val zlocals = locals.map(Value.zero(_))
-        Array.copy(zlocals, 0, locals, tpe.params.size, zlocals.length)
+        Array.copy(zlocals, 0, ilocals, tpe.params.size, zlocals.length)
         // pop the parameters from the stack
         val params = frame.stack.popValues(tpe.params.size).toArray
-        Array.copy(params, 0, locals, 0, params.length)
+        Array.copy(params, 0, ilocals, 0, params.length)
         val frame1 = frame.stack.pushFrame(tpe.t.size, code, ilocals)
         // push the implicit block label on the called frame
         frame1.stack.pushLabel(Label(tpe.t.size, -1))
-        frame1
-      case HostFunction(tpe) =>
-        ???
+        F.pure(frame1)
+      case h: HostFunction[F] =>
+        // pop the parameters from the stack
+        val params = frame.stack.popValues(h.tpe.params.size)
+        // invoke the host function with the parameters
+        h.invoke(params).map {
+          case Some(v) =>
+            frame.stack.pushValue(v)
+            frame
+          case None =>
+            frame
+        }
     }
 
 }

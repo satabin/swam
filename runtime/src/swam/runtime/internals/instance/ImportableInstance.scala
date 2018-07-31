@@ -21,15 +21,6 @@ package instance
 
 import scala.language.higherKinds
 
-private[runtime] class TableInstance[F[_]](min: Int, max: Option[Int]) {
-  private val elems = Array.ofDim[CompiledFunction[F]](min)
-
-  def size = elems.length
-
-  def apply(idx: Int): CompiledFunction[F] =
-    elems(idx)
-
-  def update(idx: Int, f: CompiledFunction[F]) =
-    elems(idx) = f
-
+private[runtime] trait ImportableInstance[F[_]] {
+  def tpe: Type
 }

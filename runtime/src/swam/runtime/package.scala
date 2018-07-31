@@ -16,9 +16,13 @@
 
 package swam
 
+import cats._
+
 import scala.language.higherKinds
 
 package object runtime {
+
+  import internals.instance._
 
   /** Represents the imported elements of an instance.
     *  These can either be other module [[Instance]]s or Scala
@@ -26,6 +30,14 @@ package object runtime {
     *  both worlds.
     */
   type Imports[F[_]] = Map[String, ImportedModule[F]]
+
+  private[runtime] implicit class ImportsOps[F[_]](val imports: Imports[F]) extends AnyVal {
+    def findField(module: String, field: String)(implicit F: MonadError[F, Throwable]): F[ImportableInstance[F]] =
+      imports.get(module) match {
+        case Some(m) => m.find(field)
+        case None    => F.raiseError(new RuntimeException(s"Unknown provided module $module"))
+      }
+  }
 
   def truncate(f: Float): Float =
     if (f < 0)

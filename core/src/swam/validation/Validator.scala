@@ -30,9 +30,9 @@ import scala.language.higherKinds
 abstract class Validator[F[_]](implicit val F: MonadError[F, Throwable]) {
 
   /** Performs validation of the section stream on the fly.
-   *  The sections are returned unchanged if validation succeeds, otherwise
-   *  the stream fails.
-   */
+    *  The sections are returned unchanged if validation succeeds, otherwise
+    *  the stream fails.
+    */
   def validate(stream: Stream[F, Section]): Stream[F, Section]
 
 }

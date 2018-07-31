@@ -19,11 +19,15 @@ package runtime
 
 import java.nio.ByteBuffer
 
-private[runtime] sealed trait CompiledFunction {
+import scala.language.higherKinds
+
+private[runtime] sealed trait CompiledFunction[F[_]] {
   val tpe: FuncType
 }
 
-private[runtime] case class InterpretedFunction(tpe: FuncType, locals: Vector[ValType], code: ByteBuffer)
-    extends CompiledFunction
+private[runtime] case class InterpretedFunction[F[_]](tpe: FuncType, locals: Vector[ValType], code: ByteBuffer)
+    extends CompiledFunction[F]
 
-private[runtime] case class HostFunction(tpe: FuncType) extends CompiledFunction
+private[runtime] trait HostFunction[F[_]] extends CompiledFunction[F] {
+  def invoke(parameters: Seq[Value]): F[Option[Value]]
+}

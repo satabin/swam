@@ -16,43 +16,105 @@
 
 package swam
 
-sealed trait Type
+sealed trait Type {
+
+  def <:<(that: Type): Boolean
+
+}
 
 sealed abstract class ValType(val width: Int) extends Type
 
 object ValType {
-  case object I32 extends ValType(32)
-  case object I64 extends ValType(64)
-  case object F32 extends ValType(32)
-  case object F64 extends ValType(64)
+  case object I32 extends ValType(32) {
+    def <:<(that: Type): Boolean =
+      that == I32
+  }
+  case object I64 extends ValType(64) {
+    def <:<(that: Type): Boolean =
+      that == I64
+  }
+  case object F32 extends ValType(32) {
+    def <:<(that: Type): Boolean =
+      that == F32
+  }
+  case object F64 extends ValType(64) {
+    def <:<(that: Type): Boolean =
+      that == F64
+  }
 }
 
-case class ResultType(t: Option[ValType]) extends Type
+case class ResultType(t: Option[ValType]) extends Type {
+  def <:<(that: Type): Boolean =
+    (this, that) match {
+      case (ResultType(Some(t1)), ResultType(Some(t2))) => t1 <:< t2
+      case (ResultType(None), ResultType(None))         => true
+      case _                                            => false
+    }
+}
 
-case class FuncType(params: Vector[ValType], t: Vector[ValType]) extends Type
+case class FuncType(params: Vector[ValType], t: Vector[ValType]) extends Type {
+  def <:<(that: Type): Boolean =
+    that match {
+      case FuncType(params1, t1) =>
+        params.size == params1.size && t.size == t1.size && params1.zip(params).forall(ts => ts._1 <:< ts._2) && t1
+          .zip(t)
+          .forall(ts => ts._1 <:< ts._2)
+      case _ =>
+        false
+    }
+}
 
-case class Limits(min: Int, max: Option[Int])
+case class Limits(min: Int, max: Option[Int]) {
+  def <:<(that: Limits): Boolean =
+    (this, that) match {
+      case (Limits(min, _), Limits(min1, None))               => min >= min1
+      case (Limits(min, Some(max)), Limits(min1, Some(max1))) => min >= min1 && max <= max1
+    }
+}
 
 object Limits extends ((Int, Int) => Limits) {
   def apply(min: Int, max: Int): Limits =
     Limits(min, Some(max))
 }
 
-case class MemType(limits: Limits) extends Type
+case class MemType(limits: Limits) extends Type {
+  def <:<(that: Type): Boolean =
+    that match {
+      case MemType(limits1) => limits <:< limits1
+      case _                => false
+    }
+}
 
-case class TableType(elemtype: ElemType, limits: Limits) extends Type
+case class TableType(elemtype: ElemType, limits: Limits) extends Type {
+  def <:<(that: Type): Boolean =
+    that match {
+      case TableType(elemtype1, limits1) => elemtype <:< elemtype1 && limits <:< limits1
+      case _                             => false
+    }
+}
 
 sealed trait ElemType extends Type
 
 object ElemType {
-  case object AnyFunc extends ElemType
+  case object AnyFunc extends ElemType {
+    def <:<(that: Type): Boolean = true
+  }
 }
 
-case class GlobalType(tpe: ValType, mut: Mut) extends Type
+case class GlobalType(tpe: ValType, mut: Mut) extends Type {
+  def <:<(that: Type): Boolean =
+    that match {
+      case GlobalType(tpe1, mut1) => mut <= mut1 && tpe <:< tpe1
+      case _                      => false
+    }
+}
 
-sealed trait Mut
+sealed abstract class Mut(private val level: Int) extends Ordered[Mut] {
+  def compare(that: Mut): Int =
+    this.level - that.level
+}
 
 object Mut {
-  case object Const extends Mut
-  case object Var extends Mut
+  case object Const extends Mut(1)
+  case object Var extends Mut(0)
 }
