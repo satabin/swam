@@ -21,15 +21,18 @@ package instance
 
 import scala.language.higherKinds
 
-private[runtime] class TableInstance[F[_]](min: Int, max: Option[Int]) {
-  private val elems = Array.ofDim[CompiledFunction[F]](min)
+private[runtime] class TableInstance[F[_]](min: Int, max: Option[Int]) extends Table[F] {
+
+  private val elems = Array.ofDim[Function[F]](min)
+
+  val tpe = TableType(ElemType.AnyFunc, Limits(min, max))
 
   def size = elems.length
 
-  def apply(idx: Int): CompiledFunction[F] =
+  def apply(idx: Int): Function[F] =
     elems(idx)
 
-  def update(idx: Int, f: CompiledFunction[F]) =
+  def update(idx: Int, f: Function[F]) =
     elems(idx) = f
 
 }

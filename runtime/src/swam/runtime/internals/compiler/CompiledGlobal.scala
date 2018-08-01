@@ -19,10 +19,4 @@ package runtime
 
 import java.nio.ByteBuffer
 
-private[runtime] sealed trait CompiledGlobal {
-  val tpe: GlobalType
-}
-
-private[runtime] case class InterpretedCompiledGlobal(tpe: GlobalType, init: ByteBuffer) extends CompiledGlobal
-
-private[runtime] case class ProvidedCompiledGlobal(tpe: GlobalType) extends CompiledGlobal
+private[runtime] case class CompiledGlobal(tpe: GlobalType, init: ByteBuffer)

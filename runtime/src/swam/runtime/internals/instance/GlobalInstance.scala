@@ -21,14 +21,14 @@ package instance
 
 import scala.language.higherKinds
 
-private[runtime] trait GlobalInstance[F[_]] extends ImportableInstance[F] {
-  val tpe: GlobalType
-  def value: Value
-  def value_=(v: Value): Unit
-}
+private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType) extends Global[F] {
 
-private[runtime] class InterpretedGlobalInstance[F[_]](val tpe: GlobalType) extends GlobalInstance[F] {
+  private var value: Value = Value.zero(tpe.tpe)
 
-  var value: Value = Value.zero(tpe.tpe)
+  def get: Value =
+    value
+
+  def set(v: Value) =
+    value = v
 
 }

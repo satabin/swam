@@ -18,6 +18,7 @@ package swam
 package runtime
 
 import imports._
+import internals.compiler._
 
 import scodec.bits._
 
@@ -40,6 +41,9 @@ class Module[F[_]](val exports: Vector[Export],
                    private[runtime] val functions: Vector[CompiledFunction[F]],
                    private[runtime] val elems: Vector[CompiledElem],
                    private[runtime] val data: Vector[CompiledData]) {
+
+  def newInstance(): F[Instance[F]] =
+    engine.instantiate(this, Map.empty[String, Map[String, Interface[F, Type]]])
 
   def newInstance[I](imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
     engine.instantiate(this, imports)

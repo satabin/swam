@@ -224,7 +224,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
     def getLabel(idx: Int): Label =
       lblstack(lbltop - 1 - idx)
 
-    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Value]): Frame[F] =
+    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Value], instance: Instance[F]): Frame[F] =
       new Frame[F](self, stackSize, code, locals, arity, instance)
 
     def popFrame(): Frame[F] =

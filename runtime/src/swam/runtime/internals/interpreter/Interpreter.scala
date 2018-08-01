@@ -37,7 +37,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
 
   private val conf = engine.conf
 
-  def interpret(funcidx: Int, parameters: Vector[Value], instance: Instance[F]): F[Vector[Value]] = {
+  def interpret(funcidx: Int, parameters: Vector[Value], instance: Instance[F]): F[Option[Value]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // push the parameters in the stack
@@ -48,7 +48,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
       .flatMap(run(_))
   }
 
-  def interpret(func: CompiledFunction[F], parameters: Vector[Value], instance: Instance[F]): F[Vector[Value]] = {
+  def interpret(func: Function[F], parameters: Vector[Value], instance: Instance[F]): F[Option[Value]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // push the parameters in the stack
@@ -59,16 +59,16 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
       .flatMap(run(_))
   }
 
-  def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F]): F[Vector[Value]] = {
+  def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F]): F[Option[Value]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // invoke the function
-    invoke(frame, InterpretedFunction(FuncType(Vector(), Vector(tpe)), Vector(), code))
+    invoke(frame, new FunctionInstance(FuncType(Vector(), Vector(tpe)), Vector(), code, instance))
     // and run
       .flatMap(run(_))
   }
 
-  private def run(frame: Frame[F]): F[Vector[Value]] =
+  private def run(frame: Frame[F]): F[Option[Value]] =
     F.tailRecM(frame) { frame =>
       val opcode = frame.readByte() & 0xff
       (opcode: @switch) match {
@@ -1200,7 +1200,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val frame1 = frame.stack.popFrame()
           if (frame1.isToplevel) {
             // this is the top-level call, return, as we are done
-            F.pure(Right(values.toVector))
+            F.pure(Right(values.headOption))
           } else {
             // push values back to the frame
             frame1.stack.pushValues(values)
@@ -1234,24 +1234,24 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
       }
     }
 
-  private def invoke(frame: Frame[F], f: CompiledFunction[F]): F[Frame[F]] =
+  private def invoke(frame: Frame[F], f: Function[F]): F[Frame[F]] =
     f match {
-      case InterpretedFunction(tpe, locals, code) =>
+      case FunctionInstance(tpe, locals, code, inst) =>
         val ilocals = Array.ofDim[Value](locals.size + tpe.params.size)
         val zlocals = locals.map(Value.zero(_))
         Array.copy(zlocals, 0, ilocals, tpe.params.size, zlocals.length)
         // pop the parameters from the stack
         val params = frame.stack.popValues(tpe.params.size).toArray
         Array.copy(params, 0, ilocals, 0, params.length)
-        val frame1 = frame.stack.pushFrame(tpe.t.size, code, ilocals)
+        val frame1 = frame.stack.pushFrame(tpe.t.size, code, ilocals, inst)
         // push the implicit block label on the called frame
         frame1.stack.pushLabel(Label(tpe.t.size, -1))
         F.pure(frame1)
-      case h: HostFunction[F] =>
+      case f =>
         // pop the parameters from the stack
-        val params = frame.stack.popValues(h.tpe.params.size)
+        val params = frame.stack.popValues(f.tpe.params.size)
         // invoke the host function with the parameters
-        h.invoke(params).map {
+        f.invoke(params.toVector).map {
           case Some(v) =>
             frame.stack.pushValue(v)
             frame

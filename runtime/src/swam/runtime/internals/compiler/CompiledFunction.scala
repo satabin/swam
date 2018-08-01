@@ -16,18 +16,11 @@
 
 package swam
 package runtime
+package internals
+package compiler
 
 import java.nio.ByteBuffer
 
 import scala.language.higherKinds
 
-private[runtime] sealed trait CompiledFunction[F[_]] {
-  val tpe: FuncType
-}
-
-private[runtime] case class InterpretedFunction[F[_]](tpe: FuncType, locals: Vector[ValType], code: ByteBuffer)
-    extends CompiledFunction[F]
-
-private[runtime] trait HostFunction[F[_]] extends CompiledFunction[F] {
-  def invoke(parameters: Seq[Value]): F[Option[Value]]
-}
+private[runtime] case class CompiledFunction[F[_]](tpe: FuncType, locals: Vector[ValType], code: ByteBuffer)

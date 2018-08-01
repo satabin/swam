@@ -35,4 +35,3 @@ class ConfigEngineConfiguration(wrapped: Config) extends EngineConfiguration {
   }
 
 }
-

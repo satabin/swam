@@ -18,22 +18,19 @@ package swam
 package runtime
 package imports
 
+import internals.compiler._
+
 import cats._
 
 import scala.language.higherKinds
 
-  /** Represents the imported elements of an instance.
-    *  These can either be other module [[Instance]]s or Scala
-    *  functions and variables made available to interact between
-    *  both worlds.
-    */
+/** Represents the imported elements of an instance.
+  *  These can either be other module [[Instance]]s or Scala
+  *  functions and variables made available to interact between
+  *  both worlds.
+  */
 trait Imports[T, F[_]] {
 
-  def find(t: T, module: String, field: String)(implicit F: MonadError[F, Throwable]): F[Importable[F]]
+  def find(t: T, module: String, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]]
 
-}
-
-/** A field that can be imported. */
-trait Importable[F[_]] {
-  def tpe: Type
 }

@@ -16,25 +16,45 @@
 
 package swam
 package runtime
-package exports
+package imports
 
-import runtime.{imports => i}
 import formats._
-import internals.instance._
 
 import cats._
 
 import scala.language.higherKinds
 
-/** An exported global value wrapper.
-  *  Makes it possible to interact with global immutable values from Scala.
+/** An imported variable wrapper.
+  *  Makes it possible to pass a mutable global from Scala to Swam.
   */
-class Val[F[_], T](global: Global[F])(implicit F: MonadError[F, Throwable], format: ValueReader[T]) {
+class Var[F[_], T] private (private var _value: Value)(implicit F: MonadError[F, Throwable], formatter: ValueFormatter[T])
+    extends Global[F] {
+
+  val tpe = GlobalType(formatter.swamType, Mut.Var)
+
+  def get: Value =
+    _value
 
   def apply(): F[T] =
-    format.read[F](global.get)
+    formatter.read[F](get)
 
   def value: F[T] =
     apply()
+
+  def value_=(v: T): Unit =
+    set(formatter.write(v))
+
+  def set(v: Value): Unit =
+    _value = v
+
+  def :=(v: T): Unit =
+    value = v
+
+}
+
+object Var {
+
+  def apply[F[_], T](v: T)(implicit F: MonadError[F, Throwable], formatter: ValueFormatter[T]): Var[F, T] =
+    new Var(formatter.write(v))
 
 }

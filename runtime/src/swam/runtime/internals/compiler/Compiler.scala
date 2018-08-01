@@ -57,13 +57,7 @@ class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]
       .fold(new Context[F]()) {
         case (ctx, Section.Imports(is)) =>
           val runtimeis = is.map(toRuntime(ctx.types))
-          runtimeis.foldLeft(ctx.copy(imports = runtimeis)) {
-            case (ctx, runtime.Import.Function(_, _, tpe, _)) => ctx.copy(funcs = ctx.funcs :+ tpe)
-            case (ctx, runtime.Import.Global(_, _, tpe)) =>
-              ctx.copy(globals = ctx.globals :+ ProvidedCompiledGlobal(tpe))
-            case (ctx, runtime.Import.Memory(_, _, tpe)) => ctx.copy(mems = ctx.mems :+ tpe)
-            case (ctx, runtime.Import.Table(_, _, tpe))  => ctx.copy(tables = ctx.tables :+ tpe)
-          }
+          ctx.copy(imports = runtimeis)
         case (ctx, Section.Functions(funcs)) =>
           ctx.copy(funcs = ctx.funcs ++ funcs)
         case (ctx, Section.Tables(tables)) =>
@@ -75,7 +69,7 @@ class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]
             globals.map {
               case Global(tpe, init) =>
                 val ccode = ByteBuffer.wrap(compile(init, true))
-                InterpretedCompiledGlobal(tpe, ccode)
+                CompiledGlobal(tpe, ccode)
             }
           ctx.copy(globals = ctx.globals ++ cglobals)
         case (ctx, Section.Exports(es)) =>
@@ -90,7 +84,7 @@ class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]
               case ((FuncBody(locals, code)), idx) =>
                 val ccode = ByteBuffer.wrap(compile(code, true))
                 val clocals = locals.flatMap(e => Vector.fill(e.count)(e.tpe))
-                InterpretedFunction[F](ctx.types(ctx.funcs(idx)), clocals, ccode)
+                CompiledFunction[F](ctx.types(ctx.funcs(idx)), clocals, ccode)
             }
           ctx.copy(code = code)
         case (ctx, Section.Elements(elems)) =>
@@ -107,7 +101,7 @@ class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]
               case Data(_, offset, bytes) =>
                 val compiled = compile(offset, true)
                 val coffset =
-                  if(dataOnHeap) {
+                  if (dataOnHeap) {
                     ByteBuffer.wrap(compiled)
                   } else {
                     val buf = ByteBuffer.allocateDirect(compiled.length)
