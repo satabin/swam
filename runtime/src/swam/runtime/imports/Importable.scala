@@ -16,7 +16,21 @@
 
 package swam
 package runtime
+package imports
 
-import java.nio.ByteBuffer
+import internals.compiler._
 
-private[runtime] case class CompiledGlobal(tpe: GlobalType, init: ByteBuffer)
+import cats._
+
+import scala.language.higherKinds
+
+/** Represents the imported elements of an instance.
+  *  These can either be other module [[Instance]]s or Scala
+  *  functions and variables made available to interact between
+  *  both worlds.
+  */
+trait Imports[T, F[_]] {
+
+  def find(t: T, module: String, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]]
+
+}

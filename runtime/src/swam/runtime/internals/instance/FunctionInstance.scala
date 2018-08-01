@@ -16,7 +16,18 @@
 
 package swam
 package runtime
+package internals
+package instance
+
+import interpreter._
 
 import java.nio.ByteBuffer
 
-private[runtime] case class CompiledGlobal(tpe: GlobalType, init: ByteBuffer)
+import scala.language.higherKinds
+
+private[runtime] case class FunctionInstance[F[_]](tpe: FuncType, locals: Vector[ValType], code: ByteBuffer, instance: Instance[F]) extends Function[F] {
+
+  def invoke(parameters: Vector[Value]): F[Option[Value]] =
+    instance.interpreter.interpret(this, parameters, instance)
+
+}

@@ -33,7 +33,7 @@ trait EngineConfiguration {
 
 trait StackConfiguration {
 
-    def height: Int
+  def height: Int
 
 }
 

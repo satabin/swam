@@ -21,12 +21,16 @@ package instance
 
 import java.nio.ByteBuffer
 
-private[runtime] class MemoryInstance(min: Int, max: Option[Int], onHead: Boolean) {
+import scala.language.higherKinds
 
-  var buffer = allocate(min)
+private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHead: Boolean) extends Memory[F] {
+
+  val tpe = MemType(Limits(min, max))
+
+  var buffer = allocate(min * pageSize)
 
   def allocate(size: Int) =
-    if(onHead)
+    if (onHead)
       ByteBuffer.allocate(size)
     else
       ByteBuffer.allocateDirect(size)

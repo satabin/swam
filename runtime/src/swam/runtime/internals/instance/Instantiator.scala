@@ -19,6 +19,8 @@ package runtime
 package internals
 package instance
 
+import imports._
+import compiler._
 import interpreter._
 
 import cats._
@@ -33,7 +35,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
 
-  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
+  def instantiate[I](module: Module[F], imports: I)(implicit I: Imports[I, F]): F[Instance[F]] = {
     for {
       // check and order the imports
       imports <- check(module.imports, imports)
@@ -50,14 +52,14 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
     } yield instance
   }
 
-  private def check(mimports: Vector[Import], provided: Imports[F]): F[Vector[ImportableInstance[F]]] =
-    F.tailRecM((0, Vector.empty[ImportableInstance[F]])) {
+  private def check[I](mimports: Vector[Import], provided: I)(implicit I: Imports[I, F]): F[Vector[Interface[F, Type]]] =
+    F.tailRecM((0, Vector.empty[Interface[F, Type]])) {
       case (idx, acc) =>
         if (idx >= mimports.size) {
           F.pure(Right(acc))
         } else {
           val imp = mimports(idx)
-          provided.findField(imp.moduleName, imp.fieldName).flatMap { provided =>
+          I.find(provided, imp.moduleName, imp.fieldName).flatMap { provided =>
             if (provided.tpe <:< imp.tpe) {
               F.pure(Left((idx + 1, acc :+ provided)))
             } else {
@@ -68,61 +70,66 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
     }
 
   private def initialize(globals: Vector[CompiledGlobal],
-                         imports: Vector[ImportableInstance[F]]): F[Vector[GlobalInstance[F]]] = {
+                         imports: Vector[Interface[F, Type]]): F[Vector[GlobalInstance[F]]] = {
     val impglobals = imports.collect {
-      case g: GlobalInstance[F] => g
+      case g: Global[F] => g
     }
-    val inst = new Instance[F](null, Map.empty, interpreter, impglobals, Vector.empty, Vector.empty, Vector.empty)
+    val inst = new Instance[F](null, interpreter)
+    inst.globals = impglobals
     F.tailRecM((0, Vector.empty[GlobalInstance[F]])) {
       case (idx, acc) =>
         if (idx >= globals.size)
           F.pure(Right(acc))
         else
           globals(idx) match {
-            case InterpretedCompiledGlobal(tpe, init) =>
+            case CompiledGlobal(tpe, init) =>
               interpreter.interpretInit(tpe.tpe, init, inst).map { ret =>
-                val i = new InterpretedGlobalInstance[F](tpe)
-                i.value = ret(0)
+                val i = new GlobalInstance[F](tpe)
+                i.set(ret.get)
                 Left((idx + 1, acc :+ i))
               }
-            case _ =>
-              F.pure(Left((idx + 1, acc)))
           }
     }
   }
 
   private def allocate(module: Module[F],
                        globals: Vector[GlobalInstance[F]],
-                       imports: Vector[ImportableInstance[F]]): F[Instance[F]] = {
+                       imports: Vector[Interface[F, Type]]): F[Instance[F]] = {
+
+    val instance = new Instance[F](module, interpreter)
+
     val (ifunctions, iglobals, itables, imemories) = imports.foldLeft(
-      (Vector.empty[CompiledFunction[F]],
-       Vector.empty[GlobalInstance[F]],
-       Vector.empty[TableInstance[F]],
-       Vector.empty[MemoryInstance])) {
-      case ((ifunctions, iglobals, itables, imemories), ExportedField.Function(_, inst)) =>
-        (ifunctions :+ inst, iglobals, itables, imemories)
-      case ((ifunctions, iglobals, itables, imemories), ExportedField.Global(_, inst)) =>
-        (ifunctions, iglobals :+ inst, itables, imemories)
-      case ((ifunctions, iglobals, itables, imemories), ExportedField.Table(_, inst)) =>
-        (ifunctions, iglobals, itables :+ inst, imemories)
-      case ((ifunctions, iglobals, itables, imemories), ExportedField.Memory(_, inst)) =>
-        (ifunctions, iglobals, itables, imemories :+ inst)
+      (Vector.empty[Function[F]],
+       Vector.empty[Global[F]],
+       Vector.empty[Table[F]],
+       Vector.empty[Memory[F]])) {
+      case ((ifunctions, iglobals, itables, imemories), f: Function[F]) =>
+        (ifunctions :+ f, iglobals, itables, imemories)
+      case ((ifunctions, iglobals, itables, imemories), g: Global[F]) =>
+        (ifunctions, iglobals :+ g, itables, imemories)
+      case ((ifunctions, iglobals, itables, imemories), t: Table[F]) =>
+        (ifunctions, iglobals, itables :+ t, imemories)
+      case ((ifunctions, iglobals, itables, imemories), m: Memory[F]) =>
+        (ifunctions, iglobals, itables, imemories :+ m)
     }
-    val finstances = ifunctions ++ module.functions
-    val ginstances = iglobals ++ globals
-    val tinstances = itables ++ module.tables.map {
+    instance.funcs = ifunctions ++ module.functions.map {
+      case CompiledFunction(tpe, locals, code) =>
+      new FunctionInstance[F](tpe, locals, code, instance)
+    }
+    instance.globals = iglobals ++ globals
+    instance.tables = itables ++ module.tables.map {
       case TableType(_, limits) => new TableInstance[F](limits.min, limits.max)
     }
-    val minstances = imemories ++ module.memories.map {
-      case MemType(limits) => new MemoryInstance(limits.min, limits.max, dataOnHeap)
+    instance.memories = imemories ++ module.memories.map {
+      case MemType(limits) => new MemoryInstance[F](limits.min, limits.max, dataOnHeap)
     }
-    val exported = module.exports.map {
-      case Export.Function(name, tpe, idx) => (name, ExportedField.Function[F](tpe, finstances(idx)))
-      case Export.Global(name, tpe, idx)   => (name, ExportedField.Global[F](tpe, ginstances(idx)))
-      case Export.Table(name, tpe, idx)    => (name, ExportedField.Table[F](tpe, tinstances(idx)))
-      case Export.Memory(name, tpe, idx)   => (name, ExportedField.Memory[F](tpe, minstances(idx)))
-    }
-    F.pure(new Instance[F](module, exported.toMap, interpreter, ginstances, minstances, finstances, tinstances))
+    instance.exps = module.exports.map {
+      case Export.Function(name, tpe, idx) => (name, instance.funcs(idx))
+      case Export.Global(name, tpe, idx)   => (name, instance.globals(idx))
+      case Export.Table(name, tpe, idx)    => (name, instance.tables(idx))
+      case Export.Memory(name, tpe, idx)   => (name, instance.memories(idx))
+    }.toMap
+    F.pure(instance)
   }
 
   private def initTables(instance: Instance[F]): F[Unit] = {
@@ -134,8 +141,8 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
         module.elems(idx) match {
           case CompiledElem(coffset, init) =>
             interpreter.interpretInit(ValType.I32, coffset, instance).flatMap { roffset =>
-              val offset = roffset(0).asInt
-              if (init.size + offset >= instance.tables(0).size) {
+              val offset = roffset.get.asInt
+              if (init.size + offset > instance.tables(0).size) {
                 F.raiseError(new RuntimeException("Overflow in table initialization"))
               } else {
                 for (initi <- 0 until init.size)
@@ -156,9 +163,10 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
         module.data(idx) match {
           case CompiledData(coffset, init) =>
             interpreter.interpretInit(ValType.I32, coffset, instance).flatMap { roffset =>
-              val offset = roffset(0).asInt
-              if (init.capacity + offset >= instance.memories(0).size) {
-                F.raiseError(new RuntimeException("Overflow in table initialization"))
+              val offset = roffset.get.asInt
+              println(s"${init.capacity + offset} - ${instance.memories(0).size}")
+              if (init.capacity + offset > instance.memories(0).size) {
+                F.raiseError(new RuntimeException("Overflow in memory initialization"))
               } else {
                 instance.memories(0).writeBytes(offset, init)
                 F.pure(Left(idx + 1))

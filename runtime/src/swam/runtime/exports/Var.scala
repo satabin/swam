@@ -16,11 +16,26 @@
 
 package swam
 package runtime
-package internals
-package instance
+package exports
+
+import runtime.{imports => i}
+import formats._
+import internals.instance._
+
+import cats._
 
 import scala.language.higherKinds
 
-private[runtime] trait ImportableInstance[F[_]] {
-  def tpe: Type
+/** An exported global variable wrapper.
+  *  Makes it possible to interact with global mutable variables from Scala.
+  */
+class Var[F[_], T](global: Global[F])(implicit F: MonadError[F, Throwable], format: ValueFormatter[T])
+    extends Val[F, T](global) {
+
+  def update(v: T): F[Unit] =
+    F.pure(global.set(format.write(v)))
+
+  def :=(v: T): F[Unit] =
+    update(v)
+
 }

@@ -16,7 +16,25 @@
 
 package swam
 package runtime
+package exports
 
-import java.nio.ByteBuffer
+import runtime.{imports => i}
+import formats._
+import internals.instance._
 
-private[runtime] case class CompiledGlobal(tpe: GlobalType, init: ByteBuffer)
+import cats._
+
+import scala.language.higherKinds
+
+/** An exported global value wrapper.
+  *  Makes it possible to interact with global immutable values from Scala.
+  */
+class Val[F[_], T](global: Global[F])(implicit F: MonadError[F, Throwable], format: ValueReader[T]) {
+
+  def apply(): F[T] =
+    format.read[F](global.get)
+
+  def value: F[T] =
+    apply()
+
+}

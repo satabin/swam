@@ -16,7 +16,28 @@
 
 package swam
 package runtime
+package imports
 
-import java.nio.ByteBuffer
+import formats._
 
-private[runtime] case class CompiledGlobal(tpe: GlobalType, init: ByteBuffer)
+import cats._
+
+import scala.language.higherKinds
+
+/** An imported value wrapper.
+  *  Makes it possible to pass a global from Scala to Swam.
+  */
+class Val[F[_], T](v: T)(implicit F: MonadError[F, Throwable], writer: ValueWriter[T]) extends Global[F] {
+
+  val tpe = GlobalType(writer.swamType, Mut.Const)
+
+  def get: Value =
+    writer.write(v)
+
+  def set(v: Value) =
+    throw new UnsupportedOperationException("Val.set")
+
+  def value: Value =
+    get
+
+}
