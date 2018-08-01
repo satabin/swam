@@ -73,13 +73,13 @@ sealed class Frame[F[_]] private (parent: Frame[F],
 
   private[interpreter] object stack {
 
-    private val stack = Array.ofDim[Byte](256)
-    private val istack = Array.ofDim[Int](256)
-    private val lstack = Array.ofDim[Long](256)
-    private val fstack = Array.ofDim[Float](256)
-    private val dstack = Array.ofDim[Double](256)
+    private val stack = Array.ofDim[Byte](stackSize)
+    private val istack = Array.ofDim[Int](stackSize)
+    private val lstack = Array.ofDim[Long](stackSize)
+    private val fstack = Array.ofDim[Float](stackSize)
+    private val dstack = Array.ofDim[Double](stackSize)
 
-    private val lblstack = Array.ofDim[Long](256)
+    private val lblstack = Array.ofDim[Long](stackSize)
 
     private var top = 0
     private var itop = 0
