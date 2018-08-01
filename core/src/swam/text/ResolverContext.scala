@@ -21,7 +21,7 @@ case class ResolverContext(name: Id = NoId,
     if (importAllowed) copy(importAllowed = false) else this
 
   def withLocalNames(locals: Seq[Def], debug: Boolean): ResolverContext =
-    if(debug)
+    if (debug)
       copy(localNames = localNames :+ locals.map(_.id).toVector)
     else
       this

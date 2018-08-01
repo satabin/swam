@@ -52,7 +52,8 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
     } yield instance
   }
 
-  private def check[I](mimports: Vector[Import], provided: I)(implicit I: Imports[I, F]): F[Vector[Interface[F, Type]]] =
+  private def check[I](mimports: Vector[Import], provided: I)(
+      implicit I: Imports[I, F]): F[Vector[Interface[F, Type]]] =
     F.tailRecM((0, Vector.empty[Interface[F, Type]])) {
       case (idx, acc) =>
         if (idx >= mimports.size) {
@@ -99,10 +100,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
     val instance = new Instance[F](module, interpreter)
 
     val (ifunctions, iglobals, itables, imemories) = imports.foldLeft(
-      (Vector.empty[Function[F]],
-       Vector.empty[Global[F]],
-       Vector.empty[Table[F]],
-       Vector.empty[Memory[F]])) {
+      (Vector.empty[Function[F]], Vector.empty[Global[F]], Vector.empty[Table[F]], Vector.empty[Memory[F]])) {
       case ((ifunctions, iglobals, itables, imemories), f: Function[F]) =>
         (ifunctions :+ f, iglobals, itables, imemories)
       case ((ifunctions, iglobals, itables, imemories), g: Global[F]) =>
@@ -114,7 +112,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
     }
     instance.funcs = ifunctions ++ module.functions.map {
       case CompiledFunction(tpe, locals, code) =>
-      new FunctionInstance[F](tpe, locals, code, instance)
+        new FunctionInstance[F](tpe, locals, code, instance)
     }
     instance.globals = iglobals ++ globals
     instance.tables = itables ++ module.tables.map {

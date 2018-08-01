@@ -33,19 +33,18 @@ import scala.language.higherKinds
 
 import java.lang.{Float => JFloat, Double => JDouble}
 
-
 private case class Context(types: Vector[FuncType] = Vector.empty,
-                         funcs: Vector[Int] = Vector.empty,
-                         code: Vector[Func] = Vector.empty,
-                         tables: Vector[Tab] = Vector.empty,
-                         mems: Vector[Mem] = Vector.empty,
-                         globals: Vector[Glob] = Vector.empty,
-                         elems: Vector[CompiledElem] = Vector.empty,
-                         data: Vector[CompiledData] = Vector.empty,
-                         start: Option[Int] = None,
-                         exports: Vector[runtime.Export] = Vector.empty,
-                         imports: Vector[runtime.Import] = Vector.empty,
-                         customs: Vector[runtime.Custom] = Vector.empty)
+                           funcs: Vector[Int] = Vector.empty,
+                           code: Vector[Func] = Vector.empty,
+                           tables: Vector[Tab] = Vector.empty,
+                           mems: Vector[Mem] = Vector.empty,
+                           globals: Vector[Glob] = Vector.empty,
+                           elems: Vector[CompiledElem] = Vector.empty,
+                           data: Vector[CompiledData] = Vector.empty,
+                           start: Option[Int] = None,
+                           exports: Vector[runtime.Export] = Vector.empty,
+                           imports: Vector[runtime.Import] = Vector.empty,
+                           customs: Vector[runtime.Custom] = Vector.empty)
 
 private sealed trait Func
 private object Func {
@@ -158,26 +157,28 @@ private[runtime] class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadEr
           ctx.copy(start = Some(idx))
       }
       .map { ctx =>
-        new runtime.Module(ctx.exports,
-                           ctx.imports,
-                           ctx.customs,
-                           ctx.types,
-                           engine,
-                           ctx.globals.collect {
-                             case Glob.Compiled(g) => g
-                           },
-                           ctx.tables.collect {
-                             case Tab.Compiled(t) => t
-                           },
-                           ctx.mems.collect {
-                             case Mem.Compiled(m) => m
-                           },
-                           ctx.start,
-                           ctx.code.collect {
-                             case Func.Compiled(f) => f
-                           },
-                           ctx.elems,
-                           ctx.data)
+        new runtime.Module(
+          ctx.exports,
+          ctx.imports,
+          ctx.customs,
+          ctx.types,
+          engine,
+          ctx.globals.collect {
+            case Glob.Compiled(g) => g
+          },
+          ctx.tables.collect {
+            case Tab.Compiled(t) => t
+          },
+          ctx.mems.collect {
+            case Mem.Compiled(m) => m
+          },
+          ctx.start,
+          ctx.code.collect {
+            case Func.Compiled(f) => f
+          },
+          ctx.elems,
+          ctx.data
+        )
       }
 
   private def compile(insts: Vector[Inst], toplevel: Boolean): Array[Byte] = {

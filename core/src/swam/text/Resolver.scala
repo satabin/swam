@@ -625,7 +625,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
       case (locals, fidx) =>
         (fidx, locals.zipWithIndex.flatMap {
           case (SomeId(n), idx) => Some(idx -> n)
-          case _ => None
+          case _                => None
         }.toMap)
     }.toMap))
     val names = Names(Vector(moduleName, funcNames, localNames).flatten)

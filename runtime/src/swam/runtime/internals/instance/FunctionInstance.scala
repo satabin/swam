@@ -25,7 +25,11 @@ import java.nio.ByteBuffer
 
 import scala.language.higherKinds
 
-private[runtime] case class FunctionInstance[F[_]](tpe: FuncType, locals: Vector[ValType], code: ByteBuffer, instance: Instance[F]) extends Function[F] {
+private[runtime] case class FunctionInstance[F[_]](tpe: FuncType,
+                                                   locals: Vector[ValType],
+                                                   code: ByteBuffer,
+                                                   instance: Instance[F])
+    extends Function[F] {
 
   def invoke(parameters: Vector[Value]): F[Option[Value]] =
     instance.interpreter.interpret(this, parameters, instance)
