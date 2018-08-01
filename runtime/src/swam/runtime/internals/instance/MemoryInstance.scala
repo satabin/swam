@@ -27,7 +27,7 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHead: 
 
   val tpe = MemType(Limits(min, max))
 
-  var buffer = allocate(min)
+  var buffer = allocate(min * pageSize)
 
   def allocate(size: Int) =
     if (onHead)
