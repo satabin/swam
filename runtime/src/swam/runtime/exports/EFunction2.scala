@@ -27,14 +27,14 @@ import cats.implicits._
 
 import scala.language.higherKinds
 
-abstract class EFunction2[P1, P2, Ret, F[_]] private (f: Function[F], self: Instance[F])(
+abstract class EFunction2[P1, P2, Ret, F[_]] private (f: Function[F])(
     implicit F: MonadError[F, Throwable],
     writer1: ValueWriter[P1],
     writer2: ValueWriter[P2])
-    extends EFunction[Ret, F](f, self)
+    extends EFunction[Ret, F]
     with Function2[P1, P2, F[Ret]] {
   def apply(p1: P1, p2: P2): F[Ret] =
-    invoke(Vector(writer1.write(p1), writer2.write(p2))).flatMap(wrap(_))
+    f.invoke(Vector(writer1.write(p1), writer2.write(p2))).flatMap(wrap(_))
 }
 
 object EFunction2 {
@@ -47,7 +47,7 @@ object EFunction2 {
       case Some(f: Function[F]) =>
         val expectedt = FuncType(Vector(writer1.swamType, writer2.swamType), Vector())
         if (f.tpe == expectedt)
-          F.pure(new EFunction2[P1, P2, Unit, F](f, self) {
+          F.pure(new EFunction2[P1, P2, Unit, F](f) {
             def wrap(res: Option[Value]): F[Unit] = EFunction.wrapUnit[F](res)
           })
         else
@@ -67,7 +67,7 @@ object EFunction2 {
       case Some(f: Function[F]) =>
         val expectedt = FuncType(Vector(writer1.swamType), Vector(reader.swamType))
         if (f.tpe == expectedt)
-          F.pure(new EFunction2[P1, P2, Ret, F](f, self) {
+          F.pure(new EFunction2[P1, P2, Ret, F](f) {
             def wrap(res: Option[Value]): F[Ret] = EFunction.wrap[F, Ret](res)
           })
         else

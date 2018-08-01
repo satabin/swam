@@ -25,12 +25,10 @@ import cats._
 
 import scala.language.higherKinds
 
-abstract class EFunction[Ret, F[_]](f: Function[F], self: Instance[F]) {
+trait EFunction[Ret, F[_]] {
 
   protected def wrap(res: Option[Value]): F[Ret]
 
-  def invoke(parameters: Vector[Value]): F[Option[Value]] =
-    self.interpreter.interpret(f, parameters, self)
 }
 
 private[exports] object EFunction {

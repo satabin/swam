@@ -27,13 +27,13 @@ import cats.implicits._
 
 import scala.language.higherKinds
 
-abstract class EFunction1[P1, Ret, F[_]] private (idx: Function[F], self: Instance[F])(
+abstract class EFunction1[P1, Ret, F[_]] private (f: Function[F])(
     implicit F: MonadError[F, Throwable],
     writer1: ValueWriter[P1])
-    extends EFunction[Ret, F](idx, self)
+    extends EFunction[Ret, F]
     with Function1[P1, F[Ret]] {
   def apply(p1: P1): F[Ret] =
-    invoke(Vector(writer1.write(p1))).flatMap(wrap(_))
+    f.invoke(Vector(writer1.write(p1))).flatMap(wrap(_))
 }
 
 object EFunction1 {
@@ -45,7 +45,7 @@ object EFunction1 {
       case Some(f: Function[F]) =>
         val expectedt = FuncType(Vector(writer1.swamType), Vector())
         if (f.tpe == expectedt)
-          F.pure(new EFunction1[P1, Unit, F](f, self) {
+          F.pure(new EFunction1[P1, Unit, F](f) {
             def wrap(res: Option[Value]): F[Unit] = EFunction.wrapUnit[F](res)
           })
         else
@@ -63,7 +63,7 @@ object EFunction1 {
       case Some(f: Function[F]) =>
         val expectedt = FuncType(Vector(writer1.swamType), Vector(reader.swamType))
         if (f.tpe == expectedt)
-          F.pure(new EFunction1[P1, Ret, F](f, self) {
+          F.pure(new EFunction1[P1, Ret, F](f) {
             def wrap(res: Option[Value]): F[Ret] = EFunction.wrap[F, Ret](res)
           })
         else

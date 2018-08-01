@@ -27,12 +27,12 @@ import cats.implicits._
 
 import scala.language.higherKinds
 
-abstract class EFunction0[Ret, F[_]] private (f: Function[F], self: Instance[F])(
+abstract class EFunction0[Ret, F[_]] private (f: Function[F])(
     implicit F: MonadError[F, Throwable])
-    extends EFunction[Ret, F](f, self)
+    extends EFunction[Ret, F]
     with Function0[F[Ret]] {
   def apply(): F[Ret] =
-    invoke(Vector()).flatMap(wrap(_))
+    f.invoke(Vector()).flatMap(wrap(_))
 }
 
 private[runtime] object EFunction0 {
@@ -42,7 +42,7 @@ private[runtime] object EFunction0 {
       case Some(f: Function[F]) =>
         f.tpe match {
           case FuncType(Vector(), Vector()) =>
-            F.pure(new EFunction0[Unit, F](f, self) {
+            F.pure(new EFunction0[Unit, F](f) {
               def wrap(res: Option[Value]): F[Unit] = EFunction.wrapUnit[F](res)
             })
           case functype =>
@@ -60,7 +60,7 @@ private[runtime] object EFunction0 {
       case Some(f: Function[F]) =>
         f.tpe match {
           case FuncType(Vector(), Vector(reader.swamType)) =>
-            F.pure(new EFunction0[Ret, F](f, self) {
+            F.pure(new EFunction0[Ret, F](f) {
               def wrap(res: Option[Value]): F[Ret] = EFunction.wrap[F, Ret](res)
             })
           case functype =>
