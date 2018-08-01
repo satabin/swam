@@ -55,14 +55,14 @@ class Compiler[F[_]](implicit val F: Effect[F]) {
       mod <- binaryParser.parse(resolved, validator)
     } yield mod
 
-  def stream(module: unresolved.Module): Stream[F, Section] =
-    Stream.force(resolver.resolve(module))
+  def stream(module: unresolved.Module, debug: Boolean): Stream[F, Section] =
+    Stream.force(resolver.resolve(module, debug))
 
-  def stream(file: Path): Stream[F, Section] =
+  def stream(file: Path, debug: Boolean): Stream[F, Section] =
     Stream.force(for {
       input <- F.liftIO(readFile(file))
       unresolved <- parse(input)
-      mod <- resolver.resolve(unresolved)
+      mod <- resolver.resolve(unresolved, debug)
     } yield mod)
 
   private def parse(input: String): F[unresolved.Module] =

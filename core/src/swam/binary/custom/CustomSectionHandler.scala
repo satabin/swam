@@ -15,10 +15,19 @@
  */
 
 package swam
-package text
+package binary
+package custom
 
-class TextCompilerException(msg: String, val positions: Seq[Int]) extends SwamException(msg)
+import scodec.Codec
 
-class ParserException(msg: String, position: Int) extends TextCompilerException(msg, Seq(position))
+/** A handler for custom sections.
+  */
+trait CustomSectionHandler[T] {
 
-class ResolutionException(msg: String, positions: Seq[Int]) extends TextCompilerException(msg, positions)
+  /** The section name this handler can encode and decode. */
+  def handleName: String
+
+  /** The codec used to handle the payload. */
+  def codec: Codec[T]
+
+}

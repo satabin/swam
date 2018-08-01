@@ -33,7 +33,7 @@ package object binary {
     def sizeBound: SizeBound = SizeBound.exact(0l)
   }
 
-  def vectorLookahead[T](cond: Codec[Boolean], element: Codec[T]): Codec[Vector[T]] =
+  def vectorLookahead[T](cond: Decoder[Boolean], element: Codec[T]): Codec[Vector[T]] =
     new Codec[Vector[T]] {
 
       def sizeBound: SizeBound = SizeBound.unknown

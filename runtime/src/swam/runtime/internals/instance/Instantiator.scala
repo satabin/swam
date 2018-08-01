@@ -164,7 +164,6 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
           case CompiledData(coffset, init) =>
             interpreter.interpretInit(ValType.I32, coffset, instance).flatMap { roffset =>
               val offset = roffset.get.asInt
-              println(s"${init.capacity + offset} - ${instance.memories(0).size}")
               if (init.capacity + offset > instance.memories(0).size) {
                 F.raiseError(new RuntimeException("Overflow in memory initialization"))
               } else {

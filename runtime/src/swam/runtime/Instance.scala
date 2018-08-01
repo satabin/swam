@@ -88,6 +88,12 @@ class Instance[F[_]](val module: Module[F], private[runtime] val interpreter: In
                                            reader: ValueReader[Ret]): F[e.EFunction1[P1, Ret, F]] =
       e.EFunction1(name, self)
 
+    def asFunction2[P1, P2, Ret](name: String)(implicit F: MonadError[F, Throwable],
+                                           writer1: ValueWriter[P1],
+                                           writer2: ValueWriter[P2],
+                                           reader: ValueReader[Ret]): F[e.EFunction2[P1, P2, Ret, F]] =
+      e.EFunction2(name, self)
+
   }
 
   private[swam] object global {

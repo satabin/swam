@@ -65,7 +65,7 @@ object EFunction2 {
       reader: ValueReader[Ret]): F[EFunction2[P1, P2, Ret, F]] =
     self.exps.get(name) match {
       case Some(f: Function[F]) =>
-        val expectedt = FuncType(Vector(writer1.swamType), Vector(reader.swamType))
+        val expectedt = FuncType(Vector(writer1.swamType, writer2.swamType), Vector(reader.swamType))
         if (f.tpe == expectedt)
           F.pure(new EFunction2[P1, P2, Ret, F](f) {
             def wrap(res: Option[Value]): F[Ret] = EFunction.wrap[F, Ret](res)

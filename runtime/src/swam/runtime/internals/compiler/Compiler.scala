@@ -116,7 +116,7 @@ private[runtime] class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadEr
           ctx.copy(globals = ctx.globals ++ cglobals)
         case (ctx, Section.Exports(es)) =>
           ctx.copy(exports = es.map(toRuntime(ctx)))
-        case (ctx, c @ Section.Custom(_, _)) =>
+        case (ctx, c @ Section.Custom(name, payload)) =>
           ctx.copy(customs = ctx.customs :+ toRuntime(c))
         case (ctx, Section.Types(types)) =>
           ctx.copy(types = types)

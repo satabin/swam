@@ -19,12 +19,14 @@ package text
 
 import unresolved._
 import swam.{syntax => r}
+import binary.custom._
 
 import cats.MonadError
 import cats.implicits._
 
 import fs2.Stream
 
+import scodec._
 import scodec.bits._
 
 import scala.annotation.tailrec
@@ -403,11 +405,11 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   /** Resolves the entire module, stopping on the first encountered error. */
-  def resolve(mod: Module): F[Stream[F, r.Section]] = {
+  def resolve(mod: Module, debug: Boolean = false): F[Stream[F, r.Section]] = {
     // first we initialize the resolver context with declared identiiers
     // a variation from the spec is that fresh identifiers are not sytactically correct
     // (they do not start with a "$"). This ensures that they indeed are fresh
-    val ctx = mod.fields.foldLeft(ResolverContext()) {
+    val ctx = mod.fields.foldLeft(ResolverContext(name = mod.id)) {
       case (ctx, fld @ Type(id, _, tpe)) =>
         ctx.copy(types = ctx.types :+ Def(id, fld.pos), typedefs = ctx.typedefs :+ tpe)
       case (ctx, fld @ Function(id, _, _, _)) =>
@@ -455,7 +457,8 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                   case r.Func(_, locals, body) => r.FuncBody(locals.map(r.LocalEntry(1, _)), body)
                 }),
                 r.Section.Datas(resolved1.data)
-              )))
+              )
+              ++ (if (debug) Stream.eval(makeNames(ctx)) else Stream.empty)))
         case (ctx, Seq(fld, fields @ _*), resolved) =>
           fld match {
             case Import(n1, n2, desc) =>
@@ -467,7 +470,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                       (idx, ctx1) = idxctx
                     } yield
                       Left(
-                        (ctx.copy(typedefs = ctx.typedefs ++ ctx1.typedefs),
+                        (ctx.copy(typedefs = ctx.typedefs ++ ctx1.typedefs).withLocalNames(Vector(), debug),
                          fields,
                          resolved.copy(imports = resolved.imports :+ r.Import
                            .Function(n1, n2, idx))))
@@ -506,7 +509,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                 (insts, ctx3) = isctx
               } yield
                 Left(
-                  (ctx3.copy(locals = Vector.empty).noImport,
+                  (ctx3.copy(locals = Vector.empty).noImport.withLocalNames(ctx2.locals, debug),
                    fields,
                    resolved.copy(funcs = resolved.funcs :+ r
                      .Func(idx, locals.map(_.tpe).toVector, insts))))
@@ -608,5 +611,28 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
             F.pure(Left((rest, acc.updated(id, pos))))
         }
     }
+
+  private def makeNames(ctx: ResolverContext): F[r.Section.Custom] = {
+    val moduleName = ctx.name match {
+      case SomeId(n) => Some(ModuleName(n))
+      case _         => None
+    }
+    val funcNames = Some(FunctionNames(ctx.funcs.zipWithIndex.flatMap {
+      case (Def(SomeId(n), _), idx) => Some(idx -> n)
+      case _                        => None
+    }.toMap))
+    val localNames = Some(LocalNames(ctx.localNames.zipWithIndex.map {
+      case (locals, fidx) =>
+        (fidx, locals.zipWithIndex.flatMap {
+          case (SomeId(n), idx) => Some(idx -> n)
+          case _ => None
+        }.toMap)
+    }.toMap))
+    val names = Names(Vector(moduleName, funcNames, localNames).flatten)
+    NameSectionHandler.codec.encode(names) match {
+      case Attempt.Successful(bv) => F.pure(r.Section.Custom("name", bv))
+      case Attempt.Failure(err)   => F.raiseError(new TextCompilerException(err.messageWithContext, Seq()))
+    }
+  }
 
 }
