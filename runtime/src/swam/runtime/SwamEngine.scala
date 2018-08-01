@@ -18,6 +18,7 @@ package swam
 package runtime
 
 import config._
+import syntax._
 import binary._
 import imports._
 import validation._
@@ -61,7 +62,10 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
     validate(readPath(path))
 
   def validate(bytes: BitVector): F[Unit] =
-    readStream(bytes)
+    validate(readStream(bytes))
+
+  def validate(sections: Stream[F, Section]): F[Unit] =
+    sections
       .through(validator.validate)
       .compile
       .drain
@@ -70,7 +74,10 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
     compile(readPath(path))
 
   def compile(bytes: BitVector): F[Module[F]] =
-    readStream(bytes)
+    compile(readStream(bytes))
+
+  def compile(sections: Stream[F, Section]): F[Module[F]] =
+    sections
       .through(validator.validate)
       .through(compiler.compile)
       .compile
@@ -82,6 +89,9 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
 
   def instantiate[I](bytes: BitVector, imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
     compile(bytes).flatMap(instantiate(_, imports))
+
+  def instantiate[I](sections: Stream[F, Section], imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
+    compile(sections).flatMap(instantiate(_, imports))
 
   def instantiate[I](module: Module[F], imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
     instantiator.instantiate(module, imports)

@@ -30,6 +30,8 @@ import scala.language.higherKinds
 
 import java.nio.file.Path
 
+import fs2._
+
 import fastparse.core._
 
 class Compiler[F[_]](implicit val F: Effect[F]) {
@@ -52,6 +54,16 @@ class Compiler[F[_]](implicit val F: Effect[F]) {
       resolved <- resolver.resolve(module)
       mod <- binaryParser.parse(resolved, validator)
     } yield mod
+
+  def stream(module: unresolved.Module): Stream[F, Section] =
+    Stream.force(resolver.resolve(module))
+
+  def stream(file: Path): Stream[F, Section] =
+    Stream.force(for {
+      input <- F.liftIO(readFile(file))
+      unresolved <- parse(input)
+      mod <- resolver.resolve(unresolved)
+    } yield mod)
 
   private def parse(input: String): F[unresolved.Module] =
     F.liftIO {
