@@ -27,10 +27,9 @@ import cats.implicits._
 
 import scala.language.higherKinds
 
-abstract class EFunction2[P1, P2, Ret, F[_]] private (f: Function[F])(
-    implicit F: MonadError[F, Throwable],
-    writer1: ValueWriter[P1],
-    writer2: ValueWriter[P2])
+abstract class EFunction2[P1, P2, Ret, F[_]] private (f: Function[F])(implicit F: MonadError[F, Throwable],
+                                                                      writer1: ValueWriter[P1],
+                                                                      writer2: ValueWriter[P2])
     extends EFunction[Ret, F]
     with Function2[P1, P2, F[Ret]] {
   def apply(p1: P1, p2: P2): F[Ret] =

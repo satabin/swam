@@ -27,8 +27,7 @@ import cats.implicits._
 
 import scala.language.higherKinds
 
-abstract class EFunction0[Ret, F[_]] private (f: Function[F])(
-    implicit F: MonadError[F, Throwable])
+abstract class EFunction0[Ret, F[_]] private (f: Function[F])(implicit F: MonadError[F, Throwable])
     extends EFunction[Ret, F]
     with Function0[F[Ret]] {
   def apply(): F[Ret] =
