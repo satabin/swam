@@ -33,12 +33,13 @@ import scala.language.higherKinds
 
 import java.lang.{Float => JFloat, Double => JDouble}
 
-case class Context[F[_]](types: Vector[FuncType] = Vector.empty,
+
+private case class Context(types: Vector[FuncType] = Vector.empty,
                          funcs: Vector[Int] = Vector.empty,
-                         code: Vector[CompiledFunction[F]] = Vector.empty,
-                         tables: Vector[TableType] = Vector.empty,
-                         mems: Vector[MemType] = Vector.empty,
-                         globals: Vector[CompiledGlobal] = Vector.empty,
+                         code: Vector[Func] = Vector.empty,
+                         tables: Vector[Tab] = Vector.empty,
+                         mems: Vector[Mem] = Vector.empty,
+                         globals: Vector[Glob] = Vector.empty,
                          elems: Vector[CompiledElem] = Vector.empty,
                          data: Vector[CompiledData] = Vector.empty,
                          start: Option[Int] = None,
@@ -46,30 +47,71 @@ case class Context[F[_]](types: Vector[FuncType] = Vector.empty,
                          imports: Vector[runtime.Import] = Vector.empty,
                          customs: Vector[runtime.Custom] = Vector.empty)
 
+private sealed trait Func
+private object Func {
+  case class Compiled(f: CompiledFunction) extends Func
+  case class Imported(tpe: FuncType) extends Func
+}
+
+private sealed trait Glob {
+  val tpe: GlobalType
+}
+private object Glob {
+  case class Compiled(f: CompiledGlobal) extends Glob {
+    val tpe = f.tpe
+  }
+  case class Imported(tpe: GlobalType) extends Glob
+}
+
+private sealed trait Tab {
+  val tpe: TableType
+}
+private object Tab {
+  case class Compiled(tpe: TableType) extends Tab
+  case class Imported(tpe: TableType) extends Tab
+}
+
+private sealed trait Mem {
+  val tpe: MemType
+}
+private object Mem {
+  case class Compiled(tpe: MemType) extends Mem
+  case class Imported(tpe: MemType) extends Mem
+}
+
 /** Validates and compiles a module.
   */
-class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]) {
+private[runtime] class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]) {
 
   private val dataOnHeap = engine.conf.data.onHeap
 
   def compile(sections: Stream[F, Section]): Stream[F, runtime.Module[F]] =
     sections
-      .fold(new Context[F]()) {
+      .fold(Context()) {
         case (ctx, Section.Imports(is)) =>
           val runtimeis = is.map(toRuntime(ctx.types))
-          ctx.copy(imports = runtimeis)
+          runtimeis.foldLeft(ctx.copy(imports = runtimeis)) {
+            case (ctx, runtime.Import.Function(_, _, tpeidx, tpe)) =>
+              ctx.copy(funcs = ctx.funcs :+ tpeidx, code = ctx.code :+ Func.Imported(tpe))
+            case (ctx, runtime.Import.Table(_, _, tpe)) =>
+              ctx.copy(tables = ctx.tables :+ Tab.Imported(tpe))
+            case (ctx, runtime.Import.Memory(_, _, tpe)) =>
+              ctx.copy(mems = ctx.mems :+ Mem.Imported(tpe))
+            case (ctx, runtime.Import.Global(_, _, tpe)) =>
+              ctx.copy(globals = ctx.globals :+ Glob.Imported(tpe))
+          }
         case (ctx, Section.Functions(funcs)) =>
           ctx.copy(funcs = ctx.funcs ++ funcs)
         case (ctx, Section.Tables(tables)) =>
-          ctx.copy(tables = ctx.tables ++ tables)
+          ctx.copy(tables = ctx.tables ++ tables.map(Tab.Compiled(_)))
         case (ctx, Section.Memories(mems)) =>
-          ctx.copy(mems = ctx.mems ++ mems)
+          ctx.copy(mems = ctx.mems ++ mems.map(Mem.Compiled(_)))
         case (ctx, Section.Globals(globals)) =>
           val cglobals =
             globals.map {
               case Global(tpe, init) =>
                 val ccode = ByteBuffer.wrap(compile(init, true))
-                CompiledGlobal(tpe, ccode)
+                Glob.Compiled(CompiledGlobal(tpe, ccode))
             }
           ctx.copy(globals = ctx.globals ++ cglobals)
         case (ctx, Section.Exports(es)) =>
@@ -79,12 +121,13 @@ class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]
         case (ctx, Section.Types(types)) =>
           ctx.copy(types = types)
         case (ctx, Section.Code(codes)) =>
+          val shift = ctx.funcs.size - codes.size
           val code =
             codes.zipWithIndex.map {
               case ((FuncBody(locals, code)), idx) =>
                 val ccode = ByteBuffer.wrap(compile(code, true))
                 val clocals = locals.flatMap(e => Vector.fill(e.count)(e.tpe))
-                CompiledFunction[F](ctx.types(ctx.funcs(idx)), clocals, ccode)
+                Func.Compiled(CompiledFunction(ctx.types(ctx.funcs(idx + shift)), clocals, ccode))
             }
           ctx.copy(code = code)
         case (ctx, Section.Elements(elems)) =>
@@ -120,11 +163,19 @@ class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]
                            ctx.customs,
                            ctx.types,
                            engine,
-                           ctx.globals,
-                           ctx.tables,
-                           ctx.mems,
+                           ctx.globals.collect {
+                             case Glob.Compiled(g) => g
+                           },
+                           ctx.tables.collect {
+                             case Tab.Compiled(t) => t
+                           },
+                           ctx.mems.collect {
+                             case Mem.Compiled(m) => m
+                           },
                            ctx.start,
-                           ctx.code,
+                           ctx.code.collect {
+                             case Func.Compiled(f) => f
+                           },
                            ctx.elems,
                            ctx.data)
       }
@@ -268,11 +319,11 @@ class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]
       case Import.Global(mod, fld, tpe)   => runtime.Import.Global(mod, fld, tpe)
     }
 
-  private def toRuntime(ctx: Context[F])(e: Export): runtime.Export =
+  private def toRuntime(ctx: Context)(e: Export): runtime.Export =
     e match {
       case Export(fld, ExternalKind.Function, idx) => runtime.Export.Function(fld, ctx.types(ctx.funcs(idx)), idx)
-      case Export(fld, ExternalKind.Table, idx)    => runtime.Export.Table(fld, ctx.tables(idx), idx)
-      case Export(fld, ExternalKind.Memory, idx)   => runtime.Export.Memory(fld, ctx.mems(idx), idx)
+      case Export(fld, ExternalKind.Table, idx)    => runtime.Export.Table(fld, ctx.tables(idx).tpe, idx)
+      case Export(fld, ExternalKind.Memory, idx)   => runtime.Export.Memory(fld, ctx.mems(idx).tpe, idx)
       case Export(fld, ExternalKind.Global, idx)   => runtime.Export.Global(fld, ctx.globals(idx).tpe, idx)
     }
 

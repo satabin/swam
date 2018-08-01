@@ -23,4 +23,4 @@ import java.nio.ByteBuffer
 
 import scala.language.higherKinds
 
-private[runtime] case class CompiledFunction[F[_]](tpe: FuncType, locals: Vector[ValType], code: ByteBuffer)
+private[runtime] case class CompiledFunction(tpe: FuncType, locals: Vector[ValType], code: ByteBuffer)

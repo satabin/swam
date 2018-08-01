@@ -80,7 +80,7 @@ class Instance[F[_]](val module: Module[F], private[runtime] val interpreter: In
                                        reader: ValueReader[Ret]): F[e.EFunction0[Ret, F]] =
       e.EFunction0[Ret, F](name, self)
 
-    def asFunction0(name: String)(implicit F: MonadError[F, Throwable]): F[e.EFunction0[Unit, F]] =
+    def asFunction0Unit(name: String)(implicit F: MonadError[F, Throwable]): F[e.EFunction0[Unit, F]] =
       e.EFunction0[F](name, self)
 
     def asFunction1[P1, Ret](name: String)(implicit F: MonadError[F, Throwable],

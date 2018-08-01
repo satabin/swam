@@ -38,7 +38,7 @@ class Module[F[_]](val exports: Vector[Export],
                    private[runtime] val tables: Vector[TableType],
                    private[runtime] val memories: Vector[MemType],
                    private[runtime] val start: Option[Int],
-                   private[runtime] val functions: Vector[CompiledFunction[F]],
+                   private[runtime] val functions: Vector[CompiledFunction],
                    private[runtime] val elems: Vector[CompiledElem],
                    private[runtime] val data: Vector[CompiledData]) {
 
