@@ -48,25 +48,10 @@ class Instance[F[_]](val module: Module[F], private[runtime] val interpreter: In
         case None =>          F.raiseError(new RuntimeException(s"unknown export named $name"))
       }
 
-    def asVar[T](name: String)(implicit F: MonadError[F, Throwable], format: ValueFormatter[T]): F[e.Var[F, T]] =
-      exps.get(name) match {
-        case Some(g: Global[F]) if g.tpe.mut == Mut.Var =>
-          if (format.swamType == g.tpe)
-            F.pure(new e.Var(g))
-          else
-            F.raiseError(new ConversionException(s"expected type ${g.tpe} but got type ${format.swamType}"))
-        case Some(_: Global[F]) =>
-          F.raiseError(new RuntimeException(s"cannot get a var for constant global named $name"))
-        case Some(fld) =>
-          F.raiseError(new RuntimeException(s"cannot get a var for type ${fld.tpe}"))
-        case None =>
-          F.raiseError(new RuntimeException(s"unknown global named $name"))
-      }
-
     def asVal[T](name: String)(implicit F: MonadError[F, Throwable], format: ValueFormatter[T]): F[e.Val[F, T]] =
       exps.get(name) match {
         case Some(g: Global[F]) =>
-          if (format.swamType == g.tpe)
+          if (format.swamType == g.tpe.tpe)
             F.pure(new e.Val(g))
           else
             F.raiseError(new ConversionException(s"expected type ${g.tpe} but got type ${format.swamType}"))
@@ -101,7 +86,10 @@ class Instance[F[_]](val module: Module[F], private[runtime] val interpreter: In
       globals(idx).get
 
     def update(idx: Int, v: Value): Unit =
-      globals(idx).set(v)
+      globals(idx) match {
+        case g: GlobalInstance[F] => g.set(v)
+        case _ =>
+      }
   }
 
   private[swam] def memory(idx: Int): Memory[F] =

@@ -36,7 +36,6 @@ object Function {
 
 trait Global[F[_]] extends Interface[F, GlobalType] {
   def get: Value
-  def set(v: Value): Unit
 }
 
 trait Table[F[_]] extends Interface[F, TableType] {
