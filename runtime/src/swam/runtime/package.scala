@@ -16,8 +16,6 @@
 
 package swam
 
-import cats._
-
 import scala.language.higherKinds
 
 package object runtime {

@@ -84,16 +84,16 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
       .last
       .map(_.get)
 
-  def instantiate[I](path: Path, imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
+  def instantiate(path: Path, imports: Imports[F]): F[Instance[F]] =
     instantiate(readPath(path), imports)
 
-  def instantiate[I](bytes: BitVector, imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
+  def instantiate(bytes: BitVector, imports: Imports[F]): F[Instance[F]] =
     compile(bytes).flatMap(instantiate(_, imports))
 
-  def instantiate[I](sections: Stream[F, Section], imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
+  def instantiate(sections: Stream[F, Section], imports: Imports[F]): F[Instance[F]] =
     compile(sections).flatMap(instantiate(_, imports))
 
-  def instantiate[I](module: Module[F], imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
+  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] =
     instantiator.instantiate(module, imports)
 
 }

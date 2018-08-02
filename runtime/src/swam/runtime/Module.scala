@@ -42,10 +42,7 @@ class Module[F[_]](val exports: Vector[Export],
                    private[runtime] val elems: Vector[CompiledElem],
                    private[runtime] val data: Vector[CompiledData]) {
 
-  def newInstance(): F[Instance[F]] =
-    engine.instantiate(this, Map.empty[String, Map[String, Interface[F, Type]]])
-
-  def newInstance[I](imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
+  def newInstance(imports: Imports[F] = NoImports[F]): F[Instance[F]] =
     engine.instantiate(this, imports)
 
   object imported {

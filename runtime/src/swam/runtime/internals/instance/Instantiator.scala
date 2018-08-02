@@ -35,7 +35,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
 
-  def instantiate[I](module: Module[F], imports: I)(implicit I: Imports[I, F]): F[Instance[F]] = {
+  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
       // check and order the imports
       imports <- check(module.imports, imports)
@@ -52,15 +52,14 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
     } yield instance
   }
 
-  private def check[I](mimports: Vector[Import], provided: I)(
-      implicit I: Imports[I, F]): F[Vector[Interface[F, Type]]] =
+  private def check(mimports: Vector[Import], provided: Imports[F]): F[Vector[Interface[F, Type]]] =
     F.tailRecM((0, Vector.empty[Interface[F, Type]])) {
       case (idx, acc) =>
         if (idx >= mimports.size) {
           F.pure(Right(acc))
         } else {
           val imp = mimports(idx)
-          I.find(provided, imp.moduleName, imp.fieldName).flatMap { provided =>
+          provided.find(imp.moduleName, imp.fieldName).flatMap { provided =>
             if (provided.tpe <:< imp.tpe) {
               F.pure(Left((idx + 1, acc :+ provided)))
             } else {
