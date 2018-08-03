@@ -46,8 +46,8 @@ object Imports {
 }
 
 /** A typeclass that describes what it means for an imported object to be viewed as
- *  an instance from the engine.
- */
+  *  an instance from the engine.
+  */
 trait AsInstance[T, F[_]] {
 
   def find(t: T, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]]
@@ -55,8 +55,8 @@ trait AsInstance[T, F[_]] {
 }
 
 /** A typeclass that describes what it means for a type to be viewed as
- *  an interface element from the engine.
- */
+  *  an interface element from the engine.
+  */
 trait AsInterface[T, F[_]] {
 
   def view(v: T): Interface[F, Type]

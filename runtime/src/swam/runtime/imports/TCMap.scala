@@ -18,10 +18,7 @@ package swam
 package runtime
 package imports
 
-import scala.language.{
-  higherKinds,
-  implicitConversions
-}
+import scala.language.{higherKinds, implicitConversions}
 
 trait Elem[TC[_]] {
   type T
@@ -32,7 +29,7 @@ trait Elem[TC[_]] {
 object Elem {
 
   implicit def fromValue[V, TC[_]](v: V)(implicit V: TC[V]): Elem[TC] =
-    new  Elem[TC] {
+    new Elem[TC] {
       type T = V
       val value = v
       val typeclass = V
@@ -80,9 +77,7 @@ object test {
   import cats._
   import cats.implicits._
 
-  val m = TCMap[String, Show](
-    "test" -> 2,
-    "toto" -> "test")
+  val m = TCMap[String, Show]("test" -> 2, "toto" -> "test")
 
   val elem = m.get("test").get
 
