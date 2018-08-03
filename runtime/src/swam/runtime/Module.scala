@@ -18,8 +18,10 @@ package swam
 package runtime
 
 import imports._
+import binary.custom._
 import internals.compiler._
 
+import scodec._
 import scodec.bits._
 
 import scala.language.higherKinds
@@ -47,6 +49,26 @@ class Module[F[_]] private[runtime] (val exports: Vector[Export],
                                      private[runtime] val functions: Vector[CompiledFunction],
                                      private[runtime] val elems: Vector[CompiledElem],
                                      private[runtime] val data: Vector[CompiledData]) {
+
+  private lazy val names = {
+    val sec = customs.collectFirst {
+      case Custom("name", payload) => payload
+    }
+    sec match {
+      case Some(payload) =>
+        NameSectionHandler.codec.decodeValue(payload) match {
+          case Attempt.Successful(names) => Some(names)
+          case _                         => None // simply ignore malformed name section
+        }
+      case None => None
+    }
+  }
+
+  /** Returns the module name if any.
+    *
+    * A module has a name if it was provided by a custom name section.
+    */
+  def name: Option[String] = names.flatMap(_.subsections.collectFirst { case ModuleName(n) => n })
 
   /** Instantiates this module.
     * The returned [[Instance]] can then be used to access exported elements.
