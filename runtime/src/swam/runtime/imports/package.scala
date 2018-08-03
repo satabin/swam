@@ -21,6 +21,8 @@ import formats._
 
 import cats._
 
+import java.nio.ByteBuffer
+
 import scala.language.higherKinds
 
 package object imports {
@@ -110,6 +112,40 @@ package object imports {
           a(idx)
         def update(idx: Int, f: Function[F]) =
           a(idx) = f
+      }
+    }
+
+  implicit def byteBufferAsInsterface[F[_]]: AsInterface[ByteBuffer, F] =
+    new AsInterface[ByteBuffer, F] {
+      def view(b: ByteBuffer) = new Memory[F] {
+        def tpe: swam.MemType = MemType(Limits(b.limit, Some(b.capacity)))
+        def grow(by: Int): Boolean = {
+          val newSize = size + by * pageSize
+          if (newSize > b.capacity) {
+            false
+          } else {
+            b.limit(newSize)
+            true
+          }
+        }
+        def readByte(idx: Int): Byte = b.get(idx)
+        def readDouble(idx: Int): Double = b.getDouble(idx)
+        def readFloat(idx: Int): Float = b.getFloat(idx)
+        def readInt(idx: Int): Int = b.getInt(idx)
+        def readLong(idx: Int): Long = b.getLong(idx)
+        def readShort(idx: Int): Short = b.getShort(idx)
+        def size: Int = b.limit
+        def writeByte(idx: Int, v: Byte): Unit = b.put(idx, v)
+        def writeBytes(idx: Int, bytes: ByteBuffer): Unit = {
+          b.position(idx)
+          b.put(bytes)
+        }
+        def writeDouble(idx: Int, v: Double): Unit = b.putDouble(idx, v)
+        def writeFloat(idx: Int, v: Float): Unit = b.putFloat(idx, v)
+        def writeInt(idx: Int, v: Int): Unit = b.putInt(idx, v)
+        def writeLong(idx: Int, v: Long): Unit = b.putLong(idx, v)
+        def writeShort(idx: Int, v: Short): Unit = b.putShort(idx, v)
+
       }
     }
 

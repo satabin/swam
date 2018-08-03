@@ -39,7 +39,10 @@ import scala.language.higherKinds
 import java.nio.file.Path
 
 /** This is the engine used to compile, instantiate and run modules.
-  *  It exposes all the needed interface to interact with modules.
+  * It exposes all the needed interface to interact with modules.
+  *
+  * You typically want to reuse the same instance for all your executions
+  * over the same effectful type `F`.
   */
 class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(implicit F: Effect[F]) {
 
@@ -58,24 +61,54 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
     ModuleStream.decoder
       .decode(bytes)
 
+  /** Reads the `.wasm` file at the given path and validates it.
+    *
+    * If validation fails, returns an error with the validation message wrapped in it.
+    */
   def validate(path: Path): F[Unit] =
     validate(readPath(path))
 
+  /** Reads the given binary encoded module and validates it.
+    *
+    * If validation fails, returns an error with the validation message wrapped in it.
+    */
   def validate(bytes: BitVector): F[Unit] =
     validate(readStream(bytes))
 
+  /** Reads the given stream of binary module sections and validates it.
+    *
+    * If validation fails, returns an error with the validation message wrapped in it.
+    */
   def validate(sections: Stream[F, Section]): F[Unit] =
     sections
       .through(validator.validate)
       .compile
       .drain
 
+  /** Reads the `.wasm` file at the given path, validates, and compiles it.
+    * The returned compiled [[Module]] can then be instantiated to be run.
+    *
+    * If validation or compilation fails, returns an error with the
+    * message wrapped in it.
+    */
   def compile(path: Path): F[Module[F]] =
     compile(readPath(path))
 
+  /** Reads the given binary encoded module, validates, and compiles it.
+    * The returned compiled [[Module]] can then be instantiated to be run.
+    *
+    * If validation or compilation fails, returns an error with the
+    * message wrapped in it.
+    */
   def compile(bytes: BitVector): F[Module[F]] =
     compile(readStream(bytes))
 
+  /** Reads the given stream of binary module sections, validates, and compiles it.
+    * The returned compiled [[Module]] can then be instantiated to be run.
+    *
+    * If validation or compilation fails, returns an error with the
+    * message wrapped in it.
+    */
   def compile(sections: Stream[F, Section]): F[Module[F]] =
     sections
       .through(validator.validate)
@@ -84,15 +117,38 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
       .last
       .map(_.get)
 
+  /** Reads the `.wasm` file at the given path, validates, compiles, and instantiates it.
+    * The returned [[Instance]] can then be used to access exported elements.
+    *
+    * If validation, compilation, or instantiation fails, returns an error with the
+    * message wrapped in it.
+    */
   def instantiate(path: Path, imports: Imports[F]): F[Instance[F]] =
     instantiate(readPath(path), imports)
 
+  /** Reads the given binary encoded module, validates, compiles, and instantiates it.
+    * The returned [[Instance]] can then be used to access exported elements.
+    *
+    * If validation, compilation, or instantiation fails, returns an error with the
+    * message wrapped in it.
+    */
   def instantiate(bytes: BitVector, imports: Imports[F]): F[Instance[F]] =
     compile(bytes).flatMap(instantiate(_, imports))
 
+  /** Reads the given stream of binary module sections, validates, compiles, and instantiates it.
+    * The returned [[Instance]] can then be used to access exported elements.
+    *
+    * If validation, compilation, or instantiation fails, returns an error with the
+    * message wrapped in it.
+    */
   def instantiate(sections: Stream[F, Section], imports: Imports[F]): F[Instance[F]] =
     compile(sections).flatMap(instantiate(_, imports))
 
+  /** Instantiates the previously validated and compiled module.
+    * The returned [[Instance]] can then be used to access exported elements.
+    *
+    * If instantiation fails, returns an error with the message wrapped in it.
+    */
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] =
     instantiator.instantiate(module, imports)
 

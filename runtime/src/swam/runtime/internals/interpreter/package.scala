@@ -22,8 +22,6 @@ package object interpreter {
 
   type Label = Long
 
-  val pageSize = 65536
-
   implicit class LabelOps(val l: Label) extends AnyVal {
     def arity: Int = ((l >> 32) & 0xffffffff).toInt
     def cont: Int = (l & 0xffffffff).toInt

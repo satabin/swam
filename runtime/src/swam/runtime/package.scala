@@ -18,7 +18,39 @@ package swam
 
 import scala.language.higherKinds
 
+/** This package contains all the classes and types related to
+  * running WebAssembly modules.
+  *
+  * The entry point for almost all users will be [[SwamEngine]].
+  * A typical use of the engine is:
+  * {{{
+  * import swam._
+  * import text._
+  * import runtime._
+  * import exports._
+  *
+  * import cats.implicits._
+  * import cats.effect._
+  *
+  * import java.nio.file.Paths
+  *
+  * val tcompiler = new Compiler[IO]
+  * val engine = new SwamEngine[IO]
+  *
+  * for {
+  *   mod <- engine.compile(/* source of the module */)
+  *   inst <- mod.newInstance()
+  *   f <- inst.exports.function1[Int, Int](1)
+  *   res <- f(43)
+  * } yield res
+  *
+  * println(res.unsafeRunSync())
+  * }}}
+  */
 package object runtime {
+
+  /** The size in bytes of a memory page. */
+  val pageSize: Int = 65536
 
   def truncate(f: Float): Float =
     if (f < 0)
