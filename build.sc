@@ -9,7 +9,8 @@ trait SwamModule extends ScalaModule with ScalafmtModule {
 
   def repositories = super.repositories ++ Seq(
 		MavenRepository("https://oss.sonatype.org/content/repositories/snapshots"),
-		MavenRepository("https://oss.sonatype.org/content/repositories/releases"))
+		MavenRepository("https://oss.sonatype.org/content/repositories/snapshots"),
+		MavenRepository("https:/dl.bintray.com/tpolecat/maven"))
 
   def scalaVersion = "2.12.6"
 
