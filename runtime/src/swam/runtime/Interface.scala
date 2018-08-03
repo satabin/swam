@@ -21,43 +21,185 @@ import java.nio.ByteBuffer
 
 import scala.language.higherKinds
 
+/** All elements that are part of the interface of an instance must implement
+  * this interface.
+  *
+  * Each specialization defines a specific WebAssembly type that can be imported
+  * or exported.
+  */
 sealed trait Interface[F[_], +T <: Type] {
+
+  /** Returns the type of this interface element. */
   def tpe: T
+
 }
 
+/** Functions must implement this interface to be used by Swam.
+  *
+  */
 trait Function[F[_]] extends Interface[F, FuncType] {
+
+  /** Invokes the function and returns its result.
+    *
+    * Implementations must not throw any exception but
+    * must encapsulate their effect and failure in an instance of `F`.
+    */
   def invoke(parameters: Vector[Value]): F[Option[Value]]
+
 }
 
-object Function {
-  def unapply[F[_]](f: Function[F]): Option[FuncType] =
-    Some(f.tpe)
-}
-
+/** Globals must implement this interface to be used by Swam.
+  *
+  * Only immutable globals can be imported or exported by Swam
+  * in accordance with the WebAssembly specification.
+  */
 trait Global[F[_]] extends Interface[F, GlobalType] {
+
+  /** Returns the global value.
+    *
+    * Implementations must always return the same value
+    * across multiple calls to this method to respect the invariant
+    * from the specification that this global is immutable.
+    * Failure to do so will lead to undefined behaviors.
+    */
   def get: Value
 }
 
+/** Tables must implement this interface to be used by Swam.
+  * This interface is unsafe, meaning that no exception is expected when
+  * calling any method on it.
+  *
+  * This interface is '''not''' thread-safe, concurrent modifications may
+  * lead to undefined behaviors.
+  *
+  */
 trait Table[F[_]] extends Interface[F, TableType] {
+
+  /** The size of this table in term of elements. */
   def size: Int
+
+  /** Returns the function at the given index in the table.
+    * The element may be `null`, even though Swam should never
+    * encounter such problem.
+    *
+    * Implementations must initialize empty cells to `null`.
+    */
   def apply(idx: Int): Function[F]
+
+  /** Sets the function at the given index in the table.
+    *
+    * This method is used by Swam to initialize the table upon module
+    * instantiation and should not be used otherwise.
+    */
   def update(idx: Int, f: Function[F]): Unit
 }
 
+/** Memories must implement this interface to be used by Swam.
+  *
+  * This interface is unsafe, meaning that no exception is expected when
+  * calling any method on it.
+  * The Swam engine ensures that this does not occur by running only validated
+  * WebAssembly code, where size constraints are checked before execution.
+  * Implementations must respect the contract of each method.
+  *
+  * This interface is '''not''' thread-safe, concurrent access to the same
+  * instance may lead to undefined behaviors.
+  *
+  * @define boundaries Implementations need not check for boundaries in this
+  *                    method since the Swam engine already checks it.
+  */
 trait Memory[F[_]] extends Interface[F, MemType] {
+
+  /** Returns the size in bytes of this memory instance. */
   def size: Int
+
+  /** Tries to grow the available space by `by` pages.
+    *
+    * Instances should use the constant [[swam.runtime.pageSize]] to ensure
+    * the correct page size is always used even if it changes in subsequent versions.
+    * This method should never throw an exception. If growing is not possible,
+    * whatever the reason, it must simply return `false`.
+    */
   def grow(by: Int): Boolean
+
+  /** Writes a byte at the given index in memory.
+    *
+    *  $boundaries
+    */
   def writeByte(idx: Int, v: Byte): Unit
+
+  /** Reads a byte at the given index in memory.
+    *
+    *  $boundaries
+    */
   def readByte(idx: Int): Byte
+
+  /** Writes a short at the given index in memory.
+    *
+    *  $boundaries
+    */
   def writeShort(idx: Int, v: Short): Unit
+
+  /** Reads a short at the given index in memory.
+    *
+    *  $boundaries
+    */
   def readShort(idx: Int): Short
+
+  /** Writes a integer at the given index in memory.
+    *
+    *  $boundaries
+    */
   def writeInt(idx: Int, v: Int): Unit
+
+  /** Reads a integer at the given index in memory.
+    *
+    *  $boundaries
+    */
   def readInt(idx: Int): Int
+
+  /** Writes a long at the given index in memory.
+    *
+    *  $boundaries
+    */
   def writeLong(idx: Int, v: Long): Unit
+
+  /** Reads a long at the given index in memory.
+    *
+    *  $boundaries
+    */
   def readLong(idx: Int): Long
+
+  /** Writes a float at the given index in memory.
+    *
+    *  $boundaries
+    */
   def writeFloat(idx: Int, v: Float): Unit
+
+  /** Reads a float at the given index in memory.
+    *
+    *  $boundaries
+    */
   def readFloat(idx: Int): Float
+
+  /** Writes a double at the given index in memory.
+    *
+    *  $boundaries
+    */
   def writeDouble(idx: Int, v: Double): Unit
+
+  /** Reads a double at the given index in memory.
+    *
+    *  $boundaries
+    */
   def readDouble(idx: Int): Double
+
+  /** Writes the bytes in the provided buffer at the given index in memory.
+    *
+    * This method is used by Swam to initialize the memory upon module
+    * instantiation and should not be used otherwise.
+    *
+    *  $boundaries
+    */
   def writeBytes(idx: Int, bytes: ByteBuffer): Unit
 }

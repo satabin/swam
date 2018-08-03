@@ -26,45 +26,58 @@ import scala.language.higherKinds
 
 import java.nio.ByteBuffer
 
-/** The runtime representation of a loaded module.
+/** The runtime representation of a validated and compiled module.
   *
+  * @param exports Returns the ordered list of elements exported by this module.
+  * @param imports Returns the ordered list of elements imported by this module.
+  *                The imports are required when the module is instantiated.
+  * @param customs Returns the ordered list of custom section of this module.
+  *                Custom sections may be used to implement extensions or get
+  *                extra information about the module.
   */
-class Module[F[_]](val exports: Vector[Export],
-                   val imports: Vector[Import],
-                   val customs: Vector[Custom],
-                   private[runtime] val types: Vector[FuncType],
-                   private[runtime] val engine: SwamEngine[F],
-                   private[runtime] val globals: Vector[CompiledGlobal],
-                   private[runtime] val tables: Vector[TableType],
-                   private[runtime] val memories: Vector[MemType],
-                   private[runtime] val start: Option[Int],
-                   private[runtime] val functions: Vector[CompiledFunction],
-                   private[runtime] val elems: Vector[CompiledElem],
-                   private[runtime] val data: Vector[CompiledData]) {
+class Module[F[_]] private[runtime] (val exports: Vector[Export],
+                                     val imports: Vector[Import],
+                                     val customs: Vector[Custom],
+                                     private[runtime] val types: Vector[FuncType],
+                                     private[runtime] val engine: SwamEngine[F],
+                                     private[runtime] val globals: Vector[CompiledGlobal],
+                                     private[runtime] val tables: Vector[TableType],
+                                     private[runtime] val memories: Vector[MemType],
+                                     private[runtime] val start: Option[Int],
+                                     private[runtime] val functions: Vector[CompiledFunction],
+                                     private[runtime] val elems: Vector[CompiledElem],
+                                     private[runtime] val data: Vector[CompiledData]) {
 
-  def newInstance(): F[Instance[F]] =
-    engine.instantiate(this, Map.empty[String, Map[String, Interface[F, Type]]])
-
-  def newInstance[I](imports: I)(implicit I: Imports[I, F]): F[Instance[F]] =
+  /** Instantiates this module.
+    * The returned [[Instance]] can then be used to access exported elements.
+    *
+    * If instantiation fails, returns an error with the message wrapped in it.
+    */
+  def newInstance(imports: Imports[F] = NoImports[F]): F[Instance[F]] =
     engine.instantiate(this, imports)
 
+  /** Access to filtered imported elements. */
   object imported {
 
+    /** Returns the ordered list of imported functions. */
     def functions: Vector[Import.Function] =
       imports.collect {
         case f @ Import.Function(_, _, _, _) => f
       }
 
+    /** Returns the ordered list of imported globals. */
     def globals: Vector[Import.Global] =
       imports.collect {
         case f @ Import.Global(_, _, _) => f
       }
 
+    /** Returns the ordered list of imported tables. */
     def tables: Vector[Import.Table] =
       imports.collect {
         case f @ Import.Table(_, _, _) => f
       }
 
+    /** Returns the ordered list of imported memories. */
     def memories: Vector[Import.Memory] =
       imports.collect {
         case f @ Import.Memory(_, _, _) => f

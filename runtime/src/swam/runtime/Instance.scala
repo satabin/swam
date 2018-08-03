@@ -31,7 +31,11 @@ import java.nio.ByteBuffer
 
 import scala.language.higherKinds
 
-class Instance[F[_]](val module: Module[F], private[runtime] val interpreter: Interpreter[F]) {
+/** A module instance that has already been initialized.
+  *
+  * @param module The [[Module]] of this instance.
+  */
+class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] val interpreter: Interpreter[F]) {
   self =>
 
   private[runtime] var exps: Map[String, Interface[F, Type]] = Map.empty
