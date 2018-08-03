@@ -18,7 +18,6 @@ package swam
 package runtime
 
 import formats._
-import functions._
 
 import cats._
 
