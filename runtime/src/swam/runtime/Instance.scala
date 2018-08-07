@@ -44,6 +44,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
   private[runtime] var funcs: Vector[Function[F]] = Vector.empty
   private[runtime] var tables: Vector[Table[F]] = Vector.empty
 
+  /** Gives access to all exported fields of this instance. */
   object exports {
 
     /** Lists the exported fields and their type. */
@@ -57,16 +58,13 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
         case None    => F.raiseError(new RuntimeException(s"unknown export named $name"))
       }
 
-    /** Returns a global value for given name and type. */
-    def global[T](name: String)(implicit F: MonadError[F, Throwable], reader: ValueReader[T]): F[T] =
+    /** Returns a global for given name. */
+    def global(name: String)(implicit F: MonadError[F, Throwable]): F[Global[F]] =
       exps.get(name) match {
         case Some(g: Global[F]) =>
-          if (reader.swamType == g.tpe.tpe)
-            reader.read[F](g.get)
-          else
-            F.raiseError(new ConversionException(s"expected type ${g.tpe.tpe} but got type ${reader.swamType}"))
+          F.pure(g)
         case Some(fld) =>
-          F.raiseError(new RuntimeException(s"cannot get a var from type ${fld.tpe}"))
+          F.raiseError(new RuntimeException(s"cannot get a global from type ${fld.tpe}"))
         case None =>
           F.raiseError(new RuntimeException(s"unknown global named $name"))
       }
@@ -81,39 +79,6 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
         case None =>
           F.raiseError(new RuntimeException(s"unknown function named $name"))
       }
-
-    /** Returns a function for given name and type. */
-    def function0[Ret](name: String)(implicit F: MonadError[F, Throwable],
-                                     reader: ValueReader[Ret]): F[e.EFunction0[Ret, F]] =
-      e.EFunction0[Ret, F](name, self)
-
-    /** Returns a function for given name and type. */
-    def procedure0(name: String)(implicit F: MonadError[F, Throwable]): F[e.EFunction0[Unit, F]] =
-      e.EFunction0[F](name, self)
-
-    /** Returns a function for given name and type. */
-    def function1[P1, Ret](name: String)(implicit F: MonadError[F, Throwable],
-                                         writer1: ValueWriter[P1],
-                                         reader: ValueReader[Ret]): F[e.EFunction1[P1, Ret, F]] =
-      e.EFunction1(name, self)
-
-    /** Returns a function for given name and type. */
-    def procedure1[P1](name: String)(implicit F: MonadError[F, Throwable],
-                                     writer1: ValueWriter[P1]): F[e.EFunction1[P1, Unit, F]] =
-      e.EFunction1[P1, F](name, self)
-
-    /** Returns a function for given name and type. */
-    def function2[P1, P2, Ret](name: String)(implicit F: MonadError[F, Throwable],
-                                             writer1: ValueWriter[P1],
-                                             writer2: ValueWriter[P2],
-                                             reader: ValueReader[Ret]): F[e.EFunction2[P1, P2, Ret, F]] =
-      e.EFunction2(name, self)
-
-    /** Returns a function for given name and type. */
-    def procedure2[P1, P2](name: String)(implicit F: MonadError[F, Throwable],
-                                         writer1: ValueWriter[P1],
-                                         writer2: ValueWriter[P2]): F[e.EFunction2[P1, P2, Unit, F]] =
-      e.EFunction2[P1, P2, F](name, self)
 
     /** Returns a memory for given name. */
     def memory(name: String)(implicit F: MonadError[F, Throwable]): F[Memory[F]] =
@@ -135,9 +100,61 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
           F.raiseError(new RuntimeException(s"unknown global named $name"))
       }
 
+    /** Access to wrapped typed versions of the exported fields. */
+    object typed {
+
+      /** Returns a global value for given name and type. */
+      def global[T](name: String)(implicit F: MonadError[F, Throwable], reader: ValueReader[T]): F[T] =
+        exps.get(name) match {
+          case Some(g: Global[F]) =>
+            if (reader.swamType == g.tpe.tpe)
+              reader.read[F](g.get)
+            else
+              F.raiseError(new ConversionException(s"expected type ${g.tpe.tpe} but got type ${reader.swamType}"))
+          case Some(fld) =>
+            F.raiseError(new RuntimeException(s"cannot get a var from type ${fld.tpe}"))
+          case None =>
+            F.raiseError(new RuntimeException(s"unknown global named $name"))
+        }
+
+      /** Returns a function for given name and type. */
+      def function0[Ret](name: String)(implicit F: MonadError[F, Throwable],
+                                       reader: ValueReader[Ret]): F[e.EFunction0[Ret, F]] =
+        e.EFunction0[Ret, F](name, self)
+
+      /** Returns a function for given name and type. */
+      def procedure0(name: String)(implicit F: MonadError[F, Throwable]): F[e.EFunction0[Unit, F]] =
+        e.EFunction0[F](name, self)
+
+      /** Returns a function for given name and type. */
+      def function1[P1, Ret](name: String)(implicit F: MonadError[F, Throwable],
+                                           writer1: ValueWriter[P1],
+                                           reader: ValueReader[Ret]): F[e.EFunction1[P1, Ret, F]] =
+        e.EFunction1(name, self)
+
+      /** Returns a function for given name and type. */
+      def procedure1[P1](name: String)(implicit F: MonadError[F, Throwable],
+                                       writer1: ValueWriter[P1]): F[e.EFunction1[P1, Unit, F]] =
+        e.EFunction1[P1, F](name, self)
+
+      /** Returns a function for given name and type. */
+      def function2[P1, P2, Ret](name: String)(implicit F: MonadError[F, Throwable],
+                                               writer1: ValueWriter[P1],
+                                               writer2: ValueWriter[P2],
+                                               reader: ValueReader[Ret]): F[e.EFunction2[P1, P2, Ret, F]] =
+        e.EFunction2(name, self)
+
+      /** Returns a function for given name and type. */
+      def procedure2[P1, P2](name: String)(implicit F: MonadError[F, Throwable],
+                                           writer1: ValueWriter[P1],
+                                           writer2: ValueWriter[P2]): F[e.EFunction2[P1, P2, Unit, F]] =
+        e.EFunction2[P1, P2, F](name, self)
+
+    }
+
   }
 
-  private[swam] object global {
+  private[runtime] object global {
     def apply(idx: Int): Value =
       globals(idx).get
 
@@ -148,16 +165,16 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
       }
   }
 
-  private[swam] def memory(idx: Int): Memory[F] =
+  private[runtime] def memory(idx: Int): Memory[F] =
     memories(idx)
 
-  private[swam] def function(idx: Int): Function[F] =
+  private[runtime] def function(idx: Int): Function[F] =
     funcs(idx)
 
-  private[swam] def table(idx: Int): Table[F] =
+  private[runtime] def table(idx: Int): Table[F] =
     tables(idx)
 
-  private[swam] def tpe(idx: Int): FuncType =
+  private[runtime] def tpe(idx: Int): FuncType =
     module.types(idx)
 
 }
