@@ -53,4 +53,12 @@ object runtime extends SwamModule {
   def ivyDeps = Agg(
     ivy"com.typesafe:config:1.3.2")
 
+  object test extends Tests with ScalafmtModule {
+    def ivyDeps = Agg(
+      ivy"com.lihaoyi::utest:0.6.4",
+      ivy"com.github.pathikrit::better-files:3.5.0",
+      ivy"com.lihaoyi::pprint:0.5.3")
+    def testFrameworks = Seq("utest.runner.Framework")
+  }
+
 }
