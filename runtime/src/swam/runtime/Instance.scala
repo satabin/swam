@@ -71,6 +71,17 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
           F.raiseError(new RuntimeException(s"unknown global named $name"))
       }
 
+    /** Returns a function for given name. */
+    def function(name: String)(implicit F: MonadError[F, Throwable]): F[Function[F]] =
+      exps.get(name) match {
+        case Some(f: Function[F]) =>
+          F.pure(f)
+        case Some(fld) =>
+          F.raiseError(new RuntimeException(s"cannot get a function from type ${fld.tpe}"))
+        case None =>
+          F.raiseError(new RuntimeException(s"unknown function named $name"))
+      }
+
     /** Returns a function for given name and type. */
     def function0[Ret](name: String)(implicit F: MonadError[F, Throwable],
                                      reader: ValueReader[Ret]): F[e.EFunction0[Ret, F]] =

@@ -36,6 +36,9 @@ class Imports[F[_]](imports: TCMap[String, AsInstance[?, F]]) {
         F.raiseError(new RuntimeException(s"Unknown module $module"))
     }
 
+  def updated[T](module: String, m: T)(implicit I: AsInstance[T, F]): Imports[F] =
+    new Imports(imports.updated(module, m))
+
 }
 
 object Imports {
