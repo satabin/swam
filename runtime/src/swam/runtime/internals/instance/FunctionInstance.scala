@@ -21,6 +21,8 @@ package instance
 
 import interpreter._
 
+import cats._
+
 import java.nio.ByteBuffer
 
 import scala.language.higherKinds
@@ -28,7 +30,7 @@ import scala.language.higherKinds
 private[runtime] case class FunctionInstance[F[_]](tpe: FuncType,
                                                    locals: Vector[ValType],
                                                    code: ByteBuffer,
-                                                   instance: Instance[F])
+                                                   instance: Instance[F])(implicit F: MonadError[F, Throwable])
     extends Function[F] {
 
   def invoke(parameters: Vector[Value]): F[Option[Value]] =

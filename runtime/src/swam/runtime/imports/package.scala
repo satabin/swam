@@ -54,12 +54,13 @@ package object imports {
       def view(i: Interface[F, Type]) = i
     }
 
-  implicit def valueAsInterface[T, F[_]](implicit writer: ValueWriter[T]): AsInterface[T, F] =
+  implicit def valueAsInterface[T, F[_]](implicit F: MonadError[F, Throwable], writer: ValueWriter[T]): AsInterface[T, F] =
     new AsInterface[T, F] {
       def view(t: T): Global[F] =
         new Global[F] {
           val tpe = GlobalType(writer.swamType, Mut.Const)
           def get = writer.write(t)
+          def set(v: Value) = F.raiseError(new RuntimeException("Unable to set immutable global"))
         }
     }
 

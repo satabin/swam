@@ -442,10 +442,8 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
         validateTableType(table)
       case Import.Memory(_, _, mem) =>
         validateMemType(mem)
-      case Import.Global(_, _, GlobalType(_, Mut.Const)) =>
-        Ok
       case Import.Global(_, _, _) =>
-        F.raiseError(new ValidationException("non constant global import."))
+        Ok
     }
 
   def validateExport(exp: Export, ctx: Ctx): F[Unit] =
@@ -467,10 +465,8 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
           F.raiseError(new ValidationException(s"unknown memory $idx."))
       case Export(_, ExternalKind.Global, idx) =>
         ctx.globals.lift(idx) match {
-          case Some(GlobalType(_, Mut.Const)) =>
-            Ok
           case Some(_) =>
-            F.raiseError(new ValidationException(s"non constant exported global $idx."))
+            Ok
           case None =>
             F.raiseError(new ValidationException(s"unknown global $idx."))
         }
@@ -490,10 +486,8 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
       case Const(_) => Ok
       case GetGlobal(x) =>
         ctx.globals.lift(x) match {
-          case Some(GlobalType(_, Mut.Const)) =>
-            Ok
           case Some(_) =>
-            F.raiseError(new ValidationException(s"non constant global $x."))
+            Ok
           case None =>
             F.raiseError(new ValidationException(s"unknown global $x."))
         }

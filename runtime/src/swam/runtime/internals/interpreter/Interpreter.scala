@@ -772,8 +772,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.SetGlobal =>
           val idx = frame.readInt()
           val v = frame.stack.popValue()
-          frame.instance.global(idx) = v
-          F.pure(Left(frame))
+          (frame.instance.global(idx) = v).map(_ => Left(frame))
         // === memory instructions ===
         case OpCode.I32Load =>
           val offset = frame.readInt()
