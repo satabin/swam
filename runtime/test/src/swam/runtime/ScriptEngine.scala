@@ -19,8 +19,8 @@ package runtime
 
 import text._
 import test._
-import syntax._
 import imports._
+import unresolved._
 
 import cats._
 import cats.implicits._
@@ -38,10 +38,20 @@ object Constant {
 }
 
 case class ExecutionContext(imports: Imports[IO], modules: Map[String, Instance[IO]], last: Option[Instance[IO]]) {
-  def requireLast: IO[Instance[IO]] =
+  def requireLast(pos: Int): IO[Instance[IO]] =
     last match {
       case Some(i) => IO.pure(i)
-      case None    => IO.raiseError(new Exception(s"No last defined module to register"))
+      case None    => IO.raiseError(new ScriptException(s"No last defined module to register", pos))
+    }
+
+  def module(pos: Int, id: Option[String]): IO[Instance[IO]] =
+    id match {
+      case Some(id) =>
+        modules.get(id) match {
+          case Some(i) => IO.pure(i)
+          case None    => IO.raiseError(new ScriptException(s"Unknown module $id", pos))
+        }
+      case None => requireLast(pos)
     }
 
 }
@@ -53,12 +63,6 @@ class ScriptEngine {
   val engine = new SwamEngine[IO]
 
   val tcompiler = new Compiler[IO]
-
-  def requireLast(last: Option[Instance[IO]]): IO[Instance[IO]] =
-    last match {
-      case Some(i) => IO.pure(i)
-      case None    => IO.raiseError(new Exception(s"No last defined module to register"))
-    }
 
   def run(commands: Seq[Command]): IO[Unit] =
     IO.tailRecM((commands, ExecutionContext(spectestlib, Map.empty, None))) {
@@ -74,35 +78,69 @@ class ScriptEngine {
                   Left((rest, ctx.copy(modules = ctx.modules.updated(name, instance), last = Some(instance))))
                 case None => Left((rest, ctx.copy(last = Some(instance))))
               }
-          case Register(name, Some(id)) =>
+          case Register(name, modid) =>
             // register the given instance with import name
-            IO.pure(Left((rest, ctx.copy(imports = ctx.imports.updated(name, ctx.modules(id))))))
-          case Register(name, None) =>
-            for (i <- ctx.requireLast)
-              yield Left((rest, ctx.copy(imports = ctx.imports.updated(name, i))))
+            for (mod <- ctx.module(cmd.pos, modid))
+              yield Left((rest, ctx.copy(imports = ctx.imports.updated(name, mod))))
+          case Get(modid, name) =>
+            for (_ <- get(ctx, cmd.pos, modid, name))
+              yield Left((rest, ctx))
           case Invoke(modid, export, params) =>
-            invoke(ctx, modid, export, params).map(_ => Left((rest, ctx)))
+            for (_ <- invoke(ctx, cmd.pos, modid, export, params))
+              yield Left((rest, ctx))
+          case AssertReturn(action, result) =>
+            for {
+              actual <- execute(ctx, action)
+              expected <- value(cmd.pos, result.headOption)
+              _ <- check(cmd.pos, actual, expected)
+            } yield Left((rest, ctx))
+          case _ =>
+            // ignore other commands
+            IO.pure(Left((rest, ctx)))
         }
       case (Seq(), _) =>
         IO.pure(Right(()))
     }
 
-  def invoke(ctx: ExecutionContext,
-             modid: Option[String],
-             export: String,
-             params: unresolved.Expr): IO[Option[Value]] = {
-    val mod = modid match {
-      case Some(id) => IO.pure(ctx.modules(id))
-      case None     => ctx.requireLast
+  def check(pos: Int, actual: Option[Value], expected: Option[Value]): IO[Unit] =
+    if (actual == expected)
+      IO.pure(())
+    else
+      IO.raiseError(new ScriptException(s"Expected $actual but got $expected", pos))
+
+  def value(pos: Int, i: Option[Inst]): IO[Option[Value]] =
+    i match {
+      case Some(Constant(v)) => IO.pure(Some(v))
+      case Some(_)           => IO.raiseError(new ScriptException(s"Expected constant but got $i", pos))
+      case None              => IO.pure(None)
     }
+
+  def value(pos: Int, i: Inst): IO[Value] =
+    i match {
+      case Constant(v) => IO.pure(v)
+      case _           => IO.raiseError(new ScriptException(s"Expected constant but got $i", pos))
+    }
+
+  def execute(ctx: ExecutionContext, action: Action): IO[Option[Value]] =
+    action match {
+      case Invoke(modid, name, params) => invoke(ctx, action.pos, modid, name, params)
+      case Get(modid, name)            => get(ctx, action.pos, modid, name).map(Some(_))
+    }
+
+  def get(ctx: ExecutionContext, pos: Int, modid: Option[String], name: String): IO[Value] =
+    for {
+      mod <- ctx.module(pos, modid)
+      g <- mod.exports.global(name)
+    } yield g.get
+
+  def invoke(ctx: ExecutionContext, pos: Int, modid: Option[String], export: String, params: Expr): IO[Option[Value]] = {
     val values =
       IO.tailRecM((params, Seq.empty[Value])) {
-        case (Seq(), acc)                       => IO.pure(Right(acc))
-        case (Seq(Constant(v), rest @ _*), acc) => IO.pure(Left((rest, acc :+ v)))
-        case (Seq(p, _*), _)                    => IO.raiseError(new Exception(s"Expected constant but got $p"))
+        case (Seq(), acc)             => IO.pure(Right(acc))
+        case (Seq(p, rest @ _*), acc) => value(pos, p).map(v => Left((rest, acc :+ v)))
       }
     for {
-      i <- mod
+      i <- ctx.module(pos, modid)
       ps <- values
       f <- i.exports.function(export)
       res <- f.invoke(ps.toVector)

@@ -160,7 +160,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
 
     def update(idx: Int, v: Value)(implicit F: MonadError[F, Throwable]): F[Unit] =
       globals(idx) match {
-        case g: GlobalInstance[F] => g.rawset(v)
+        case g: GlobalInstance[F] => g.unsafeset(v)
         case g                    => g.set(v)
       }
   }

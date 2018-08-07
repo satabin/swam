@@ -1237,7 +1237,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     f match {
       case FunctionInstance(tpe, locals, code, inst) =>
         val ilocals = Array.ofDim[Value](locals.size + tpe.params.size)
-        val zlocals = locals.map(Value.zero(_))
+        val zlocals = locals.map(Value.zero(_)).toArray
         Array.copy(zlocals, 0, ilocals, tpe.params.size, zlocals.length)
         // pop the parameters from the stack
         val params = frame.stack.popValues(tpe.params.size).toArray

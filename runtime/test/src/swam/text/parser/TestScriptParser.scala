@@ -27,44 +27,67 @@ object TestScriptParser {
   import Instructions._
 
   val module: P[TestModule] =
-    P(
-      NoCut(
-        ("(" ~ word("module") ~ (id.!.? ~ ((word("binary") ~/ string.rep
-          .map(ss => (id: Option[String]) => BinaryModule(id, ss.mkString("", "", "")))) | (word("quote") ~/ string.rep
-          .map(ss => (id: Option[String]) => QuotedModule(id, ss.mkString("", "", ""))))))
-          .map { case (id, f) => f(id) }) ~ ")")
-        | ModuleParsers.module.map(ValidModule(_)))
+    P(NoCut(("(" ~ Index ~ word("module") ~ (id.!.? ~ ((word("binary") ~/ string.rep
+      .map(ss => (idx: Int, id: Option[String]) => BinaryModule(id, ss.mkString("", "", ""))(idx))) | (word("quote") ~/ string.rep
+      .map(ss => (idx: Int, id: Option[String]) => QuotedModule(id, ss.mkString("", "", ""))(idx))))))
+      .map { case (idx, (id, f)) => f(idx, id) } ~ ")")
+      | ModuleParsers.module.map(ValidModule(_)))
 
   val register: P[Register] =
-    P("(" ~ word("register") ~/ string ~ id.!.? ~ ")").map(Register.tupled)
+    P("(" ~ Index ~ word("register") ~/ string ~ id.!.? ~ ")").map {
+      case (pos, name, id) => Register(name, id)(pos)
+    }
 
   val action: P[Action] =
-    P(
-      "(" ~ ((word("invoke") ~/ id.!.? ~ string ~ expr).map(Invoke.tupled)
-        | (word("get") ~/ id.!.? ~ string).map(Get.tupled)) ~ ")")
+    P("(" ~ Index ~ ((word("invoke") ~/ id.!.? ~ string ~ expr).map {
+      case (id, name, params) => Invoke(id, name, params) _
+    }
+      | (word("get") ~/ id.!.? ~ string).map {
+        case (id, name) => Get(id, name) _
+      }) ~ ")").map { case (idx, f) => f(idx) }
 
   val assertion: P[Assertion] =
     P(
-      "(" ~ ((word("assert_return") ~/ action ~ expr).map(AssertReturn.tupled)
+      "(" ~ Index ~ ((word("assert_return") ~/ action ~ expr.filter(_.size <= 1)).map {
+        case (action, result) => AssertReturn(action, result) _
+      }
         | (word("assert_return_canonical_nan") ~/ action)
-          .map(AssertReturnCanonicalNaN)
+          .map(action => AssertReturnCanonicalNaN(action) _)
         | (word("assert_return_arithmetic_nan") ~/ action)
-          .map(AssertReturnArithmeticNaN)
+          .map(action => AssertReturnArithmeticNaN(action) _)
         | (word("assert_trap") ~/ ((action ~ string)
-          .map(AssertTrap.tupled) | (module ~ string).map(AssertModuleTrap.tupled)))
+          .map {
+            case (action, msg) => AssertTrap(action, msg) _
+          }
+          | (module ~ string).map {
+            case (module, msg) => AssertModuleTrap(module, msg) _
+          }))
         | (word("assert_malformed") ~/ module ~ string)
-          .map(AssertMalformed.tupled)
-        | (word("assert_invalid") ~/ module ~ string).map(AssertInvalid.tupled)
+          .map {
+            case (module, msg) => AssertMalformed(module, msg) _
+          }
+        | (word("assert_invalid") ~/ module ~ string).map {
+          case (module, msg) => AssertInvalid(module, msg) _
+        }
         | (word("assert_unlinkable") ~/ module ~ string)
-          .map(AssertUnlinkable.tupled)
+          .map {
+            case (module, msg) => AssertUnlinkable(module, msg) _
+          }
         | (word("assert_exhaustion") ~/ action ~ string)
-          .map(AssertExhaustion.tupled)) ~ ")")
+          .map {
+            case (action, msg) => AssertExhaustion(action, msg) _
+          }) ~ ")").map { case (idx, f) => f(idx) }
 
   val meta: P[Meta] =
-    P(
-      "(" ~ ((word("script") ~/ id.!.? ~ script).map(Script.tupled)
-        | (word("input") ~/ id.!.? ~ string).map(Input.tupled)
-        | (word("output") ~/ id.!.? ~ string.?).map(Output.tupled)) ~ ")")
+    P("(" ~ Index ~ ((word("script") ~/ id.!.? ~ script).map {
+      case (id, sc) => Script(id, sc) _
+    }
+      | (word("input") ~/ id.!.? ~ string).map {
+        case (id, f) => Input(id, f) _
+      }
+      | (word("output") ~/ id.!.? ~ string.?).map {
+        case (id, f) => Output(id, f) _
+      }) ~ ")").map { case (idx, f) => f(idx) }
 
   val command: P[Command] =
     P(register | action | assertion | meta | module)

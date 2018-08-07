@@ -39,7 +39,7 @@ private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType)(implicit F: Mon
     else
       F.raiseError(new RuntimeException("Unable to set value to immutable global"))
 
-  private[runtime] def rawset(v: Value) =
+  private[runtime] def unsafeset(v: Value) =
     F.pure(value = v)
 
 }

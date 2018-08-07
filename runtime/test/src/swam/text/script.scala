@@ -19,31 +19,35 @@ package text
 
 import unresolved._
 
-sealed trait Command
+sealed trait Command {
+  val pos: Int
+}
 
 sealed trait TestModule extends Command
-case class ValidModule(m: Module) extends TestModule
-case class BinaryModule(id: Option[String], s: String) extends TestModule
-case class QuotedModule(id: Option[String], s: String) extends TestModule
+case class ValidModule(m: Module) extends TestModule {
+  val pos = m.pos
+}
+case class BinaryModule(id: Option[String], s: String)(val pos: Int) extends TestModule
+case class QuotedModule(id: Option[String], s: String)(val pos: Int) extends TestModule
 
-case class Register(s: String, id: Option[String]) extends Command
+case class Register(s: String, id: Option[String])(val pos: Int) extends Command
 
 sealed trait Action extends Command
-case class Invoke(id: Option[String], s: String, inst: Expr) extends Action
-case class Get(id: Option[String], name: String) extends Action
+case class Invoke(id: Option[String], s: String, inst: Expr)(val pos: Int) extends Action
+case class Get(id: Option[String], name: String)(val pos: Int) extends Action
 
 sealed trait Assertion extends Command
-case class AssertReturn(a: Action, result: Expr) extends Assertion
-case class AssertReturnCanonicalNaN(a: Action) extends Assertion
-case class AssertReturnArithmeticNaN(a: Action) extends Assertion
-case class AssertTrap(a: Action, failure: String) extends Assertion
-case class AssertMalformed(m: TestModule, failure: String) extends Assertion
-case class AssertInvalid(m: TestModule, failure: String) extends Assertion
-case class AssertUnlinkable(m: TestModule, failure: String) extends Assertion
-case class AssertModuleTrap(m: TestModule, failure: String) extends Assertion
-case class AssertExhaustion(a: Action, failure: String) extends Assertion
+case class AssertReturn(a: Action, result: Expr)(val pos: Int) extends Assertion
+case class AssertReturnCanonicalNaN(a: Action)(val pos: Int) extends Assertion
+case class AssertReturnArithmeticNaN(a: Action)(val pos: Int) extends Assertion
+case class AssertTrap(a: Action, failure: String)(val pos: Int) extends Assertion
+case class AssertMalformed(m: TestModule, failure: String)(val pos: Int) extends Assertion
+case class AssertInvalid(m: TestModule, failure: String)(val pos: Int) extends Assertion
+case class AssertUnlinkable(m: TestModule, failure: String)(val pos: Int) extends Assertion
+case class AssertModuleTrap(m: TestModule, failure: String)(val pos: Int) extends Assertion
+case class AssertExhaustion(a: Action, failure: String)(val pos: Int) extends Assertion
 
 sealed trait Meta extends Command
-case class Script(name: Option[String], script: Seq[Command]) extends Meta
-case class Input(name: Option[String], s: String) extends Meta
-case class Output(name: Option[String], s: Option[String]) extends Meta
+case class Script(name: Option[String], script: Seq[Command])(val pos: Int) extends Meta
+case class Input(name: Option[String], s: String)(val pos: Int) extends Meta
+case class Output(name: Option[String], s: Option[String])(val pos: Int) extends Meta

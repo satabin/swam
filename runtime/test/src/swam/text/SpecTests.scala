@@ -17,9 +17,8 @@
 package swam
 package text
 
-import util._
 import parser._
-import unresolved._
+import runtime._
 import validation._
 
 import utest._
@@ -36,17 +35,20 @@ object SpecTests extends TestSuite {
     'compiling - {
       val compiler = new Compiler[IO]
       for (wast <- ("runtime" / "test" / "resources" / "spec-test").glob("*.wast")) {
+        val positioner = new WastPositioner(wast.path)
         val script = TestScriptParser.script.parse(wast.contentAsString).get.value
-        for (ValidModule(mod) <- script) try {
-          val io = compiler.compile(mod)
-          io.unsafeRunSync()
+        val engine = new ScriptEngine
+        try {
+          engine.run(script).unsafeRunSync()
         } catch {
-          case e: ResolutionException =>
-            val positioner = new WastPositioner(wast.path)
+          case e: TextCompilerException =>
             for (pos <- e.positions)
               println(positioner.render(pos))
             throw e
-          case e: ValidationException =>
+          case e: ScriptException =>
+            println(positioner.render(e.pos))
+            throw e
+          case e: Exception =>
             println(s"in file $wast")
             throw e
         }
