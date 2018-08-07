@@ -20,6 +20,7 @@ package text
 import util._
 import parser._
 import unresolved._
+import validation._
 
 import utest._
 
@@ -34,7 +35,7 @@ object SpecTests extends TestSuite {
   val tests = Tests {
     'compiling - {
       val compiler = new Compiler[IO]
-      for (wast <- ("core" / "test" / "resources" / "spec-test").glob("*.wast")) {
+      for (wast <- ("runtime" / "test" / "resources" / "spec-test").glob("*.wast")) {
         val script = TestScriptParser.script.parse(wast.contentAsString).get.value
         for (ValidModule(mod) <- script) try {
           val io = compiler.compile(mod)
@@ -44,6 +45,9 @@ object SpecTests extends TestSuite {
             val positioner = new WastPositioner(wast.path)
             for (pos <- e.positions)
               println(positioner.render(pos))
+            throw e
+          case e: ValidationException =>
+            println(s"in file $wast")
             throw e
         }
       }
