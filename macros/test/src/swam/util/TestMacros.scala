@@ -36,7 +36,7 @@ object TestMacros {
       case Literal(Constant(name: String)) =>
         val files = ("runtime" / "test" / "resources" / "spec-test").glob("*.wast").toVector
         val calls = for(file <- files) yield {
-          q"${file.name} - $fun($file)"
+          q"${file.nameWithoutExtension} - $fun($file)"
         }
         q"Tests{..$calls}"
       case _ =>
