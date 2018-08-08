@@ -96,13 +96,13 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           frame.stack.pushInt(JInt.bitCount(frame.stack.popInt()))
           F.pure(Left(frame))
         case OpCode.I64Clz =>
-          frame.stack.pushLong(JLong.numberOfLeadingZeros(frame.stack.popInt()))
+          frame.stack.pushLong(JLong.numberOfLeadingZeros(frame.stack.popLong()))
           F.pure(Left(frame))
         case OpCode.I64Ctz =>
-          frame.stack.pushLong(JLong.numberOfTrailingZeros(frame.stack.popInt()))
+          frame.stack.pushLong(JLong.numberOfTrailingZeros(frame.stack.popLong()))
           F.pure(Left(frame))
         case OpCode.I64Popcnt =>
-          frame.stack.pushLong(JLong.bitCount(frame.stack.popInt()))
+          frame.stack.pushLong(JLong.bitCount(frame.stack.popLong()))
           F.pure(Left(frame))
         case OpCode.F32Abs =>
           frame.stack.pushFloat(StrictMath.abs(frame.stack.popFloat()))

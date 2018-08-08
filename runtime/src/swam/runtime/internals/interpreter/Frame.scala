@@ -104,7 +104,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
     @inline
     private def check(actual: Byte, expected: Byte): Unit =
       if (actual != expected)
-        throw new SwamException("Malformed stack")
+        throw new SwamException(s"Malformed stack $actual")
 
     def pushBool(b: Boolean): Unit =
       pushInt(if (b) 1 else 0)
