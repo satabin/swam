@@ -459,7 +459,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I32LeS =>
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
-          frame.stack.pushBool(i1 >= i2)
+          frame.stack.pushBool(i1 <= i2)
           F.pure(Left(frame))
         case OpCode.I32GeU =>
           val i2 = frame.stack.popInt()
@@ -509,7 +509,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I64LeS =>
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
-          frame.stack.pushBool(i1 >= i2)
+          frame.stack.pushBool(i1 <= i2)
           F.pure(Left(frame))
         case OpCode.I64GeU =>
           val i2 = frame.stack.popLong()
