@@ -59,6 +59,18 @@ object runtime extends SwamModule {
       ivy"com.github.pathikrit::better-files:3.5.0",
       ivy"com.lihaoyi::pprint:0.5.3")
     def testFrameworks = Seq("utest.runner.Framework")
+    def moduleDeps = Seq(runtime, macros.test)
+  }
+
+}
+
+object macros extends SwamModule {
+
+  object test extends SwamModule {
+    def ivyDeps = Agg(
+      ivy"com.lihaoyi::utest:0.6.4",
+      ivy"org.scalamacros:::paradise:2.1.1",
+      ivy"com.github.pathikrit::better-files:3.5.0")
   }
 
 }

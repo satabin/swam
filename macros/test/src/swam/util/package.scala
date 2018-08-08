@@ -15,34 +15,14 @@
  */
 
 package swam
-package text
-
-import util._
-import parser._
-import runtime._
-import validation._
-
-import swam.test.util._
-
-import utest._
+package test
 
 import better.files._
 
-import fastparse.core._
+import scala.language.experimental.macros
 
-import cats.effect._
+package object util {
 
-object SpecTests extends TestSuite {
-
-      val compiler = new Compiler[IO]
-
-      def run(wast: File) = {
-        val positioner = new WastPositioner(wast.path)
-        val script = TestScriptParser.script.parse(wast.contentAsString).get.value
-        val engine = new ScriptEngine
-        engine.run(script, positioner).unsafeRunSync()
-      }
-
-  val tests = testfiles("runtime/test/resources/spec-test", run _)
+  def testfiles(name: String, fun: File => Unit): utest.Tests = macro TestMacros.listdir
 
 }

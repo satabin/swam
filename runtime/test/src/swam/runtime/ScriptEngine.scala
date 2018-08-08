@@ -17,6 +17,7 @@
 package swam
 package runtime
 
+import util._
 import text._
 import test._
 import imports._
@@ -64,10 +65,10 @@ class ScriptEngine {
 
   val tcompiler = new Compiler[IO]
 
-  def run(commands: Seq[Command]): IO[Unit] =
+  def run(commands: Seq[Command], positioner: Positioner[TextFilePosition]): IO[Unit] =
     IO.tailRecM((commands, ExecutionContext(spectestlib, Map.empty, None))) {
       case (Seq(cmd, rest @ _*), ctx) =>
-        cmd match {
+        val res = cmd match {
           case ValidModule(mod) =>
             for {
               compiled <- engine.compile(tcompiler.stream(mod, true))
@@ -98,15 +99,18 @@ class ScriptEngine {
             // ignore other commands
             IO.pure(Left((rest, ctx)))
         }
+        res
+            .adaptError {
+              case e =>
+                println(positioner.render(cmd.pos))
+                e
+            }
       case (Seq(), _) =>
         IO.pure(Right(()))
     }
 
   def check(pos: Int, actual: Option[Value], expected: Option[Value]): IO[Unit] =
-    if (actual == expected)
-      IO.pure(())
-    else
-      IO.raiseError(new ScriptException(s"Expected $actual but got $expected", pos))
+    cats.effect.IO(utest.assert(actual == expected))
 
   def value(pos: Int, i: Option[Inst]): IO[Option[Value]] =
     i match {
