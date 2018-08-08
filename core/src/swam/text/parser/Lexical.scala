@@ -138,8 +138,8 @@ object Lexical {
     P(
       sign.flatMap(
         sign =>
-          rhexfloat.map(d => F.Value(sign * d))
-            | rfloat.map(d => F.Value(sign * d))
+          rhexfloat.map(d => F.Value(sign, d))
+            | rfloat.map(d => F.Value(sign, d))
             | P("inf") ~ PassWith(if (sign < 0) F.MInf else F.PInf)
             | ("nan:0x" ~ hexnum).map(_ => F.NaN)
             | P("nan") ~ PassWith(F.NaN)
@@ -148,7 +148,7 @@ object Lexical {
 
   val float32: P[Float] =
     float.map {
-      case F.Value(v) => v.floatValue
+      case F.Value(s, v) => s * v.floatValue
       case F.MInf     => Float.NegativeInfinity
       case F.PInf     => Float.PositiveInfinity
       case F.NaN      => Float.NaN
@@ -156,7 +156,7 @@ object Lexical {
 
   val float64: P[Double] =
     float.map {
-      case F.Value(v) => v.doubleValue
+      case F.Value(s, v) => s * v.doubleValue
       case F.MInf     => Double.NegativeInfinity
       case F.PInf     => Double.PositiveInfinity
       case F.NaN      => Double.NaN
@@ -188,7 +188,7 @@ object Lexical {
 
 private sealed trait F
 private object F {
-  case class Value(bd: BigDecimal) extends F
+  case class Value(sign: Int, bd: BigDecimal) extends F
   case object MInf extends F
   case object PInf extends F
   case object NaN extends F

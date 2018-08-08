@@ -32,9 +32,17 @@ object Value {
   }
   case class Float32(f: Float) extends Value(ValType.F32) {
     override def asFloat = f
+    override def equals(that: Any): Boolean = that match {
+      case Float32(f1) => f.isNaN && f1.isNaN || f == f1
+      case _ => false
+    }
   }
   case class Float64(d: Double) extends Value(ValType.F64) {
     override def asDouble = d
+    override def equals(that: Any): Boolean = that match {
+      case Float64(d2) => d.isNaN && d2.isNaN || d == d2
+      case _ => false
+    }
   }
 
   def zero(tpe: ValType): Value = tpe match {

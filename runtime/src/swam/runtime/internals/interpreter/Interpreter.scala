@@ -374,7 +374,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.F32Copysign =>
           val f2 = frame.stack.popFloat()
           val f1 = frame.stack.popFloat()
-          frame.stack.pushFloat(StrictMath.copySign(f1, f2))
+          frame.stack.pushFloat(Math.copySign(f1, f2))
           F.pure(Left(frame))
         case OpCode.F64Add =>
           val f2 = frame.stack.popDouble()
@@ -409,7 +409,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.F64Copysign =>
           val f2 = frame.stack.popDouble()
           val f1 = frame.stack.popDouble()
-          frame.stack.pushDouble(StrictMath.copySign(f1, f2))
+          frame.stack.pushDouble(Math.copySign(f1, f2))
           F.pure(Left(frame))
         // === test operators ===
         case OpCode.I32Eqz =>
