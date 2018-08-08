@@ -23,7 +23,7 @@ import unresolved._
 import fastparse._
 import fastparse.all._
 
-import java.lang.{Long => JLong}
+import java.lang.{Float => JFloat, Double => JDouble, Long => JLong}
 
 import scala.annotation.tailrec
 
@@ -140,9 +140,9 @@ object Lexical {
         sign =>
           rhexfloat.map(d => F.Value(sign, d))
             | rfloat.map(d => F.Value(sign, d))
-            | P("inf") ~ PassWith(if (sign < 0) F.MInf else F.PInf)
-            | ("nan:0x" ~ hexnum).map(_ => F.NaN)
-            | P("nan") ~ PassWith(F.NaN)
+            | "inf" ~ PassWith(if (sign < 0) F.MInf else F.PInf)
+            | ("nan:0x" ~ hexnum).map(v => F.NaN(sign, Some(v)))
+            | "nan" ~ PassWith(F.NaN(sign, None))
       )
     )
 
@@ -151,7 +151,10 @@ object Lexical {
       case F.Value(s, v) => s * v.floatValue
       case F.MInf     => Float.NegativeInfinity
       case F.PInf     => Float.PositiveInfinity
-      case F.NaN      => Float.NaN
+      case F.NaN(-1, None) => JFloat.intBitsToFloat(0xffc00000)
+      case F.NaN(_, None) => JFloat.intBitsToFloat(0x7fc00000)
+      case F.NaN(-1, Some(payload)) => JFloat.intBitsToFloat(0xf8000000 | payload.intValue)
+      case F.NaN(_, Some(payload)) => JFloat.intBitsToFloat(0x78000000 | payload.intValue)
     }
 
   val float64: P[Double] =
@@ -159,7 +162,10 @@ object Lexical {
       case F.Value(s, v) => s * v.doubleValue
       case F.MInf     => Double.NegativeInfinity
       case F.PInf     => Double.PositiveInfinity
-      case F.NaN      => Double.NaN
+      case F.NaN(-1, None) => JDouble.longBitsToDouble(0xfff8000000000000l)
+      case F.NaN(_, None) => JDouble.longBitsToDouble(0x7ff8000000000000l)
+      case F.NaN(-1, Some(payload)) => JDouble.longBitsToDouble(0xfff8000000000000l | payload.longValue)
+      case F.NaN(_, Some(payload)) => JDouble.longBitsToDouble(0x7ff8000000000000l | payload.longValue)
     }
 
   val string: P[String] =
@@ -191,5 +197,5 @@ private object F {
   case class Value(sign: Int, bd: BigDecimal) extends F
   case object MInf extends F
   case object PInf extends F
-  case object NaN extends F
+  case class NaN(sign: Int, v: Option[BigInt]) extends F
 }
