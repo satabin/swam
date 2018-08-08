@@ -41,4 +41,6 @@ trait DataConfiguration {
 
   def onHeap: Boolean
 
+  def hardMax: Int
+
 }

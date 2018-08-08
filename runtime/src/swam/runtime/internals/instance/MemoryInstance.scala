@@ -23,14 +23,14 @@ import java.nio.ByteBuffer
 
 import scala.language.higherKinds
 
-private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHead: Boolean) extends Memory[F] {
+private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int) extends Memory[F] {
 
-  val tpe = MemType(Limits(min, max))
+  val tpe = MemType(Limits(min, max.map(math.min(_, hardMax))))
 
   var buffer = allocate(min * pageSize)
 
   def allocate(size: Int) =
-    if (onHead)
+    if (onHeap)
       ByteBuffer.allocate(size)
     else
       ByteBuffer.allocateDirect(size)
@@ -73,9 +73,11 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHead: 
   def readDouble(idx: Int): Double =
     buffer.getDouble(idx)
 
-  def grow(by: Int): Boolean = {
-    val newSize = size + by * pageSize
-    check(size) && doGrow(size)
+  def grow(by: Int): Boolean = try {
+    val newSize = StrictMath.addExact(size, StrictMath.multiplyExact(by, pageSize))
+    check(newSize) && doGrow(newSize)
+  } catch {
+    case _: ArithmeticException => false
   }
 
   def doGrow(size: Int): Boolean = {
@@ -85,10 +87,10 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHead: 
     true
   }
 
-  def check(size: Int): Boolean =
+  def check(size: Long): Boolean =
     max match {
-      case Some(max) => size <= max
-      case None      => true
+      case Some(max) => size <= max * pageSize
+      case None      => size <= hardMax * pageSize
     }
 
   def writeBytes(idx: Int, bytes: ByteBuffer): Unit = {

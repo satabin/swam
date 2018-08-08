@@ -32,6 +32,8 @@ class ConfigEngineConfiguration(wrapped: Config) extends EngineConfiguration {
 
     def onHeap = wrapped.getBoolean("swam.runtime.data.on-heap")
 
+    def hardMax = wrapped.getInt("swam.runtime.data.hard-max")
+
   }
 
 }

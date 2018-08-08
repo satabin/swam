@@ -34,6 +34,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
 
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
+  private val dataHardMax = engine.conf.data.hardMax
 
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
@@ -118,7 +119,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
       case TableType(_, limits) => new TableInstance[F](limits.min, limits.max)
     }
     instance.memories = imemories ++ module.memories.map {
-      case MemType(limits) => new MemoryInstance[F](limits.min, limits.max, dataOnHeap)
+      case MemType(limits) => new MemoryInstance[F](limits.min, limits.max, dataOnHeap, dataHardMax)
     }
     instance.exps = module.exports.map {
       case Export.Function(name, tpe, idx) => (name, instance.funcs(idx))
