@@ -19,7 +19,10 @@ package runtime
 package internals
 package instance
 
-import java.nio.ByteBuffer
+import java.nio.{
+  ByteBuffer,
+  ByteOrder
+}
 
 import scala.language.higherKinds
 
@@ -29,11 +32,15 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
 
   var buffer = allocate(min * pageSize)
 
-  def allocate(size: Int) =
-    if (onHeap)
-      ByteBuffer.allocate(size)
-    else
-      ByteBuffer.allocateDirect(size)
+  def allocate(size: Int) = {
+    val buffer =
+      if (onHeap)
+        ByteBuffer.allocate(size)
+      else
+        ByteBuffer.allocateDirect(size)
+    buffer.order(ByteOrder.LITTLE_ENDIAN)
+    buffer
+  }
 
   def size = buffer.capacity
 

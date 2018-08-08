@@ -30,6 +30,18 @@ package object test {
   type AsIIO[T] = AsInterface[T, IO]
   type AsIsIO[T] = AsInstance[T, IO]
 
+  val table = new Table[IO] {
+    val a = Array.ofDim[Function[IO]](20)
+    def apply(i: Int) = a(i)
+    def size = 20
+    def update(i: Int, f: Function[IO]) =
+      a(i) = f
+    def tpe = TableType(ElemType.AnyFunc, Limits(10, Some(20)))
+  }
+
+  val buffer = ByteBuffer.allocate(2 * pageSize)
+  buffer.limit(pageSize)
+
   def printi32(i: Int): IO[Unit] =
     IO(println(i))
 
@@ -53,12 +65,12 @@ package object test {
 
   val spectestlib = new Imports[IO](
     TCMap[String, AsIsIO]("spectest" -> TCMap[String, AsIIO](
-      "memory" -> ByteBuffer.allocate(pageSize),
-      "global_i32" -> 'a'.toInt,
+      "memory" -> buffer,
+      "global_i32" -> 666,
       "global_i64" -> 'a'.toLong,
       "global_f32" -> 0.0f,
       "global_f64" -> 0.0d,
-      "table" -> Array.ofDim[Function[IO]](30),
+      "table" -> table,
       "print_i32" -> printi32 _,
       "print_i64" -> printi64 _,
       "print_f32" -> printf32 _,
