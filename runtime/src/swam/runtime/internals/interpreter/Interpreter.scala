@@ -584,7 +584,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         // === conversion operators ===
         case OpCode.I32WrapI64 =>
           val l = frame.stack.popLong()
-          frame.stack.pushInt((l % (1l << 32)).toInt)
+          val i = (l % (1l << 32)).toInt
+          frame.stack.pushInt(i)
           F.pure(Left(frame))
         case OpCode.I64ExtendUI32 =>
           val i = frame.stack.popInt()
@@ -1153,43 +1154,14 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.Br =>
           // next integer is the label
           val l = frame.readInt()
-          // get the l-th label
-          val lbl = frame.stack.getLabel(l)
-          val arity = lbl.arity
-          val cont = lbl.cont
-          // pop the n values
-          val values = frame.stack.popValues(arity)
-          // pop all intermediate labels and values
-          for (i <- 0 to l) {
-            frame.stack.popValues()
-            frame.stack.popLabel()
-          }
-          // push back return values
-          frame.stack.pushValues(values)
-          // jump to continuation
-          frame.pc = cont
+          br(frame, l)
           F.pure(Left(frame))
         case OpCode.BrIf =>
           // next integer is the label
           val l = frame.readInt()
           val c = frame.stack.popBool()
-          if (c) {
-            // get the l-th label
-            val lbl = frame.stack.getLabel(l)
-            val arity = lbl.arity
-            val cont = lbl.cont
-            // pop the n values
-            val values = frame.stack.popValues(arity)
-            // pop all intermediate labels and values
-            for (i <- 0 to l) {
-              frame.stack.popValues()
-              frame.stack.popLabel()
-            }
-            // push back return values
-            frame.stack.pushValues(values)
-            // jump to continuation
-            frame.pc = cont
-          }
+          if (c)
+            br(frame, l)
           F.pure(Left(frame))
         case OpCode.BrTable =>
           // next int gives the number of labels to come
@@ -1199,22 +1171,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val ln = frame.readInt()
           // get the label index from stack
           val i = frame.stack.popInt()
-          val l = if (i < lbls.size) lbls(i) else ln
-          // get the l-th label
-          val lbl = frame.stack.getLabel(l)
-          val arity = lbl.arity
-          val cont = lbl.cont
-          // pop the n values
-          val values = frame.stack.popValues(arity)
-          // pop all intermediate labels and values
-          for (i <- 0 to l) {
-            frame.stack.popValues()
-            frame.stack.popLabel()
-          }
-          // push back return values
-          frame.stack.pushValues(values)
-          // jump to continuation
-          frame.pc = cont
+          val l = if (i >= 0 && i < lbls.size) lbls(i) else ln
+          br(frame, l)
           F.pure(Left(frame))
         case OpCode.Return =>
           val values = frame.stack.popValues(frame.arity)
@@ -1255,6 +1213,24 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           F.raiseError(new InterpreterException(frame, "unknown opcode"))
       }
     }
+
+  private def br(frame: Frame[F], l: Int): Unit = {
+    // get the l-th label
+    val lbl = frame.stack.getLabel(l)
+    val arity = lbl.arity
+    val cont = lbl.cont
+    // pop the n values
+    val values = frame.stack.popValues(arity)
+    // pop all intermediate labels and values
+    for (i <- 0 to l) {
+      frame.stack.popValues()
+      frame.stack.popLabel()
+    }
+    // push back return values
+    frame.stack.pushValues(values)
+    // jump to continuation
+    frame.pc = cont
+  }
 
   private def invoke(frame: Frame[F], f: Function[F]): F[Frame[F]] =
     f match {

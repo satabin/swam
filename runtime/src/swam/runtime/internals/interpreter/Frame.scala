@@ -166,7 +166,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
         case INT64   => popLong()
         case FLOAT32 => popFloat()
         case FLOAT64 => popDouble()
-        case _       => throw new SwamException("Malformed stack")
+        case b       => throw new SwamException(s"Malformed stack $b")
       }
 
     def popValue(): Value =
@@ -175,7 +175,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
         case INT64   => Value.Int64(popLong())
         case FLOAT32 => Value.Float32(popFloat())
         case FLOAT64 => Value.Float64(popDouble())
-        case _       => throw new SwamException("Malformed stack")
+        case b       => throw new SwamException(s"Malformed stack $b")
       }
 
     def popValues(): Seq[Value] = {

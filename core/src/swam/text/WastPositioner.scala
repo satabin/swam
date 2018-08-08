@@ -44,7 +44,7 @@ class WastPositioner(file: Path) extends Positioner[TextFilePosition] {
   private val offsets =
     lineStream
       .mapAccumulate(0) { (offset, line) =>
-        (offset + line.size, offset)
+        (offset + line.size + 1, offset)
       }
       .map(_._2)
       .compile
