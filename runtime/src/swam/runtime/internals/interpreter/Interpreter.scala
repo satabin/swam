@@ -1104,7 +1104,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val arity = frame.readInt()
           // next int is the block size
           val blockSize = frame.readInt()
-          frame.stack.pushLabel(Label(arity, frame.pc + blockSize + 1 /* end */ ))
+          val lbl = Label(arity, frame.pc + blockSize + 1 /* end */ )
+          frame.stack.pushLabel(lbl)
           // frame.pc is now on the first instruction of the block
           F.pure(Left(frame))
         case OpCode.End =>
@@ -1222,7 +1223,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     // pop the n values
     val values = frame.stack.popValues(arity)
     // pop all intermediate labels and values
-    for (i <- 0 to l) {
+    for (_ <- 0 to l) {
       frame.stack.popValues()
       frame.stack.popLabel()
     }
@@ -1243,7 +1244,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         Array.copy(params, 0, ilocals, 0, params.length)
         val frame1 = frame.stack.pushFrame(tpe.t.size, code, ilocals, inst)
         // push the implicit block label on the called frame
-        frame1.stack.pushLabel(Label(tpe.t.size, -1))
+        frame1.stack.pushLabel(Label(tpe.t.size, code.limit - 1))
         F.pure(frame1)
       case f =>
         // pop the parameters from the stack
