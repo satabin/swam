@@ -797,8 +797,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           if (ea + 1 > mem.size) {
             F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
-            val c = mem.readByte(ea)
-            frame.stack.pushInt(c & 0xff)
+            val c = mem.readByte(ea) & 0xff
+            frame.stack.pushInt(c)
             F.pure(Left(frame))
           }
         case OpCode.I32Load8S =>

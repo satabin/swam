@@ -177,10 +177,25 @@ object Lexical {
         | P("\\\"").map(_ => '"')
         | P("\\'").map(_ => '\'')
         | P("\\\\").map(_ => '\\')
-        | "\\" ~ (hexdigit ~ hexdigit).!.map(Integer.parseInt(_, 16).toChar)
+        | "\\" ~ (hexdigit ~ hexdigit).!.map(Integer.parseInt(_, 16).toByte)
         | "\\u" ~ hexnum.!.map(Integer.parseInt(_, 16))
           .filter(n => n < 0xd800 || (0xe000 <= n && n < 0x110000))
           .map(_.toChar)).rep.map(_.mkString) ~ "\""
+    )
+
+  val bstring: P[Array[Byte]] =
+    P(
+      "\"" ~ (CharPred(c => c >= '\u0020' && c != '\u007f' && c != '"' && c != '\\').!.map(_(0))
+        | P("\\t").map(_ => '\t'.toChar)
+        | P("\\n").map(_ => '\n'.toChar)
+        | P("\\r").map(_ => '\r'.toChar)
+        | P("\\\"").map(_ => '"'.toChar)
+        | P("\\'").map(_ => '\''.toChar)
+        | P("\\\\").map(_ => '\\'.toChar)
+        | "\\" ~ (hexdigit ~ hexdigit).!.map(Integer.parseInt(_, 16).toChar)
+        | "\\u" ~ hexnum.!.map(Integer.parseInt(_, 16))
+          .filter(n => n < 0xd800 || (0xe000 <= n && n < 0x110000))
+          .map(_.toChar)).map(Character.toChars(_).map(_.toByte)).rep.map(_.flatten.toArray) ~ "\""
     )
 
   def word(s: String): P0 =
