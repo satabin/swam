@@ -776,11 +776,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         // === memory instructions ===
         case OpCode.I32Load =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readInt(ea)
             frame.stack.pushInt(c)
@@ -788,11 +789,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I32Load8U =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readByte(ea)
             frame.stack.pushInt(c & 0xff)
@@ -800,11 +802,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I32Load8S =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readByte(ea)
             frame.stack.pushInt(c)
@@ -812,11 +815,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I32Load16U =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readShort(ea)
             frame.stack.pushInt(c & 0xffff)
@@ -824,11 +828,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I32Load16S =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readShort(ea)
             frame.stack.pushInt(c)
@@ -836,11 +841,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readLong(ea)
             frame.stack.pushLong(c)
@@ -848,11 +854,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load8U =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readByte(ea)
             frame.stack.pushLong(c & 0xffl)
@@ -860,11 +867,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load8S =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readByte(ea)
             frame.stack.pushLong(c)
@@ -872,11 +880,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load16U =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readShort(ea)
             frame.stack.pushLong(c & 0xffffl)
@@ -884,11 +893,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load16S =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readShort(ea)
             frame.stack.pushLong(c)
@@ -896,11 +906,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load32U =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readInt(ea)
             frame.stack.pushLong(c & 0xffffffffl)
@@ -908,11 +919,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load32S =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readInt(ea)
             frame.stack.pushLong(c)
@@ -920,11 +932,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.F32Load =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readFloat(ea)
             frame.stack.pushFloat(c)
@@ -932,11 +945,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.F64Load =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readDouble(ea)
             frame.stack.pushDouble(c)
@@ -944,24 +958,26 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I32Store =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popInt()
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             mem.writeInt(ea, c)
             F.pure(Left(frame))
           }
         case OpCode.I32Store8 =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popInt()
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c1 = c % (1 << 8)
             mem.writeInt(ea, c1)
@@ -969,12 +985,13 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I32Store16 =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popInt()
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c1 = c % (1 << 16)
             mem.writeInt(ea, c1)
@@ -982,24 +999,26 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Store =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popLong()
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             mem.writeLong(ea, c)
             F.pure(Left(frame))
           }
         case OpCode.I64Store8 =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popLong()
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c1 = c % (1l << 8)
             mem.writeLong(ea, c1)
@@ -1007,12 +1026,13 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Store16 =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popLong()
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c1 = c % (1l << 16)
             mem.writeLong(ea, c1)
@@ -1020,12 +1040,13 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Store32 =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popLong()
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c1 = c % (1l << 32)
             mem.writeLong(ea, c1)
@@ -1033,24 +1054,26 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.F32Store =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popFloat()
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             mem.writeFloat(ea, c)
             F.pure(Left(frame))
           }
         case OpCode.F64Store =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popDouble()
           val i = frame.stack.popInt()
           val ea = i + offset
           if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             mem.writeDouble(ea, c)
             F.pure(Left(frame))
