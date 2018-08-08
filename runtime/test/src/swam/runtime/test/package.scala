@@ -39,8 +39,11 @@ package object test {
     def tpe = TableType(ElemType.AnyFunc, Limits(10, Some(20)))
   }
 
-  val buffer = ByteBuffer.allocate(2 * pageSize)
-  buffer.limit(pageSize)
+  def buffer = {
+    val buffer = ByteBuffer.allocate(2 * pageSize)
+    buffer.limit(pageSize)
+    buffer
+  }
 
   def printi32(i: Int): IO[Unit] =
     IO(println(i))
@@ -63,7 +66,7 @@ package object test {
   def print(): IO[Unit] =
     IO(println("print"))
 
-  val spectestlib = new Imports[IO](
+  def spectestlib = new Imports[IO](
     TCMap[String, AsIsIO]("spectest" -> TCMap[String, AsIIO](
       "memory" -> buffer,
       "global_i32" -> 666,
