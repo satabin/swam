@@ -167,7 +167,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I32DivU =>
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
-          if (i1 == 0) {
+          if (i2 == 0) {
             F.raiseError(new InterpreterException(frame, "div by zero"))
           } else {
             frame.stack.pushInt(JInt.divideUnsigned(i1, i2))
@@ -176,7 +176,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I32DivS =>
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
-          if (i1 == 0) {
+          if (i2 == 0) {
             F.raiseError(new InterpreterException(frame, "div by zero"))
           } else {
             val res = i1 / i2
@@ -190,7 +190,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I32RemU =>
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
-          if (i1 == 0) {
+          if (i2 == 0) {
             F.raiseError(new InterpreterException(frame, "div by zero"))
           } else {
             frame.stack.pushInt(JInt.remainderUnsigned(i1, i2))
@@ -199,7 +199,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I32RemS =>
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
-          if (i1 == 0) {
+          if (i2 == 0) {
             F.raiseError(new InterpreterException(frame, "div by zero"))
           } else {
             frame.stack.pushInt(i1 % i2)
@@ -263,7 +263,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I64DivU =>
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
-          if (i1 == 0) {
+          if (i2 == 0) {
             F.raiseError(new InterpreterException(frame, "div by zero"))
           } else {
             frame.stack.pushLong(JLong.divideUnsigned(i1, i2))
@@ -272,7 +272,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I64DivS =>
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
-          if (i1 == 0) {
+          if (i2 == 0) {
             F.raiseError(new InterpreterException(frame, "div by zero"))
           } else {
             val res = i1 / i2
@@ -286,7 +286,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I64RemU =>
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
-          if (i1 == 0) {
+          if (i2 == 0) {
             F.raiseError(new InterpreterException(frame, "div by zero"))
           } else {
             frame.stack.pushLong(JLong.remainderUnsigned(i1, i2))
@@ -295,7 +295,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I64RemS =>
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
-          if (i1 == 0) {
+          if (i2 == 0) {
             F.raiseError(new InterpreterException(frame, "div by zero"))
           } else {
             frame.stack.pushLong(i1 % i2)
