@@ -27,8 +27,8 @@ object TestScriptParser {
   import Instructions._
 
   val module: P[TestModule] =
-    P(NoCut(("(" ~ Index ~ word("module") ~ (id.!.? ~ ((word("binary") ~/ string.rep
-      .map(ss => (idx: Int, id: Option[String]) => BinaryModule(id, ss.mkString("", "", ""))(idx))) | (word("quote") ~/ string.rep
+    P(NoCut(("(" ~ Index ~ word("module") ~ (id.!.? ~ ((word("binary") ~/ bstring.rep
+      .map(ss => (idx: Int, id: Option[String]) => BinaryModule(id, ss.flatten.toArray)(idx))) | (word("quote") ~/ string.rep
       .map(ss => (idx: Int, id: Option[String]) => QuotedModule(id, ss.mkString("", "", ""))(idx))))))
       .map { case (idx, (id, f)) => f(idx, id) } ~ ")")
       | ModuleParsers.module.map(ValidModule(_)))

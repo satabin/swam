@@ -27,6 +27,8 @@ import cats._
 import cats.implicits._
 import cats.effect._
 
+import scodec.bits._
+
 import java.lang.{Float=>JFloat,Double=>JDouble}
 
 object Constant {
@@ -79,6 +81,15 @@ class ScriptEngine {
               instance <- compiled.newInstance(ctx.imports)
             } yield
               compiled.name match {
+                case Some(name) =>
+                  Left((rest, ctx.copy(modules = ctx.modules.updated(name, instance), last = Some(instance))))
+                case None => Left((rest, ctx.copy(last = Some(instance))))
+              }
+          case BinaryModule(id, bs) =>
+            for {
+              compiled <- engine.compile(BitVector(bs))
+              instance <- compiled.newInstance(ctx.imports)
+            } yield id match {
                 case Some(name) =>
                   Left((rest, ctx.copy(modules = ctx.modules.updated(name, instance), last = Some(instance))))
                 case None => Left((rest, ctx.copy(last = Some(instance))))

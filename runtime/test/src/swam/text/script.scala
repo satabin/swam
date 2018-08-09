@@ -27,7 +27,7 @@ sealed trait TestModule extends Command
 case class ValidModule(m: Module) extends TestModule {
   val pos = m.pos
 }
-case class BinaryModule(id: Option[String], s: String)(val pos: Int) extends TestModule
+case class BinaryModule(id: Option[String], s: Array[Byte])(val pos: Int) extends TestModule
 case class QuotedModule(id: Option[String], s: String)(val pos: Int) extends TestModule
 
 case class Register(s: String, id: Option[String])(val pos: Int) extends Command
