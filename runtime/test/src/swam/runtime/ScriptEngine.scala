@@ -27,6 +27,8 @@ import cats._
 import cats.implicits._
 import cats.effect._
 
+import java.lang.{Float=>JFloat,Double=>JDouble}
+
 object Constant {
   def unapply(i: Inst): Option[Value] =
     i match {
@@ -58,6 +60,8 @@ case class ExecutionContext(imports: Imports[IO], modules: Map[String, Instance[
 }
 
 class ScriptEngine {
+
+  import ScriptEngine._
 
   val IO = implicitly[Effect[IO]]
 
@@ -110,7 +114,7 @@ class ScriptEngine {
     }
 
   def check(pos: Int, actual: Option[Value], expected: Option[Value]): IO[Unit] =
-    cats.effect.IO(utest.assert(actual == expected))
+    cats.effect.IO(utest.assert(actual === expected))
 
   def value(pos: Int, i: Option[Inst]): IO[Option[Value]] =
     i match {
@@ -149,6 +153,21 @@ class ScriptEngine {
       f <- i.exports.function(export)
       res <- f.invoke(ps.toVector)
     } yield res
+  }
+
+}
+
+object ScriptEngine {
+
+  implicit val valueEq: Eq[Value] = new Eq[Value] {
+    def eqv(v1: Value, v2: Value): Boolean =
+      (v1, v2) match {
+        case (Value.Int32(v1), Value.Int32(v2)) => v1 == v2
+        case (Value.Int64(v1), Value.Int64(v2)) => v1 == v2
+        case (Value.Float32(v1), Value.Float32(v2)) => JFloat.floatToRawIntBits(v1) == JFloat.floatToRawIntBits(v2)
+        case (Value.Float64(v1), Value.Float64(v2)) => JDouble.doubleToRawLongBits(v1) == JDouble.doubleToRawLongBits(v2)
+        case _ => false
+      }
   }
 
 }

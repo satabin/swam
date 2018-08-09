@@ -16,7 +16,7 @@
 
 package swam
 
-import scala.language.higherKinds
+import java.lang.{Float=>JFloat,Double=>JDouble}
 
 /** This package contains all the classes and types related to
   * running WebAssembly modules.
