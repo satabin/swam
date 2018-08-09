@@ -102,6 +102,10 @@ sealed class Frame[F[_]] private (parent: Frame[F],
     }
 
     @inline
+    private def peek(): Byte =
+      stack(top - 1)
+
+    @inline
     private def check(actual: Byte, expected: Byte): Unit =
       if (actual != expected)
         throw new SwamException(s"Malformed stack $actual")
@@ -142,10 +146,20 @@ sealed class Frame[F[_]] private (parent: Frame[F],
       istack(itop)
     }
 
+    def peekInt(): Int = {
+      check(peek(), INT32)
+      istack(itop - 1)
+    }
+
     def popLong(): Long = {
       check(pop(), INT64)
       ltop -= 1
       lstack(ltop)
+    }
+
+    def peekLong(): Long = {
+      check(peek(), INT64)
+      lstack(ltop - 1)
     }
 
     def popFloat(): Float = {
@@ -154,10 +168,21 @@ sealed class Frame[F[_]] private (parent: Frame[F],
       fstack(ftop)
     }
 
+    def peekFloat(): Float = {
+      check(peek(), FLOAT32)
+      fstack(ftop - 1)
+    }
+
+
     def popDouble(): Double = {
       check(pop(), FLOAT64)
       dtop -= 1
       dstack(dtop)
+    }
+
+    def peekDouble(): Double = {
+      check(peek(), FLOAT64)
+      dstack(dtop - 1)
     }
 
     def drop(): Unit =
@@ -175,6 +200,15 @@ sealed class Frame[F[_]] private (parent: Frame[F],
         case INT64   => Value.Int64(popLong())
         case FLOAT32 => Value.Float32(popFloat())
         case FLOAT64 => Value.Float64(popDouble())
+        case b       => throw new SwamException(s"Malformed stack $b")
+      }
+
+    def peekValue(): Value =
+      (stack(top - 1): @switch) match {
+        case INT32   => Value.Int32(peekInt())
+        case INT64   => Value.Int64(peekLong())
+        case FLOAT32 => Value.Float32(peekFloat())
+        case FLOAT64 => Value.Float64(peekDouble())
         case b       => throw new SwamException(s"Malformed stack $b")
       }
 

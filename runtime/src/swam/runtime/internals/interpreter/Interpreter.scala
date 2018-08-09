@@ -764,9 +764,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           F.pure(Left(frame))
         case OpCode.TeeLocal =>
           val idx = frame.readInt()
-          val v = frame.stack.popValue()
-          frame.stack.pushValue(v)
-          frame.stack.pushValue(v)
+          val v = frame.stack.peekValue()
           frame.locals(idx) = v
           F.pure(Left(frame))
         case OpCode.GetGlobal =>
