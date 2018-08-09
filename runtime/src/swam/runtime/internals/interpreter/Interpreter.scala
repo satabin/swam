@@ -601,9 +601,9 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I32TruncUF32 =>
           val f = frame.stack.popFloat()
           if (JFloat.isFinite(f)) {
-            val t = truncate(f).toInt
-            if (t >= 0) {
-              frame.stack.pushInt(t)
+            val t = truncate(f)
+            if (JLong.compareUnsigned(t.toLong, 1 << 31) <= 0 ) {
+              frame.stack.pushInt(t.toLong.toInt)
               F.pure(Left(frame))
             } else {
               F.raiseError(new InterpreterException(frame, "invalid unsigned i32"))
@@ -646,7 +646,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val f = frame.stack.popFloat()
           if (JFloat.isFinite(f)) {
             val t = truncate(f).toLong
-            if (t >= 0) {
+            if (JLong.compareUnsigned(t, 1l << 63) <= 0) {
               frame.stack.pushLong(t)
               F.pure(Left(frame))
             } else {
