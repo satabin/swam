@@ -153,8 +153,8 @@ object Lexical {
       case F.PInf     => Float.PositiveInfinity
       case F.NaN(-1, None) => JFloat.intBitsToFloat(0xffc00000)
       case F.NaN(_, None) => JFloat.intBitsToFloat(0x7fc00000)
-      case F.NaN(-1, Some(payload)) => JFloat.intBitsToFloat(0xf8000000 | payload.intValue)
-      case F.NaN(_, Some(payload)) => JFloat.intBitsToFloat(0x78000000 | payload.intValue)
+      case F.NaN(-1, Some(payload)) => JFloat.intBitsToFloat(0xff800000 | payload.intValue)
+      case F.NaN(_, Some(payload)) => JFloat.intBitsToFloat(0x7f800000 | payload.intValue)
     }
 
   val float64: P[Double] =
@@ -164,8 +164,8 @@ object Lexical {
       case F.PInf     => Double.PositiveInfinity
       case F.NaN(-1, None) => JDouble.longBitsToDouble(0xfff8000000000000l)
       case F.NaN(_, None) => JDouble.longBitsToDouble(0x7ff8000000000000l)
-      case F.NaN(-1, Some(payload)) => JDouble.longBitsToDouble(0xfff8000000000000l | payload.longValue)
-      case F.NaN(_, Some(payload)) => JDouble.longBitsToDouble(0x7ff8000000000000l | payload.longValue)
+      case F.NaN(-1, Some(payload)) => JDouble.longBitsToDouble(0xfff0000000000000l | payload.longValue)
+      case F.NaN(_, Some(payload)) => JDouble.longBitsToDouble(0x7ff0000000000000l | payload.longValue)
     }
 
   val string: P[String] =
