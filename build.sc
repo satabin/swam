@@ -35,6 +35,7 @@ object core extends SwamModule {
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest:0.6.4")
     def testFrameworks = Seq("swam.util.Framework")
+    def moduleDeps = Seq(core, util.test)
   }
 
 }
@@ -52,12 +53,12 @@ object runtime extends SwamModule {
       ivy"com.github.pathikrit::better-files:3.5.0",
       ivy"com.lihaoyi::pprint:0.5.3")
     def testFrameworks = Seq("swam.util.Framework")
-    def moduleDeps = Seq(runtime, macros.test)
+    def moduleDeps = Seq(runtime, util.test)
   }
 
 }
 
-object macros extends SwamModule {
+object util extends SwamModule {
 
   object test extends SwamModule {
     def ivyDeps = Agg(

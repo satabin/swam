@@ -6,9 +6,9 @@ jdk:
   - openjdk8
 
 script:
-  - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.2.4/0.2.4 && chmod +x ~/bin/mill
+  - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.2.6/0.2.6 && chmod +x ~/bin/mill
   - export PATH=~/bin/mill:$PATH
-  - mill _.test
+  - mill all {core,runtime}.test
 
 cache:
   directories:
