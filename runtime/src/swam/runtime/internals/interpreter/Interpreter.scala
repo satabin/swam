@@ -43,9 +43,10 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     // push the parameters in the stack
     frame.stack.pushValues(parameters)
     // invoke the function
-    invoke(frame, instance.function(funcidx))
-    // and run
-      .flatMap(run(_))
+    invoke(frame, instance.function(funcidx)).flatMap {
+      case Left(frame) => run(frame)
+      case Right(res) => F.pure(res)
+    }
   }
 
   def interpret(func: Function[F], parameters: Vector[Value], instance: Instance[F]): F[Option[Value]] = {
@@ -54,18 +55,20 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     // push the parameters in the stack
     frame.stack.pushValues(parameters)
     // invoke the function
-    invoke(frame, func)
-    // and run
-      .flatMap(run(_))
+    invoke(frame, func).flatMap {
+      case Left(frame) => run(frame)
+      case Right(res) => F.pure(res)
+    }
   }
 
   def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F]): F[Option[Value]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // invoke the function
-    invoke(frame, new FunctionInstance(FuncType(Vector(), Vector(tpe)), Vector(), code, instance))
-    // and run
-      .flatMap(run(_))
+    invoke(frame, new FunctionInstance(FuncType(Vector(), Vector(tpe)), Vector(), code, instance)).flatMap {
+      case Left(frame) => run(frame)
+      case Right(res) => F.pure(res)
+    }
   }
 
   private def run(frame: Frame[F]): F[Option[Value]] =
@@ -1192,7 +1195,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           // next integer is the function index
           val fidx = frame.readInt()
           val f = frame.instance.function(fidx)
-          invoke(frame, f).map(Left(_))
+          invoke(frame, f)
         case OpCode.CallIndirect =>
           // next integer is the typ index
           val tidx = frame.readInt()
@@ -1207,7 +1210,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
             if (expectedt != actualt) {
               F.raiseError(new InterpreterException(frame, "unexpected type"))
             } else {
-              invoke(frame, f).map(Left(_))
+              invoke(frame, f)
             }
           }
         case opcode =>
@@ -1233,7 +1236,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     frame.pc = cont
   }
 
-  private def invoke(frame: Frame[F], f: Function[F]): F[Frame[F]] =
+  private def invoke(frame: Frame[F], f: Function[F]): F[Either[Frame[F], Option[Value]]] =
     f match {
       case FunctionInstance(tpe, locals, code, inst) =>
         val ilocals = Array.ofDim[Value](locals.size + tpe.params.size)
@@ -1245,17 +1248,18 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         val frame1 = frame.stack.pushFrame(tpe.t.size, code, ilocals, inst)
         // push the implicit block label on the called frame
         frame1.stack.pushLabel(Label(tpe.t.size, code.limit - 1))
-        F.pure(frame1)
+        F.pure(Left(frame1))
       case f =>
         // pop the parameters from the stack
         val params = frame.stack.popValues(f.tpe.params.size)
         // invoke the host function with the parameters
-        f.invoke(params.toVector).map {
-          case Some(v) =>
-            frame.stack.pushValue(v)
-            frame
-          case None =>
-            frame
+        f.invoke(params.toVector).map { res =>
+          if(frame.isToplevel) {
+            Right(res)
+          } else {
+            res.foreach(frame.stack.pushValue(_))
+            Left(frame)
+          }
         }
     }
 
