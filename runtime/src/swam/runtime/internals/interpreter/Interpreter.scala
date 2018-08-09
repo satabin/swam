@@ -108,7 +108,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           frame.stack.pushLong(JLong.bitCount(frame.stack.popLong()))
           F.pure(Left(frame))
         case OpCode.F32Abs =>
-          frame.stack.pushFloat(StrictMath.abs(frame.stack.popFloat()))
+          frame.stack.pushFloat(JFloat.intBitsToFloat(JFloat.floatToRawIntBits(frame.stack.popFloat()) & 0x7fffffff))
           F.pure(Left(frame))
         case OpCode.F32Neg =>
           frame.stack.pushFloat(-frame.stack.popFloat())
@@ -130,7 +130,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           frame.stack.pushFloat(frame.stack.popFloat().round.toFloat)
           F.pure(Left(frame))
         case OpCode.F64Abs =>
-          frame.stack.pushDouble(StrictMath.abs(frame.stack.popDouble()))
+          frame.stack.pushDouble(JDouble.longBitsToDouble(JDouble.doubleToRawLongBits(frame.stack.popDouble()) & 0x7fffffffffffffffl))
           F.pure(Left(frame))
         case OpCode.F64Neg =>
           frame.stack.pushDouble(-frame.stack.popDouble())
