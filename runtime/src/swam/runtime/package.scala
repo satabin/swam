@@ -64,4 +64,16 @@ package object runtime {
     else
       d.floor
 
+  def nearest(f: Float): Float =
+    if(f.isInfinite || f.isNaN || f.isWhole)
+      f
+    else
+      Math.copySign((Math.round(f / 2) * 2).toFloat, f)
+
+  def nearest(d: Double): Double =
+    if(d.isInfinite || d.isNaN || d.isWhole)
+      d
+    else
+      Math.copySign((Math.round(d / 2) * 2).toDouble, d)
+
 }

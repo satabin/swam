@@ -127,7 +127,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           frame.stack.pushFloat(truncate(f))
           F.pure(Left(frame))
         case OpCode.F32Nearest =>
-          frame.stack.pushFloat(frame.stack.popFloat().round.toFloat)
+          val f = frame.stack.popFloat()
+          frame.stack.pushFloat(nearest(f))
           F.pure(Left(frame))
         case OpCode.F64Abs =>
           frame.stack.pushDouble(JDouble.longBitsToDouble(JDouble.doubleToRawLongBits(frame.stack.popDouble()) & 0x7fffffffffffffffl))
@@ -149,7 +150,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           frame.stack.pushDouble(truncate(f))
           F.pure(Left(frame))
         case OpCode.F64Nearest =>
-          frame.stack.pushDouble(StrictMath.rint(frame.stack.popDouble()))
+          val d = frame.stack.popDouble()
+          frame.stack.pushDouble(nearest(d))
           F.pure(Left(frame))
         // === binary operators ===
         case OpCode.I32Add =>
