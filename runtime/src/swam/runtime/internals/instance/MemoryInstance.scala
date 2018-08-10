@@ -28,7 +28,7 @@ import scala.language.higherKinds
 
 private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int) extends Memory[F] {
 
-  val tpe = MemType(Limits(min, max.map(math.min(_, hardMax))))
+  val tpe = MemType(Limits(min, max))
 
   var buffer = allocate(min * pageSize)
 

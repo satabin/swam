@@ -46,7 +46,7 @@ import java.nio.file.Path
   */
 class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(implicit F: Effect[F]) {
 
-  private[runtime] val validator = new SpecValidator[F]
+  private[runtime] val validator = new SpecValidator[F](conf.data.hardMax)
 
   private[runtime] val compiler = new Compiler[F](this)
 

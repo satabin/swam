@@ -143,12 +143,12 @@ class ScriptEngine {
                   IO.raiseError(i)
             }
           case AssertMalformed(m @ BinaryModule(_, _), failure) =>
-            (compile(m) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
+            (instantiate(ctx, m) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
               case _: DecodingError | _: ParseError[_, _] | _: ResolutionException | _: ValidationException | _: NumberFormatException =>
                 IO.pure(Left((rest, ctx)))
             }
           case AssertInvalid(m, failure) =>
-            (compile(m) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
+            (instantiate(ctx, m) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
               case _: ResolutionException | _: ValidationException =>
                 IO.pure(Left((rest, ctx)))
             }
@@ -217,7 +217,8 @@ class ScriptEngine {
     } yield res
   }
 
-  def compile(m: TestModule): IO[Module[IO]] =
+  def instantiate(ctx: ExecutionContext, m: TestModule): IO[Instance[IO]] = {
+    val mod =
     m match {
       case ValidModule(m) =>
         engine.compile(tcompiler.stream(m, false))
@@ -229,6 +230,8 @@ class ScriptEngine {
           m <- engine.compile(tcompiler.stream(unresolved, false))
         } yield m
     }
+    mod.flatMap(_.newInstance(ctx.imports))
+  }
 
 }
 

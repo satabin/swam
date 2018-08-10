@@ -3,7 +3,7 @@
 (module (memory 0 0))
 (module (memory 0 1))
 (module (memory 1 256))
-(module (memory 0 65536))
+(module (memory 0 1024))
 
 (assert_invalid (module (memory 0) (memory 0)) "multiple memories")
 (assert_invalid (module (memory (import "spectest" "memory") 0) (memory 0)) "multiple memories")

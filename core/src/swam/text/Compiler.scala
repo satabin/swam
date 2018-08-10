@@ -38,7 +38,7 @@ class Compiler[F[_]](implicit val F: Effect[F]) {
 
   private val resolver = new Resolver[F]
 
-  private implicit val validator = new SpecValidator[F]
+  private implicit val validator = new SpecValidator[F](65536)
 
   private val binaryParser = new SwamParser[F]
 

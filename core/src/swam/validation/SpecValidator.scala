@@ -26,7 +26,7 @@ import scala.language.higherKinds
 
 import fs2._
 
-class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validator[F] {
+class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]) extends Validator[F] {
 
   type Ctx = Context[F]
 
@@ -62,7 +62,23 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
     }
 
   def validateMemType(tpe: MemType): F[Unit] =
-    validateLimits(tpe.limits)
+    for {
+      _ <- validateLimits(tpe.limits)
+      _ <- validateHardMax(tpe.limits.min)
+      _ <- validateHardMax(tpe.limits.max)
+    } yield ()
+
+  def validateHardMax(i: Option[Int]): F[Unit] =
+    i match {
+      case Some(i) => validateHardMax(i)
+      case None => Ok
+    }
+
+  def validateHardMax(i: Int): F[Unit] =
+    if(i < 0 || i > dataHardMax)
+      F.raiseError(new ValidationException(s"memory size may not exceed $dataHardMax pages"))
+    else
+      Ok
 
   def validateFuncType(tpe: FuncType): F[Unit] =
     if (tpe.t.size > 1)
