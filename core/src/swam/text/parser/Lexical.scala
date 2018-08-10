@@ -80,20 +80,18 @@ object Lexical {
   private val hexnum: P[BigInt] =
     P(hexdigit.rep(min = 1, sep = "_".?).map(_.foldLeft(BigInt(0))(16 * _ + _)))
 
-  val unsigned: P[BigInt] =
-    P(("0x" ~ hexnum | num))
-
-  val signed: P[BigInt] =
-    P((sign ~ (("0x" ~ hexnum) | num))).map { case (sign, n) => sign * n }
-
   val uint32: P[Int] =
-    P(unsigned.map(_.intValue))
+    P("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_, 16)) | num.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_)))
 
   val int32: P[Int] =
-    P(signed.map(_.intValue))
+    P(sign.! ~ ("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_, 16)) | num.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_)))).map {
+      case (s, n) => if(s == "-") -1 * n else n
+    }
 
   val int64: P[Long] =
-    P(signed.map(_.longValue))
+    P(sign.! ~ ("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(JLong.parseUnsignedLong(_, 16)) | num.!.map(_.replaceAll("_", "")).map(JLong.parseUnsignedLong(_)))).map {
+      case (s, n) => if(s == "-") -1l * n else n
+    }
 
   private val rfloat: P[String] =
     P(("0x" ~ hexnum ~ "." ~ hexnum ~ CharIn("Pp") ~ sign ~ num).!
