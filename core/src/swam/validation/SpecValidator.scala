@@ -111,13 +111,13 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
         F.pure(ctx.push(t))
       case Unop(t) =>
         for {
-          _ <- ctx.pop(t)
-        } yield ctx
+          ctx <- ctx.pop(t)
+        } yield ctx.push(t)
       case Binop(t) =>
         for {
           ctx <- ctx.pop(t)
-          _ <- ctx.pop(t)
-        } yield ctx
+          ctx <- ctx.pop(t)
+        } yield ctx.push(t)
       case Testop(t) =>
         for {
           ctx <- ctx.pop(t)
@@ -157,7 +157,7 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
       case TeeLocal(x) =>
         ctx.locals.lift(x) match {
           case Some(t) =>
-            for(_ <- ctx.pop(t)) yield ctx
+            for(ctx <- ctx.pop(t)) yield ctx.push(t)
           case None =>
             F.raiseError(new ValidationException(s"unknown local $x."))
         }
@@ -229,7 +229,7 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
         }
       case MemoryGrow =>
         ctx.mems.lift(0) match {
-          case Some(_) => for (_ <- ctx.pop(ValType.I32)) yield ctx
+          case Some(_) => for (ctx <- ctx.pop(ValType.I32)) yield ctx.push(ValType.I32)
           case None =>
             F.raiseError(new ValidationException("unknown memory 0."))
         }
@@ -292,8 +292,8 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
           case Some(ResultType(Some(tpe))) =>
             for {
               ctx <- ctx.pop(ValType.I32)
-              _ <- ctx.pop(tpe)
-            } yield ctx
+              ctx <- ctx.pop(tpe)
+            } yield ctx.push(tpe)
           case Some(ResultType(None)) =>
             for {
               ctx <- ctx.pop(ValType.I32)
