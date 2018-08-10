@@ -152,6 +152,11 @@ class ScriptEngine {
               case _: ResolutionException | _: ValidationException =>
                 IO.pure(Left((rest, ctx)))
             }
+          case AssertUnlinkable(m, failure) =>
+            (instantiate(ctx, m) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
+              case _: RuntimeException =>
+                IO.pure(Left((rest, ctx)))
+            }
           case _ =>
             // ignore other commands
             IO.pure(Left((rest, ctx)))
