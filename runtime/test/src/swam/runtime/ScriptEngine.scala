@@ -134,6 +134,14 @@ class ScriptEngine {
                 else
                   IO.raiseError(i)
             }
+          case AssertModuleTrap(m, failure) =>
+            (instantiate(ctx, m) >> IO.raiseError(new Exception("A trap was expected"))).recoverWith {
+              case e: RuntimeException =>
+                if(e.getMessage.startsWith(failure))
+                  IO.pure(Left((rest, ctx)))
+                else
+                  IO.raiseError(e)
+            }
           case AssertExhaustion(action, failure) =>
             (execute(ctx, action) >> IO.raiseError(new Exception("A trap was expected"))).recoverWith {
               case i: StackOverflowException[_] =>
