@@ -33,6 +33,8 @@ import cats.effect._
 import scodec.bits._
 import scodec.stream.decode.DecodingError
 
+import fastparse.core._
+
 import java.lang.{Float=>JFloat,Double=>JDouble}
 
 object Constant {
@@ -140,15 +142,15 @@ class ScriptEngine {
                 else
                   IO.raiseError(i)
             }
-          case AssertMalformed(BinaryModule(_, bs), failure) =>
-            (engine.compile(BitVector(bs)) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
-              case e: DecodingError =>
+          case AssertMalformed(m @ BinaryModule(_, _), failure) =>
+            (compile(m) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
+              case _: DecodingError | _: ParseError[_, _] | _: ResolutionException | _: ValidationException | _: NumberFormatException =>
                 IO.pure(Left((rest, ctx)))
-              case e: ValidationException =>
-                if(e.getMessage == "code and function sections must have the same number of elements")
-                  IO.pure(Left((rest, ctx)))
-                else
-                  IO.raiseError(e)
+            }
+          case AssertInvalid(m, failure) =>
+            (compile(m) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
+              case _: ResolutionException | _: ValidationException =>
+                IO.pure(Left((rest, ctx)))
             }
           case _ =>
             // ignore other commands
@@ -214,6 +216,19 @@ class ScriptEngine {
       res <- f.invoke(ps.toVector)
     } yield res
   }
+
+  def compile(m: TestModule): IO[Module[IO]] =
+    m match {
+      case ValidModule(m) =>
+        engine.compile(tcompiler.stream(m, false))
+      case BinaryModule(_, bs) =>
+        engine.compile(BitVector(bs))
+      case QuotedModule(_, src) =>
+        for {
+          unresolved <- tcompiler.parse(src)
+          m <- engine.compile(tcompiler.stream(unresolved, false))
+        } yield m
+    }
 
 }
 
