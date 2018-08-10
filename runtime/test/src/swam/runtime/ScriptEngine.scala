@@ -22,6 +22,7 @@ import text._
 import test._
 import imports._
 import unresolved._
+import validation._
 
 import internals.interpreter._
 
@@ -30,6 +31,7 @@ import cats.implicits._
 import cats.effect._
 
 import scodec.bits._
+import scodec.stream.decode.DecodingError
 
 import java.lang.{Float=>JFloat,Double=>JDouble}
 
@@ -123,7 +125,7 @@ class ScriptEngine {
               _ <- checkNaN(cmd.pos, actual)
             } yield Left((rest, ctx))
           case AssertTrap(action, failure) =>
-            execute(ctx, action).flatMap(_ => IO.raiseError(new Exception("A trap was expected"))).recoverWith {
+            (execute(ctx, action) >> IO.raiseError(new Exception("A trap was expected"))).recoverWith {
               case i: InterpreterException[_] =>
                 if(i.getMessage.startsWith(failure))
                   IO.pure(Left((rest, ctx)))
@@ -131,12 +133,22 @@ class ScriptEngine {
                   IO.raiseError(i)
             }
           case AssertExhaustion(action, failure) =>
-            execute(ctx, action).flatMap(_ => IO.raiseError(new Exception("A trap was expected"))).recoverWith {
+            (execute(ctx, action) >> IO.raiseError(new Exception("A trap was expected"))).recoverWith {
               case i: StackOverflowException[_] =>
                 if(i.getMessage.startsWith(failure))
                   IO.pure(Left((rest, ctx)))
                 else
                   IO.raiseError(i)
+            }
+          case AssertMalformed(BinaryModule(_, bs), failure) =>
+            (engine.compile(BitVector(bs)) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
+              case e: DecodingError =>
+                IO.pure(Left((rest, ctx)))
+              case e: ValidationException =>
+                if(e.getMessage == "code and function sections must have the same number of elements")
+                  IO.pure(Left((rest, ctx)))
+                else
+                  IO.raiseError(e)
             }
           case _ =>
             // ignore other commands

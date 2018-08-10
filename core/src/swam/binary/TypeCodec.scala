@@ -48,9 +48,9 @@ trait TypeCodec {
 
   val limits: Codec[Limits] =
     discriminated[Limits]
-      .by(varuint1)
-      .|(0) { case Limits(min, None) => min }(Limits(_, None))(varuint32)
-      .|(1) { case Limits(min, Some(max)) => (min, max) }(Limits.tupled)(varuint32 ~ varuint32)
+      .by(byte)
+      .|(0x00) { case Limits(min, None) => min }(Limits(_, None))(varuint32)
+      .|(0x01) { case Limits(min, Some(max)) => (min, max) }(Limits.tupled)(varuint32 ~ varuint32)
 
   val tableType: Codec[TableType] =
     (("element_type" | elemType) ::
