@@ -156,7 +156,8 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
         }
       case TeeLocal(x) =>
         ctx.locals.lift(x) match {
-          case Some(t) => F.pure(ctx)
+          case Some(t) =>
+            for(_ <- ctx.pop(t)) yield ctx
           case None =>
             F.raiseError(new ValidationException(s"unknown local $x."))
         }
