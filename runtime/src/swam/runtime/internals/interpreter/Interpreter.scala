@@ -183,6 +183,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val i1 = frame.stack.popInt()
           if (i2 == 0) {
             F.raiseError(new InterpreterException(frame, "integer divide by zero"))
+          } else if(i1 == Int.MinValue && i2 == -1) {
+            F.raiseError(new InterpreterException(frame, "integer overflow"))
           } else {
             val res = i1 / i2
             if (i1 >= 0 && i2 > 0 && res < 0) {
@@ -279,6 +281,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val i1 = frame.stack.popLong()
           if (i2 == 0) {
             F.raiseError(new InterpreterException(frame, "integer divide by zero"))
+          } else if(i1 == Long.MinValue && i2 == -1l) {
+            F.raiseError(new InterpreterException(frame, "integer overflow"))
           } else {
             val res = i1 / i2
             if (i1 >= 0 && i2 > 0 && res < 0) {
