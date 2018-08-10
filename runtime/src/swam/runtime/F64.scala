@@ -17,24 +17,24 @@
 package swam
 package runtime
 
-import java.lang.{Float=>JFloat,Double=>JDouble}
+import java.lang.{Float => JFloat, Double => JDouble}
 
 object F64 {
 
   def trunc(d: Double): Double =
-    if(d >= 0.0d)
+    if (d >= 0.0d)
       d.floor
     else
       d.ceil
 
   def nearest(d: Double): Double =
-    if(d.isInfinite || d.isNaN || d.isWhole)
+    if (d.isInfinite || d.isNaN || d.isWhole)
       d
     else
       Math.copySign((Math.round(d / 2) * 2).toDouble, d)
 
   def promote(f: Float): Double =
-    if(!f.isNaN) {
+    if (!f.isNaN) {
       f.toDouble
     } else {
       val nan32bits = JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl
@@ -55,7 +55,7 @@ object F64 {
     l.toDouble
 
   def convertUi64(l: Long): Double =
-    if(l >= 0l)
+    if (l >= 0l)
       l.toDouble
     else
       ((l >>> 1) | (l & 1l)) * 2.0d

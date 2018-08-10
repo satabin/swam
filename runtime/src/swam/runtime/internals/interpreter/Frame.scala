@@ -177,7 +177,6 @@ sealed class Frame[F[_]] private (parent: Frame[F],
       fstack(ftop - 1)
     }
 
-
     def popDouble(): Double = {
       check(pop(), FLOAT64)
       dtop -= 1
@@ -262,8 +261,9 @@ sealed class Frame[F[_]] private (parent: Frame[F],
     def getLabel(idx: Int): Label =
       lblstack(lbltop - 1 - idx)
 
-    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Value], instance: Instance[F])(implicit F: MonadError[F, Throwable]): F[Frame[F]] =
-      if(depth < callDepth)
+    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Value], instance: Instance[F])(
+        implicit F: MonadError[F, Throwable]): F[Frame[F]] =
+      if (depth < callDepth)
         F.pure(new Frame[F](self, stackSize, callDepth, depth + 1, code, locals, arity, instance))
       else
         F.raiseError(new StackOverflowException(self))

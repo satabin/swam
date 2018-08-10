@@ -45,7 +45,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     // invoke the function
     invoke(frame, instance.function(funcidx)).flatMap {
       case Left(frame) => run(frame)
-      case Right(res) => F.pure(res)
+      case Right(res)  => F.pure(res)
     }
   }
 
@@ -57,7 +57,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     // invoke the function
     invoke(frame, func).flatMap {
       case Left(frame) => run(frame)
-      case Right(res) => F.pure(res)
+      case Right(res)  => F.pure(res)
     }
   }
 
@@ -67,7 +67,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     // invoke the function
     invoke(frame, new FunctionInstance(FuncType(Vector(), Vector(tpe)), Vector(), code, instance)).flatMap {
       case Left(frame) => run(frame)
-      case Right(res) => F.pure(res)
+      case Right(res)  => F.pure(res)
     }
   }
 
@@ -131,7 +131,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           frame.stack.pushFloat(F32.nearest(f))
           F.pure(Left(frame))
         case OpCode.F64Abs =>
-          frame.stack.pushDouble(JDouble.longBitsToDouble(JDouble.doubleToRawLongBits(frame.stack.popDouble()) & 0x7fffffffffffffffl))
+          frame.stack.pushDouble(
+            JDouble.longBitsToDouble(JDouble.doubleToRawLongBits(frame.stack.popDouble()) & 0x7fffffffffffffffl))
           F.pure(Left(frame))
         case OpCode.F64Neg =>
           frame.stack.pushDouble(-frame.stack.popDouble())
@@ -183,7 +184,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val i1 = frame.stack.popInt()
           if (i2 == 0) {
             F.raiseError(new InterpreterException(frame, "integer divide by zero"))
-          } else if(i1 == Int.MinValue && i2 == -1) {
+          } else if (i1 == Int.MinValue && i2 == -1) {
             F.raiseError(new InterpreterException(frame, "integer overflow"))
           } else {
             val res = i1 / i2
@@ -281,7 +282,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val i1 = frame.stack.popLong()
           if (i2 == 0) {
             F.raiseError(new InterpreterException(frame, "integer divide by zero"))
-          } else if(i1 == Long.MinValue && i2 == -1l) {
+          } else if (i1 == Long.MinValue && i2 == -1l) {
             F.raiseError(new InterpreterException(frame, "integer overflow"))
           } else {
             val res = i1 / i2
@@ -605,65 +606,81 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           F.pure(Left(frame))
         case OpCode.I32TruncUF32 =>
           val f = frame.stack.popFloat()
-          F.catchNonFatal(I32.truncUf32(f)).adaptError {
-            case e => new InterpreterException(frame, e.getMessage)
-            }.map { i =>
+          F.catchNonFatal(I32.truncUf32(f))
+            .adaptError {
+              case e => new InterpreterException(frame, e.getMessage)
+            }
+            .map { i =>
               frame.stack.pushInt(i)
               Left(frame)
             }
         case OpCode.I32TruncSF32 =>
           val f = frame.stack.popFloat()
-          F.catchNonFatal(I32.truncSf32(f)).adaptError {
-            case e => new InterpreterException(frame, e.getMessage)
-            }.map { i =>
+          F.catchNonFatal(I32.truncSf32(f))
+            .adaptError {
+              case e => new InterpreterException(frame, e.getMessage)
+            }
+            .map { i =>
               frame.stack.pushInt(i)
               Left(frame)
             }
         case OpCode.I32TruncUF64 =>
           val f = frame.stack.popDouble()
-          F.catchNonFatal(I32.truncUf64(f)).adaptError {
-            case e => new InterpreterException(frame, e.getMessage)
-            }.map { i =>
+          F.catchNonFatal(I32.truncUf64(f))
+            .adaptError {
+              case e => new InterpreterException(frame, e.getMessage)
+            }
+            .map { i =>
               frame.stack.pushInt(i)
               Left(frame)
             }
         case OpCode.I32TruncSF64 =>
           val f = frame.stack.popDouble()
-          F.catchNonFatal(I32.truncSf64(f)).adaptError {
-            case e => new InterpreterException(frame, e.getMessage)
-            }.map { i =>
+          F.catchNonFatal(I32.truncSf64(f))
+            .adaptError {
+              case e => new InterpreterException(frame, e.getMessage)
+            }
+            .map { i =>
               frame.stack.pushInt(i)
               Left(frame)
             }
         case OpCode.I64TruncUF32 =>
           val f = frame.stack.popFloat()
-          F.catchNonFatal(I64.truncUf32(f)).adaptError {
-            case e => new InterpreterException(frame, e.getMessage)
-            }.map { l =>
+          F.catchNonFatal(I64.truncUf32(f))
+            .adaptError {
+              case e => new InterpreterException(frame, e.getMessage)
+            }
+            .map { l =>
               frame.stack.pushLong(l)
               Left(frame)
             }
         case OpCode.I64TruncSF32 =>
           val f = frame.stack.popFloat()
-          F.catchNonFatal(I64.truncSf32(f)).adaptError {
-            case e => new InterpreterException(frame, e.getMessage)
-            }.map { l =>
+          F.catchNonFatal(I64.truncSf32(f))
+            .adaptError {
+              case e => new InterpreterException(frame, e.getMessage)
+            }
+            .map { l =>
               frame.stack.pushLong(l)
               Left(frame)
             }
         case OpCode.I64TruncUF64 =>
           val f = frame.stack.popDouble()
-          F.catchNonFatal(I64.truncUf64(f)).adaptError {
-            case e => new InterpreterException(frame, e.getMessage)
-            }.map { l =>
+          F.catchNonFatal(I64.truncUf64(f))
+            .adaptError {
+              case e => new InterpreterException(frame, e.getMessage)
+            }
+            .map { l =>
               frame.stack.pushLong(l)
               Left(frame)
             }
         case OpCode.I64TruncSF64 =>
           val f = frame.stack.popDouble()
-          F.catchNonFatal(I64.truncSf64(f)).adaptError {
-            case e => new InterpreterException(frame, e.getMessage)
-            }.map { l =>
+          F.catchNonFatal(I64.truncSf64(f))
+            .adaptError {
+              case e => new InterpreterException(frame, e.getMessage)
+            }
+            .map { l =>
               frame.stack.pushLong(l)
               Left(frame)
             }
@@ -1238,7 +1255,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         val params = frame.stack.popValues(f.tpe.params.size)
         // invoke the host function with the parameters
         f.invoke(params.toVector).map { res =>
-          if(frame.isToplevel) {
+          if (frame.isToplevel) {
             Right(res)
           } else {
             res.foreach(frame.stack.pushValue(_))

@@ -17,7 +17,7 @@
 package swam
 package util
 
-class Framework extends utest.runner.Framework{
+class Framework extends utest.runner.Framework {
   override def exceptionStackFrameHighlighter(s: StackTraceElement) = {
     s.getClassName.startsWith("swam.")
   }

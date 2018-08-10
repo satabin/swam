@@ -71,11 +71,11 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
   def validateHardMax(i: Option[Int]): F[Unit] =
     i match {
       case Some(i) => validateHardMax(i)
-      case None => Ok
+      case None    => Ok
     }
 
   def validateHardMax(i: Int): F[Unit] =
-    if(i < 0 || i > dataHardMax)
+    if (i < 0 || i > dataHardMax)
       F.raiseError(new ValidationException(s"memory size may not exceed $dataHardMax pages"))
     else
       Ok
@@ -157,7 +157,7 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
       case TeeLocal(x) =>
         ctx.locals.lift(x) match {
           case Some(t) =>
-            for(ctx <- ctx.pop(t)) yield ctx.push(t)
+            for (ctx <- ctx.pop(t)) yield ctx.push(t)
           case None =>
             F.raiseError(new ValidationException(s"unknown local $x."))
         }

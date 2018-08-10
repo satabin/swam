@@ -23,7 +23,8 @@ import cats._
 
 import scala.language.higherKinds
 
-private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType)(implicit F: MonadError[F, Throwable]) extends Global[F] {
+private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType)(implicit F: MonadError[F, Throwable])
+    extends Global[F] {
 
   private var value: Value = Value.zero(tpe.tpe)
 
@@ -31,8 +32,8 @@ private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType)(implicit F: Mon
     value
 
   def set(v: Value) =
-    if(tpe.mut == Mut.Var)
-      if(v.tpe <:< tpe.tpe)
+    if (tpe.mut == Mut.Var)
+      if (v.tpe <:< tpe.tpe)
         F.pure(value = v)
       else
         F.raiseError(new RuntimeException(s"Expected type ${tpe.tpe} but got ${v.tpe}"))

@@ -81,41 +81,59 @@ object Lexical {
     P(hexdigit.rep(min = 1, sep = "_".?).map(_.foldLeft(BigInt(0))(16 * _ + _)))
 
   val uint32: P[Int] =
-    P("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_, 16)) | num.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_)))
+    P(
+      "0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_, 16)) | num.!.map(_.replaceAll("_", ""))
+        .map(Integer.parseUnsignedInt(_)))
 
   val int32: P[Int] =
-    P(sign.! ~ ("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_, 16)) | num.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_)))).map {
-      case (s, n) => if(s == "-") -1 * n else n
+    P(
+      sign.! ~ ("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_, 16)) | num.!.map(
+        _.replaceAll("_", "")).map(Integer.parseUnsignedInt(_)))).map {
+      case (s, n) => if (s == "-") -1 * n else n
     }
 
   val int64: P[Long] =
-    P(sign.! ~ ("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(JLong.parseUnsignedLong(_, 16)) | num.!.map(_.replaceAll("_", "")).map(JLong.parseUnsignedLong(_)))).map {
-      case (s, n) => if(s == "-") -1l * n else n
+    P(
+      sign.! ~ ("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(JLong.parseUnsignedLong(_, 16)) | num.!.map(
+        _.replaceAll("_", "")).map(JLong.parseUnsignedLong(_)))).map {
+      case (s, n) => if (s == "-") -1l * n else n
     }
 
   private val rfloat: P[String] =
-    P(("0x" ~ hexnum ~ "." ~ hexnum ~ CharIn("Pp") ~ sign ~ num).!
-      |("0x" ~ hexnum.! ~ (CharIn("Pp") ~ sign ~ num).!).map {
-        case (s1, s2) => s"0x$s1.0$s2"
-      }
-      |("0x" ~ hexnum.! ~ "." ~ (CharIn("Pp") ~ sign ~ num).!).map {
-        case (s1, s2) => s"0x$s1.0$s2"
-      }
-      |("0x" ~ hexnum ~ "." ~ hexnum.?).!.map(_ + "0p0")
-      |("0x" ~ hexnum).!.map(_ + ".0p0")
-      |(num ~ ("." ~ num.?).? ~ (CharIn("Ee") ~ sign ~ num).?).!).map(_.replaceAll("_", ""))
+    P(
+      ("0x" ~ hexnum ~ "." ~ hexnum ~ CharIn("Pp") ~ sign ~ num).!
+        | ("0x" ~ hexnum.! ~ (CharIn("Pp") ~ sign ~ num).!).map {
+          case (s1, s2) => s"0x$s1.0$s2"
+        }
+        | ("0x" ~ hexnum.! ~ "." ~ (CharIn("Pp") ~ sign ~ num).!).map {
+          case (s1, s2) => s"0x$s1.0$s2"
+        }
+        | ("0x" ~ hexnum ~ "." ~ hexnum.?).!.map(_ + "0p0")
+        | ("0x" ~ hexnum).!.map(_ + ".0p0")
+        | (num ~ ("." ~ num.?).? ~ (CharIn("Ee") ~ sign ~ num).?).!).map(_.replaceAll("_", ""))
 
   val float32: P[Float] =
-    P((sign.! ~ rfloat).map { case (s, f) => if(s == "-") -1 * JFloat.parseFloat(f) else JFloat.parseFloat(f) }
-      |(sign.! ~ "inf").map(s => if(s == "-") Float.NegativeInfinity else Float.PositiveInfinity)
-      |(sign.! ~ "nan:0x" ~ hexnum).map { case (s, payload) => if(s == "-") JFloat.intBitsToFloat(0xff800000 | payload.intValue) else JFloat.intBitsToFloat(0x7f800000 | payload.intValue) }
-      |(sign.! ~ "nan").map(s => if(s == "-") JFloat.intBitsToFloat(0xffc00000) else JFloat.intBitsToFloat(0x7fc00000)))
+    P(
+      (sign.! ~ rfloat).map { case (s, f) => if (s == "-") -1 * JFloat.parseFloat(f) else JFloat.parseFloat(f) }
+        | (sign.! ~ "inf").map(s => if (s == "-") Float.NegativeInfinity else Float.PositiveInfinity)
+        | (sign.! ~ "nan:0x" ~ hexnum).map {
+          case (s, payload) =>
+            if (s == "-") JFloat.intBitsToFloat(0xff800000 | payload.intValue)
+            else JFloat.intBitsToFloat(0x7f800000 | payload.intValue)
+        }
+        | (sign.! ~ "nan").map(s =>
+          if (s == "-") JFloat.intBitsToFloat(0xffc00000) else JFloat.intBitsToFloat(0x7fc00000)))
 
   val float64: P[Double] =
-    P((sign.! ~ rfloat).map { case (s, f) => if(s == "-") -1 * JDouble.parseDouble(f) else JDouble.parseDouble(f) }
-      |(sign.! ~ "inf").map(s => if(s == "-") Double.NegativeInfinity else Double.PositiveInfinity)
-      |(sign.! ~ "nan:0x" ~ hexnum).map { case (s, payload) => if(s == "-") JDouble.longBitsToDouble(0xfff0000000000000l | payload.longValue) else JDouble.longBitsToDouble(0x7ff0000000000000l | payload.longValue) }
-      |(sign.! ~ "nan").map(s => if(s == "-") JDouble.longBitsToDouble(0xfff8000000000000l) else JDouble.longBitsToDouble(0x7ff8000000000000l)))
+    P((sign.! ~ rfloat).map { case (s, f) => if (s == "-") -1 * JDouble.parseDouble(f) else JDouble.parseDouble(f) }
+      | (sign.! ~ "inf").map(s => if (s == "-") Double.NegativeInfinity else Double.PositiveInfinity)
+      | (sign.! ~ "nan:0x" ~ hexnum).map {
+        case (s, payload) =>
+          if (s == "-") JDouble.longBitsToDouble(0xfff0000000000000l | payload.longValue)
+          else JDouble.longBitsToDouble(0x7ff0000000000000l | payload.longValue)
+      }
+      | (sign.! ~ "nan").map(s =>
+        if (s == "-") JDouble.longBitsToDouble(0xfff8000000000000l) else JDouble.longBitsToDouble(0x7ff8000000000000l)))
 
   val string: P[String] =
     P(

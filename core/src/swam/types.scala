@@ -69,7 +69,7 @@ case class Limits(min: Int, max: Option[Int]) {
     (this, that) match {
       case (Limits(min, _), Limits(min1, None))               => min >= min1
       case (Limits(min, Some(max)), Limits(min1, Some(max1))) => min >= min1 && max <= max1
-      case _ => false
+      case _                                                  => false
     }
 }
 

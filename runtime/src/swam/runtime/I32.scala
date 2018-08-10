@@ -17,7 +17,7 @@
 package swam
 package runtime
 
-import java.lang.{Float=>JFloat}
+import java.lang.{Float => JFloat}
 
 object I32 {
 
@@ -25,33 +25,33 @@ object I32 {
     (l % (1l << 32)).toInt
 
   def truncSf32(f: Float): Int =
-    if(f.isNaN)
+    if (f.isNaN)
       throw new ConversionException("invalid conversion to integer")
-    else if(f >= -Int.MinValue.toFloat || f < Int.MinValue.toFloat)
+    else if (f >= -Int.MinValue.toFloat || f < Int.MinValue.toFloat)
       throw new ConversionException("integer overflow")
     else
       f.toInt
 
   def truncUf32(f: Float): Int =
-    if(f.isNaN)
+    if (f.isNaN)
       throw new ConversionException("invalid conversion to integer")
-    else if(f >= -Int.MinValue.toFloat * 2.0f || f <= -1.0f)
+    else if (f >= -Int.MinValue.toFloat * 2.0f || f <= -1.0f)
       throw new ConversionException("integer overflow")
     else
       f.toLong.toInt
 
   def truncSf64(d: Double): Int =
-    if(d.isNaN)
+    if (d.isNaN)
       throw new ConversionException("invalid conversion to integer")
-    else if(d >= -Int.MinValue.toDouble || d < Int.MinValue)
+    else if (d >= -Int.MinValue.toDouble || d < Int.MinValue)
       throw new ConversionException("integer overflow")
     else
       d.toInt
 
   def truncUf64(d: Double): Int =
-    if(d.isNaN)
+    if (d.isNaN)
       throw new ConversionException("invalid conversion to integer")
-    else if(d >= -Int.MinValue.toDouble * 2.0d || d <= -1.0)
+    else if (d >= -Int.MinValue.toDouble * 2.0d || d <= -1.0)
       throw new ConversionException("integer overflow")
     else
       d.toLong.toInt

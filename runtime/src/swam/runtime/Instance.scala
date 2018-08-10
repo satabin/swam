@@ -206,19 +206,19 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
   private def initMems(implicit F: MonadError[F, Throwable]): F[Mems] =
     F.tailRecM[(Int, Mems), Mems]((0, Seq.empty)) {
       case (idx, acc) =>
-      if (idx >= module.data.size)
-        F.pure(Right(acc))
-      else
-        module.data(idx) match {
-          case CompiledData(coffset, init) =>
-            interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
-              val offset = roffset.get.asInt
-              if (offset < 0 || init.capacity + offset > memories(0).size)
-                F.raiseError(new RuntimeException("Overflow in memory initialization"))
-              else
-                F.pure(Left((idx + 1, acc :+ (offset, init))))
-            }
-        }
+        if (idx >= module.data.size)
+          F.pure(Right(acc))
+        else
+          module.data(idx) match {
+            case CompiledData(coffset, init) =>
+              interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
+                val offset = roffset.get.asInt
+                if (offset < 0 || init.capacity + offset > memories(0).size)
+                  F.raiseError(new RuntimeException("Overflow in memory initialization"))
+                else
+                  F.pure(Left((idx + 1, acc :+ (offset, init))))
+              }
+          }
     }
 
   private def setvalues(elems: Funs, data: Mems)(implicit F: MonadError[F, Throwable]): F[Unit] =

@@ -19,14 +19,12 @@ package runtime
 package internals
 package instance
 
-import java.nio.{
-  ByteBuffer,
-  ByteOrder
-}
+import java.nio.{ByteBuffer, ByteOrder}
 
 import scala.language.higherKinds
 
-private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int) extends Memory[F] {
+private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int)
+    extends Memory[F] {
 
   val tpe = MemType(Limits(min, max))
 
@@ -80,12 +78,13 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
   def readDouble(idx: Int): Double =
     buffer.getDouble(idx)
 
-  def grow(by: Int): Boolean = try {
-    val newSize = StrictMath.addExact(size, StrictMath.multiplyExact(by, pageSize))
-    check(newSize) && doGrow(newSize)
-  } catch {
-    case _: ArithmeticException => false
-  }
+  def grow(by: Int): Boolean =
+    try {
+      val newSize = StrictMath.addExact(size, StrictMath.multiplyExact(by, pageSize))
+      check(newSize) && doGrow(newSize)
+    } catch {
+      case _: ArithmeticException => false
+    }
 
   def doGrow(size: Int): Boolean = {
     val old = buffer

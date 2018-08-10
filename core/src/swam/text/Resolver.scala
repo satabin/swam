@@ -357,7 +357,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
       tpe match {
         case Some(tpe) =>
           resolveIndex(tpe, pos, ctx.types, "type").flatMap { idx =>
-            if(idx >= 0 && idx < ctx.typedefs.size)
+            if (idx >= 0 && idx < ctx.typedefs.size)
               if (params.isEmpty && results.isEmpty)
                 F.pure((idx, ResolverContext(locals = Vector.fill(ctx.typedefs(idx).params.size)(Def(NoId, pos)))))
               else
@@ -366,8 +366,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                     F.pure((idx, ResolverContext(locals = nparams.map(Def(_, pos)))))
                   case _ =>
                     F.raiseError(new ResolutionException(f"Incompatible types", Seq(pos)))
-                }
-            else
+                } else
               F.raiseError(new ResolutionException(f"Unknown type $idx", Seq(pos)))
           }
         case None =>

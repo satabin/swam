@@ -36,22 +36,22 @@ private class Varuint(bits: Int) extends Codec[Int] {
     else
       decode(bits, buffer.bytes).map(_.map(_.toInt)).flatMap {
         case r @ DecodeResult(i, _) =>
-          if(i >= 0)
+          if (i >= 0)
             Attempt.successful(r)
           else
             Attempt.failure(Err("invalid unsigned int"))
       }
 
   private def decode(n: Int, buffer: ByteVector): Attempt[DecodeResult[Long]] =
-    if(n <= 0) {
+    if (n <= 0) {
       Attempt.failure(Err("integer representation too long"))
-    } else if(buffer.isEmpty) {
+    } else if (buffer.isEmpty) {
       Attempt.failure(Err("unexpected end of input"))
     } else {
       val byte = buffer.head
-      if(n >= 7 || (byte & 0x7f) < (1 << n)) {
+      if (n >= 7 || (byte & 0x7f) < (1 << n)) {
         val x = byte & 0x7fl
-        if((byte & 0x80) == 0)
+        if ((byte & 0x80) == 0)
           Attempt.successful(DecodeResult(x, buffer.tail.bits))
         else
           decode(n - 7, buffer.tail).map(_.map(s => x | (s << 7)))
@@ -107,17 +107,17 @@ private class Varint(bits: Int) extends Codec[Long] {
       decode(bits, buffer.bytes)
 
   private def decode(n: Int, buffer: ByteVector): Attempt[DecodeResult[Long]] =
-    if(n <= 0) {
+    if (n <= 0) {
       Attempt.failure(Err("integer representation too long"))
-    } else if(buffer.isEmpty) {
+    } else if (buffer.isEmpty) {
       Attempt.failure(Err("unexpected end of input"))
     } else {
       val byte = buffer.head
       val mask = (-1 << (n - 1)) & 0x7f
-      if(n >= 7 || (byte & mask) == 0 || (byte & mask) == mask) {
+      if (n >= 7 || (byte & mask) == 0 || (byte & mask) == mask) {
         val x = byte & 0x7fl
-        if((byte & 0x80) == 0)
-          if((byte & 0x40) == 0)
+        if ((byte & 0x80) == 0)
+          if ((byte & 0x40) == 0)
             Attempt.successful(DecodeResult(x, buffer.tail.bits))
           else
             Attempt.successful(DecodeResult(x ^ ((-1l) ^ 0x7fl), buffer.tail.bits))

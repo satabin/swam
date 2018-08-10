@@ -21,10 +21,7 @@ import formats._
 
 import cats._
 
-import java.nio.{
-  ByteBuffer,
-  ByteOrder
-}
+import java.nio.{ByteBuffer, ByteOrder}
 
 import scala.language.higherKinds
 
@@ -57,7 +54,8 @@ package object imports {
       def view(i: T) = i
     }
 
-  implicit def valueAsInterface[T, F[_]](implicit F: MonadError[F, Throwable], writer: ValueWriter[T]): AsInterface[T, F] =
+  implicit def valueAsInterface[T, F[_]](implicit F: MonadError[F, Throwable],
+                                         writer: ValueWriter[T]): AsInterface[T, F] =
     new AsInterface[T, F] {
       def view(t: T): Global[F] =
         new Global[F] {

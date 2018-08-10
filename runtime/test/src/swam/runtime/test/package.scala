@@ -66,21 +66,22 @@ package object test {
   def print(): IO[Unit] =
     IO(println("print"))
 
-  def spectestlib = new Imports[IO](
-    TCMap[String, AsIsIO]("spectest" -> TCMap[String, AsIIO](
-      "memory" -> buffer,
-      "global_i32" -> 666,
-      "global_i64" -> 'a'.toLong,
-      "global_f32" -> 0.0f,
-      "global_f64" -> 0.0d,
-      "table" -> table,
-      "print_i32" -> printi32 _,
-      "print_i64" -> printi64 _,
-      "print_f32" -> printf32 _,
-      "print_f64" -> printf64 _,
-      "print_i32_f32" -> printi32f32 _,
-      "print_f64_f64" -> printf64f64 _,
-      "print" -> print _
-    )))
+  def spectestlib =
+    new Imports[IO](
+      TCMap[String, AsIsIO]("spectest" -> TCMap[String, AsIIO](
+        "memory" -> buffer,
+        "global_i32" -> 666,
+        "global_i64" -> 'a'.toLong,
+        "global_f32" -> 0.0f,
+        "global_f64" -> 0.0d,
+        "table" -> table,
+        "print_i32" -> printi32 _,
+        "print_i64" -> printi64 _,
+        "print_f32" -> printf32 _,
+        "print_f64" -> printf64 _,
+        "print_i32_f32" -> printi32f32 _,
+        "print_f64_f64" -> printf64f64 _,
+        "print" -> print _
+      )))
 
 }

@@ -35,7 +35,7 @@ import scodec.stream.decode.DecodingError
 
 import fastparse.core._
 
-import java.lang.{Float=>JFloat,Double=>JDouble}
+import java.lang.{Float => JFloat, Double => JDouble}
 
 object Constant {
   def unapply(i: Inst): Option[Value] =
@@ -95,7 +95,8 @@ class ScriptEngine {
             for {
               compiled <- engine.compile(BitVector(bs))
               instance <- compiled.newInstance(ctx.imports)
-            } yield id match {
+            } yield
+              id match {
                 case Some(name) =>
                   Left((rest, ctx.copy(modules = ctx.modules.updated(name, instance), last = Some(instance))))
                 case None => Left((rest, ctx.copy(last = Some(instance))))
@@ -129,7 +130,7 @@ class ScriptEngine {
           case AssertTrap(action, failure) =>
             (execute(ctx, action) >> IO.raiseError(new Exception("A trap was expected"))).recoverWith {
               case i: InterpreterException[_] =>
-                if(i.getMessage.startsWith(failure))
+                if (i.getMessage.startsWith(failure))
                   IO.pure(Left((rest, ctx)))
                 else
                   IO.raiseError(i)
@@ -137,7 +138,7 @@ class ScriptEngine {
           case AssertModuleTrap(m, failure) =>
             (instantiate(ctx, m) >> IO.raiseError(new Exception("A trap was expected"))).recoverWith {
               case e: RuntimeException =>
-                if(e.getMessage.startsWith(failure))
+                if (e.getMessage.startsWith(failure))
                   IO.pure(Left((rest, ctx)))
                 else
                   IO.raiseError(e)
@@ -145,14 +146,15 @@ class ScriptEngine {
           case AssertExhaustion(action, failure) =>
             (execute(ctx, action) >> IO.raiseError(new Exception("A trap was expected"))).recoverWith {
               case i: StackOverflowException[_] =>
-                if(i.getMessage.startsWith(failure))
+                if (i.getMessage.startsWith(failure))
                   IO.pure(Left((rest, ctx)))
                 else
                   IO.raiseError(i)
             }
           case AssertMalformed(m @ BinaryModule(_, _), failure) =>
             (instantiate(ctx, m) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
-              case _: DecodingError | _: ParseError[_, _] | _: ResolutionException | _: ValidationException | _: NumberFormatException =>
+              case _: DecodingError | _: ParseError[_, _] | _: ResolutionException | _: ValidationException |
+                  _: NumberFormatException =>
                 IO.pure(Left((rest, ctx)))
             }
           case AssertInvalid(m, failure) =>
@@ -170,11 +172,11 @@ class ScriptEngine {
             IO.pure(Left((rest, ctx)))
         }
         res
-            .adaptError {
-              case e =>
-                println(positioner.render(cmd.pos))
-                e
-            }
+          .adaptError {
+            case e =>
+              println(positioner.render(cmd.pos))
+              e
+          }
       case (Seq(), _) =>
         IO.pure(Right(()))
     }
@@ -187,7 +189,7 @@ class ScriptEngine {
       actual match {
         case Some(Value.Float32(v)) => utest.assert(v.isNaN)
         case Some(Value.Float64(v)) => utest.assert(v.isNaN)
-        case _ => utest.assert(false)
+        case _                      => utest.assert(false)
       }
     }
 
@@ -216,7 +218,11 @@ class ScriptEngine {
       g <- mod.exports.global(name)
     } yield g.get
 
-  def invoke(ctx: ExecutionContext, pos: Int, modid: Option[String], export: String, params: Expr): IO[Option[Value]] = {
+  def invoke(ctx: ExecutionContext,
+             pos: Int,
+             modid: Option[String],
+             export: String,
+             params: Expr): IO[Option[Value]] = {
     val values =
       IO.tailRecM((params, Seq.empty[Value])) {
         case (Seq(), acc)             => IO.pure(Right(acc))
@@ -232,17 +238,17 @@ class ScriptEngine {
 
   def instantiate(ctx: ExecutionContext, m: TestModule): IO[Instance[IO]] = {
     val mod =
-    m match {
-      case ValidModule(m) =>
-        engine.compile(tcompiler.stream(m, false))
-      case BinaryModule(_, bs) =>
-        engine.compile(BitVector(bs))
-      case QuotedModule(_, src) =>
-        for {
-          unresolved <- tcompiler.parse(src)
-          m <- engine.compile(tcompiler.stream(unresolved, false))
-        } yield m
-    }
+      m match {
+        case ValidModule(m) =>
+          engine.compile(tcompiler.stream(m, false))
+        case BinaryModule(_, bs) =>
+          engine.compile(BitVector(bs))
+        case QuotedModule(_, src) =>
+          for {
+            unresolved <- tcompiler.parse(src)
+            m <- engine.compile(tcompiler.stream(unresolved, false))
+          } yield m
+      }
     mod.flatMap(_.newInstance(ctx.imports))
   }
 
@@ -253,10 +259,11 @@ object ScriptEngine {
   implicit def valueEq[V <: Value]: Eq[V] = new Eq[V] {
     def eqv(v1: V, v2: V): Boolean =
       (v1, v2) match {
-        case (Value.Int32(v1), Value.Int32(v2)) => v1 == v2
-        case (Value.Int64(v1), Value.Int64(v2)) => v1 == v2
+        case (Value.Int32(v1), Value.Int32(v2))     => v1 == v2
+        case (Value.Int64(v1), Value.Int64(v2))     => v1 == v2
         case (Value.Float32(v1), Value.Float32(v2)) => JFloat.floatToRawIntBits(v1) == JFloat.floatToRawIntBits(v2)
-        case (Value.Float64(v1), Value.Float64(v2)) => JDouble.doubleToRawLongBits(v1) == JDouble.doubleToRawLongBits(v2)
+        case (Value.Float64(v1), Value.Float64(v2)) =>
+          JDouble.doubleToRawLongBits(v1) == JDouble.doubleToRawLongBits(v2)
         case _ => false
       }
   }
