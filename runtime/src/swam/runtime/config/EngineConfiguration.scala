@@ -35,6 +35,8 @@ trait StackConfiguration {
 
   def height: Int
 
+  def callDepth: Int
+
 }
 
 trait DataConfiguration {

@@ -21,6 +21,8 @@ package interpreter
 
 import config._
 
+import cats._
+
 import scala.annotation.{tailrec, switch}
 
 import java.nio.ByteBuffer
@@ -31,6 +33,8 @@ import scala.language.higherKinds
   */
 sealed class Frame[F[_]] private (parent: Frame[F],
                                   stackSize: Int,
+                                  callDepth: Int,
+                                  depth: Int,
                                   code: ByteBuffer,
                                   val locals: Array[Value],
                                   val arity: Int,
@@ -258,8 +262,11 @@ sealed class Frame[F[_]] private (parent: Frame[F],
     def getLabel(idx: Int): Label =
       lblstack(lbltop - 1 - idx)
 
-    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Value], instance: Instance[F]): Frame[F] =
-      new Frame[F](self, stackSize, code, locals, arity, instance)
+    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Value], instance: Instance[F])(implicit F: MonadError[F, Throwable]): F[Frame[F]] =
+      if(depth < callDepth)
+        F.pure(new Frame[F](self, stackSize, callDepth, depth + 1, code, locals, arity, instance))
+      else
+        F.raiseError(new StackOverflowException(self))
 
     def popFrame(): Frame[F] =
       parent
@@ -279,6 +286,8 @@ object Frame {
   private final val LABEL = 4
 
   def makeToplevel[F[_]](instance: Instance[F], conf: EngineConfiguration): Frame[F] =
-    new Frame[F](null, conf.stack.height, null, null, 0, instance)
+    new Frame[F](null, conf.stack.height, conf.stack.callDepth, 0, null, null, 0, instance)
 
 }
+
+class StackOverflowException[F[_]](frame: Frame[F]) extends Exception("call stack exhausted")

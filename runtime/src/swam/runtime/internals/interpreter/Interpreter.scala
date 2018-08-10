@@ -1228,10 +1228,11 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         // pop the parameters from the stack
         val params = frame.stack.popValues(tpe.params.size).toArray
         Array.copy(params, 0, ilocals, 0, params.length)
-        val frame1 = frame.stack.pushFrame(tpe.t.size, code, ilocals, inst)
-        // push the implicit block label on the called frame
-        frame1.stack.pushLabel(Label(tpe.t.size, code.limit - 1))
-        F.pure(Left(frame1))
+        frame.stack.pushFrame(tpe.t.size, code, ilocals, inst).map { frame =>
+          // push the implicit block label on the called frame
+          frame.stack.pushLabel(Label(tpe.t.size, code.limit - 1))
+          Left(frame)
+        }
       case f =>
         // pop the parameters from the stack
         val params = frame.stack.popValues(f.tpe.params.size)

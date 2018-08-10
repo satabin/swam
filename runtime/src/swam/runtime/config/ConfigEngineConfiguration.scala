@@ -26,6 +26,8 @@ class ConfigEngineConfiguration(wrapped: Config) extends EngineConfiguration {
 
     def height = wrapped.getInt("swam.runtime.stack.size")
 
+    def callDepth = wrapped.getInt("swam.runtime.stack.call-depth")
+
   }
 
   object data extends DataConfiguration {

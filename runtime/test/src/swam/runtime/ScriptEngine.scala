@@ -112,9 +112,27 @@ class ScriptEngine {
               expected <- value(cmd.pos, result.headOption)
               _ <- check(cmd.pos, actual, expected)
             } yield Left((rest, ctx))
+          case AssertReturnCanonicalNaN(action) =>
+            for {
+              actual <- execute(ctx, action)
+              _ <- checkNaN(cmd.pos, actual)
+            } yield Left((rest, ctx))
+          case AssertReturnArithmeticNaN(action) =>
+            for {
+              actual <- execute(ctx, action)
+              _ <- checkNaN(cmd.pos, actual)
+            } yield Left((rest, ctx))
           case AssertTrap(action, failure) =>
             execute(ctx, action).flatMap(_ => IO.raiseError(new Exception("A trap was expected"))).recoverWith {
               case i: InterpreterException[_] =>
+                if(i.getMessage.startsWith(failure))
+                  IO.pure(Left((rest, ctx)))
+                else
+                  IO.raiseError(i)
+            }
+          case AssertExhaustion(action, failure) =>
+            execute(ctx, action).flatMap(_ => IO.raiseError(new Exception("A trap was expected"))).recoverWith {
+              case i: StackOverflowException[_] =>
                 if(i.getMessage.startsWith(failure))
                   IO.pure(Left((rest, ctx)))
                 else
@@ -136,6 +154,15 @@ class ScriptEngine {
 
   def check(pos: Int, actual: Option[Value], expected: Option[Value]): IO[Unit] =
     cats.effect.IO(utest.assert(actual === expected))
+
+  def checkNaN(pos: Int, actual: Option[Value]): IO[Unit] =
+    cats.effect.IO {
+      actual match {
+        case Some(Value.Float32(v)) => utest.assert(v.isNaN)
+        case Some(Value.Float64(v)) => utest.assert(v.isNaN)
+        case _ => utest.assert(false)
+      }
+    }
 
   def value(pos: Int, i: Option[Inst]): IO[Option[Value]] =
     i match {
@@ -180,8 +207,8 @@ class ScriptEngine {
 
 object ScriptEngine {
 
-  implicit val valueEq: Eq[Value] = new Eq[Value] {
-    def eqv(v1: Value, v2: Value): Boolean =
+  implicit def valueEq[V <: Value]: Eq[V] = new Eq[V] {
+    def eqv(v1: V, v2: V): Boolean =
       (v1, v2) match {
         case (Value.Int32(v1), Value.Int32(v2)) => v1 == v2
         case (Value.Int64(v1), Value.Int64(v2)) => v1 == v2
