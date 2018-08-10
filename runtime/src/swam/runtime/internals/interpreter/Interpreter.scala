@@ -124,11 +124,11 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           F.pure(Left(frame))
         case OpCode.F32Trunc =>
           val f = frame.stack.popFloat()
-          frame.stack.pushFloat(truncate(f))
+          frame.stack.pushFloat(F32.trunc(f))
           F.pure(Left(frame))
         case OpCode.F32Nearest =>
           val f = frame.stack.popFloat()
-          frame.stack.pushFloat(nearest(f))
+          frame.stack.pushFloat(F32.nearest(f))
           F.pure(Left(frame))
         case OpCode.F64Abs =>
           frame.stack.pushDouble(JDouble.longBitsToDouble(JDouble.doubleToRawLongBits(frame.stack.popDouble()) & 0x7fffffffffffffffl))
@@ -147,11 +147,11 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           F.pure(Left(frame))
         case OpCode.F64Trunc =>
           val f = frame.stack.popDouble()
-          frame.stack.pushDouble(truncate(f))
+          frame.stack.pushDouble(F64.trunc(f))
           F.pure(Left(frame))
         case OpCode.F64Nearest =>
           val d = frame.stack.popDouble()
-          frame.stack.pushDouble(nearest(d))
+          frame.stack.pushDouble(F64.nearest(d))
           F.pure(Left(frame))
         // === binary operators ===
         case OpCode.I32Add =>
@@ -589,158 +589,135 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         // === conversion operators ===
         case OpCode.I32WrapI64 =>
           val l = frame.stack.popLong()
-          val i = (l % (1l << 32)).toInt
-          frame.stack.pushInt(i)
+          frame.stack.pushInt(I32.wrap(l))
           F.pure(Left(frame))
         case OpCode.I64ExtendUI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushLong(JInt.toUnsignedLong(i))
+          frame.stack.pushLong(I64.extendUi32(i))
           F.pure(Left(frame))
         case OpCode.I64ExtendSI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushLong(i.toLong)
+          frame.stack.pushLong(I64.extendSi32(i))
           F.pure(Left(frame))
         case OpCode.I32TruncUF32 =>
           val f = frame.stack.popFloat()
-          if (JFloat.isFinite(f)) {
-            val t = truncate(f)
-            if (JLong.compareUnsigned(t.toLong, 1 << 31) <= 0 ) {
-              frame.stack.pushInt(t.toLong.toInt)
-              F.pure(Left(frame))
-            } else {
-              F.raiseError(new InterpreterException(frame, "invalid unsigned i32"))
+          F.catchNonFatal(I32.truncUf32(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { i =>
+              frame.stack.pushInt(i)
+              Left(frame)
             }
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid unsigned i32"))
-          }
         case OpCode.I32TruncSF32 =>
           val f = frame.stack.popFloat()
-          val t = truncate(f)
-          if (t.isValidInt) {
-            frame.stack.pushInt(t.toInt)
-            F.pure(Left(frame))
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid signed i32"))
-          }
+          F.catchNonFatal(I32.truncSf32(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { i =>
+              frame.stack.pushInt(i)
+              Left(frame)
+            }
         case OpCode.I32TruncUF64 =>
           val f = frame.stack.popDouble()
-          if (JDouble.isFinite(f)) {
-            val t = truncate(f).toLong
-            if (t >= 0 && t < (1l << 32)) {
-              frame.stack.pushInt(t.toInt)
-              F.pure(Left(frame))
-            } else {
-              F.raiseError(new InterpreterException(frame, "invalid unsigned i32"))
+          F.catchNonFatal(I32.truncUf64(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { i =>
+              frame.stack.pushInt(i)
+              Left(frame)
             }
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid unsigned i32"))
-          }
         case OpCode.I32TruncSF64 =>
           val f = frame.stack.popDouble()
-          val t = truncate(f)
-          if (t.isValidInt) {
-            frame.stack.pushInt(t.toInt)
-            F.pure(Left(frame))
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid signed i32"))
-          }
+          F.catchNonFatal(I32.truncSf64(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { i =>
+              frame.stack.pushInt(i)
+              Left(frame)
+            }
         case OpCode.I64TruncUF32 =>
           val f = frame.stack.popFloat()
-          if (JFloat.isFinite(f)) {
-            val t = truncate(f).toLong
-            if (JLong.compareUnsigned(t, 1l << 63) <= 0) {
-              frame.stack.pushLong(t)
-              F.pure(Left(frame))
-            } else {
-              F.raiseError(new InterpreterException(frame, "invalid unsigned i64"))
+          F.catchNonFatal(I64.truncUf32(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { l =>
+              frame.stack.pushLong(l)
+              Left(frame)
             }
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid unsigned i64"))
-          }
         case OpCode.I64TruncSF32 =>
           val f = frame.stack.popFloat()
-          val t = truncate(f)
-          if (t.isWhole) {
-            frame.stack.pushLong(t.toLong)
-            F.pure(Left(frame))
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid signed i64"))
-          }
+          F.catchNonFatal(I64.truncSf32(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { l =>
+              frame.stack.pushLong(l)
+              Left(frame)
+            }
         case OpCode.I64TruncUF64 =>
           val f = frame.stack.popDouble()
-          if (JDouble.isFinite(f)) {
-            val t = truncate(f).toLong
-            frame.stack.pushInt(t.toInt)
-            F.pure(Left(frame))
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid unsigned i64"))
-          }
+          F.catchNonFatal(I64.truncUf64(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { l =>
+              frame.stack.pushLong(l)
+              Left(frame)
+            }
         case OpCode.I64TruncSF64 =>
           val f = frame.stack.popDouble()
-          val t = truncate(f)
-          if (t.isWhole) {
-            frame.stack.pushLong(t.toLong)
-            F.pure(Left(frame))
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid signed i64"))
-          }
+          F.catchNonFatal(I64.truncSf64(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { l =>
+              frame.stack.pushLong(l)
+              Left(frame)
+            }
         case OpCode.F32DemoteF64 =>
           val f = frame.stack.popDouble()
-          frame.stack.pushFloat(f.toFloat)
+          frame.stack.pushFloat(F32.demote(f))
           F.pure(Left(frame))
         case OpCode.F64PromoteF32 =>
           val f = frame.stack.popFloat()
-          frame.stack.pushDouble(f.toDouble)
+          frame.stack.pushDouble(F64.promote(f))
           F.pure(Left(frame))
         case OpCode.F32ConvertUI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushFloat(JInt.toUnsignedLong(i).toFloat)
+          frame.stack.pushFloat(F32.convertUi32(i))
           F.pure(Left(frame))
         case OpCode.F32ConvertSI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushFloat(i.toFloat)
+          frame.stack.pushFloat(F32.convertSi32(i))
           F.pure(Left(frame))
         case OpCode.F32ConvertUI64 =>
           val l = frame.stack.popLong()
-          val f = BigDecimal(JLong.toUnsignedString(l)).floatValue
-          frame.stack.pushFloat(f)
+          frame.stack.pushFloat(F32.convertUi64(l))
           F.pure(Left(frame))
         case OpCode.F32ConvertSI64 =>
           val l = frame.stack.popLong()
-          frame.stack.pushFloat(l.toFloat)
+          frame.stack.pushFloat(F32.convertSi64(l))
           F.pure(Left(frame))
         case OpCode.F64ConvertUI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushDouble(JInt.toUnsignedLong(i).toDouble)
+          frame.stack.pushDouble(F64.convertUi32(i))
           F.pure(Left(frame))
         case OpCode.F64ConvertSI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushDouble(i.toDouble)
+          frame.stack.pushDouble(F64.convertSi32(i))
           F.pure(Left(frame))
         case OpCode.F64ConvertUI64 =>
           val l = frame.stack.popLong()
-          val f = BigDecimal(JLong.toUnsignedString(l)).doubleValue
-          frame.stack.pushDouble(f)
+          frame.stack.pushDouble(F64.convertUi64(l))
           F.pure(Left(frame))
         case OpCode.F64ConvertSI64 =>
           val l = frame.stack.popLong()
-          frame.stack.pushDouble(l.toDouble)
+          frame.stack.pushDouble(F64.convertSi64(l))
           F.pure(Left(frame))
         case OpCode.I32ReinterpretF32 =>
           val f = frame.stack.popFloat()
-          frame.stack.pushInt(JFloat.floatToRawIntBits(f))
+          frame.stack.pushInt(I32.reinterpret(f))
           F.pure(Left(frame))
         case OpCode.I64ReinterpretF64 =>
           val f = frame.stack.popDouble()
-          frame.stack.pushLong(JDouble.doubleToRawLongBits(f))
+          frame.stack.pushLong(I64.reinterpret(f))
           F.pure(Left(frame))
         case OpCode.F32ReinterpretI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushFloat(JFloat.intBitsToFloat(i))
+          frame.stack.pushFloat(F32.reinterpret(i))
           F.pure(Left(frame))
         case OpCode.F64ReinterpretI64 =>
           val i = frame.stack.popLong()
-          frame.stack.pushDouble(JDouble.longBitsToDouble(i))
+          frame.stack.pushDouble(F64.reinterpret(i))
           F.pure(Left(frame))
         // === parameteric instructions ===
         case OpCode.Drop =>
