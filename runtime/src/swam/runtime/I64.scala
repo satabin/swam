@@ -29,17 +29,17 @@ object I64 {
 
   def truncSf32(f: Float): Long =
     if(f.isNaN)
-      throw new ConversionException("invalid signed i64")
+      throw new ConversionException("invalid conversion to integer")
     else if(f >= -Long.MinValue.toFloat || f < Long.MinValue.toFloat)
-      throw new ConversionException("invalid signed i64")
+      throw new ConversionException("integer overflow")
     else
       f.toLong
 
   def truncUf32(f: Float): Long =
     if(f.isNaN)
-      throw new ConversionException("invalid unsigned i64")
+      throw new ConversionException("invalid conversion to integer")
     else if(f >= -Long.MinValue.toDouble * 2.0d || f <= -1.0d)
-      throw new ConversionException("invalid unsigned i64")
+      throw new ConversionException("integer overflow")
     else if(f >= -Long.MinValue.toDouble)
       (f - 9223372036854775808.0f).toLong | Long.MinValue
     else
@@ -47,17 +47,17 @@ object I64 {
 
   def truncSf64(d: Double): Long =
     if(d.isNaN)
-      throw new ConversionException("invalid signed i64")
+      throw new ConversionException("invalid conversion to integer")
     else if(d >= -Long.MinValue.toDouble || d < Long.MinValue.toDouble)
-      throw new ConversionException("invalid signed i64")
+      throw new ConversionException("integer overflow")
     else
       d.toLong
 
   def truncUf64(d: Double): Long =
     if(d.isNaN)
-      throw new ConversionException("invalid unsigned i64")
+      throw new ConversionException("invalid conversion to integer")
     else if(d >= -Long.MinValue.toDouble * 2.0d || d <= -1.0d)
-      throw new ConversionException("invalid unsigned i64")
+      throw new ConversionException("integer overflow")
     else if(d >= -Long.MinValue.toDouble)
       (d - 9223372036854775808.0d).toLong | Long.MinValue
     else

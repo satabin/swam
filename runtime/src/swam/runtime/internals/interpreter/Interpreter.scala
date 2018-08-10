@@ -173,7 +173,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
           if (i2 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             frame.stack.pushInt(JInt.divideUnsigned(i1, i2))
             F.pure(Left(frame))
@@ -182,7 +182,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
           if (i2 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             val res = i1 / i2
             if (i1 >= 0 && i2 > 0 && res < 0) {
@@ -196,7 +196,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
           if (i2 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             frame.stack.pushInt(JInt.remainderUnsigned(i1, i2))
             F.pure(Left(frame))
@@ -205,7 +205,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
           if (i2 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             frame.stack.pushInt(i1 % i2)
             F.pure(Left(frame))
@@ -269,7 +269,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
           if (i2 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             frame.stack.pushLong(JLong.divideUnsigned(i1, i2))
             F.pure(Left(frame))
@@ -278,7 +278,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
           if (i2 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             val res = i1 / i2
             if (i1 >= 0 && i2 > 0 && res < 0) {
@@ -292,7 +292,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
           if (i2 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             frame.stack.pushLong(JLong.remainderUnsigned(i1, i2))
             F.pure(Left(frame))
@@ -301,7 +301,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
           if (i2 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             frame.stack.pushLong(i1 % i2)
             F.pure(Left(frame))
@@ -1078,7 +1078,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.Nop =>
           F.pure(Left(frame))
         case OpCode.Unreachable =>
-          F.raiseError(new InterpreterException(frame, "unreachable"))
+          F.raiseError(new InterpreterException(frame, "unreachable executed"))
         case OpCode.Block =>
           // next int is the block arity
           val arity = frame.readInt()
@@ -1180,12 +1180,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val expectedt = frame.instance.tpe(tidx)
           val i = frame.stack.popInt()
           if (i >= tab.size || tab(i) == null) {
-            F.raiseError(new InterpreterException(frame, "invalid indirect call"))
+            F.raiseError(new InterpreterException(frame, "undefined element"))
           } else {
             val f = tab(i)
             val actualt = f.tpe
             if (expectedt != actualt) {
-              F.raiseError(new InterpreterException(frame, "unexpected type"))
+              F.raiseError(new InterpreterException(frame, "indirect call type mismatch"))
             } else {
               invoke(frame, f)
             }

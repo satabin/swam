@@ -23,6 +23,8 @@ import test._
 import imports._
 import unresolved._
 
+import internals.interpreter._
+
 import cats._
 import cats.implicits._
 import cats.effect._
@@ -110,6 +112,14 @@ class ScriptEngine {
               expected <- value(cmd.pos, result.headOption)
               _ <- check(cmd.pos, actual, expected)
             } yield Left((rest, ctx))
+          case AssertTrap(action, failure) =>
+            execute(ctx, action).flatMap(_ => IO.raiseError(new Exception("A trap was expected"))).recoverWith {
+              case i: InterpreterException[_] =>
+                if(i.getMessage.startsWith(failure))
+                  IO.pure(Left((rest, ctx)))
+                else
+                  IO.raiseError(i)
+            }
           case _ =>
             // ignore other commands
             IO.pure(Left((rest, ctx)))
