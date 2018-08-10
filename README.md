@@ -2,7 +2,7 @@
 
 [WebAssembly](https://webassembly.org/) implementation in Scala.
 
-If you have the following `logged.wat` file:
+If you have the following `examples/logged.wat` file:
 ```wat
 (module $logged_module
   (import "console" "log" (func $log (param i32)))
@@ -16,7 +16,7 @@ If you have the following `logged.wat` file:
   (export "add42" (func $add42)))
 ```
 
-and the following `logged.sc` file:
+and the following `examples/logged.sc` file:
 ```scala
 import swam._
 import swam.text._
@@ -38,9 +38,9 @@ type AsIIO[T] = AsInterface[T, IO]
 val foo = Imports[IO](module("console", TCMap[String, AsIIO]("log" -> log _)))
 
 val f = (for {
-  mod <- engine.compile(tcompiler.stream(Paths.get("logged.wat"), true))
+  mod <- engine.compile(tcompiler.stream(Paths.get("examples/logged.wat"), true))
   inst <- mod.newInstance(foo)
-  f <- inst.exports.function1[Int, Int]("add42")
+  f <- inst.exports.typed.function1[Int, Int]("add42")
 } yield f).unsafeRunSync()
 
 println(f(4).unsafeRunSync())
@@ -48,5 +48,7 @@ println(f(4).unsafeRunSync())
 
 Then you can run it this way:
 ```shell
-$ mill -i runtime.repl -c 'import $file.logged'
+$ mill -i runtime.repl -c 'import $file.examples.logged'
 ```
+
+All examples can be found under the [examples](examples/) directory.

@@ -19,6 +19,8 @@ package runtime
 
 import java.nio.ByteBuffer
 
+import cats._
+
 import scala.language.higherKinds
 
 /** All elements that are part of the interface of an instance must implement
@@ -37,7 +39,7 @@ sealed trait Interface[F[_], +T <: Type] {
 /** Functions must implement this interface to be used by Swam.
   *
   */
-trait Function[F[_]] extends Interface[F, FuncType] {
+abstract class Function[F[_]](implicit F: MonadError[F, Throwable]) extends Interface[F, FuncType] {
 
   /** Invokes the function and returns its result.
     *
@@ -50,19 +52,20 @@ trait Function[F[_]] extends Interface[F, FuncType] {
 
 /** Globals must implement this interface to be used by Swam.
   *
-  * Only immutable globals can be imported or exported by Swam
-  * in accordance with the WebAssembly specification.
   */
-trait Global[F[_]] extends Interface[F, GlobalType] {
+abstract class Global[F[_]](implicit F: MonadError[F, Throwable]) extends Interface[F, GlobalType] {
 
   /** Returns the global value.
-    *
-    * Implementations must always return the same value
-    * across multiple calls to this method to respect the invariant
-    * from the specification that this global is immutable.
-    * Failure to do so will lead to undefined behaviors.
     */
   def get: Value
+
+  /** Sets the global value.
+    *
+    * Implementations must return a failed `F` if `v` is
+    * not of the correct type or not mutable.
+    */
+  def set(v: Value): F[Unit]
+
 }
 
 /** Tables must implement this interface to be used by Swam.

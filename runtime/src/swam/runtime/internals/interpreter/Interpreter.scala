@@ -43,9 +43,10 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     // push the parameters in the stack
     frame.stack.pushValues(parameters)
     // invoke the function
-    invoke(frame, instance.function(funcidx))
-    // and run
-      .flatMap(run(_))
+    invoke(frame, instance.function(funcidx)).flatMap {
+      case Left(frame) => run(frame)
+      case Right(res) => F.pure(res)
+    }
   }
 
   def interpret(func: Function[F], parameters: Vector[Value], instance: Instance[F]): F[Option[Value]] = {
@@ -54,18 +55,20 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     // push the parameters in the stack
     frame.stack.pushValues(parameters)
     // invoke the function
-    invoke(frame, func)
-    // and run
-      .flatMap(run(_))
+    invoke(frame, func).flatMap {
+      case Left(frame) => run(frame)
+      case Right(res) => F.pure(res)
+    }
   }
 
   def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F]): F[Option[Value]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // invoke the function
-    invoke(frame, new FunctionInstance(FuncType(Vector(), Vector(tpe)), Vector(), code, instance))
-    // and run
-      .flatMap(run(_))
+    invoke(frame, new FunctionInstance(FuncType(Vector(), Vector(tpe)), Vector(), code, instance)).flatMap {
+      case Left(frame) => run(frame)
+      case Right(res) => F.pure(res)
+    }
   }
 
   private def run(frame: Frame[F]): F[Option[Value]] =
@@ -96,16 +99,16 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           frame.stack.pushInt(JInt.bitCount(frame.stack.popInt()))
           F.pure(Left(frame))
         case OpCode.I64Clz =>
-          frame.stack.pushLong(JLong.numberOfLeadingZeros(frame.stack.popInt()))
+          frame.stack.pushLong(JLong.numberOfLeadingZeros(frame.stack.popLong()))
           F.pure(Left(frame))
         case OpCode.I64Ctz =>
-          frame.stack.pushLong(JLong.numberOfTrailingZeros(frame.stack.popInt()))
+          frame.stack.pushLong(JLong.numberOfTrailingZeros(frame.stack.popLong()))
           F.pure(Left(frame))
         case OpCode.I64Popcnt =>
-          frame.stack.pushLong(JLong.bitCount(frame.stack.popInt()))
+          frame.stack.pushLong(JLong.bitCount(frame.stack.popLong()))
           F.pure(Left(frame))
         case OpCode.F32Abs =>
-          frame.stack.pushFloat(StrictMath.abs(frame.stack.popFloat()))
+          frame.stack.pushFloat(JFloat.intBitsToFloat(JFloat.floatToRawIntBits(frame.stack.popFloat()) & 0x7fffffff))
           F.pure(Left(frame))
         case OpCode.F32Neg =>
           frame.stack.pushFloat(-frame.stack.popFloat())
@@ -121,13 +124,14 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           F.pure(Left(frame))
         case OpCode.F32Trunc =>
           val f = frame.stack.popFloat()
-          frame.stack.pushFloat(truncate(f))
+          frame.stack.pushFloat(F32.trunc(f))
           F.pure(Left(frame))
         case OpCode.F32Nearest =>
-          frame.stack.pushFloat(frame.stack.popFloat().round.toFloat)
+          val f = frame.stack.popFloat()
+          frame.stack.pushFloat(F32.nearest(f))
           F.pure(Left(frame))
         case OpCode.F64Abs =>
-          frame.stack.pushDouble(StrictMath.abs(frame.stack.popDouble()))
+          frame.stack.pushDouble(JDouble.longBitsToDouble(JDouble.doubleToRawLongBits(frame.stack.popDouble()) & 0x7fffffffffffffffl))
           F.pure(Left(frame))
         case OpCode.F64Neg =>
           frame.stack.pushDouble(-frame.stack.popDouble())
@@ -143,10 +147,11 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           F.pure(Left(frame))
         case OpCode.F64Trunc =>
           val f = frame.stack.popDouble()
-          frame.stack.pushDouble(truncate(f))
+          frame.stack.pushDouble(F64.trunc(f))
           F.pure(Left(frame))
         case OpCode.F64Nearest =>
-          frame.stack.pushDouble(StrictMath.rint(frame.stack.popDouble()))
+          val d = frame.stack.popDouble()
+          frame.stack.pushDouble(F64.nearest(d))
           F.pure(Left(frame))
         // === binary operators ===
         case OpCode.I32Add =>
@@ -167,8 +172,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I32DivU =>
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
-          if (i1 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+          if (i2 == 0) {
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             frame.stack.pushInt(JInt.divideUnsigned(i1, i2))
             F.pure(Left(frame))
@@ -176,8 +181,10 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I32DivS =>
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
-          if (i1 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+          if (i2 == 0) {
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
+          } else if(i1 == Int.MinValue && i2 == -1) {
+            F.raiseError(new InterpreterException(frame, "integer overflow"))
           } else {
             val res = i1 / i2
             if (i1 >= 0 && i2 > 0 && res < 0) {
@@ -190,8 +197,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I32RemU =>
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
-          if (i1 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+          if (i2 == 0) {
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             frame.stack.pushInt(JInt.remainderUnsigned(i1, i2))
             F.pure(Left(frame))
@@ -199,8 +206,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I32RemS =>
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
-          if (i1 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+          if (i2 == 0) {
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             frame.stack.pushInt(i1 % i2)
             F.pure(Left(frame))
@@ -263,8 +270,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I64DivU =>
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
-          if (i1 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+          if (i2 == 0) {
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             frame.stack.pushLong(JLong.divideUnsigned(i1, i2))
             F.pure(Left(frame))
@@ -272,8 +279,10 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I64DivS =>
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
-          if (i1 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+          if (i2 == 0) {
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
+          } else if(i1 == Long.MinValue && i2 == -1l) {
+            F.raiseError(new InterpreterException(frame, "integer overflow"))
           } else {
             val res = i1 / i2
             if (i1 >= 0 && i2 > 0 && res < 0) {
@@ -286,8 +295,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I64RemU =>
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
-          if (i1 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+          if (i2 == 0) {
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             frame.stack.pushLong(JLong.remainderUnsigned(i1, i2))
             F.pure(Left(frame))
@@ -295,8 +304,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I64RemS =>
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
-          if (i1 == 0) {
-            F.raiseError(new InterpreterException(frame, "div by zero"))
+          if (i2 == 0) {
+            F.raiseError(new InterpreterException(frame, "integer divide by zero"))
           } else {
             frame.stack.pushLong(i1 % i2)
             F.pure(Left(frame))
@@ -374,7 +383,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.F32Copysign =>
           val f2 = frame.stack.popFloat()
           val f1 = frame.stack.popFloat()
-          frame.stack.pushFloat(StrictMath.copySign(f1, f2))
+          frame.stack.pushFloat(Math.copySign(f1, f2))
           F.pure(Left(frame))
         case OpCode.F64Add =>
           val f2 = frame.stack.popDouble()
@@ -409,7 +418,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.F64Copysign =>
           val f2 = frame.stack.popDouble()
           val f1 = frame.stack.popDouble()
-          frame.stack.pushDouble(StrictMath.copySign(f1, f2))
+          frame.stack.pushDouble(Math.copySign(f1, f2))
           F.pure(Left(frame))
         // === test operators ===
         case OpCode.I32Eqz =>
@@ -459,7 +468,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I32LeS =>
           val i2 = frame.stack.popInt()
           val i1 = frame.stack.popInt()
-          frame.stack.pushBool(i1 >= i2)
+          frame.stack.pushBool(i1 <= i2)
           F.pure(Left(frame))
         case OpCode.I32GeU =>
           val i2 = frame.stack.popInt()
@@ -509,7 +518,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.I64LeS =>
           val i2 = frame.stack.popLong()
           val i1 = frame.stack.popLong()
-          frame.stack.pushBool(i1 >= i2)
+          frame.stack.pushBool(i1 <= i2)
           F.pure(Left(frame))
         case OpCode.I64GeU =>
           val i2 = frame.stack.popLong()
@@ -584,157 +593,135 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         // === conversion operators ===
         case OpCode.I32WrapI64 =>
           val l = frame.stack.popLong()
-          frame.stack.pushInt((l % (1l << 32)).toInt)
+          frame.stack.pushInt(I32.wrap(l))
           F.pure(Left(frame))
         case OpCode.I64ExtendUI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushLong(JInt.toUnsignedLong(i))
+          frame.stack.pushLong(I64.extendUi32(i))
           F.pure(Left(frame))
         case OpCode.I64ExtendSI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushLong(i.toLong)
+          frame.stack.pushLong(I64.extendSi32(i))
           F.pure(Left(frame))
         case OpCode.I32TruncUF32 =>
           val f = frame.stack.popFloat()
-          if (JFloat.isFinite(f)) {
-            val t = truncate(f).toInt
-            if (t >= 0) {
-              frame.stack.pushInt(t)
-              F.pure(Left(frame))
-            } else {
-              F.raiseError(new InterpreterException(frame, "invalid unsigned i32"))
+          F.catchNonFatal(I32.truncUf32(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { i =>
+              frame.stack.pushInt(i)
+              Left(frame)
             }
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid unsigned i32"))
-          }
         case OpCode.I32TruncSF32 =>
           val f = frame.stack.popFloat()
-          val t = truncate(f)
-          if (t.isValidInt) {
-            frame.stack.pushInt(t.toInt)
-            F.pure(Left(frame))
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid signed i32"))
-          }
+          F.catchNonFatal(I32.truncSf32(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { i =>
+              frame.stack.pushInt(i)
+              Left(frame)
+            }
         case OpCode.I32TruncUF64 =>
           val f = frame.stack.popDouble()
-          if (JDouble.isFinite(f)) {
-            val t = truncate(f).toLong
-            if (t >= 0 && t < (1l << 32)) {
-              frame.stack.pushInt(t.toInt)
-              F.pure(Left(frame))
-            } else {
-              F.raiseError(new InterpreterException(frame, "invalid unsigned i32"))
+          F.catchNonFatal(I32.truncUf64(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { i =>
+              frame.stack.pushInt(i)
+              Left(frame)
             }
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid unsigned i32"))
-          }
         case OpCode.I32TruncSF64 =>
           val f = frame.stack.popDouble()
-          val t = truncate(f)
-          if (t.isValidInt) {
-            frame.stack.pushInt(t.toInt)
-            F.pure(Left(frame))
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid signed i32"))
-          }
+          F.catchNonFatal(I32.truncSf64(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { i =>
+              frame.stack.pushInt(i)
+              Left(frame)
+            }
         case OpCode.I64TruncUF32 =>
           val f = frame.stack.popFloat()
-          if (JFloat.isFinite(f)) {
-            val t = truncate(f).toLong
-            if (t >= 0) {
-              frame.stack.pushLong(t)
-              F.pure(Left(frame))
-            } else {
-              F.raiseError(new InterpreterException(frame, "invalid unsigned i64"))
+          F.catchNonFatal(I64.truncUf32(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { l =>
+              frame.stack.pushLong(l)
+              Left(frame)
             }
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid unsigned i64"))
-          }
         case OpCode.I64TruncSF32 =>
           val f = frame.stack.popFloat()
-          val t = truncate(f)
-          if (t.isWhole) {
-            frame.stack.pushLong(t.toLong)
-            F.pure(Left(frame))
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid signed i64"))
-          }
+          F.catchNonFatal(I64.truncSf32(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { l =>
+              frame.stack.pushLong(l)
+              Left(frame)
+            }
         case OpCode.I64TruncUF64 =>
           val f = frame.stack.popDouble()
-          if (JDouble.isFinite(f)) {
-            val t = truncate(f).toLong
-            frame.stack.pushInt(t.toInt)
-            F.pure(Left(frame))
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid unsigned i64"))
-          }
+          F.catchNonFatal(I64.truncUf64(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { l =>
+              frame.stack.pushLong(l)
+              Left(frame)
+            }
         case OpCode.I64TruncSF64 =>
           val f = frame.stack.popDouble()
-          val t = truncate(f)
-          if (t.isWhole) {
-            frame.stack.pushLong(t.toLong)
-            F.pure(Left(frame))
-          } else {
-            F.raiseError(new InterpreterException(frame, "invalid signed i64"))
-          }
+          F.catchNonFatal(I64.truncSf64(f)).adaptError {
+            case e => new InterpreterException(frame, e.getMessage)
+            }.map { l =>
+              frame.stack.pushLong(l)
+              Left(frame)
+            }
         case OpCode.F32DemoteF64 =>
           val f = frame.stack.popDouble()
-          frame.stack.pushFloat(f.toFloat)
+          frame.stack.pushFloat(F32.demote(f))
           F.pure(Left(frame))
         case OpCode.F64PromoteF32 =>
           val f = frame.stack.popFloat()
-          frame.stack.pushDouble(f.toDouble)
+          frame.stack.pushDouble(F64.promote(f))
           F.pure(Left(frame))
         case OpCode.F32ConvertUI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushFloat(JInt.toUnsignedLong(i).toFloat)
+          frame.stack.pushFloat(F32.convertUi32(i))
           F.pure(Left(frame))
         case OpCode.F32ConvertSI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushFloat(i.toFloat)
+          frame.stack.pushFloat(F32.convertSi32(i))
           F.pure(Left(frame))
         case OpCode.F32ConvertUI64 =>
           val l = frame.stack.popLong()
-          val f = BigDecimal(JLong.toUnsignedString(l)).floatValue
-          frame.stack.pushFloat(f)
+          frame.stack.pushFloat(F32.convertUi64(l))
           F.pure(Left(frame))
         case OpCode.F32ConvertSI64 =>
           val l = frame.stack.popLong()
-          frame.stack.pushFloat(l.toFloat)
+          frame.stack.pushFloat(F32.convertSi64(l))
           F.pure(Left(frame))
         case OpCode.F64ConvertUI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushDouble(JInt.toUnsignedLong(i).toDouble)
+          frame.stack.pushDouble(F64.convertUi32(i))
           F.pure(Left(frame))
         case OpCode.F64ConvertSI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushDouble(i.toDouble)
+          frame.stack.pushDouble(F64.convertSi32(i))
           F.pure(Left(frame))
         case OpCode.F64ConvertUI64 =>
           val l = frame.stack.popLong()
-          val f = BigDecimal(JLong.toUnsignedString(l)).doubleValue
-          frame.stack.pushDouble(f)
+          frame.stack.pushDouble(F64.convertUi64(l))
           F.pure(Left(frame))
         case OpCode.F64ConvertSI64 =>
           val l = frame.stack.popLong()
-          frame.stack.pushDouble(l.toDouble)
+          frame.stack.pushDouble(F64.convertSi64(l))
           F.pure(Left(frame))
         case OpCode.I32ReinterpretF32 =>
           val f = frame.stack.popFloat()
-          frame.stack.pushInt(JFloat.floatToRawIntBits(f))
+          frame.stack.pushInt(I32.reinterpret(f))
           F.pure(Left(frame))
         case OpCode.I64ReinterpretF64 =>
           val f = frame.stack.popDouble()
-          frame.stack.pushLong(JDouble.doubleToRawLongBits(f))
+          frame.stack.pushLong(I64.reinterpret(f))
           F.pure(Left(frame))
         case OpCode.F32ReinterpretI32 =>
           val i = frame.stack.popInt()
-          frame.stack.pushFloat(JFloat.intBitsToFloat(i))
+          frame.stack.pushFloat(F32.reinterpret(i))
           F.pure(Left(frame))
         case OpCode.F64ReinterpretI64 =>
           val i = frame.stack.popLong()
-          frame.stack.pushDouble(JDouble.longBitsToDouble(i))
+          frame.stack.pushDouble(F64.reinterpret(i))
           F.pure(Left(frame))
         // === parameteric instructions ===
         case OpCode.Drop =>
@@ -760,9 +747,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           F.pure(Left(frame))
         case OpCode.TeeLocal =>
           val idx = frame.readInt()
-          val v = frame.stack.popValue()
-          frame.stack.pushValue(v)
-          frame.stack.pushValue(v)
+          val v = frame.stack.peekValue()
           frame.locals(idx) = v
           F.pure(Left(frame))
         case OpCode.GetGlobal =>
@@ -772,16 +757,16 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.SetGlobal =>
           val idx = frame.readInt()
           val v = frame.stack.popValue()
-          frame.instance.global(idx) = v
-          F.pure(Left(frame))
+          (frame.instance.global(idx) = v).map(_ => Left(frame))
         // === memory instructions ===
         case OpCode.I32Load =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readInt(ea)
             frame.stack.pushInt(c)
@@ -789,23 +774,25 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I32Load8U =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 1 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
-            val c = mem.readByte(ea)
-            frame.stack.pushInt(c & 0xff)
+            val c = mem.readByte(ea) & 0xff
+            frame.stack.pushInt(c)
             F.pure(Left(frame))
           }
         case OpCode.I32Load8S =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 1 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readByte(ea)
             frame.stack.pushInt(c)
@@ -813,11 +800,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I32Load16U =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 2 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readShort(ea)
             frame.stack.pushInt(c & 0xffff)
@@ -825,11 +813,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I32Load16S =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 2 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readShort(ea)
             frame.stack.pushInt(c)
@@ -837,11 +826,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 8 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readLong(ea)
             frame.stack.pushLong(c)
@@ -849,11 +839,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load8U =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 1 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readByte(ea)
             frame.stack.pushLong(c & 0xffl)
@@ -861,11 +852,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load8S =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 1 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readByte(ea)
             frame.stack.pushLong(c)
@@ -873,11 +865,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load16U =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 2 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readShort(ea)
             frame.stack.pushLong(c & 0xffffl)
@@ -885,11 +878,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load16S =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 2 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readShort(ea)
             frame.stack.pushLong(c)
@@ -897,11 +891,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load32U =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readInt(ea)
             frame.stack.pushLong(c & 0xffffffffl)
@@ -909,11 +904,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I64Load32S =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readInt(ea)
             frame.stack.pushLong(c)
@@ -921,11 +917,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.F32Load =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readFloat(ea)
             frame.stack.pushFloat(c)
@@ -933,11 +930,12 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.F64Load =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 8 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             val c = mem.readDouble(ea)
             frame.stack.pushDouble(c)
@@ -945,113 +943,122 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           }
         case OpCode.I32Store =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popInt()
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             mem.writeInt(ea, c)
             F.pure(Left(frame))
           }
         case OpCode.I32Store8 =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popInt()
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 1 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
-            val c1 = c % (1 << 8)
-            mem.writeInt(ea, c1)
+            val c1 = (c % (1 << 8)).toByte
+            mem.writeByte(ea, c1)
             F.pure(Left(frame))
           }
         case OpCode.I32Store16 =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popInt()
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 2 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
-            val c1 = c % (1 << 16)
-            mem.writeInt(ea, c1)
+            val c1 = (c % (1 << 16)).toShort
+            mem.writeShort(ea, c1)
             F.pure(Left(frame))
           }
         case OpCode.I64Store =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popLong()
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 8 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             mem.writeLong(ea, c)
             F.pure(Left(frame))
           }
         case OpCode.I64Store8 =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popLong()
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 1 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
-            val c1 = c % (1l << 8)
-            mem.writeLong(ea, c1)
+            val c1 = (c % (1l << 8)).toByte
+            mem.writeByte(ea, c1)
             F.pure(Left(frame))
           }
         case OpCode.I64Store16 =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popLong()
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 2 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
-            val c1 = c % (1l << 16)
-            mem.writeLong(ea, c1)
+            val c1 = (c % (1l << 16)).toShort
+            mem.writeShort(ea, c1)
             F.pure(Left(frame))
           }
         case OpCode.I64Store32 =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popLong()
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
-            val c1 = c % (1l << 32)
-            mem.writeLong(ea, c1)
+            val c1 = (c % (1l << 32)).toInt
+            mem.writeInt(ea, c1)
             F.pure(Left(frame))
           }
         case OpCode.F32Store =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popFloat()
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 4 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             mem.writeFloat(ea, c)
             F.pure(Left(frame))
           }
         case OpCode.F64Store =>
           val offset = frame.readInt()
+          val align = frame.readInt()
           val mem = frame.instance.memory(0)
           val c = frame.stack.popDouble()
           val i = frame.stack.popInt()
           val ea = i + offset
-          if (ea + 8 > mem.size) {
-            F.raiseError(new InterpreterException(frame, "invalid memory access"))
+          if (offset < 0 || ea < 0 || ea + 8 > mem.size) {
+            F.raiseError(new InterpreterException(frame, "out of bounds memory access"))
           } else {
             mem.writeDouble(ea, c)
             F.pure(Left(frame))
@@ -1075,13 +1082,14 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.Nop =>
           F.pure(Left(frame))
         case OpCode.Unreachable =>
-          F.raiseError(new InterpreterException(frame, "unreachable"))
+          F.raiseError(new InterpreterException(frame, "unreachable executed"))
         case OpCode.Block =>
           // next int is the block arity
           val arity = frame.readInt()
           // next int is the block size
           val blockSize = frame.readInt()
-          frame.stack.pushLabel(Label(arity, frame.pc + blockSize + 1 /* end */ ))
+          val lbl = Label(arity, frame.pc + blockSize + 1 /* end */ )
+          frame.stack.pushLabel(lbl)
           // frame.pc is now on the first instruction of the block
           F.pure(Left(frame))
         case OpCode.End =>
@@ -1131,43 +1139,14 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
         case OpCode.Br =>
           // next integer is the label
           val l = frame.readInt()
-          // get the l-th label
-          val lbl = frame.stack.getLabel(l)
-          val arity = lbl.arity
-          val cont = lbl.cont
-          // pop the n values
-          val values = frame.stack.popValues(arity)
-          // pop all intermediate labels and values
-          for (i <- 0 to l) {
-            frame.stack.popValues()
-            frame.stack.popLabel()
-          }
-          // push back return values
-          frame.stack.pushValues(values)
-          // jump to continuation
-          frame.pc = cont
+          br(frame, l)
           F.pure(Left(frame))
         case OpCode.BrIf =>
           // next integer is the label
           val l = frame.readInt()
           val c = frame.stack.popBool()
-          if (c) {
-            // get the l-th label
-            val lbl = frame.stack.getLabel(l)
-            val arity = lbl.arity
-            val cont = lbl.cont
-            // pop the n values
-            val values = frame.stack.popValues(arity)
-            // pop all intermediate labels and values
-            for (i <- 0 to l) {
-              frame.stack.popValues()
-              frame.stack.popLabel()
-            }
-            // push back return values
-            frame.stack.pushValues(values)
-            // jump to continuation
-            frame.pc = cont
-          }
+          if (c)
+            br(frame, l)
           F.pure(Left(frame))
         case OpCode.BrTable =>
           // next int gives the number of labels to come
@@ -1177,22 +1156,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val ln = frame.readInt()
           // get the label index from stack
           val i = frame.stack.popInt()
-          val l = if (i < lbls.size) lbls(i) else ln
-          // get the l-th label
-          val lbl = frame.stack.getLabel(l)
-          val arity = lbl.arity
-          val cont = lbl.cont
-          // pop the n values
-          val values = frame.stack.popValues(arity)
-          // pop all intermediate labels and values
-          for (i <- 0 to l) {
-            frame.stack.popValues()
-            frame.stack.popLabel()
-          }
-          // push back return values
-          frame.stack.pushValues(values)
-          // jump to continuation
-          frame.pc = cont
+          val l = if (i >= 0 && i < lbls.size) lbls(i) else ln
+          br(frame, l)
           F.pure(Left(frame))
         case OpCode.Return =>
           val values = frame.stack.popValues(frame.arity)
@@ -1211,22 +1176,24 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           // next integer is the function index
           val fidx = frame.readInt()
           val f = frame.instance.function(fidx)
-          invoke(frame, f).map(Left(_))
+          invoke(frame, f)
         case OpCode.CallIndirect =>
           // next integer is the typ index
           val tidx = frame.readInt()
           val tab = frame.instance.table(0)
           val expectedt = frame.instance.tpe(tidx)
           val i = frame.stack.popInt()
-          if (i >= tab.size || tab(i) == null) {
-            F.raiseError(new InterpreterException(frame, "invalid indirect call"))
+          if (i < 0 || i >= tab.size) {
+            F.raiseError(new InterpreterException(frame, "undefined element"))
+          } else if (tab(i) == null) {
+            F.raiseError(new InterpreterException(frame, s"uninitialized element $i"))
           } else {
             val f = tab(i)
             val actualt = f.tpe
             if (expectedt != actualt) {
-              F.raiseError(new InterpreterException(frame, "unexpected type"))
+              F.raiseError(new InterpreterException(frame, "indirect call type mismatch"))
             } else {
-              invoke(frame, f).map(Left(_))
+              invoke(frame, f)
             }
           }
         case opcode =>
@@ -1234,29 +1201,49 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
       }
     }
 
-  private def invoke(frame: Frame[F], f: Function[F]): F[Frame[F]] =
+  private def br(frame: Frame[F], l: Int): Unit = {
+    // get the l-th label
+    val lbl = frame.stack.getLabel(l)
+    val arity = lbl.arity
+    val cont = lbl.cont
+    // pop the n values
+    val values = frame.stack.popValues(arity)
+    // pop all intermediate labels and values
+    for (_ <- 0 to l) {
+      frame.stack.popValues()
+      frame.stack.popLabel()
+    }
+    // push back return values
+    frame.stack.pushValues(values)
+    // jump to continuation
+    frame.pc = cont
+  }
+
+  private def invoke(frame: Frame[F], f: Function[F]): F[Either[Frame[F], Option[Value]]] =
     f match {
       case FunctionInstance(tpe, locals, code, inst) =>
         val ilocals = Array.ofDim[Value](locals.size + tpe.params.size)
-        val zlocals = locals.map(Value.zero(_))
+        val zlocals = locals.map(Value.zero(_)).toArray
         Array.copy(zlocals, 0, ilocals, tpe.params.size, zlocals.length)
         // pop the parameters from the stack
         val params = frame.stack.popValues(tpe.params.size).toArray
         Array.copy(params, 0, ilocals, 0, params.length)
-        val frame1 = frame.stack.pushFrame(tpe.t.size, code, ilocals, inst)
-        // push the implicit block label on the called frame
-        frame1.stack.pushLabel(Label(tpe.t.size, -1))
-        F.pure(frame1)
+        frame.stack.pushFrame(tpe.t.size, code, ilocals, inst).map { frame =>
+          // push the implicit block label on the called frame
+          frame.stack.pushLabel(Label(tpe.t.size, code.limit - 1))
+          Left(frame)
+        }
       case f =>
         // pop the parameters from the stack
         val params = frame.stack.popValues(f.tpe.params.size)
         // invoke the host function with the parameters
-        f.invoke(params.toVector).map {
-          case Some(v) =>
-            frame.stack.pushValue(v)
-            frame
-          case None =>
-            frame
+        f.invoke(params.toVector).map { res =>
+          if(frame.isToplevel) {
+            Right(res)
+          } else {
+            res.foreach(frame.stack.pushValue(_))
+            Left(frame)
+          }
         }
     }
 

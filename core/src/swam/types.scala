@@ -69,6 +69,7 @@ case class Limits(min: Int, max: Option[Int]) {
     (this, that) match {
       case (Limits(min, _), Limits(min1, None))               => min >= min1
       case (Limits(min, Some(max)), Limits(min1, Some(max1))) => min >= min1 && max <= max1
+      case _ => false
     }
 }
 
@@ -104,7 +105,7 @@ object ElemType {
 case class GlobalType(tpe: ValType, mut: Mut) extends Type {
   def <:<(that: Type): Boolean =
     that match {
-      case GlobalType(tpe1, mut1) => mut <= mut1 && tpe <:< tpe1
+      case GlobalType(tpe1, mut1) => mut == mut1 && tpe <:< tpe1
       case _                      => false
     }
 }

@@ -21,6 +21,8 @@ package interpreter
 
 import config._
 
+import cats._
+
 import scala.annotation.{tailrec, switch}
 
 import java.nio.ByteBuffer
@@ -31,6 +33,8 @@ import scala.language.higherKinds
   */
 sealed class Frame[F[_]] private (parent: Frame[F],
                                   stackSize: Int,
+                                  callDepth: Int,
+                                  depth: Int,
                                   code: ByteBuffer,
                                   val locals: Array[Value],
                                   val arity: Int,
@@ -102,9 +106,13 @@ sealed class Frame[F[_]] private (parent: Frame[F],
     }
 
     @inline
+    private def peek(): Byte =
+      stack(top - 1)
+
+    @inline
     private def check(actual: Byte, expected: Byte): Unit =
       if (actual != expected)
-        throw new SwamException("Malformed stack")
+        throw new SwamException(s"Malformed stack $actual")
 
     def pushBool(b: Boolean): Unit =
       pushInt(if (b) 1 else 0)
@@ -142,10 +150,20 @@ sealed class Frame[F[_]] private (parent: Frame[F],
       istack(itop)
     }
 
+    def peekInt(): Int = {
+      check(peek(), INT32)
+      istack(itop - 1)
+    }
+
     def popLong(): Long = {
       check(pop(), INT64)
       ltop -= 1
       lstack(ltop)
+    }
+
+    def peekLong(): Long = {
+      check(peek(), INT64)
+      lstack(ltop - 1)
     }
 
     def popFloat(): Float = {
@@ -154,10 +172,21 @@ sealed class Frame[F[_]] private (parent: Frame[F],
       fstack(ftop)
     }
 
+    def peekFloat(): Float = {
+      check(peek(), FLOAT32)
+      fstack(ftop - 1)
+    }
+
+
     def popDouble(): Double = {
       check(pop(), FLOAT64)
       dtop -= 1
       dstack(dtop)
+    }
+
+    def peekDouble(): Double = {
+      check(peek(), FLOAT64)
+      dstack(dtop - 1)
     }
 
     def drop(): Unit =
@@ -166,7 +195,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
         case INT64   => popLong()
         case FLOAT32 => popFloat()
         case FLOAT64 => popDouble()
-        case _       => throw new SwamException("Malformed stack")
+        case b       => throw new SwamException(s"Malformed stack $b")
       }
 
     def popValue(): Value =
@@ -175,7 +204,16 @@ sealed class Frame[F[_]] private (parent: Frame[F],
         case INT64   => Value.Int64(popLong())
         case FLOAT32 => Value.Float32(popFloat())
         case FLOAT64 => Value.Float64(popDouble())
-        case _       => throw new SwamException("Malformed stack")
+        case b       => throw new SwamException(s"Malformed stack $b")
+      }
+
+    def peekValue(): Value =
+      (stack(top - 1): @switch) match {
+        case INT32   => Value.Int32(peekInt())
+        case INT64   => Value.Int64(peekLong())
+        case FLOAT32 => Value.Float32(peekFloat())
+        case FLOAT64 => Value.Float64(peekDouble())
+        case b       => throw new SwamException(s"Malformed stack $b")
       }
 
     def popValues(): Seq[Value] = {
@@ -224,8 +262,11 @@ sealed class Frame[F[_]] private (parent: Frame[F],
     def getLabel(idx: Int): Label =
       lblstack(lbltop - 1 - idx)
 
-    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Value], instance: Instance[F]): Frame[F] =
-      new Frame[F](self, stackSize, code, locals, arity, instance)
+    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Value], instance: Instance[F])(implicit F: MonadError[F, Throwable]): F[Frame[F]] =
+      if(depth < callDepth)
+        F.pure(new Frame[F](self, stackSize, callDepth, depth + 1, code, locals, arity, instance))
+      else
+        F.raiseError(new StackOverflowException(self))
 
     def popFrame(): Frame[F] =
       parent
@@ -245,6 +286,8 @@ object Frame {
   private final val LABEL = 4
 
   def makeToplevel[F[_]](instance: Instance[F], conf: EngineConfiguration): Frame[F] =
-    new Frame[F](null, conf.stack.height, null, null, 0, instance)
+    new Frame[F](null, conf.stack.height, conf.stack.callDepth, 0, null, null, 0, instance)
 
 }
+
+class StackOverflowException[F[_]](frame: Frame[F]) extends Exception("call stack exhausted")

@@ -15,34 +15,10 @@
  */
 
 package swam
-package runtime
-package config
+package util
 
-import com.typesafe.config.Config
-
-/** Holds all the configurable values. */
-trait EngineConfiguration {
-
-  /** Configures how the stack behaves. */
-  val stack: StackConfiguration
-
-  /** Configures how the data part behaves. */
-  val data: DataConfiguration
-
-}
-
-trait StackConfiguration {
-
-  def height: Int
-
-  def callDepth: Int
-
-}
-
-trait DataConfiguration {
-
-  def onHeap: Boolean
-
-  def hardMax: Int
-
+class Framework extends utest.runner.Framework{
+  override def exceptionStackFrameHighlighter(s: StackTraceElement) = {
+    s.getClassName.startsWith("swam.")
+  }
 }

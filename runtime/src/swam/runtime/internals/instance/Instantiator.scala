@@ -34,6 +34,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
 
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
+  private val dataHardMax = engine.conf.data.hardMax
 
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
@@ -43,12 +44,8 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
       globals <- initialize(module.globals, imports)
       // allocate the module
       instance <- allocate(module, globals, imports)
-      // we now have a fresh instance with imports and exports all wired, and various memory areas allocated, time to initialize tables
-      _ <- initTables(instance)
-      // now initialize memories
-      _ <- initMems(instance)
-      // and finally start the instance
-      _ <- start(instance)
+      // we now have a fresh instance with imports and exports all wired, and various memory areas allocated, time to initialize and start it
+      _ <- instance.init
     } yield instance
   }
 
@@ -60,11 +57,10 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
         } else {
           val imp = mimports(idx)
           provided.find(imp.moduleName, imp.fieldName).flatMap { provided =>
-            if (provided.tpe <:< imp.tpe) {
+            if (provided.tpe <:< imp.tpe)
               F.pure(Left((idx + 1, acc :+ provided)))
-            } else {
+            else
               F.raiseError(new RuntimeException(s"Expected import of type ${imp.tpe} but got ${provided.tpe}"))
-            }
           }
         }
     }
@@ -83,10 +79,10 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
         else
           globals(idx) match {
             case CompiledGlobal(tpe, init) =>
-              interpreter.interpretInit(tpe.tpe, init, inst).map { ret =>
+              interpreter.interpretInit(tpe.tpe, init, inst).flatMap { ret =>
                 val i = new GlobalInstance[F](tpe)
-                i.set(ret.get)
-                Left((idx + 1, acc :+ i))
+                i.unsafeset(ret.get).map(_ =>
+                    Left((idx + 1, acc :+ i)))
               }
           }
     }
@@ -118,7 +114,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
       case TableType(_, limits) => new TableInstance[F](limits.min, limits.max)
     }
     instance.memories = imemories ++ module.memories.map {
-      case MemType(limits) => new MemoryInstance[F](limits.min, limits.max, dataOnHeap)
+      case MemType(limits) => new MemoryInstance[F](limits.min, limits.max, dataOnHeap, dataHardMax)
     }
     instance.exps = module.exports.map {
       case Export.Function(name, tpe, idx) => (name, instance.funcs(idx))
@@ -128,54 +124,5 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
     }.toMap
     F.pure(instance)
   }
-
-  private def initTables(instance: Instance[F]): F[Unit] = {
-    val module = instance.module
-    F.tailRecM(0) { idx =>
-      if (idx >= module.elems.size)
-        F.pure(Right(()))
-      else
-        module.elems(idx) match {
-          case CompiledElem(coffset, init) =>
-            interpreter.interpretInit(ValType.I32, coffset, instance).flatMap { roffset =>
-              val offset = roffset.get.asInt
-              if (init.size + offset > instance.tables(0).size) {
-                F.raiseError(new RuntimeException("Overflow in table initialization"))
-              } else {
-                for (initi <- 0 until init.size)
-                  instance.tables(0)(offset + initi) = instance.funcs(init(initi))
-                F.pure(Left(idx + 1))
-              }
-            }
-        }
-    }
-  }
-
-  private def initMems(instance: Instance[F]): F[Unit] = {
-    val module = instance.module
-    F.tailRecM(0) { idx =>
-      if (idx >= module.data.size)
-        F.pure(Right(()))
-      else
-        module.data(idx) match {
-          case CompiledData(coffset, init) =>
-            interpreter.interpretInit(ValType.I32, coffset, instance).flatMap { roffset =>
-              val offset = roffset.get.asInt
-              if (init.capacity + offset > instance.memories(0).size) {
-                F.raiseError(new RuntimeException("Overflow in memory initialization"))
-              } else {
-                instance.memories(0).writeBytes(offset, init)
-                F.pure(Left(idx + 1))
-              }
-            }
-        }
-    }
-  }
-
-  private def start(instance: Instance[F]): F[Unit] =
-    instance.module.start match {
-      case Some(start) => interpreter.interpret(start, Vector(), instance).map(_ => ())
-      case None        => F.pure(())
-    }
 
 }

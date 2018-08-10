@@ -38,7 +38,7 @@ class Compiler[F[_]](implicit val F: Effect[F]) {
 
   private val resolver = new Resolver[F]
 
-  private implicit val validator = new SpecValidator[F]
+  private implicit val validator = new SpecValidator[F](65536)
 
   private val binaryParser = new SwamParser[F]
 
@@ -65,7 +65,7 @@ class Compiler[F[_]](implicit val F: Effect[F]) {
       mod <- resolver.resolve(unresolved, debug)
     } yield mod)
 
-  private def parse(input: String): F[unresolved.Module] =
+  private[swam] def parse(input: String): F[unresolved.Module] =
     F.liftIO {
       IO(ModuleParsers.file.parse(input)).flatMap {
         case Parsed.Success(m, _)        => IO.pure(m)

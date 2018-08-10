@@ -58,6 +58,6 @@ case class StartFunc(index: Index)(val pos: Int) extends Field
 
 case class Elem(table: Index, offset: Expr, init: Seq[Index])(val pos: Int) extends Field
 
-case class Data(mem: Index, offset: Expr, data: String)(val pos: Int) extends Field
+case class Data(mem: Index, offset: Expr, data: Array[Byte])(val pos: Int) extends Field
 
 case class Module(id: Id, fields: Seq[Field])(val pos: Int)

@@ -18,11 +18,6 @@ trait SwamModule extends ScalaModule with ScalafmtModule {
 
   def scalacPluginIvyDeps = Agg(ivy"org.spire-math::kind-projector:0.9.7")
 
-  trait SwamTests extends Tests with ScalafmtModule {
-    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.6.4")
-    def testFrameworks = Seq("utest.runner.Framework")
-  }
-
 }
 
 object core extends SwamModule {
@@ -38,10 +33,9 @@ object core extends SwamModule {
 
   object test extends Tests with ScalafmtModule {
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest:0.6.4",
-      ivy"com.github.pathikrit::better-files:3.5.0",
-      ivy"com.lihaoyi::pprint:0.5.3")
-    def testFrameworks = Seq("utest.runner.Framework")
+      ivy"com.lihaoyi::utest:0.6.4")
+    def testFrameworks = Seq("swam.util.Framework")
+    def moduleDeps = Seq(core, util.test)
   }
 
 }
@@ -52,5 +46,25 @@ object runtime extends SwamModule {
 
   def ivyDeps = Agg(
     ivy"com.typesafe:config:1.3.2")
+
+  object test extends Tests with ScalafmtModule {
+    def ivyDeps = Agg(
+      ivy"com.lihaoyi::utest:0.6.4",
+      ivy"com.github.pathikrit::better-files:3.5.0",
+      ivy"com.lihaoyi::pprint:0.5.3")
+    def testFrameworks = Seq("swam.util.Framework")
+    def moduleDeps = Seq(runtime, util.test)
+  }
+
+}
+
+object util extends SwamModule {
+
+  object test extends SwamModule {
+    def ivyDeps = Agg(
+      ivy"com.lihaoyi::utest:0.6.4",
+      ivy"org.scalamacros:::paradise:2.1.1",
+      ivy"com.github.pathikrit::better-files:3.5.0")
+  }
 
 }

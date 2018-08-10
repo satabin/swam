@@ -23,7 +23,7 @@ import unresolved._
 import fastparse._
 import fastparse.all._
 
-import java.lang.{Long => JLong}
+import java.lang.{Float => JFloat, Double => JDouble, Long => JLong}
 
 import scala.annotation.tailrec
 
@@ -80,87 +80,42 @@ object Lexical {
   private val hexnum: P[BigInt] =
     P(hexdigit.rep(min = 1, sep = "_".?).map(_.foldLeft(BigInt(0))(16 * _ + _)))
 
-  val unsigned: P[BigInt] =
-    P(("0x" ~ hexnum | num))
-
-  val signed: P[BigInt] =
-    P((sign ~ (("0x" ~ hexnum) | num))).map { case (sign, n) => sign * n }
-
   val uint32: P[Int] =
-    P(unsigned.map(_.intValue))
+    P("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_, 16)) | num.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_)))
 
   val int32: P[Int] =
-    P(signed.map(_.intValue))
+    P(sign.! ~ ("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_, 16)) | num.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_)))).map {
+      case (s, n) => if(s == "-") -1 * n else n
+    }
 
   val int64: P[Long] =
-    P(signed.map(_.longValue))
-
-  private val rfloat: P[BigDecimal] =
-    P(num ~ ("." ~ num.?).? ~ (CharIn("Ee") ~ sign ~ num).?).map {
-      case (p, q, e) =>
-        val pd = BigDecimal(p)
-        val qd =
-          q.map(q => BigDecimal(q.getOrElse(BigInt(0)), countdigits(q.getOrElse(BigInt(0)), 0)))
-            .getOrElse(BigDecimal(0))
-        val (sign, ed) = e
-          .map { case (sign, num) => (sign, BigDecimal(num)) }
-          .getOrElse((1, BigDecimal(0)))
-        if (sign > 0)
-          (pd + qd) * BigDecimal(BigInt(10).pow(ed.intValue))
-        else
-          (pd + qd) / BigDecimal(BigInt(10).pow(ed.intValue))
+    P(sign.! ~ ("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(JLong.parseUnsignedLong(_, 16)) | num.!.map(_.replaceAll("_", "")).map(JLong.parseUnsignedLong(_)))).map {
+      case (s, n) => if(s == "-") -1l * n else n
     }
 
-  private val rhexfloat: P[BigDecimal] =
-    P("0x" ~ hexnum ~ ("." ~ hexnum.?).? ~ (CharIn("Pp") ~ sign ~ num).?).map {
-      case (p, q, e) =>
-        val pd = BigDecimal(p)
-        val qd =
-          q.map(q => BigDecimal(q.getOrElse(BigInt(0)), countdigits(q.getOrElse(BigInt(0)), 0)))
-            .getOrElse(BigDecimal(0))
-        val (sign, ed) = e
-          .map { case (sign, num) => (sign, BigDecimal(num)) }
-          .getOrElse((1, BigDecimal(0)))
-        if (sign > 0)
-          (pd + qd) * BigDecimal(BigInt(2).pow(ed.intValue))
-        else
-          (pd + qd) / BigDecimal(BigInt(2).pow(ed.intValue))
-    }
-
-  @tailrec
-  private def countdigits(bi: BigInt, acc: Int): Int =
-    if (bi == BigInt(0))
-      acc
-    else
-      countdigits(bi / 10, acc + 1)
-
-  private val float: P[F] =
-    P(
-      sign.flatMap(
-        sign =>
-          rhexfloat.map(d => F.Value(sign * d))
-            | rfloat.map(d => F.Value(sign * d))
-            | P("inf") ~ PassWith(if (sign < 0) F.MInf else F.PInf)
-            | ("nan:0x" ~ hexnum).map(_ => F.NaN)
-            | P("nan") ~ PassWith(F.NaN)
-      )
-    )
+  private val rfloat: P[String] =
+    P(("0x" ~ hexnum ~ "." ~ hexnum ~ CharIn("Pp") ~ sign ~ num).!
+      |("0x" ~ hexnum.! ~ (CharIn("Pp") ~ sign ~ num).!).map {
+        case (s1, s2) => s"0x$s1.0$s2"
+      }
+      |("0x" ~ hexnum.! ~ "." ~ (CharIn("Pp") ~ sign ~ num).!).map {
+        case (s1, s2) => s"0x$s1.0$s2"
+      }
+      |("0x" ~ hexnum ~ "." ~ hexnum.?).!.map(_ + "0p0")
+      |("0x" ~ hexnum).!.map(_ + ".0p0")
+      |(num ~ ("." ~ num.?).? ~ (CharIn("Ee") ~ sign ~ num).?).!).map(_.replaceAll("_", ""))
 
   val float32: P[Float] =
-    float.map {
-      case F.Value(v) => v.floatValue
-      case F.MInf     => Float.NegativeInfinity
-      case F.PInf     => Float.PositiveInfinity
-      case F.NaN      => Float.NaN
-    }
+    P((sign.! ~ rfloat).map { case (s, f) => if(s == "-") -1 * JFloat.parseFloat(f) else JFloat.parseFloat(f) }
+      |(sign.! ~ "inf").map(s => if(s == "-") Float.NegativeInfinity else Float.PositiveInfinity)
+      |(sign.! ~ "nan:0x" ~ hexnum).map { case (s, payload) => if(s == "-") JFloat.intBitsToFloat(0xff800000 | payload.intValue) else JFloat.intBitsToFloat(0x7f800000 | payload.intValue) }
+      |(sign.! ~ "nan").map(s => if(s == "-") JFloat.intBitsToFloat(0xffc00000) else JFloat.intBitsToFloat(0x7fc00000)))
 
   val float64: P[Double] =
-    float.map {
-      case F.Value(v) => v.doubleValue
-      case F.MInf     => Double.NegativeInfinity
-      case F.PInf     => Double.PositiveInfinity
-      case F.NaN      => Double.NaN
-    }
+    P((sign.! ~ rfloat).map { case (s, f) => if(s == "-") -1 * JDouble.parseDouble(f) else JDouble.parseDouble(f) }
+      |(sign.! ~ "inf").map(s => if(s == "-") Double.NegativeInfinity else Double.PositiveInfinity)
+      |(sign.! ~ "nan:0x" ~ hexnum).map { case (s, payload) => if(s == "-") JDouble.longBitsToDouble(0xfff0000000000000l | payload.longValue) else JDouble.longBitsToDouble(0x7ff0000000000000l | payload.longValue) }
+      |(sign.! ~ "nan").map(s => if(s == "-") JDouble.longBitsToDouble(0xfff8000000000000l) else JDouble.longBitsToDouble(0x7ff8000000000000l)))
 
   val string: P[String] =
     P(
@@ -171,10 +126,25 @@ object Lexical {
         | P("\\\"").map(_ => '"')
         | P("\\'").map(_ => '\'')
         | P("\\\\").map(_ => '\\')
-        | "\\" ~ (hexdigit ~ hexdigit).!.map(Integer.parseInt(_, 16).toChar)
+        | "\\" ~ (hexdigit ~ hexdigit).!.map(Integer.parseInt(_, 16).toByte)
         | "\\u" ~ hexnum.!.map(Integer.parseInt(_, 16))
           .filter(n => n < 0xd800 || (0xe000 <= n && n < 0x110000))
           .map(_.toChar)).rep.map(_.mkString) ~ "\""
+    )
+
+  val bstring: P[Array[Byte]] =
+    P(
+      "\"" ~ (CharPred(c => c >= '\u0020' && c != '\u007f' && c != '"' && c != '\\').!.map(_(0))
+        | P("\\t").map(_ => '\t'.toChar)
+        | P("\\n").map(_ => '\n'.toChar)
+        | P("\\r").map(_ => '\r'.toChar)
+        | P("\\\"").map(_ => '"'.toChar)
+        | P("\\'").map(_ => '\''.toChar)
+        | P("\\\\").map(_ => '\\'.toChar)
+        | "\\" ~ (hexdigit ~ hexdigit).!.map(Integer.parseInt(_, 16).toChar)
+        | "\\u" ~ hexnum.!.map(Integer.parseInt(_, 16))
+          .filter(n => n < 0xd800 || (0xe000 <= n && n < 0x110000))
+          .map(_.toChar)).map(Character.toChars(_).map(_.toByte)).rep.map(_.flatten.toArray) ~ "\""
     )
 
   def word(s: String): P0 =
@@ -184,12 +154,4 @@ object Lexical {
     P(uint32.map(Left(_)) | id.!.map(id => Right(SomeId(id))))
       .opaque("index or name")
 
-}
-
-private sealed trait F
-private object F {
-  case class Value(bd: BigDecimal) extends F
-  case object MInf extends F
-  case object PInf extends F
-  case object NaN extends F
 }

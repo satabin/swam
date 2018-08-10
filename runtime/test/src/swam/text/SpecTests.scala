@@ -19,7 +19,10 @@ package text
 
 import util._
 import parser._
-import unresolved._
+import runtime._
+import validation._
+
+import swam.test.util._
 
 import utest._
 
@@ -31,23 +34,15 @@ import cats.effect._
 
 object SpecTests extends TestSuite {
 
-  val tests = Tests {
-    'compiling - {
-      val compiler = new Compiler[IO]
-      for (wast <- ("core" / "test" / "resources" / "spec-test").glob("*.wast")) {
-        val script = TestScriptParser.script.parse(wast.contentAsString).get.value
-        for (ValidModule(mod) <- script) try {
-          val io = compiler.compile(mod)
-          io.unsafeRunSync()
-        } catch {
-          case e: ResolutionException =>
-            val positioner = new WastPositioner(wast.path)
-            for (pos <- e.positions)
-              println(positioner.render(pos))
-            throw e
-        }
-      }
-    }
+  val compiler = new Compiler[IO]
+
+  def run(wast: File) = {
+    val positioner = new WastPositioner(wast.path)
+    val script = TestScriptParser.script.parse(wast.contentAsString).get.value
+    val engine = new ScriptEngine
+    engine.run(script, positioner).unsafeRunSync()
   }
+
+  val tests = testfiles("runtime/test/resources/spec-test", run _)
 
 }

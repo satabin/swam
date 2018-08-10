@@ -357,15 +357,18 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
       tpe match {
         case Some(tpe) =>
           resolveIndex(tpe, pos, ctx.types, "type").flatMap { idx =>
-            if (params.isEmpty && results.isEmpty)
-              F.pure((idx, ResolverContext(locals = Vector.fill(ctx.typedefs(idx).params.size)(Def(NoId, pos)))))
+            if(idx >= 0 && idx < ctx.typedefs.size)
+              if (params.isEmpty && results.isEmpty)
+                F.pure((idx, ResolverContext(locals = Vector.fill(ctx.typedefs(idx).params.size)(Def(NoId, pos)))))
+              else
+                ctx.typedefs(idx) match {
+                  case FuncType(`tparams`, `results`) =>
+                    F.pure((idx, ResolverContext(locals = nparams.map(Def(_, pos)))))
+                  case _ =>
+                    F.raiseError(new ResolutionException(f"Incompatible types", Seq(pos)))
+                }
             else
-              ctx.typedefs(idx) match {
-                case FuncType(`tparams`, `results`) =>
-                  F.pure((idx, ResolverContext(locals = nparams.map(Def(_, pos)))))
-                case _ =>
-                  F.raiseError(new ResolutionException(f"Incompatible types", Seq(pos)))
-              }
+              F.raiseError(new ResolutionException(f"Unknown type $idx", Seq(pos)))
           }
         case None =>
           val functype = FuncType(tparams, results)
@@ -582,7 +585,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                   (ctx,
                    fields,
                    resolved.copy(data = resolved.data :+ r
-                     .Data(midx, offset, BitVector(data.getBytes)))))
+                     .Data(midx, offset, BitVector(data)))))
           }
       }
     }

@@ -26,7 +26,7 @@ import scala.language.higherKinds
 
 import fs2._
 
-class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validator[F] {
+class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]) extends Validator[F] {
 
   type Ctx = Context[F]
 
@@ -62,7 +62,23 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
     }
 
   def validateMemType(tpe: MemType): F[Unit] =
-    validateLimits(tpe.limits)
+    for {
+      _ <- validateLimits(tpe.limits)
+      _ <- validateHardMax(tpe.limits.min)
+      _ <- validateHardMax(tpe.limits.max)
+    } yield ()
+
+  def validateHardMax(i: Option[Int]): F[Unit] =
+    i match {
+      case Some(i) => validateHardMax(i)
+      case None => Ok
+    }
+
+  def validateHardMax(i: Int): F[Unit] =
+    if(i < 0 || i > dataHardMax)
+      F.raiseError(new ValidationException(s"memory size may not exceed $dataHardMax pages"))
+    else
+      Ok
 
   def validateFuncType(tpe: FuncType): F[Unit] =
     if (tpe.t.size > 1)
@@ -95,13 +111,13 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
         F.pure(ctx.push(t))
       case Unop(t) =>
         for {
-          _ <- ctx.pop(t)
-        } yield ctx
+          ctx <- ctx.pop(t)
+        } yield ctx.push(t)
       case Binop(t) =>
         for {
           ctx <- ctx.pop(t)
-          _ <- ctx.pop(t)
-        } yield ctx
+          ctx <- ctx.pop(t)
+        } yield ctx.push(t)
       case Testop(t) =>
         for {
           ctx <- ctx.pop(t)
@@ -140,7 +156,8 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
         }
       case TeeLocal(x) =>
         ctx.locals.lift(x) match {
-          case Some(t) => F.pure(ctx)
+          case Some(t) =>
+            for(ctx <- ctx.pop(t)) yield ctx.push(t)
           case None =>
             F.raiseError(new ValidationException(s"unknown local $x."))
         }
@@ -212,7 +229,7 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
         }
       case MemoryGrow =>
         ctx.mems.lift(0) match {
-          case Some(_) => for (_ <- ctx.pop(ValType.I32)) yield ctx
+          case Some(_) => for (ctx <- ctx.pop(ValType.I32)) yield ctx.push(ValType.I32)
           case None =>
             F.raiseError(new ValidationException("unknown memory 0."))
         }
@@ -275,8 +292,8 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
           case Some(ResultType(Some(tpe))) =>
             for {
               ctx <- ctx.pop(ValType.I32)
-              _ <- ctx.pop(tpe)
-            } yield ctx
+              ctx <- ctx.pop(tpe)
+            } yield ctx.push(tpe)
           case Some(ResultType(None)) =>
             for {
               ctx <- ctx.pop(ValType.I32)
@@ -442,10 +459,8 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
         validateTableType(table)
       case Import.Memory(_, _, mem) =>
         validateMemType(mem)
-      case Import.Global(_, _, GlobalType(_, Mut.Const)) =>
-        Ok
       case Import.Global(_, _, _) =>
-        F.raiseError(new ValidationException("non constant global import."))
+        Ok
     }
 
   def validateExport(exp: Export, ctx: Ctx): F[Unit] =
@@ -467,10 +482,8 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
           F.raiseError(new ValidationException(s"unknown memory $idx."))
       case Export(_, ExternalKind.Global, idx) =>
         ctx.globals.lift(idx) match {
-          case Some(GlobalType(_, Mut.Const)) =>
-            Ok
           case Some(_) =>
-            F.raiseError(new ValidationException(s"non constant exported global $idx."))
+            Ok
           case None =>
             F.raiseError(new ValidationException(s"unknown global $idx."))
         }
@@ -490,10 +503,8 @@ class SpecValidator[F[_]](implicit F: MonadError[F, Throwable]) extends Validato
       case Const(_) => Ok
       case GetGlobal(x) =>
         ctx.globals.lift(x) match {
-          case Some(GlobalType(_, Mut.Const)) =>
-            Ok
           case Some(_) =>
-            F.raiseError(new ValidationException(s"non constant global $x."))
+            Ok
           case None =>
             F.raiseError(new ValidationException(s"unknown global $x."))
         }

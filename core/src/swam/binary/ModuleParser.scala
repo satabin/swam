@@ -37,7 +37,7 @@ class SwamParser[F[_]](implicit F: Sync[F]) {
     *  When this method returns, the stream has not been begin execution,
     *  you must call one of the `Sync` run method on the result to start actual parsing.
     */
-  def parse(stream: Stream[F, Section], validator: Validator[F] = new SpecValidator[F]): F[Module] =
+  def parse(stream: Stream[F, Section], validator: Validator[F] = new SpecValidator[F](65536)): F[Module] =
     stream
       .through(validator.validate)
       // compile the section stream

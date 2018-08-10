@@ -16,8 +16,6 @@
 
 package swam
 
-import scala.language.higherKinds
-
 /** This package contains all the classes and types related to
   * running WebAssembly modules.
   *
@@ -51,17 +49,5 @@ package object runtime {
 
   /** The size in bytes of a memory page. */
   val pageSize: Int = 65536
-
-  def truncate(f: Float): Float =
-    if (f < 0)
-      f.ceil
-    else
-      f.floor
-
-  def truncate(d: Double): Double =
-    if (d < 0)
-      d.ceil
-    else
-      d.floor
 
 }

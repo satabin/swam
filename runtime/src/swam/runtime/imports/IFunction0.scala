@@ -40,7 +40,7 @@ class IFunction0Unit[F[_]](f: () => F[Unit])(implicit F: MonadError[F, Throwable
   val tpe = FuncType(Vector(), Vector())
   def invoke(parameters: Vector[Value]): F[Option[Value]] =
     parameters match {
-      case Seq(p1) =>
+      case Seq() =>
         f().map(v => None)
       case _ =>
         F.raiseError(new ConversionException(

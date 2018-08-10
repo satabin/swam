@@ -15,34 +15,14 @@
  */
 
 package swam
-package runtime
-package config
+package test
 
-import com.typesafe.config.Config
+import better.files._
 
-/** Holds all the configurable values. */
-trait EngineConfiguration {
+import scala.language.experimental.macros
 
-  /** Configures how the stack behaves. */
-  val stack: StackConfiguration
+package object util {
 
-  /** Configures how the data part behaves. */
-  val data: DataConfiguration
-
-}
-
-trait StackConfiguration {
-
-  def height: Int
-
-  def callDepth: Int
-
-}
-
-trait DataConfiguration {
-
-  def onHeap: Boolean
-
-  def hardMax: Int
+  def testfiles(name: String, fun: File => Unit): utest.Tests = macro TestMacros.listdir
 
 }

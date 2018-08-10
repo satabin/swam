@@ -131,10 +131,10 @@ object ModuleParsers {
             .map(Export(_, ExportDesc.Memory(Right(id1))(idx))(idx)) :+ Memory(id1, tpe)(idx)
         }
     }
-      | ("(" ~ word("data") ~/ string.rep.map(_.mkString) ~ ")").map {
+      | ("(" ~ word("data") ~/ bstring.rep.map(_.flatten.toArray) ~ ")").map {
         ds => (idx: Int, id: Option[String], exports: Seq[String]) =>
           {
-            val m = math.ceil(ds.getBytes.length.toDouble / 65536).toInt
+            val m = math.ceil(ds.length.toDouble / 65536).toInt
             val id1 = idOrFresh(id, idx)
             exports
               .map(Export(_, ExportDesc.Memory(Right(id1))(idx))(idx)) ++ Seq(Memory(id1, MemType(Limits(m, m)))(idx),
@@ -202,8 +202,8 @@ object ModuleParsers {
 
   private val data: P[Seq[Data]] =
     P(
-      Index ~ word("data") ~/ (index | PassWith(Left(0))) ~ ("(" ~ word("offset") ~/ expr ~ ")" | foldedinstr) ~ string.rep
-        .map(_.mkString("", "", "")) ~ ")").map {
+      Index ~ word("data") ~/ (index | PassWith(Left(0))) ~ ("(" ~ word("offset") ~/ expr ~ ")" | foldedinstr) ~ bstring.rep
+        .map(_.flatten.toArray) ~ ")").map {
       case (idx, x, e, b) => Seq(Data(x, e, b)(idx))
     }
 

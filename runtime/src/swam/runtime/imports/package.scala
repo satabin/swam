@@ -21,7 +21,10 @@ import formats._
 
 import cats._
 
-import java.nio.ByteBuffer
+import java.nio.{
+  ByteBuffer,
+  ByteOrder
+}
 
 import scala.language.higherKinds
 
@@ -49,17 +52,18 @@ package object imports {
         }
     }
 
-  implicit def interfaceAsInterface[F[_]]: AsInterface[Interface[F, Type], F] =
-    new AsInterface[Interface[F, Type], F] {
-      def view(i: Interface[F, Type]) = i
+  implicit def interfaceAsInterface[T <: Interface[F, Type], F[_]]: AsInterface[T, F] =
+    new AsInterface[T, F] {
+      def view(i: T) = i
     }
 
-  implicit def valueAsInterface[T, F[_]](implicit writer: ValueWriter[T]): AsInterface[T, F] =
+  implicit def valueAsInterface[T, F[_]](implicit F: MonadError[F, Throwable], writer: ValueWriter[T]): AsInterface[T, F] =
     new AsInterface[T, F] {
       def view(t: T): Global[F] =
         new Global[F] {
           val tpe = GlobalType(writer.swamType, Mut.Const)
           def get = writer.write(t)
+          def set(v: Value) = F.raiseError(new RuntimeException("Unable to set immutable global"))
         }
     }
 
@@ -105,7 +109,7 @@ package object imports {
   implicit def arrayAsInterface[F[_]]: AsInterface[Array[Function[F]], F] =
     new AsInterface[Array[Function[F]], F] {
       def view(a: Array[Function[F]]) = new Table[F] {
-        def tpe = TableType(ElemType.AnyFunc, Limits(size, Some(size)))
+        def tpe = TableType(ElemType.AnyFunc, Limits(0, Some(size)))
         def size =
           a.length
         def apply(idx: Int) =
@@ -117,8 +121,10 @@ package object imports {
 
   implicit def byteBufferAsInsterface[F[_]]: AsInterface[ByteBuffer, F] =
     new AsInterface[ByteBuffer, F] {
-      def view(b: ByteBuffer) = new Memory[F] {
-        def tpe: swam.MemType = MemType(Limits(b.limit, Some(b.capacity)))
+      def view(_b: ByteBuffer) = new Memory[F] {
+        val b = _b.duplicate()
+        b.order(ByteOrder.LITTLE_ENDIAN)
+        def tpe: swam.MemType = MemType(Limits(b.limit / pageSize, Some(b.capacity / pageSize)))
         def grow(by: Int): Boolean = {
           val newSize = size + by * pageSize
           if (newSize > b.capacity) {
