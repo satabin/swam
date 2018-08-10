@@ -1179,8 +1179,10 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
           val tab = frame.instance.table(0)
           val expectedt = frame.instance.tpe(tidx)
           val i = frame.stack.popInt()
-          if (i >= tab.size || tab(i) == null) {
+          if (i < 0 || i >= tab.size) {
             F.raiseError(new InterpreterException(frame, "undefined element"))
+          } else if (tab(i) == null) {
+            F.raiseError(new InterpreterException(frame, s"uninitialized element $i"))
           } else {
             val f = tab(i)
             val actualt = f.tpe
