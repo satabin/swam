@@ -38,12 +38,6 @@ import scala.language.higherKinds
 class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] val interpreter: Interpreter[F]) {
   self =>
 
-  private[runtime] var exps: Map[String, Interface[F, Type]] = Map.empty
-  private[runtime] var globals: Vector[Global[F]] = Vector.empty
-  private[runtime] var memories: Vector[Memory[F]] = Vector.empty
-  private[runtime] var funcs: Vector[Function[F]] = Vector.empty
-  private[runtime] var tables: Vector[Table[F]] = Vector.empty
-
   /** Gives access to all exported fields of this instance. */
   object exports {
 
@@ -176,5 +170,75 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
 
   private[runtime] def tpe(idx: Int): FuncType =
     module.types(idx)
+
+  private[runtime] var exps: Map[String, Interface[F, Type]] = Map.empty
+  private[runtime] var globals: Vector[Global[F]] = Vector.empty
+  private[runtime] var memories: Vector[Memory[F]] = Vector.empty
+  private[runtime] var funcs: Vector[Function[F]] = Vector.empty
+  private[runtime] var tables: Vector[Table[F]] = Vector.empty
+
+  private type Funs = Seq[(Int, Function[F])]
+
+  private def initTables(implicit F: MonadError[F, Throwable]): F[Unit] =
+    F.tailRecM[(Int, Funs), Funs]((0, Seq.empty[(Int, Function[F])])) {
+      case (idx, acc) =>
+        if (idx >= module.elems.size)
+          F.pure(Right(acc))
+        else
+          module.elems(idx) match {
+            case CompiledElem(coffset, init) =>
+              interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
+                val offset = roffset.get.asInt
+                if (offset < 0 || init.size + offset > tables(0).size) {
+                  F.raiseError(new RuntimeException("Overflow in table initialization"))
+                } else {
+                  val funs =
+                    for (initi <- 0 until init.size)
+                      yield (offset + initi, funcs(init(initi)))
+                  F.pure(Left((idx + 1, acc ++ funs)))
+                }
+              }
+          }
+    }.map(_.foreach {
+      case (idx, f) => tables(0)(idx) = f
+    })
+
+  private type Mems = Seq[(Int, ByteBuffer)]
+
+  private def initMems(implicit F: MonadError[F, Throwable]): F[Unit] =
+    F.tailRecM[(Int, Mems), Mems]((0, Seq.empty)) {
+      case (idx, acc) =>
+      if (idx >= module.data.size)
+        F.pure(Right(acc))
+      else
+        module.data(idx) match {
+          case CompiledData(coffset, init) =>
+            interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
+              val offset = roffset.get.asInt
+              if (offset < 0 || init.capacity + offset > memories(0).size)
+                F.raiseError(new RuntimeException("Overflow in memory initialization"))
+              else
+                F.pure(Left((idx + 1, acc :+ (offset, init))))
+            }
+        }
+    }.map(_.foreach {
+      case (idx, m) => memories(0).writeBytes(idx, m)
+    })
+
+  private def start(implicit F: MonadError[F, Throwable]): F[Unit] =
+    module.start match {
+      case Some(start) => interpreter.interpret(start, Vector(), self).map(_ => ())
+      case None        => F.pure(())
+    }
+
+  private[runtime] def init(implicit F: MonadError[F, Throwable]): F[Unit] =
+    for {
+      // initialize tables
+      _ <- initTables
+      // now initialize memories
+      _ <- initMems
+      // and finally start the instance
+      _ <- start
+    } yield ()
 
 }
