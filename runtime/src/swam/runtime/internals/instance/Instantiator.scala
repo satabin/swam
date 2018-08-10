@@ -140,7 +140,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
           case CompiledElem(coffset, init) =>
             interpreter.interpretInit(ValType.I32, coffset, instance).flatMap { roffset =>
               val offset = roffset.get.asInt
-              if (init.size + offset > instance.tables(0).size) {
+              if (offset < 0 || init.size + offset > instance.tables(0).size) {
                 F.raiseError(new RuntimeException("Overflow in table initialization"))
               } else {
                 for (initi <- 0 until init.size)
@@ -162,7 +162,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
           case CompiledData(coffset, init) =>
             interpreter.interpretInit(ValType.I32, coffset, instance).flatMap { roffset =>
               val offset = roffset.get.asInt
-              if (init.capacity + offset > instance.memories(0).size) {
+              if (offset< 0 || init.capacity + offset > instance.memories(0).size) {
                 F.raiseError(new RuntimeException("Overflow in memory initialization"))
               } else {
                 instance.memories(0).writeBytes(offset, init)
