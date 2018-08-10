@@ -30,7 +30,7 @@ package object test {
   type AsIIO[T] = AsInterface[T, IO]
   type AsIsIO[T] = AsInstance[T, IO]
 
-  val table = new Table[IO] {
+  def table = new Table[IO] {
     val a = Array.ofDim[Function[IO]](20)
     def apply(i: Int) = a(i)
     def size = 20
