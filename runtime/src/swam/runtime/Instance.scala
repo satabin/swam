@@ -179,7 +179,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
 
   private type Funs = Seq[(Int, Function[F])]
 
-  private def initTables(implicit F: MonadError[F, Throwable]): F[Unit] =
+  private def initTables(implicit F: MonadError[F, Throwable]): F[Funs] =
     F.tailRecM[(Int, Funs), Funs]((0, Seq.empty[(Int, Function[F])])) {
       case (idx, acc) =>
         if (idx >= module.elems.size)
@@ -199,13 +199,11 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
                 }
               }
           }
-    }.map(_.foreach {
-      case (idx, f) => tables(0)(idx) = f
-    })
+    }
 
   private type Mems = Seq[(Int, ByteBuffer)]
 
-  private def initMems(implicit F: MonadError[F, Throwable]): F[Unit] =
+  private def initMems(implicit F: MonadError[F, Throwable]): F[Mems] =
     F.tailRecM[(Int, Mems), Mems]((0, Seq.empty)) {
       case (idx, acc) =>
       if (idx >= module.data.size)
@@ -221,9 +219,17 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
                 F.pure(Left((idx + 1, acc :+ (offset, init))))
             }
         }
-    }.map(_.foreach {
-      case (idx, m) => memories(0).writeBytes(idx, m)
-    })
+    }
+
+  private def setvalues(elems: Funs, data: Mems)(implicit F: MonadError[F, Throwable]): F[Unit] =
+    F.pure {
+      elems.foreach {
+        case (idx, f) => tables(0)(idx) = f
+      }
+      data.foreach {
+        case (idx, m) => memories(0).writeBytes(idx, m)
+      }
+    }
 
   private def start(implicit F: MonadError[F, Throwable]): F[Unit] =
     module.start match {
@@ -234,9 +240,11 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
   private[runtime] def init(implicit F: MonadError[F, Throwable]): F[Unit] =
     for {
       // initialize tables
-      _ <- initTables
+      elems <- initTables
       // now initialize memories
-      _ <- initMems
+      data <- initMems
+      // perform atomic initialization
+      _ <- setvalues(elems, data)
       // and finally start the instance
       _ <- start
     } yield ()

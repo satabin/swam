@@ -57,11 +57,10 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F])(implicit F: Mon
         } else {
           val imp = mimports(idx)
           provided.find(imp.moduleName, imp.fieldName).flatMap { provided =>
-            if (provided.tpe <:< imp.tpe) {
+            if (provided.tpe <:< imp.tpe)
               F.pure(Left((idx + 1, acc :+ provided)))
-            } else {
+            else
               F.raiseError(new RuntimeException(s"Expected import of type ${imp.tpe} but got ${provided.tpe}"))
-            }
           }
         }
     }
