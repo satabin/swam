@@ -31,9 +31,9 @@ package object test {
   type AsIsIO[T] = AsInstance[T, IO]
 
   def table = new Table[IO] {
-    val a = Array.ofDim[Function[IO]](20)
+    val a = Array.ofDim[Function[IO]](10)
     def apply(i: Int) = a(i)
-    def size = 20
+    def size = 10
     def update(i: Int, f: Function[IO]) =
       a(i) = f
     def tpe = TableType(ElemType.AnyFunc, Limits(10, Some(20)))
