@@ -113,7 +113,7 @@ def unidoc(ev: Evaluator[Any]) = T.command {
     "http://github.com/satabin/swam/tree/" + branch
   }
 
-  val urlString = s"${url(swamVersion)}/€{FILE_PATH}.scala"
+  val urlString = s"${url(swamVersion)}/€{FILE_PATH}.scala#L1"
 
   val options = Seq("-d", javadocDir.toNIO.toString, "-usejavacp", "-doc-title", "Swam API Documentation", "-doc-version", swamVersion, "-skip-packages", "fastparse", "-doc-source-url", urlString, "-sourcepath", base) ++ pluginOptions ++ scalacOptions
 
