@@ -1,0 +1,526 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+          <title>Swam API Documentation 0.1.0-SNAPSHOT - swam.validation</title>
+          <meta name="description" content="Swam API Documentation 0.1.0 - SNAPSHOT - swam.validation" />
+          <meta name="keywords" content="Swam API Documentation 0.1.0 SNAPSHOT swam.validation" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../lib/jquery.panzoom.min.js"></script>
+      <script type="text/javascript" src="../../lib/jquery.mousewheel.min.js"></script>
+      <script type="text/javascript" src="../../lib/index.js"></script>
+      <script type="text/javascript" src="../../index.js"></script>
+      <script type="text/javascript" src="../../lib/scheduler.js"></script>
+      <script type="text/javascript" src="../../lib/template.js"></script>
+      <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+        /* this variable can be used by the JS to determine the path to the root document */
+        var toRoot = '../../';
+      </script>
+    
+        </head>
+        <body>
+      <div id="search">
+        <span id="doc-title">Swam API Documentation<span id="doc-version">0.1.0-SNAPSHOT</span></span>
+        <span class="close-results"><span class="left">&lt;</span> Back</span>
+        <div id="textfilter">
+          <span class="input">
+            <input autocapitalize="none" placeholder="Search" id="index-input" type="text" accesskey="/" />
+            <i class="clear material-icons"></i>
+            <i id="search-icon" class="material-icons"></i>
+          </span>
+        </div>
+    </div>
+      <div id="search-results">
+        <div id="search-progress">
+          <div id="progress-fill"></div>
+        </div>
+        <div id="results-content">
+          <div id="entity-results"></div>
+          <div id="member-results"></div>
+        </div>
+      </div>
+      <div id="content-scroll-container" style="-webkit-overflow-scrolling: touch;">
+        <div id="content-container" style="-webkit-overflow-scrolling: touch;">
+          <div id="subpackage-spacer">
+            <div id="packages">
+              <h1>Packages</h1>
+              <ul>
+                <li name="_root_.root" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="_root_"></a><a id="root:_root_"></a>
+      <span class="permalink">
+      <a href="index.html#_root_" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../../index.html"><span class="name">root</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
+    </li><li name="_root_.swam" visbl="pub" class="indented1 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="swam"></a><a id="swam:swam"></a>
+      <span class="permalink">
+      <a href="index.html#swam" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../index.html"><span class="name">swam</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
+    </li><li name="swam.binary" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="binary"></a><a id="binary:binary"></a>
+      <span class="permalink">
+      <a href="../swam/index.html#binary" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../binary/index.html"><span class="name">binary</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
+    </li><li name="swam.runtime" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="runtime"></a><a id="runtime:runtime"></a>
+      <span class="permalink">
+      <a href="../swam/index.html#runtime" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="This package contains all the classes and types related to running WebAssembly modules." href="../runtime/index.html"><span class="name">runtime</span></a>
+      </span>
+      
+      <p class="shortcomment cmt">This package contains all the classes and types related to
+running WebAssembly modules.</p><div class="fullcomment"><div class="comment cmt"><p>This package contains all the classes and types related to
+running WebAssembly modules.</p><p>The entry point for almost all users will be <a href="../runtime/SwamEngine.html" class="extype" name="swam.runtime.SwamEngine">SwamEngine</a>.
+A typical use of the engine is:</p><pre><span class="kw">import</span> swam._
+<span class="kw">import</span> text._
+<span class="kw">import</span> runtime._
+<span class="kw">import</span> exports._
+
+<span class="kw">import</span> cats.implicits._
+<span class="kw">import</span> cats.effect._
+
+<span class="kw">import</span> java.nio.file.Paths
+
+<span class="kw">val</span> tcompiler = <span class="kw">new</span> Compiler[IO]
+<span class="kw">val</span> engine = <span class="kw">new</span> SwamEngine[IO]
+
+<span class="kw">for</span> {
+  mod <span class="kw">&lt;-</span> engine.compile(<span class="cmt">/* source of the module */</span>)
+  inst <span class="kw">&lt;-</span> mod.newInstance()
+  f <span class="kw">&lt;-</span> inst.exports.function1[<span class="std">Int</span>, <span class="std">Int</span>](<span class="num">1</span>)
+  res <span class="kw">&lt;-</span> f(<span class="num">43</span>)
+} <span class="kw">yield</span> res
+
+println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
+    </li><li name="swam.syntax" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="syntax"></a><a id="syntax:syntax"></a>
+      <span class="permalink">
+      <a href="../swam/index.html#syntax" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../syntax/index.html"><span class="name">syntax</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
+    </li><li name="swam.text" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="text"></a><a id="text:text"></a>
+      <span class="permalink">
+      <a href="../swam/index.html#text" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../text/index.html"><span class="name">text</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
+    </li><li name="swam.util" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="util"></a><a id="util:util"></a>
+      <span class="permalink">
+      <a href="../swam/index.html#util" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../util/index.html"><span class="name">util</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
+    </li><li name="swam.validation" visbl="pub" class="indented2 current" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="validation"></a><a id="validation:validation"></a>
+      <span class="permalink">
+      <a href="../swam/index.html#validation" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">validation</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
+    </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="object" href="Const$.html" title=""></a>
+                        <a href="Const$.html" title="">Const</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Context.html" title="A validation context, used when performing module and instruction validation."></a>
+                        <a href="Context.html" title="A validation context, used when performing module and instruction validation.">Context</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="NoopValidator.html" title=""></a>
+                        <a href="NoopValidator.html" title="">NoopValidator</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="trait" href="OperandType.html" title=""></a>
+                        <a href="OperandType.html" title="">OperandType</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="SpecValidator.html" title=""></a>
+                        <a href="SpecValidator.html" title="">SpecValidator</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="object" href="Unknown$.html" title=""></a>
+                        <a href="Unknown$.html" title="">Unknown</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Val.html" title=""></a>
+                        <a href="Val.html" title="">Val</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="ValidationException.html" title=""></a>
+                        <a href="ValidationException.html" title="">ValidationException</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Validator.html" title="A validator makes it possible to validate sections in a stream."></a>
+                        <a href="Validator.html" title="A validator makes it possible to validate sections in a stream.">Validator</a>
+                      </li>
+              </ul>
+            </div>
+          </div>
+          <div id="content">
+            <body class="package value">
+      <div id="definition">
+        <div class="big-circle package">p</div>
+        <p id="owner"><a href="../index.html" class="extype" name="swam">swam</a></p>
+        <h1>validation<span class="permalink">
+      <a href="../../swam/validation/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span></h1>
+        
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">validation</span>
+      </span>
+      </h4>
+
+      
+          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <span class="toggle">
+            Linear Supertypes
+          </span>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div class="toggle"></div>
+        <div id="memberfilter">
+          <i class="material-icons arrow"></i>
+          <span class="input">
+            <input id="mbrsel-input" placeholder="Filter all members" type="text" accesskey="/" />
+          </span>
+          <i class="clear material-icons"></i>
+        </div>
+        <div id="filterby">
+          <div id="order">
+            <span class="filtertype">Ordering</span>
+            <ol>
+              
+              <li class="alpha in"><span>Alphabetic</span></li>
+              <li class="inherit out"><span>By Inheritance</span></li>
+            </ol>
+          </div>
+          <div class="ancestors">
+                  <span class="filtertype">Inherited<br />
+                  </span>
+                  <ol id="linearization">
+                    <li class="in" name="swam.validation"><span>validation</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  </ol>
+                </div><div class="ancestors">
+              <span class="filtertype"></span>
+              <ol>
+                <li class="hideall out"><span>Hide All</span></li>
+                <li class="showall in"><span>Show All</span></li>
+              </ol>
+            </div>
+          <div id="visbl">
+              <span class="filtertype">Visibility</span>
+              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+            </div>
+        </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="swam.validation.Context" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Context[F[_]]extendsProductwithSerializable"></a><a id="Context[F[_]]:Context[F]"></a>
+      <span class="permalink">
+      <a href="../../swam/validation/index.html#Context[F[_]]extendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="A validation context, used when performing module and instruction validation." href="Context.html"><span class="name">Context</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span name="types">types: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="funcs">funcs: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="tables">tables: <span class="extype" name="scala.Vector">Vector</span>[<a href="../TableType.html" class="extype" name="swam.TableType">TableType</a>]</span>, <span name="mems">mems: <span class="extype" name="scala.Vector">Vector</span>[<a href="../MemType.html" class="extype" name="swam.MemType">MemType</a>]</span>, <span name="globals">globals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../GlobalType.html" class="extype" name="swam.GlobalType">GlobalType</a>]</span>, <span name="locals">locals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ValType.html" class="extype" name="swam.ValType">ValType</a>]</span>, <span name="labels">labels: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="ret">ret: <span class="extype" name="scala.Option">Option</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="operands">operands: <span class="extype" name="scala.List">List</span>[<a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a>]</span>, <span name="unreachable">unreachable: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">A validation context, used when performing module and instruction validation.</p>
+    </li><li name="swam.validation.NoopValidator" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NoopValidator[F[_]]extendsValidator[F]"></a><a id="NoopValidator[F[_]]:NoopValidator[F]"></a>
+      <span class="permalink">
+      <a href="../../swam/validation/index.html#NoopValidator[F[_]]extendsValidator[F]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="NoopValidator.html"><span class="name">NoopValidator</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <a href="Validator.html" class="extype" name="swam.validation.Validator">Validator</a>[<span class="extype" name="swam.validation.NoopValidator.F">F</span>]</span>
+      </span>
+      
+      
+    </li><li name="swam.validation.OperandType" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="OperandTypeextendsAnyRef"></a><a id="OperandType:OperandType"></a>
+      <span class="permalink">
+      <a href="../../swam/validation/index.html#OperandTypeextendsAnyRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="OperandType.html"><span class="name">OperandType</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      
+      
+    </li><li name="swam.validation.SpecValidator" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SpecValidator[F[_]]extendsValidator[F]"></a><a id="SpecValidator[F[_]]:SpecValidator[F]"></a>
+      <span class="permalink">
+      <a href="../../swam/validation/index.html#SpecValidator[F[_]]extendsValidator[F]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="SpecValidator.html"><span class="name">SpecValidator</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <a href="Validator.html" class="extype" name="swam.validation.Validator">Validator</a>[<span class="extype" name="swam.validation.SpecValidator.F">F</span>]</span>
+      </span>
+      
+      
+    </li><li name="swam.validation.Val" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ValextendsOperandTypewithProductwithSerializable"></a><a id="Val:Val"></a>
+      <span class="permalink">
+      <a href="../../swam/validation/index.html#ValextendsOperandTypewithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="Val.html"><span class="name">Val</span></a><span class="params">(<span name="tpe">tpe: <a href="../ValType.html" class="extype" name="swam.ValType">ValType</a></span>)</span><span class="result"> extends <a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
+    </li><li name="swam.validation.ValidationException" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ValidationExceptionextendsSwamException"></a><a id="ValidationException:ValidationException"></a>
+      <span class="permalink">
+      <a href="../../swam/validation/index.html#ValidationExceptionextendsSwamException" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="ValidationException.html"><span class="name">ValidationException</span></a><span class="result"> extends <a href="../SwamException.html" class="extype" name="swam.SwamException">SwamException</a></span>
+      </span>
+      
+      
+    </li><li name="swam.validation.Validator" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="Validator[F[_]]extendsAnyRef"></a><a id="Validator[F[_]]:Validator[F]"></a>
+      <span class="permalink">
+      <a href="../../swam/validation/index.html#Validator[F[_]]extendsAnyRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="A validator makes it possible to validate sections in a stream." href="Validator.html"><span class="name">Validator</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">A validator makes it possible to validate sections in a stream.</p>
+    </li></ol>
+            </div>
+
+        
+
+        <div class="values members">
+              <h3>Value Members</h3>
+              <ol>
+                <li name="swam.validation#EmptyContext" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="EmptyContext[F[_]]:swam.validation.Context[F]"></a><a id="EmptyContext[F[_]]:Context[F]"></a>
+      <span class="permalink">
+      <a href="../../swam/validation/index.html#EmptyContext[F[_]]:swam.validation.Context[F]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">EmptyContext</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result">: <a href="Context.html" class="extype" name="swam.validation.Context">Context</a>[<span class="extype" name="swam.validation.EmptyContext.F">F</span>]</span>
+      </span>
+      
+      
+    </li><li name="swam.validation.Const" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Const"></a><a id="Const:Const"></a>
+      <span class="permalink">
+      <a href="../../swam/validation/index.html#Const" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="Const$.html"><span class="name">Const</span></a>
+      </span>
+      
+      
+    </li><li name="swam.validation.Unknown" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Unknown"></a><a id="Unknown:Unknown"></a>
+      <span class="permalink">
+      <a href="../../swam/validation/index.html#Unknown" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="Unknown$.html"><span class="name">Unknown</span></a><span class="result"> extends <a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
+    </li>
+              </ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+    </body>
+          </div>
+        </div>
+      </div>
+    </body>
+      </html>
