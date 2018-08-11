@@ -148,29 +148,6 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
 
   }
 
-  private[runtime] object global {
-    def apply(idx: Int): Value =
-      globals(idx).get
-
-    def update(idx: Int, v: Value)(implicit F: MonadError[F, Throwable]): F[Unit] =
-      globals(idx) match {
-        case g: GlobalInstance[F] => g.unsafeset(v)
-        case g                    => g.set(v)
-      }
-  }
-
-  private[runtime] def memory(idx: Int): Memory[F] =
-    memories(idx)
-
-  private[runtime] def function(idx: Int): Function[F] =
-    funcs(idx)
-
-  private[runtime] def table(idx: Int): Table[F] =
-    tables(idx)
-
-  private[runtime] def tpe(idx: Int): FuncType =
-    module.types(idx)
-
   private[runtime] var exps: Map[String, Interface[F, Type]] = Map.empty
   private[runtime] var globals: Vector[Global[F]] = Vector.empty
   private[runtime] var memories: Vector[Memory[F]] = Vector.empty
