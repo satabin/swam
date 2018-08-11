@@ -26,13 +26,11 @@ import scala.language.higherKinds
 
 import fs2._
 
-class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]) extends Validator[F] {
+class SpecValidator[F[_]](dataHardMax: Int) extends Validator[F] {
 
   type Ctx = Context[F]
 
-  private val Ok = F.pure(())
-
-  def validateAll[T](elements: Vector[T], validation: T => F[Unit]): F[Unit] =
+  def validateAll[T](elements: Vector[T], validation: T => F[Unit])(implicit F: MonadError[F, Throwable]): F[Unit] =
     F.tailRecM(0) { idx =>
       if (idx < elements.size)
         validation(elements(idx)).map(_ => Left(idx + 1))
@@ -40,7 +38,8 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
         F.pure(Right(()))
     }
 
-  def validateAll[T](elements: Vector[T], ctx: Ctx, validation: (T, Ctx) => F[Unit]): F[Unit] =
+  def validateAll[T](elements: Vector[T], ctx: Ctx, validation: (T, Ctx) => F[Unit])(
+      implicit F: MonadError[F, Throwable]): F[Unit] =
     F.tailRecM(0) { idx =>
       if (idx < elements.size)
         validation(elements(idx), ctx).map(_ => Left(idx + 1))
@@ -48,54 +47,54 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
         F.pure(Right(()))
     }
 
-  def validateValType(tpe: ValType): F[Unit] =
-    Ok
+  def validateValType(tpe: ValType)(implicit F: MonadError[F, Throwable]): F[Unit] =
+    F.pure(())
 
-  def validateResultType(tpe: ResultType): F[Unit] =
-    Ok
+  def validateResultType(tpe: ResultType)(implicit F: MonadError[F, Throwable]): F[Unit] =
+    F.pure(())
 
-  def validateLimits(limits: Limits): F[Unit] =
+  def validateLimits(limits: Limits)(implicit F: MonadError[F, Throwable]): F[Unit] =
     limits match {
       case Limits(min, Some(max)) if max < min =>
         F.raiseError(new ValidationException("limits minimum must be greater or equal to minimum."))
-      case _ => Ok
+      case _ => F.pure(())
     }
 
-  def validateMemType(tpe: MemType): F[Unit] =
+  def validateMemType(tpe: MemType)(implicit F: MonadError[F, Throwable]): F[Unit] =
     for {
       _ <- validateLimits(tpe.limits)
       _ <- validateHardMax(tpe.limits.min)
       _ <- validateHardMax(tpe.limits.max)
     } yield ()
 
-  def validateHardMax(i: Option[Int]): F[Unit] =
+  def validateHardMax(i: Option[Int])(implicit F: MonadError[F, Throwable]): F[Unit] =
     i match {
       case Some(i) => validateHardMax(i)
-      case None    => Ok
+      case None    => F.pure(())
     }
 
-  def validateHardMax(i: Int): F[Unit] =
+  def validateHardMax(i: Int)(implicit F: MonadError[F, Throwable]): F[Unit] =
     if (i < 0 || i > dataHardMax)
       F.raiseError(new ValidationException(s"memory size may not exceed $dataHardMax pages"))
     else
-      Ok
+      F.pure(())
 
-  def validateFuncType(tpe: FuncType): F[Unit] =
+  def validateFuncType(tpe: FuncType)(implicit F: MonadError[F, Throwable]): F[Unit] =
     if (tpe.t.size > 1)
       F.raiseError(new ValidationException("function type must have at most one return type."))
     else
-      Ok
+      F.pure(())
 
-  def validateTableType(tpe: TableType): F[Unit] =
+  def validateTableType(tpe: TableType)(implicit F: MonadError[F, Throwable]): F[Unit] =
     validateLimits(tpe.limits)
 
-  def validateElemType(tpe: ElemType): F[Unit] =
-    Ok
+  def validateElemType(tpe: ElemType)(implicit F: MonadError[F, Throwable]): F[Unit] =
+    F.pure(())
 
-  def validateGlobalType(tpe: GlobalType): F[Unit] =
-    Ok
+  def validateGlobalType(tpe: GlobalType)(implicit F: MonadError[F, Throwable]): F[Unit] =
+    F.pure(())
 
-  def validate(inst: Vector[Inst], ctx: Ctx): F[Ctx] = {
+  def validate(inst: Vector[Inst], ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Ctx] = {
     F.tailRecM((0, ctx)) {
       case (idx, ctx) =>
         if (idx >= inst.size)
@@ -105,7 +104,7 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
     }
   }
 
-  def validate(inst: Inst, ctx: Ctx): F[Ctx] =
+  def validate(inst: Inst, ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Ctx] =
     inst match {
       case Const(t) =>
         F.pure(ctx.push(t))
@@ -356,7 +355,7 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
         F.raiseError(new ValidationException(s"unknown instruction $inst."))
     }
 
-  def validateFunction(func: Func, ctx: Ctx): F[Unit] = {
+  def validateFunction(func: Func, ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Unit] = {
     val Func(tpe, locals, body) = func
     ctx.types.lift(tpe) match {
       case Some(FuncType(ins, out)) =>
@@ -386,13 +385,13 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
     }
   }
 
-  def validateTable(tpe: TableType, ctx: Ctx): F[Unit] =
+  def validateTable(tpe: TableType, ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Unit] =
     validateTableType(tpe)
 
-  def validateMem(tpe: MemType, ctx: Ctx): F[Unit] =
+  def validateMem(tpe: MemType, ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Unit] =
     validateMemType(tpe)
 
-  def validateGlobal(global: Global, ctx: Ctx): F[Unit] = {
+  def validateGlobal(global: Global, ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Unit] = {
     val Global(gtpe @ GlobalType(tpe, _), init) = global
     for {
       _ <- validateGlobalType(gtpe)
@@ -403,7 +402,7 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
     } yield ()
   }
 
-  def validateElem(elem: Elem, ctx: Ctx): F[Unit] = {
+  def validateElem(elem: Elem, ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Unit] = {
     val Elem(table, offset, init) = elem
     ctx.tables.lift(table) match {
       case Some(_) =>
@@ -423,7 +422,7 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
     }
   }
 
-  def validateData(data: Data, ctx: Ctx): F[Unit] = {
+  def validateData(data: Data, ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Unit] = {
     val Data(d, offset, init) = data
     ctx.mems.lift(d) match {
       case Some(_) =>
@@ -438,21 +437,21 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
     }
   }
 
-  def validateStart(start: FuncIdx, ctx: Ctx): F[Unit] =
+  def validateStart(start: FuncIdx, ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Unit] =
     ctx.funcs.lift(start) match {
       case Some(FuncType(Vector(), Vector())) =>
-        Ok
+        F.pure(())
       case Some(_) =>
         F.raiseError(new ValidationException(s"start function cannot have parameters nor return any value."))
       case None =>
         F.raiseError(new ValidationException(s"unknown function $start."))
     }
 
-  def validateImport(imp: Import, ctx: Ctx): F[Unit] =
+  def validateImport(imp: Import, ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Unit] =
     imp match {
       case Import.Function(_, _, idx) =>
         if (ctx.types.isDefinedAt(idx))
-          Ok
+          F.pure(())
         else
           F.raiseError(new ValidationException(s"unknown function type $idx."))
       case Import.Table(_, _, table) =>
@@ -460,36 +459,36 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
       case Import.Memory(_, _, mem) =>
         validateMemType(mem)
       case Import.Global(_, _, _) =>
-        Ok
+        F.pure(())
     }
 
-  def validateExport(exp: Export, ctx: Ctx): F[Unit] =
+  def validateExport(exp: Export, ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Unit] =
     exp match {
       case Export(_, ExternalKind.Function, idx) =>
         if (ctx.funcs.isDefinedAt(idx))
-          Ok
+          F.pure(())
         else
           F.raiseError(new ValidationException(s"unknown function $idx."))
       case Export(_, ExternalKind.Table, idx) =>
         if (ctx.tables.isDefinedAt(idx))
-          Ok
+          F.pure(())
         else
           F.raiseError(new ValidationException(s"unknown table $idx."))
       case Export(_, ExternalKind.Memory, idx) =>
         if (ctx.mems.isDefinedAt(idx))
-          Ok
+          F.pure(())
         else
           F.raiseError(new ValidationException(s"unknown memory $idx."))
       case Export(_, ExternalKind.Global, idx) =>
         ctx.globals.lift(idx) match {
           case Some(_) =>
-            Ok
+            F.pure(())
           case None =>
             F.raiseError(new ValidationException(s"unknown global $idx."))
         }
     }
 
-  def validateConst(instr: Vector[Inst], ctx: Ctx): F[Unit] =
+  def validateConst(instr: Vector[Inst], ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Unit] =
     F.tailRecM((0, ctx)) {
       case (idx, ctx) =>
         if (idx < instr.size)
@@ -498,13 +497,13 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
           F.pure(Right(()))
     }
 
-  def validateConst(instr: Inst, ctx: Ctx): F[Unit] =
+  def validateConst(instr: Inst, ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Unit] =
     instr match {
-      case Const(_) => Ok
+      case Const(_) => F.pure(())
       case GetGlobal(x) =>
         ctx.globals.lift(x) match {
           case Some(_) =>
-            Ok
+            F.pure(())
           case None =>
             F.raiseError(new ValidationException(s"unknown global $x."))
         }
@@ -534,7 +533,7 @@ class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]
 
   private type Acc = ((Int, Vector[Int], Vector[Import], Context[F]), Section)
 
-  def validate(stream: Stream[F, Section]): Stream[F, Section] =
+  def validate(stream: Stream[F, Section])(implicit F: MonadError[F, Throwable]): Stream[F, Section] =
     stream
       .evalMapAccumulate((0, Vector.empty[Int], Vector.empty[Import], EmptyContext[F])) { (acc, sec) =>
         acc match {

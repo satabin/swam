@@ -39,21 +39,21 @@ sealed trait Interface[F[_], +T <: Type] {
 /** Functions must implement this interface to be used by Swam.
   *
   */
-abstract class Function[F[_]](implicit F: MonadError[F, Throwable]) extends Interface[F, FuncType] {
+abstract class Function[F[_]] extends Interface[F, FuncType] {
 
   /** Invokes the function and returns its result.
     *
     * Implementations must not throw any exception but
     * must encapsulate their effect and failure in an instance of `F`.
     */
-  def invoke(parameters: Vector[Value]): F[Option[Value]]
+  def invoke(parameters: Vector[Value])(implicit F: MonadError[F, Throwable]): F[Option[Value]]
 
 }
 
 /** Globals must implement this interface to be used by Swam.
   *
   */
-abstract class Global[F[_]](implicit F: MonadError[F, Throwable]) extends Interface[F, GlobalType] {
+abstract class Global[F[_]] extends Interface[F, GlobalType] {
 
   /** Returns the global value.
     */
@@ -64,7 +64,7 @@ abstract class Global[F[_]](implicit F: MonadError[F, Throwable]) extends Interf
     * Implementations must return a failed `F` if `v` is
     * not of the correct type or not mutable.
     */
-  def set(v: Value): F[Unit]
+  def set(v: Value)(implicit F: MonadError[F, Throwable]): F[Unit]
 
 }
 

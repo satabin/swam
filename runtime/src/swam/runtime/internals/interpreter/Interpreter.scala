@@ -33,11 +33,12 @@ import cats.implicits._
 import scala.language.higherKinds
 
 /** An interpreter is spwan each time the execution of a method is required. */
-private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]) {
+private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) {
 
   private val conf = engine.conf
 
-  def interpret(funcidx: Int, parameters: Vector[Value], instance: Instance[F]): F[Option[Value]] = {
+  def interpret(funcidx: Int, parameters: Vector[Value], instance: Instance[F])(
+      implicit F: MonadError[F, Throwable]): F[Option[Value]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // push the parameters in the stack
@@ -49,7 +50,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     }
   }
 
-  def interpret(func: Function[F], parameters: Vector[Value], instance: Instance[F]): F[Option[Value]] = {
+  def interpret(func: Function[F], parameters: Vector[Value], instance: Instance[F])(
+      implicit F: MonadError[F, Throwable]): F[Option[Value]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // push the parameters in the stack
@@ -61,7 +63,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     }
   }
 
-  def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F]): F[Option[Value]] = {
+  def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F])(
+      implicit F: MonadError[F, Throwable]): F[Option[Value]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // invoke the function
@@ -71,7 +74,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     }
   }
 
-  private def run(frame: Frame[F]): F[Option[Value]] =
+  private def run(frame: Frame[F])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
     F.tailRecM(frame) { frame =>
       val opcode = frame.readByte() & 0xff
       (opcode: @switch) match {
@@ -1236,7 +1239,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F])(implicit F: Mona
     frame.pc = cont
   }
 
-  private def invoke(frame: Frame[F], f: Function[F]): F[Either[Frame[F], Option[Value]]] =
+  private def invoke(frame: Frame[F], f: Function[F])(
+      implicit F: MonadError[F, Throwable]): F[Either[Frame[F], Option[Value]]] =
     f match {
       case FunctionInstance(tpe, locals, code, inst) =>
         val ilocals = Array.ofDim[Value](locals.size + tpe.params.size)

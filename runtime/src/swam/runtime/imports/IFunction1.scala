@@ -25,10 +25,9 @@ import cats.implicits._
 
 import scala.language.higherKinds
 
-class IFunction1Unit[F[_], P1](f: (P1) => F[Unit])(implicit F: MonadError[F, Throwable], reader1: ValueReader[P1])
-    extends Function[F] {
+class IFunction1Unit[F[_], P1](f: (P1) => F[Unit])(implicit reader1: ValueReader[P1]) extends Function[F] {
   val tpe = FuncType(Vector(reader1.swamType), Vector())
-  def invoke(parameters: Vector[Value]): F[Option[Value]] =
+  def invoke(parameters: Vector[Value])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
     parameters match {
       case Seq(p1) =>
         for {
@@ -41,12 +40,10 @@ class IFunction1Unit[F[_], P1](f: (P1) => F[Unit])(implicit F: MonadError[F, Thr
     }
 }
 
-class IFunction1[F[_], P1, Ret](f: (P1) => F[Ret])(implicit F: MonadError[F, Throwable],
-                                                   reader1: ValueReader[P1],
-                                                   writer: ValueWriter[Ret])
+class IFunction1[F[_], P1, Ret](f: (P1) => F[Ret])(implicit reader1: ValueReader[P1], writer: ValueWriter[Ret])
     extends Function[F] {
   val tpe = FuncType(Vector(reader1.swamType), Vector(writer.swamType))
-  def invoke(parameters: Vector[Value]): F[Option[Value]] =
+  def invoke(parameters: Vector[Value])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
     parameters match {
       case Seq(p1) =>
         for {

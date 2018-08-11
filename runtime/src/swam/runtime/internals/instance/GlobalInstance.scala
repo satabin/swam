@@ -23,15 +23,14 @@ import cats._
 
 import scala.language.higherKinds
 
-private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType)(implicit F: MonadError[F, Throwable])
-    extends Global[F] {
+private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType) extends Global[F] {
 
   private var value: Value = Value.zero(tpe.tpe)
 
   def get: Value =
     value
 
-  def set(v: Value) =
+  def set(v: Value)(implicit F: MonadError[F, Throwable]) =
     if (tpe.mut == Mut.Var)
       if (v.tpe <:< tpe.tpe)
         F.pure(value = v)
@@ -40,7 +39,7 @@ private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType)(implicit F: Mon
     else
       F.raiseError(new RuntimeException("Unable to set value to immutable global"))
 
-  private[runtime] def unsafeset(v: Value) =
+  private[runtime] def unsafeset(v: Value)(implicit F: MonadError[F, Throwable]) =
     F.pure(value = v)
 
 }

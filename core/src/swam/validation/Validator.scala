@@ -27,12 +27,12 @@ import fs2._
 import scala.language.higherKinds
 
 /** A validator makes it possible to validate sections in a stream. */
-abstract class Validator[F[_]](implicit val F: MonadError[F, Throwable]) {
+abstract class Validator[F[_]] {
 
   /** Performs validation of the section stream on the fly.
     *  The sections are returned unchanged if validation succeeds, otherwise
     *  the stream fails.
     */
-  def validate(stream: Stream[F, Section]): Stream[F, Section]
+  def validate(stream: Stream[F, Section])(implicit F: MonadError[F, Throwable]): Stream[F, Section]
 
 }

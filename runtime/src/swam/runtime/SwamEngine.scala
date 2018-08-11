@@ -44,7 +44,7 @@ import java.nio.file.Path
   * You typically want to reuse the same instance for all your executions
   * over the same effectful type `F`.
   */
-class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(implicit F: Effect[F]) {
+class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration) {
 
   private[runtime] val validator = new SpecValidator[F](conf.data.hardMax)
 
@@ -57,7 +57,7 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
   private def readPath(path: Path): BitVector =
     BitVector.fromChannel(new java.io.FileInputStream(path.toFile).getChannel)
 
-  private def readStream(bytes: BitVector) =
+  private def readStream(bytes: BitVector)(implicit F: Effect[F]) =
     ModuleStream.decoder
       .decode(bytes)
 
@@ -65,21 +65,21 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
     *
     * If validation fails, returns an error with the validation message wrapped in it.
     */
-  def validate(path: Path): F[Unit] =
+  def validate(path: Path)(implicit F: Effect[F]): F[Unit] =
     validate(readPath(path))
 
   /** Reads the given binary encoded module and validates it.
     *
     * If validation fails, returns an error with the validation message wrapped in it.
     */
-  def validate(bytes: BitVector): F[Unit] =
+  def validate(bytes: BitVector)(implicit F: Effect[F]): F[Unit] =
     validate(readStream(bytes))
 
   /** Reads the given stream of binary module sections and validates it.
     *
     * If validation fails, returns an error with the validation message wrapped in it.
     */
-  def validate(sections: Stream[F, Section]): F[Unit] =
+  def validate(sections: Stream[F, Section])(implicit F: Effect[F]): F[Unit] =
     sections
       .through(validator.validate)
       .compile
@@ -91,7 +91,7 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
     * If validation or compilation fails, returns an error with the
     * message wrapped in it.
     */
-  def compile(path: Path): F[Module[F]] =
+  def compile(path: Path)(implicit F: Effect[F]): F[Module[F]] =
     compile(readPath(path))
 
   /** Reads the given binary encoded module, validates, and compiles it.
@@ -100,7 +100,7 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
     * If validation or compilation fails, returns an error with the
     * message wrapped in it.
     */
-  def compile(bytes: BitVector): F[Module[F]] =
+  def compile(bytes: BitVector)(implicit F: Effect[F]): F[Module[F]] =
     compile(readStream(bytes))
 
   /** Reads the given stream of binary module sections, validates, and compiles it.
@@ -109,7 +109,7 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
     * If validation or compilation fails, returns an error with the
     * message wrapped in it.
     */
-  def compile(sections: Stream[F, Section]): F[Module[F]] =
+  def compile(sections: Stream[F, Section])(implicit F: Effect[F]): F[Module[F]] =
     sections
       .through(validator.validate)
       .through(compiler.compile)
@@ -123,7 +123,7 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
     * If validation, compilation, or instantiation fails, returns an error with the
     * message wrapped in it.
     */
-  def instantiate(path: Path, imports: Imports[F]): F[Instance[F]] =
+  def instantiate(path: Path, imports: Imports[F])(implicit F: Effect[F]): F[Instance[F]] =
     instantiate(readPath(path), imports)
 
   /** Reads the given binary encoded module, validates, compiles, and instantiates it.
@@ -132,7 +132,7 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
     * If validation, compilation, or instantiation fails, returns an error with the
     * message wrapped in it.
     */
-  def instantiate(bytes: BitVector, imports: Imports[F]): F[Instance[F]] =
+  def instantiate(bytes: BitVector, imports: Imports[F])(implicit F: Effect[F]): F[Instance[F]] =
     compile(bytes).flatMap(instantiate(_, imports))
 
   /** Reads the given stream of binary module sections, validates, compiles, and instantiates it.
@@ -141,7 +141,7 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
     * If validation, compilation, or instantiation fails, returns an error with the
     * message wrapped in it.
     */
-  def instantiate(sections: Stream[F, Section], imports: Imports[F]): F[Instance[F]] =
+  def instantiate(sections: Stream[F, Section], imports: Imports[F])(implicit F: Effect[F]): F[Instance[F]] =
     compile(sections).flatMap(instantiate(_, imports))
 
   /** Instantiates the previously validated and compiled module.
@@ -149,7 +149,7 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration)(imp
     *
     * If instantiation fails, returns an error with the message wrapped in it.
     */
-  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] =
+  def instantiate(module: Module[F], imports: Imports[F])(implicit F: Effect[F]): F[Instance[F]] =
     instantiator.instantiate(module, imports)
 
 }

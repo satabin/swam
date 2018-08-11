@@ -80,7 +80,7 @@ private object Mem {
 
 /** Validates and compiles a module.
   */
-private[runtime] class Compiler[F[_]](engine: SwamEngine[F])(implicit F: MonadError[F, Throwable]) {
+private[runtime] class Compiler[F[_]](engine: SwamEngine[F]) {
 
   private val dataOnHeap = engine.conf.data.onHeap
 

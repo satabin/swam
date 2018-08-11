@@ -24,6 +24,8 @@ import internals.compiler._
 import scodec._
 import scodec.bits._
 
+import cats.effect._
+
 import scala.language.higherKinds
 
 import java.nio.ByteBuffer
@@ -75,7 +77,7 @@ class Module[F[_]] private[runtime] (val exports: Vector[Export],
     *
     * If instantiation fails, returns an error with the message wrapped in it.
     */
-  def newInstance(imports: Imports[F] = NoImports[F]): F[Instance[F]] =
+  def newInstance(imports: Imports[F] = NoImports[F])(implicit F: Effect[F]): F[Instance[F]] =
     engine.instantiate(this, imports)
 
   /** Access to filtered imported elements. */

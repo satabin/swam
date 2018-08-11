@@ -39,9 +39,10 @@ import scala.collection.immutable.VectorBuilder
   *  All indices and names are checked for existence and replaced by the index in
   *  the loaded module.
   */
-class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
+class Resolver[F[_]] {
 
-  private def resolveAll(instrs: Seq[Inst], ctx: ResolverContext): F[(Vector[r.Inst], ResolverContext)] =
+  private def resolveAll(instrs: Seq[Inst], ctx: ResolverContext)(
+      implicit F: MonadError[F, Throwable]): F[(Vector[r.Inst], ResolverContext)] =
     F.tailRecM((instrs, ctx, new VectorBuilder[r.Inst])) {
       case (Seq(), ctx, acc) => F.pure(Right((acc.result, ctx)))
       case (Seq(i, rest @ _*), ctx, acc) =>
@@ -52,7 +53,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
     *  The references to all declared elements are replaced by their index
     *  in the module.
     */
-  def resolve(instr: Inst, ctx: ResolverContext): F[(r.Inst, ResolverContext)] =
+  def resolve(instr: Inst, ctx: ResolverContext)(implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
     instr match {
       case i32.Const(v: Int)    => F.pure((r.i32.Const(v), ctx))
       case i32.Clz()            => F.pure((r.i32.Clz, ctx))
@@ -254,14 +255,16 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
         resolveCallIndirect(tpe, params, results, ctx, instr.pos)
     }
 
-  private def resolveIndices(idx: Seq[Index], pos: Int, vars: Vector[Def], kind: String): F[Vector[Int]] =
+  private def resolveIndices(idx: Seq[Index], pos: Int, vars: Vector[Def], kind: String)(
+      implicit F: MonadError[F, Throwable]): F[Vector[Int]] =
     F.tailRecM((idx, new VectorBuilder[Int])) {
       case (Seq(), acc) => F.pure(Right(acc.result))
       case (Seq(idx, rest @ _*), acc) =>
         resolveIndex(idx, pos, vars, kind).map(idx => Left((rest, acc += idx)))
     }
 
-  private def resolveIndex(idx: Index, pos: Int, vars: Vector[Def], kind: String): F[Int] =
+  private def resolveIndex(idx: Index, pos: Int, vars: Vector[Def], kind: String)(
+      implicit F: MonadError[F, Throwable]): F[Int] =
     idx match {
       case Left(idx) =>
         F.pure(idx)
@@ -273,24 +276,16 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
           F.raiseError(new ResolutionException(f"Unknown $kind with name $id", Seq(pos)))
     }
 
-  private def resolveBlock(label: Id,
-                           tpe: ResultType,
-                           is: Seq[Inst],
-                           endlabel: Id,
-                           ctx: ResolverContext,
-                           pos: Int): F[(r.Inst, ResolverContext)] =
+  private def resolveBlock(label: Id, tpe: ResultType, is: Seq[Inst], endlabel: Id, ctx: ResolverContext, pos: Int)(
+      implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
     checkLabels(label, endlabel, pos).flatMap { _ =>
       resolveAll(is, ctx.pushLabel(label, pos)).map {
         case (is, ctx) => (r.Block(tpe, is), ctx.popLabel)
       }
     }
 
-  private def resolveLoop(label: Id,
-                          tpe: ResultType,
-                          is: Seq[Inst],
-                          endlabel: Id,
-                          ctx: ResolverContext,
-                          pos: Int): F[(r.Inst, ResolverContext)] =
+  private def resolveLoop(label: Id, tpe: ResultType, is: Seq[Inst], endlabel: Id, ctx: ResolverContext, pos: Int)(
+      implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
     checkLabels(label, endlabel, pos).flatMap { _ =>
       resolveAll(is, ctx.pushLabel(label, pos)).map {
         case (is, ctx) => (r.Loop(tpe, is), ctx.popLabel)
@@ -304,7 +299,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                         elsei: Seq[Inst],
                         endlabel: Id,
                         ctx: ResolverContext,
-                        pos: Int): F[(r.Inst, ResolverContext)] =
+                        pos: Int)(implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
     checkLabels(label, elselabel, pos).flatMap { _ =>
       checkLabels(label, endlabel, pos).flatMap { _ =>
         resolveAll(theni, ctx.pushLabel(label, pos)).flatMap {
@@ -317,17 +312,16 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
       }
     }
 
-  private def resolveBrTable(table: Vector[Index],
-                             lbl: Index,
-                             ctx: ResolverContext,
-                             pos: Int): F[(r.Inst, ResolverContext)] =
+  private def resolveBrTable(table: Vector[Index], lbl: Index, ctx: ResolverContext, pos: Int)(
+      implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
     resolveIndices(table, pos, ctx.labels, "labels").flatMap { table =>
       resolveIndex(lbl, pos, ctx.labels, "labels").map { lbl =>
         (r.BrTable(table, lbl), ctx)
       }
     }
 
-  private def resolveCall(lbl: Index, ctx: ResolverContext, pos: Int): F[(r.Inst, ResolverContext)] =
+  private def resolveCall(lbl: Index, ctx: ResolverContext, pos: Int)(
+      implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
     resolveIndex(lbl, pos, ctx.funcs, "function").map { idx =>
       (r.Call(idx), ctx)
     }
@@ -336,7 +330,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                                   params: Vector[Param],
                                   results: Vector[ValType],
                                   ctx: ResolverContext,
-                                  pos: Int): F[(r.Inst, ResolverContext)] =
+                                  pos: Int)(implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
     resolveTypeUse(tpe, params, results, ctx, pos).flatMap {
       case (idx, ctx1) =>
         if (ctx1.locals.forall(_.id == NoId))
@@ -351,7 +345,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                              params: Vector[Param],
                              results: Vector[ValType],
                              ctx: ResolverContext,
-                             pos: Int): F[(Int, ResolverContext)] = {
+                             pos: Int)(implicit F: MonadError[F, Throwable]): F[(Int, ResolverContext)] = {
     val (nparams, tparams) = params.unzip
     if (distinctNames(nparams))
       tpe match {
@@ -381,14 +375,14 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
-  private def checkLabels(start: Id, end: Id, pos: Int): F[Unit] =
+  private def checkLabels(start: Id, end: Id, pos: Int)(implicit F: MonadError[F, Throwable]): F[Unit] =
     (start, end) match {
       case (SomeId(s), SomeId(e)) if s != e =>
         F.raiseError(new ResolutionException(f"Start and end labels must match", Seq(pos)))
       case _ => F.pure(())
     }
 
-  private def distinctNames(names: Vector[Id]): Boolean = {
+  private def distinctNames(names: Vector[Id])(implicit F: MonadError[F, Throwable]): Boolean = {
     @tailrec
     def loop(idx: Int, seen: Set[Id]): Boolean =
       if (idx >= names.size)
@@ -407,7 +401,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   /** Resolves the entire module, stopping on the first encountered error. */
-  def resolve(mod: Module, debug: Boolean = false): F[Stream[F, r.Section]] = {
+  def resolve(mod: Module, debug: Boolean = false)(implicit F: MonadError[F, Throwable]): F[Stream[F, r.Section]] = {
     // first we initialize the resolver context with declared identiiers
     // a variation from the spec is that fresh identifiers are not sytactically correct
     // (they do not start with a "$"). This ensures that they indeed are fresh
@@ -590,7 +584,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
-  private def checkWellFormed(ctx: ResolverContext): F[Unit] =
+  private def checkWellFormed(ctx: ResolverContext)(implicit F: MonadError[F, Throwable]): F[Unit] =
     for {
       _ <- checkDuplicates(ctx.types, "type")
       _ <- checkDuplicates(ctx.funcs, "function")
@@ -601,7 +595,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
       _ <- checkDuplicates(ctx.labels, "label")
     } yield ()
 
-  private def checkDuplicates(vars: Seq[Def], name: String): F[Unit] =
+  private def checkDuplicates(vars: Seq[Def], name: String)(implicit F: MonadError[F, Throwable]): F[Unit] =
     F.tailRecM((vars, Map.empty[Id, Int])) {
       case (Seq(), _)                          => F.pure(Right(()))
       case (Seq(Def(NoId, _), rest @ _*), acc) => F.pure(Left((rest, acc)))
@@ -614,7 +608,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
         }
     }
 
-  private def makeNames(ctx: ResolverContext): F[r.Section.Custom] = {
+  private def makeNames(ctx: ResolverContext)(implicit F: MonadError[F, Throwable]): F[r.Section.Custom] = {
     val moduleName = ctx.name match {
       case SomeId(n) => Some(ModuleName(n))
       case _         => None

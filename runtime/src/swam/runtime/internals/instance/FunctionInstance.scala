@@ -30,10 +30,10 @@ import scala.language.higherKinds
 private[runtime] case class FunctionInstance[F[_]](tpe: FuncType,
                                                    locals: Vector[ValType],
                                                    code: ByteBuffer,
-                                                   instance: Instance[F])(implicit F: MonadError[F, Throwable])
+                                                   instance: Instance[F])
     extends Function[F] {
 
-  def invoke(parameters: Vector[Value]): F[Option[Value]] =
+  def invoke(parameters: Vector[Value])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
     instance.interpreter.interpret(this, parameters, instance)
 
 }

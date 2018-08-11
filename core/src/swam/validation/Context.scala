@@ -33,7 +33,7 @@ case class Context[F[_]](types: Vector[FuncType],
                          labels: Vector[ResultType],
                          ret: Option[ResultType],
                          operands: List[OperandType],
-                         unreachable: Boolean)(implicit val F: MonadError[F, Throwable]) {
+                         unreachable: Boolean) {
 
   def withTypes(tps: Vector[FuncType]): Context[F] =
     copy(types = tps ++ types)
@@ -68,10 +68,10 @@ case class Context[F[_]](types: Vector[FuncType],
   def push(optypes: Vector[ValType]): Context[F] =
     optypes.foldLeft(this)(_.push(_))
 
-  def pop(expected: ValType): F[Context[F]] =
+  def pop(expected: ValType)(implicit F: MonadError[F, Throwable]): F[Context[F]] =
     pop(Val(expected))
 
-  def pop(expected: OperandType): F[Context[F]] =
+  def pop(expected: OperandType)(implicit F: MonadError[F, Throwable]): F[Context[F]] =
     pop.flatMap {
       case (actual, ctx) =>
         if (actual == Unknown)
@@ -84,7 +84,7 @@ case class Context[F[_]](types: Vector[FuncType],
           F.raiseError(new ValidationException(s"expected $expected but got $actual"))
     }
 
-  def pop(expected: Vector[ValType]): F[Context[F]] =
+  def pop(expected: Vector[ValType])(implicit F: MonadError[F, Throwable]): F[Context[F]] =
     F.tailRecM((expected.size - 1, this)) {
       case (idx, ctx) =>
         if (idx < 0)
@@ -95,7 +95,7 @@ case class Context[F[_]](types: Vector[FuncType],
           }
     }
 
-  def pop: F[(OperandType, Context[F])] =
+  def pop(implicit F: MonadError[F, Throwable]): F[(OperandType, Context[F])] =
     operands match {
       case tpe :: rest => F.pure(tpe -> copy(operands = rest))
       case Nil =>
@@ -105,11 +105,9 @@ case class Context[F[_]](types: Vector[FuncType],
           F.raiseError(new ValidationException("cannot pop from empty operand stack."))
     }
 
-  private val ok = F.pure(())
-
-  def emptyOperands: F[Unit] =
+  def emptyOperands(implicit F: MonadError[F, Throwable]): F[Unit] =
     if (operands.isEmpty)
-      ok
+      F.pure(())
     else
       F.raiseError(new ValidationException("expected empty operand stack."))
 
