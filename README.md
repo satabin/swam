@@ -2,6 +2,8 @@
 
 [WebAssembly](https://webassembly.org/) implementation in Scala.
 
+[API documentation](https://satabin.github.io/swam/api/)
+
 If you have the following `examples/logged.wat` file:
 ```wat
 (module $logged_module
