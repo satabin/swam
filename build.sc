@@ -80,6 +80,7 @@ def unidoc(ev: Evaluator[Any]) = T.command {
       .collect{ case x: ScalaModule if !x.isInstanceOf[ScalaModule#Tests] && !x.millModuleBasePath.value.segments.contains("util") => x}
       .toSeq
   val outDir = T.ctx().dest
+  val base = ev.rootModule.millModuleBasePath.value.toNIO.toString
 
   val sources = ev.evaluate(mill.util.Strict.Agg[define.Task[_]](modules.map(_.allSources): _*)).values.collect {
     case paths: Seq[PathRef] => paths
@@ -107,7 +108,14 @@ def unidoc(ev: Evaluator[Any]) = T.command {
     }
   }.flatten.distinct
 
-  val options = Seq("-d", javadocDir.toNIO.toString, "-usejavacp", "-doc-title", "Swam API Documentation", "-doc-version", swamVersion, "-skip-packages", "fastparse") ++ pluginOptions ++ scalacOptions
+  def url(v: String): String = {
+    val branch = if (v.endsWith("SNAPSHOT")) "master" else v
+    "http://github.com/satabin/swam/tree/" + branch
+  }
+
+  val urlString = s"${url(swamVersion)}/€{FILE_PATH}.scala"
+
+  val options = Seq("-d", javadocDir.toNIO.toString, "-usejavacp", "-doc-title", "Swam API Documentation", "-doc-version", swamVersion, "-skip-packages", "fastparse", "-doc-source-url", urlString, "-sourcepath", base) ++ pluginOptions ++ scalacOptions
 
   val scalaCompilerClasspath = ev.evaluate(mill.util.Strict.Agg[define.Task[_]](modules.map(_.scalaCompilerClasspath): _*)).values.collect {
     case a: Agg[_] => a.items.collect {
