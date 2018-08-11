@@ -1,9 +1,15 @@
 import mill._
+import mill.eval._
 import mill.scalalib._
 import mill.scalalib.publish._
 import mill.scalalib.scalafmt._
 
+import ammonite.ops._
+import mill.modules.Jvm.subprocess
+
 import coursier.maven.MavenRepository
+
+val swamVersion = "0.1.0-SNAPSHOT"
 
 trait SwamModule extends ScalaModule with ScalafmtModule {
 
@@ -67,4 +73,59 @@ object util extends SwamModule {
       ivy"com.github.pathikrit::better-files:3.5.0")
   }
 
+}
+
+def unidoc(ev: Evaluator[Any]) = T.command {
+  val modules = ev.rootModule.millInternal.segmentsToModules.values
+      .collect{ case x: ScalaModule if !x.isInstanceOf[ScalaModule#Tests] && !x.millModuleBasePath.value.segments.contains("util") => x}
+      .toSeq
+  val outDir = T.ctx().dest
+
+  val sources = ev.evaluate(mill.util.Strict.Agg[define.Task[_]](modules.map(_.allSources): _*)).values.collect {
+    case paths: Seq[PathRef] => paths
+  }.flatten
+
+  val javadocDir = outDir / 'javadoc
+  mkdir(javadocDir)
+
+  val files = for{
+    ref <- sources
+    if exists(ref.path)
+    p <- (if (ref.path.isDir) ls.rec(ref.path) else Seq(ref.path))
+    if (p.isFile && ((p.ext == "scala") || (p.ext == "java")))
+  } yield p.toNIO.toString
+
+  val pluginOptions = ev.evaluate(mill.util.Strict.Agg[define.Task[_]](modules.map(_.scalacPluginClasspath): _*)).values.collect {
+    case a: Agg[_] => a.items.collect {
+      case p: PathRef => s"-Xplugin:${p.path}"
+    }
+  }.flatten.distinct
+
+  val scalacOptions = ev.evaluate(mill.util.Strict.Agg[define.Task[_]](modules.map(_.scalacOptions): _*)).values.collect {
+    case l: List[_] => l.collect {
+      case s: String => s
+    }
+  }.flatten.distinct
+
+  val options = Seq("-d", javadocDir.toNIO.toString, "-usejavacp", "-doc-title", "Swam API Documentation", "-doc-version", swamVersion, "-skip-packages", "fastparse") ++ pluginOptions ++ scalacOptions
+
+  val scalaCompilerClasspath = ev.evaluate(mill.util.Strict.Agg[define.Task[_]](modules.map(_.scalaCompilerClasspath): _*)).values.collect {
+    case a: Agg[_] => a.items.collect {
+      case p: PathRef => p.path
+    }
+  }.flatten
+
+  val compileClasspath = ev.evaluate(mill.util.Strict.Agg[define.Task[_]](modules.map(_.compileClasspath): _*)).values.collect {
+    case a: Agg[_] => a.items.collect {
+      case p: PathRef => p
+    }
+  }.flatten
+
+  if (files.nonEmpty) subprocess(
+    "scala.tools.nsc.ScalaDoc",
+    scalaCompilerClasspath ++ compileClasspath.filter(_.path.ext != "pom").map(_.path),
+    mainArgs = (files ++ options).toSeq
+  )
+
+  ()
 }
