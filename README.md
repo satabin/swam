@@ -1,8 +1,15 @@
 # Swam [![Build Status](https://travis-ci.org/satabin/swam.svg?branch=master)](https://travis-ci.org/satabin/swam)
 
-[WebAssembly](https://webassembly.org/) implementation in Scala.
+[WebAssembly][1] implementation in Scala.
 
-[API documentation](https://satabin.github.io/swam/api/)
+This project defines several modules:
+ - The [`core`](core/) module is a library taht makes it possible to manipulate [text][2] and [binary][3] representations of WebAssembly modules. In particular it contains:
+   - a complete parser for text representation;
+   - a streaming parser for the binary format;
+   - a compiler from text to binary format.
+ - The [`runtime`](runtime/) module is a [non-web embedding][4] to instantiate and run WebAssembly modules.
+
+If you want more details, please refer to the [API documentation][5].
 
 If you have the following `examples/logged.wat` file:
 ```wat
@@ -54,3 +61,9 @@ $ mill -i runtime.repl -c 'import $file.examples.logged'
 ```
 
 All examples can be found under the [examples](examples/) directory.
+
+[1]: https://webassembly.org/
+[2]: https://webassembly.org/docs/text-format/
+[3]: https://webassembly.org/docs/binary-encoding/
+[4]: https://webassembly.org/docs/non-web/
+[5]: https://satabin.github.io/swam/api/
