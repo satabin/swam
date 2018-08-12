@@ -11,10 +11,12 @@ import coursier.maven.MavenRepository
 
 import $file.jmh
 import jmh.Jmh
+import $file.headers
+import headers.Headers
 
 val swamVersion = "0.1.0-SNAPSHOT"
 
-trait SwamModule extends ScalaModule with ScalafmtModule {
+trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
   def repositories = super.repositories ++ Seq(
 		MavenRepository("https://oss.sonatype.org/content/repositories/snapshots"),
