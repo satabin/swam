@@ -289,5 +289,3 @@ object Frame {
     new Frame[F](null, conf.stack.height, conf.stack.callDepth, 0, null, null, 0, instance)
 
 }
-
-class StackOverflowException[F[_]](frame: Frame[F]) extends Exception("call stack exhausted")

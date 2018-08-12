@@ -17,8 +17,24 @@
 package swam
 package runtime
 
-class RuntimeException(msg: String, inner: Throwable = null) extends SwamException(msg, inner)
+import internals.interpreter._
 
-class ConversionException(msg: String) extends RuntimeException(msg)
+import scala.language.higherKinds
 
-class MemoryException(msg: String) extends RuntimeException(msg)
+/** Raised when module compilation is not possible. */
+final class CompileException(msg: String, inner: Throwable = null) extends SwamException(msg, inner)
+
+/** Raised when a problem occurs at module instantiation or when required exports are missing. */
+final class LinkException(msg: String, inner: Throwable = null) extends SwamException(msg, inner)
+
+/** Raised when something goes wrong during module execution. */
+sealed class RuntimeException(msg: String, inner: Throwable = null) extends SwamException(msg, inner)
+
+/** Raised when a trap is raised in a module. */
+final class TrapException[F[_]](frame: Frame[F], msg: String) extends RuntimeException(msg)
+
+/** Raised when call stack overflows. */
+final class StackOverflowException[F[_]](frame: Frame[F]) extends RuntimeException("call stack exhausted")
+
+/** Raised when trying to type interface elements with invalid types. */
+final class ConversionException(msg: String) extends RuntimeException(msg)

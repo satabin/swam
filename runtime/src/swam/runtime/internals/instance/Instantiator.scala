@@ -61,7 +61,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F]) {
             if (provided.tpe <:< imp.tpe)
               F.pure(Left((idx + 1, acc :+ provided)))
             else
-              F.raiseError(new RuntimeException(s"Expected import of type ${imp.tpe} but got ${provided.tpe}"))
+              F.raiseError(new LinkException(s"Expected import of type ${imp.tpe} but got ${provided.tpe}"))
           }
         }
     }

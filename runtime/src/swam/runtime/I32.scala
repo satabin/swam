@@ -24,37 +24,37 @@ object I32 {
   def wrap(l: Long): Int =
     (l % (1l << 32)).toInt
 
-  def truncSf32(f: Float): Int =
+  def truncSf32(f: Float): CanFail[Int] =
     if (f.isNaN)
-      throw new ConversionException("invalid conversion to integer")
+      Left("invalid conversion to integer")
     else if (f >= -Int.MinValue.toFloat || f < Int.MinValue.toFloat)
-      throw new ConversionException("integer overflow")
+      Left("integer overflow")
     else
-      f.toInt
+      Right(f.toInt)
 
-  def truncUf32(f: Float): Int =
+  def truncUf32(f: Float): CanFail[Int] =
     if (f.isNaN)
-      throw new ConversionException("invalid conversion to integer")
+      Left("invalid conversion to integer")
     else if (f >= -Int.MinValue.toFloat * 2.0f || f <= -1.0f)
-      throw new ConversionException("integer overflow")
+      Left("integer overflow")
     else
-      f.toLong.toInt
+      Right(f.toLong.toInt)
 
-  def truncSf64(d: Double): Int =
+  def truncSf64(d: Double): CanFail[Int] =
     if (d.isNaN)
-      throw new ConversionException("invalid conversion to integer")
+      Left("invalid conversion to integer")
     else if (d >= -Int.MinValue.toDouble || d < Int.MinValue)
-      throw new ConversionException("integer overflow")
+      Left("integer overflow")
     else
-      d.toInt
+      Right(d.toInt)
 
-  def truncUf64(d: Double): Int =
+  def truncUf64(d: Double): CanFail[Int] =
     if (d.isNaN)
-      throw new ConversionException("invalid conversion to integer")
+      Left("invalid conversion to integer")
     else if (d >= -Int.MinValue.toDouble * 2.0d || d <= -1.0)
-      throw new ConversionException("integer overflow")
+      Left("integer overflow")
     else
-      d.toLong.toInt
+      Right(d.toLong.toInt)
 
   def reinterpret(f: Float): Int =
     JFloat.floatToRawIntBits(f)

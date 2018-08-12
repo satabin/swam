@@ -50,4 +50,6 @@ package object runtime {
   /** The size in bytes of a memory page. */
   val pageSize: Int = 65536
 
+  type CanFail[+T] = Either[String, T]
+
 }

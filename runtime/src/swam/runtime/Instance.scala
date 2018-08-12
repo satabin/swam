@@ -49,7 +49,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
     def field(name: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
       exps.get(name) match {
         case Some(f) => F.pure(f)
-        case None    => F.raiseError(new RuntimeException(s"unknown export named $name"))
+        case None    => F.raiseError(new LinkException(s"unknown export named $name"))
       }
 
     /** Returns a global for given name. */
@@ -58,9 +58,9 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
         case Some(g: Global[F]) =>
           F.pure(g)
         case Some(fld) =>
-          F.raiseError(new RuntimeException(s"cannot get a global from type ${fld.tpe}"))
+          F.raiseError(new LinkException(s"cannot get a global from type ${fld.tpe}"))
         case None =>
-          F.raiseError(new RuntimeException(s"unknown global named $name"))
+          F.raiseError(new LinkException(s"unknown global named $name"))
       }
 
     /** Returns a function for given name. */
@@ -69,9 +69,9 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
         case Some(f: Function[F]) =>
           F.pure(f)
         case Some(fld) =>
-          F.raiseError(new RuntimeException(s"cannot get a function from type ${fld.tpe}"))
+          F.raiseError(new LinkException(s"cannot get a function from type ${fld.tpe}"))
         case None =>
-          F.raiseError(new RuntimeException(s"unknown function named $name"))
+          F.raiseError(new LinkException(s"unknown function named $name"))
       }
 
     /** Returns a memory for given name. */
@@ -79,9 +79,9 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
       exps.get(name) match {
         case Some(m: Memory[F]) => F.pure(m)
         case Some(fld) =>
-          F.raiseError(new RuntimeException(s"cannot get a memory from type ${fld.tpe}"))
+          F.raiseError(new LinkException(s"cannot get a memory from type ${fld.tpe}"))
         case None =>
-          F.raiseError(new RuntimeException(s"unknown global named $name"))
+          F.raiseError(new LinkException(s"unknown global named $name"))
       }
 
     /** Returns a table for given name. */
@@ -89,9 +89,9 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
       exps.get(name) match {
         case Some(t: Table[F]) => F.pure(t)
         case Some(fld) =>
-          F.raiseError(new RuntimeException(s"cannot get a table from type ${fld.tpe}"))
+          F.raiseError(new LinkException(s"cannot get a table from type ${fld.tpe}"))
         case None =>
-          F.raiseError(new RuntimeException(s"unknown global named $name"))
+          F.raiseError(new LinkException(s"unknown global named $name"))
       }
 
     /** Access to wrapped typed versions of the exported fields. */
@@ -106,9 +106,9 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
             else
               F.raiseError(new ConversionException(s"expected type ${g.tpe.tpe} but got type ${reader.swamType}"))
           case Some(fld) =>
-            F.raiseError(new RuntimeException(s"cannot get a var from type ${fld.tpe}"))
+            F.raiseError(new LinkException(s"cannot get a var from type ${fld.tpe}"))
           case None =>
-            F.raiseError(new RuntimeException(s"unknown global named $name"))
+            F.raiseError(new LinkException(s"unknown global named $name"))
         }
 
       /** Returns a function for given name and type. */
@@ -167,7 +167,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
               interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
                 val offset = roffset.get.asInt
                 if (offset < 0 || init.size + offset > tables(0).size) {
-                  F.raiseError(new RuntimeException("Overflow in table initialization"))
+                  F.raiseError(new LinkException("Overflow in table initialization"))
                 } else {
                   val funs =
                     for (initi <- 0 until init.size)
@@ -191,7 +191,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
               interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
                 val offset = roffset.get.asInt
                 if (offset < 0 || init.capacity + offset > memories(0).size)
-                  F.raiseError(new RuntimeException("Overflow in memory initialization"))
+                  F.raiseError(new LinkException("Overflow in memory initialization"))
                 else
                   F.pure(Left((idx + 1, acc :+ (offset, init))))
               }

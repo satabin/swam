@@ -180,6 +180,7 @@ private[runtime] class Compiler[F[_]](engine: SwamEngine[F]) {
           ctx.data
         )
       }
+      .handleErrorWith(t => Stream.raiseError(new CompileException("An error occurred during compilation", t)))
 
   private def compile(insts: Vector[Inst], toplevel: Boolean): Array[Byte] = {
     val (builder, hasReturn) =

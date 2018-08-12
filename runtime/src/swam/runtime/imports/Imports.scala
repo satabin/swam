@@ -33,7 +33,7 @@ class Imports[F[_]](imports: TCMap[String, AsInstance[?, F]]) {
     imports.get(module) match {
       case Some(elem) => elem.typeclass.find(elem.value, field)
       case None =>
-        F.raiseError(new RuntimeException(s"Unknown module $module"))
+        F.raiseError(new LinkException(s"Unknown module $module"))
     }
 
   def updated[T](module: String, m: T)(implicit I: AsInstance[T, F]): Imports[F] =

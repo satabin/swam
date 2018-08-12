@@ -27,41 +27,41 @@ object I64 {
   def extendUi32(i: Int): Long =
     i & 0x00000000ffffffffl
 
-  def truncSf32(f: Float): Long =
+  def truncSf32(f: Float): CanFail[Long] =
     if (f.isNaN)
-      throw new ConversionException("invalid conversion to integer")
+      Left("invalid conversion to integer")
     else if (f >= -Long.MinValue.toFloat || f < Long.MinValue.toFloat)
-      throw new ConversionException("integer overflow")
+      Left("integer overflow")
     else
-      f.toLong
+      Right(f.toLong)
 
-  def truncUf32(f: Float): Long =
+  def truncUf32(f: Float): CanFail[Long] =
     if (f.isNaN)
-      throw new ConversionException("invalid conversion to integer")
+      Left("invalid conversion to integer")
     else if (f >= -Long.MinValue.toDouble * 2.0d || f <= -1.0d)
-      throw new ConversionException("integer overflow")
+      Left("integer overflow")
     else if (f >= -Long.MinValue.toDouble)
-      (f - 9223372036854775808.0f).toLong | Long.MinValue
+      Right((f - 9223372036854775808.0f).toLong | Long.MinValue)
     else
-      f.toLong
+      Right(f.toLong)
 
-  def truncSf64(d: Double): Long =
+  def truncSf64(d: Double): CanFail[Long] =
     if (d.isNaN)
-      throw new ConversionException("invalid conversion to integer")
+      Left("invalid conversion to integer")
     else if (d >= -Long.MinValue.toDouble || d < Long.MinValue.toDouble)
-      throw new ConversionException("integer overflow")
+      Left("integer overflow")
     else
-      d.toLong
+      Right(d.toLong)
 
-  def truncUf64(d: Double): Long =
+  def truncUf64(d: Double): CanFail[Long] =
     if (d.isNaN)
-      throw new ConversionException("invalid conversion to integer")
+      Left("invalid conversion to integer")
     else if (d >= -Long.MinValue.toDouble * 2.0d || d <= -1.0d)
-      throw new ConversionException("integer overflow")
+      Left("integer overflow")
     else if (d >= -Long.MinValue.toDouble)
-      (d - 9223372036854775808.0d).toLong | Long.MinValue
+      Right((d - 9223372036854775808.0d).toLong | Long.MinValue)
     else
-      d.toLong
+      Right(d.toLong)
 
   def reinterpret(d: Double): Long =
     JDouble.doubleToRawLongBits(d)

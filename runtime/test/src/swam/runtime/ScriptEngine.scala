@@ -129,7 +129,7 @@ class ScriptEngine {
             } yield Left((rest, ctx))
           case AssertTrap(action, failure) =>
             (execute(ctx, action) >> IO.raiseError(new Exception("A trap was expected"))).recoverWith {
-              case i: InterpreterException[_] =>
+              case i: TrapException[_] =>
                 if (i.getMessage.startsWith(failure))
                   IO.pure(Left((rest, ctx)))
                 else
@@ -137,7 +137,7 @@ class ScriptEngine {
             }
           case AssertModuleTrap(m, failure) =>
             (instantiate(ctx, m) >> IO.raiseError(new Exception("A trap was expected"))).recoverWith {
-              case e: RuntimeException =>
+              case e: TrapException[_] =>
                 if (e.getMessage.startsWith(failure))
                   IO.pure(Left((rest, ctx)))
                 else
@@ -153,18 +153,17 @@ class ScriptEngine {
             }
           case AssertMalformed(m @ BinaryModule(_, _), failure) =>
             (instantiate(ctx, m) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
-              case _: DecodingError | _: ParseError[_, _] | _: ResolutionException | _: ValidationException |
-                  _: NumberFormatException =>
+              case _: CompileException =>
                 IO.pure(Left((rest, ctx)))
             }
           case AssertInvalid(m, failure) =>
             (instantiate(ctx, m) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
-              case _: ResolutionException | _: ValidationException =>
+              case _: CompileException =>
                 IO.pure(Left((rest, ctx)))
             }
           case AssertUnlinkable(m, failure) =>
             (instantiate(ctx, m) >> IO.raiseError(new Exception("An exception was expected"))).recoverWith {
-              case _: RuntimeException =>
+              case _: LinkException =>
                 IO.pure(Left((rest, ctx)))
             }
           case _ =>

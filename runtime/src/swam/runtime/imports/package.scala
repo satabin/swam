@@ -45,7 +45,7 @@ package object imports {
           implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
         m.get(field) match {
           case Some(elem) => F.pure(elem.typeclass.view(elem.value))
-          case None       => F.raiseError(new RuntimeException(s"Unknown field $field"))
+          case None       => F.raiseError(new LinkException(s"Unknown field $field"))
         }
     }
 
