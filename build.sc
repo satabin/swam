@@ -9,6 +9,9 @@ import mill.modules.Jvm.subprocess
 
 import coursier.maven.MavenRepository
 
+import $file.jmh
+import jmh.Jmh
+
 val swamVersion = "0.1.0-SNAPSHOT"
 
 trait SwamModule extends ScalaModule with ScalafmtModule {
@@ -75,9 +78,26 @@ object util extends SwamModule {
 
 }
 
+object benchmarks extends SwamModule with Jmh {
+
+  def moduleDeps = Seq(runtime)
+
+  def millSourcePath = pwd / "benchmarks"
+
+}
+
 def unidoc(ev: Evaluator[Any]) = T.command {
+
+  def isInfra(x: ScalaModule): Boolean =
+    x match {
+      case x: ScalaModule#Tests => true
+      case _ =>
+        val segments = x.millModuleBasePath.value.segments
+        segments.contains("util") || segments.contains("benchmarks")
+    }
+
   val modules = ev.rootModule.millInternal.segmentsToModules.values
-      .collect{ case x: ScalaModule if !x.isInstanceOf[ScalaModule#Tests] && !x.millModuleBasePath.value.segments.contains("util") => x}
+      .collect{ case x: ScalaModule if !isInfra(x) => x}
       .toSeq
   val outDir = T.ctx().dest
   val base = ev.rootModule.millModuleBasePath.value.toNIO.toString
