@@ -93,6 +93,15 @@ sealed class Frame[F[_]] private (parent: Frame[F],
 
     private var lbltop = 0
 
+    def clear(): Unit = {
+      top = 0
+      itop = 0
+      ltop = 0
+      ftop = 0
+      dtop = 0
+      lbltop = 0
+    }
+
     @inline
     private def push(tpe: Byte): Unit = {
       stack(top) = tpe
