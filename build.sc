@@ -69,6 +69,12 @@ object runtime extends SwamModule {
 
 }
 
+object jsr223 extends SwamModule {
+
+  def moduleDeps = Seq(runtime)
+
+}
+
 object util extends SwamModule {
 
   object test extends SwamModule {

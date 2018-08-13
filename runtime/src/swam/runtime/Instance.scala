@@ -42,8 +42,12 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
   object exports {
 
     /** Lists the exported fields and their type. */
-    def list: Map[String, Type] =
+    def types: Map[String, Type] =
       exps.mapValues(_.tpe)
+
+    /** Returns the map of all exported fields. */
+    def all: Map[String, Interface[F, Type]] =
+      exps
 
     /** Returns a field by name. */
     def field(name: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
