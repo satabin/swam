@@ -17,6 +17,8 @@
 package swam
 package runtime
 
+import java.lang.{Float => JFloat, Double => JDouble}
+
 sealed abstract class Value(val tpe: ValType) {
   def asInt: Int = throw new ConversionException("Cannot be converted to Int")
   def asLong: Long = throw new ConversionException("Cannot be converted to Long")
@@ -43,4 +45,21 @@ object Value {
     case ValType.F32 => Float32(0.0f)
     case ValType.F64 => Float64(0.0d)
   }
+
+  private[runtime] def toRaw(v: Value): Long =
+    v match {
+      case Value.Int32(v)   => v & 0x00000000ffffffffl
+      case Value.Int64(v)   => v
+      case Value.Float32(v) => JFloat.floatToRawIntBits(v) & 0x00000000ffffffffl
+      case Value.Float64(v) => JDouble.doubleToRawLongBits(v)
+    }
+
+  private[runtime] def fromRaw(tpe: ValType, l: Long): Value =
+    tpe match {
+      case ValType.I32 => Value.Int32((l & 0x00000000ffffffffl).toInt)
+      case ValType.I64 => Value.Int64(l)
+      case ValType.F32 => Value.Float32(JFloat.intBitsToFloat((l & 0x00000000ffffffffl).toInt))
+      case ValType.F64 => Value.Float64(JDouble.longBitsToDouble(l))
+    }
+
 }

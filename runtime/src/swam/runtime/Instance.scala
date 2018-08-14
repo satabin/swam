@@ -165,7 +165,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
           module.elems(idx) match {
             case CompiledElem(coffset, init) =>
               interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
-                val offset = roffset.get.asInt
+                val offset = (roffset.get & 0x00000000ffffffffl).toInt
                 if (offset < 0 || init.size + offset > tables(0).size) {
                   F.raiseError(new LinkException("Overflow in table initialization"))
                 } else {
@@ -189,7 +189,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
           module.data(idx) match {
             case CompiledData(coffset, init) =>
               interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
-                val offset = roffset.get.asInt
+                val offset = (roffset.get & 0x00000000ffffffffl).toInt
                 if (offset < 0 || init.capacity + offset > memories(0).size)
                   F.raiseError(new LinkException("Overflow in memory initialization"))
                 else

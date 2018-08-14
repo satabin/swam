@@ -37,8 +37,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) {
 
   private val conf = engine.conf
 
-  def interpret(funcidx: Int, parameters: Vector[Value], instance: Instance[F])(
-      implicit F: MonadError[F, Throwable]): F[Option[Value]] = {
+  def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F])(
+      implicit F: MonadError[F, Throwable]): F[Option[Long]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // push the parameters in the stack
@@ -50,8 +50,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) {
     }
   }
 
-  def interpret(func: Function[F], parameters: Vector[Value], instance: Instance[F])(
-      implicit F: MonadError[F, Throwable]): F[Option[Value]] = {
+  def interpret(func: Function[F], parameters: Vector[Long], instance: Instance[F])(
+      implicit F: MonadError[F, Throwable]): F[Option[Long]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // push the parameters in the stack
@@ -64,7 +64,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) {
   }
 
   def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F])(
-      implicit F: MonadError[F, Throwable]): F[Option[Value]] = {
+      implicit F: MonadError[F, Throwable]): F[Option[Long]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // invoke the function
@@ -74,7 +74,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) {
     }
   }
 
-  private def run(frame: Frame[F])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
+  private def run(frame: Frame[F])(implicit F: MonadError[F, Throwable]): F[Option[Long]] =
     F.tailRecM(frame) { frame =>
       val opcode = frame.readByte() & 0xff
       (opcode: @switch) match {
@@ -764,12 +764,23 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) {
           F.pure(Left(frame))
         case OpCode.GetGlobal =>
           val idx = frame.readInt()
-          frame.stack.pushValue(frame.instance.globals(idx).get)
+          frame.instance.globals(idx) match {
+            case i: GlobalInstance[F] =>
+              frame.stack.pushValue(i.rawget)
+            case g =>
+              frame.stack.pushValue(Value.toRaw(g.get))
+          }
           F.pure(Left(frame))
         case OpCode.SetGlobal =>
           val idx = frame.readInt()
           val v = frame.stack.popValue()
-          frame.instance.globals(idx).set(v).map(_ => Left(frame))
+          frame.instance.globals(idx) match {
+            case i: GlobalInstance[F] =>
+              i.rawset(v)
+              F.pure(Left(frame))
+            case g =>
+              g.set(Value.fromRaw(g.tpe.tpe, v)) >> F.pure(Left(frame))
+          }
         // === memory instructions ===
         case OpCode.I32Load =>
           val offset = frame.readInt()
@@ -1209,7 +1220,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) {
             }
           }
         case opcode =>
-          F.raiseError(new TrapException(frame, "unknown opcode"))
+          F.raiseError(new TrapException(frame, s"unknown opcode 0x${opcode.toHexString}"))
       }
     }
 
@@ -1232,11 +1243,11 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) {
   }
 
   private def invoke(frame: Frame[F], f: Function[F])(
-      implicit F: MonadError[F, Throwable]): F[Either[Frame[F], Option[Value]]] =
+      implicit F: MonadError[F, Throwable]): F[Either[Frame[F], Option[Long]]] =
     f match {
       case FunctionInstance(tpe, locals, code, inst) =>
-        val ilocals = Array.ofDim[Value](locals.size + tpe.params.size)
-        val zlocals = locals.map(Value.zero(_)).toArray
+        val ilocals = Array.ofDim[Long](locals.size + tpe.params.size)
+        val zlocals = Array.fill[Long](locals.size)(0l)
         Array.copy(zlocals, 0, ilocals, tpe.params.size, zlocals.length)
         // pop the parameters from the stack
         val params = frame.stack.popValues(tpe.params.size).toArray
@@ -1248,13 +1259,17 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) {
         }
       case f =>
         // pop the parameters from the stack
-        val params = frame.stack.popValues(f.tpe.params.size)
+        val rawparams = frame.stack.popValues(f.tpe.params.size)
+        // convert parameters according to the type defined for function parameters
+        val params = f.tpe.params.zip(rawparams).map {
+          case (tpe, v) => Value.fromRaw(tpe, v)
+        }
         // invoke the host function with the parameters
         f.invoke(params.toVector).map { res =>
           if (frame.isToplevel) {
-            Right(res)
+            Right(res.map(Value.toRaw(_)))
           } else {
-            res.foreach(frame.stack.pushValue(_))
+            res.foreach(v => frame.stack.pushValue(Value.toRaw(v)))
             Left(frame)
           }
         }

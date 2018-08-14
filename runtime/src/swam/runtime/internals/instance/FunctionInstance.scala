@@ -22,6 +22,7 @@ package instance
 import interpreter._
 
 import cats._
+import cats.implicits._
 
 import java.nio.ByteBuffer
 
@@ -34,6 +35,8 @@ private[runtime] case class FunctionInstance[F[_]](tpe: FuncType,
     extends Function[F] {
 
   def invoke(parameters: Vector[Value])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
-    instance.interpreter.interpret(this, parameters, instance)
+    instance.interpreter
+      .interpret(this, parameters.map(Value.toRaw(_)), instance)
+      .map(_.map(Value.fromRaw(tpe.t.head, _)))
 
 }
