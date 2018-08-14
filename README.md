@@ -61,6 +61,10 @@ $ mill -i runtime.repl -c 'import $file.examples.logged'
 ```
 
 All examples can be found under the [examples](examples/) directory.
+For each `<name>.sc` file in the `examples` directory, you may run it with:
+```shell
+$ mill -i runtime.repl -c 'import $file.examples.<name>'
+```
 
 [1]: https://webassembly.org/
 [2]: https://webassembly.org/docs/text-format/
