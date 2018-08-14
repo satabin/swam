@@ -34,8 +34,6 @@ import cats.effect._
 
 object SpecTests extends TestSuite {
 
-  val compiler = new Compiler[IO]
-
   def run(wast: File) = {
     val positioner = new WastPositioner(wast.path)
     val script = TestScriptParser.script.parse(wast.contentAsString).get.value
