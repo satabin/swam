@@ -16,6 +16,12 @@ import headers.Headers
 
 val swamVersion = "0.1.0-SNAPSHOT"
 
+val swamLicense = License.`Apache-2.0`
+
+val swamUrl = "https://github.com/satabin/swam"
+
+val swamDeveloper = Developer("satabin", "Lucas Satabin", "https://github.com/satabin")
+
 trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
   def repositories = super.repositories ++ Seq(
@@ -31,7 +37,7 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
 }
 
-object core extends SwamModule {
+object core extends SwamModule with PublishModule {
 
   def ivyDeps = Agg(
     ivy"com.lihaoyi::fastparse:1.0.0",
@@ -42,6 +48,18 @@ object core extends SwamModule {
     ivy"org.scodec::scodec-stream:1.1.0",
     ivy"org.scodec::scodec-core:1.10.3")
 
+  def publishVersion = swamVersion
+
+  def artifactName = "swam-core"
+
+  def pomSettings = PomSettings(
+    description = "Swam core library to manipulate WebAssembly programs",
+    organization = "org.gnieh",
+    url = swamUrl,
+    licenses = Seq(swamLicense),
+    versionControl = VersionControl.github("satabin", "swam"),
+    developers = Seq(swamDeveloper))
+
   object test extends Tests with ScalafmtModule {
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest:0.6.4")
@@ -51,12 +69,24 @@ object core extends SwamModule {
 
 }
 
-object runtime extends SwamModule {
+object runtime extends SwamModule with PublishModule {
 
   def moduleDeps = Seq(core)
 
   def ivyDeps = Agg(
     ivy"com.typesafe:config:1.3.2")
+
+  def publishVersion = swamVersion
+
+  def artifactName = "swam-runtime"
+
+  def pomSettings = PomSettings(
+    description = "Swam runtime library to run WebAssembly programs",
+    organization = "org.gnieh",
+    url = swamUrl,
+    licenses = Seq(swamLicense),
+    versionControl = VersionControl.github("satabin", "swam"),
+    developers = Seq(swamDeveloper))
 
   object test extends Tests with ScalafmtModule {
     def ivyDeps = Agg(
