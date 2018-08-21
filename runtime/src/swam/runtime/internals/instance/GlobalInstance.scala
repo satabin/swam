@@ -25,21 +25,24 @@ import scala.language.higherKinds
 
 private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType) extends Global[F] {
 
-  private var value: Value = Value.zero(tpe.tpe)
+  private var raw: Long = 0l
 
   def get: Value =
-    value
+    Value.fromRaw(tpe.tpe, raw)
 
   def set(v: Value)(implicit F: MonadError[F, Throwable]) =
     if (tpe.mut == Mut.Var)
       if (v.tpe <:< tpe.tpe)
-        F.pure(value = v)
+        F.pure(raw = Value.toRaw(v))
       else
         F.raiseError(new RuntimeException(s"Expected type ${tpe.tpe} but got ${v.tpe}"))
     else
       F.raiseError(new RuntimeException("Unable to set value to immutable global"))
 
-  private[runtime] def unsafeset(v: Value)(implicit F: MonadError[F, Throwable]) =
-    F.pure(value = v)
+  private[runtime] def rawget: Long =
+    raw
+
+  private[runtime] def rawset(v: Long) =
+    raw = v
 
 }

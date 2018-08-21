@@ -82,7 +82,8 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F]) {
             case CompiledGlobal(tpe, init) =>
               interpreter.interpretInit(tpe.tpe, init, inst).flatMap { ret =>
                 val i = new GlobalInstance[F](tpe)
-                i.unsafeset(ret.get).map(_ => Left((idx + 1, acc :+ i)))
+                i.rawset(ret.get)
+                F.pure(Left((idx + 1, acc :+ i)))
               }
           }
     }

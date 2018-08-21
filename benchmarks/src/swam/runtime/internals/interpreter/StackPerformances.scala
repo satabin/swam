@@ -65,3 +65,38 @@ class StackPerformances_01_Push {
   }
 
 }
+
+@State(Scope.Thread)
+class StackPerformances_02_Pop {
+
+  var frame: Frame[Id] = null
+
+  @Setup(Level.Iteration)
+  def setupFrame(): Unit = {
+    frame =  Frame.makeToplevel[Id](null, Config)
+    frame.stack.pushInt(Random.nextInt())
+    frame.stack.pushLong(Random.nextLong())
+    frame.stack.pushFloat(Random.nextFloat())
+    frame.stack.pushDouble(Random.nextDouble())
+    frame.stack.pushLabel(Random.nextLong())
+  }
+
+  @TearDown(Level.Invocation)
+  def tearDown(): Unit = {
+    frame.stack.pushInt(Random.nextInt())
+    frame.stack.pushLong(Random.nextLong())
+    frame.stack.pushFloat(Random.nextFloat())
+    frame.stack.pushDouble(Random.nextDouble())
+    frame.stack.pushLabel(Random.nextLong())
+  }
+
+  @Benchmark @BenchmarkMode(Array(Mode.Throughput))
+  def pop(bh: Blackhole): Unit = {
+    bh.consume(frame.stack.popLabel())
+    bh.consume(frame.stack.popValue())
+    bh.consume(frame.stack.popValue())
+    bh.consume(frame.stack.popValue())
+    bh.consume(frame.stack.popValue())
+  }
+
+}

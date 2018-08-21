@@ -27,6 +27,8 @@ import scala.annotation.{tailrec, switch}
 
 import java.nio.ByteBuffer
 
+import java.lang.{Float => JFloat, Double => JDouble}
+
 import scala.language.higherKinds
 
 /** A call frame containing the local stack of operands.
@@ -36,9 +38,9 @@ sealed class Frame[F[_]] private (parent: Frame[F],
                                   callDepth: Int,
                                   depth: Int,
                                   code: ByteBuffer,
-                                  val locals: Array[Value],
-                                  val arity: Int,
-                                  val instance: Instance[F]) {
+                                  private[interpreter] val locals: Array[Long],
+                                  private[interpreter] val arity: Int,
+                                  private[interpreter] val instance: Instance[F]) {
   self =>
 
   import Frame._
@@ -77,166 +79,105 @@ sealed class Frame[F[_]] private (parent: Frame[F],
 
   private[interpreter] object stack {
 
-    private val stack = Array.ofDim[Byte](stackSize)
-    private val istack = Array.ofDim[Int](stackSize)
+    private val tstack = Array.ofDim[Byte](stackSize)
+    private val vstack = Array.ofDim[Long](stackSize)
     private val lstack = Array.ofDim[Long](stackSize)
-    private val fstack = Array.ofDim[Float](stackSize)
-    private val dstack = Array.ofDim[Double](stackSize)
 
-    private val lblstack = Array.ofDim[Long](stackSize)
-
-    private var top = 0
-    private var itop = 0
+    private var ttop = 0
+    private var vtop = 0
     private var ltop = 0
-    private var ftop = 0
-    private var dtop = 0
-
-    private var lbltop = 0
 
     def clear(): Unit = {
-      top = 0
-      itop = 0
+      ttop = 0
+      vtop = 0
       ltop = 0
-      ftop = 0
-      dtop = 0
-      lbltop = 0
     }
 
     @inline
-    private def push(tpe: Byte): Unit = {
-      stack(top) = tpe
-      top += 1
+    private def pushType(tpe: Byte): Unit = {
+      tstack(ttop) = tpe
+      ttop += 1
     }
 
     @inline
-    private def pop(): Byte = {
-      top -= 1
-      stack(top)
+    private def popType(): Byte = {
+      ttop -= 1
+      tstack(ttop)
     }
 
     @inline
-    private def peek(): Byte =
-      stack(top - 1)
-
-    @inline
-    private def check(actual: Byte, expected: Byte): Unit =
-      if (actual != expected)
-        throw new SwamException(s"Malformed stack $actual")
+    private def peekType(): Byte =
+      tstack(ttop - 1)
 
     def pushBool(b: Boolean): Unit =
       pushInt(if (b) 1 else 0)
 
-    def pushInt(i: Int): Unit = {
-      push(INT32)
-      istack(itop) = i
-      itop += 1
-    }
+    def pushInt(i: Int): Unit =
+      pushValue(i & 0x00000000ffffffffl)
 
-    def pushLong(l: Long): Unit = {
-      push(INT64)
-      lstack(ltop) = l
-      ltop += 1
-    }
+    def pushLong(l: Long): Unit =
+      pushValue(l)
 
-    def pushFloat(f: Float): Unit = {
-      push(FLOAT32)
-      fstack(ftop) = f
-      ftop += 1
-    }
+    def pushFloat(f: Float): Unit =
+      pushValue(JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl)
 
-    def pushDouble(d: Double): Unit = {
-      push(FLOAT64)
-      dstack(dtop) = d
-      dtop += 1
-    }
+    def pushDouble(d: Double): Unit =
+      pushValue(JDouble.doubleToRawLongBits(d))
 
     def popBool(): Boolean =
       popInt() != 0
 
-    def popInt(): Int = {
-      check(pop(), INT32)
-      itop -= 1
-      istack(itop)
-    }
+    def popInt(): Int =
+      (popValue() & 0x00000000ffffffffl).toInt
 
-    def peekInt(): Int = {
-      check(peek(), INT32)
-      istack(itop - 1)
-    }
+    def peekInt(): Int =
+      (peekValue() & 0x00000000ffffffffl).toInt
 
-    def popLong(): Long = {
-      check(pop(), INT64)
-      ltop -= 1
-      lstack(ltop)
-    }
+    def popLong(): Long =
+      popValue()
 
-    def peekLong(): Long = {
-      check(peek(), INT64)
-      lstack(ltop - 1)
-    }
+    def peekLong(): Long =
+      peekValue()
 
-    def popFloat(): Float = {
-      check(pop(), FLOAT32)
-      ftop -= 1
-      fstack(ftop)
-    }
+    def popFloat(): Float =
+      JFloat.intBitsToFloat(popInt())
 
-    def peekFloat(): Float = {
-      check(peek(), FLOAT32)
-      fstack(ftop - 1)
-    }
+    def peekFloat(): Float =
+      JFloat.intBitsToFloat(peekInt())
 
-    def popDouble(): Double = {
-      check(pop(), FLOAT64)
-      dtop -= 1
-      dstack(dtop)
-    }
+    def popDouble(): Double =
+      JDouble.longBitsToDouble(popLong())
 
-    def peekDouble(): Double = {
-      check(peek(), FLOAT64)
-      dstack(dtop - 1)
-    }
+    def peekDouble(): Double =
+      JDouble.longBitsToDouble(peekLong())
 
     def drop(): Unit =
-      (stack(top - 1): @switch) match {
-        case INT32   => popInt()
-        case INT64   => popLong()
-        case FLOAT32 => popFloat()
-        case FLOAT64 => popDouble()
-        case b       => throw new SwamException(s"Malformed stack $b")
-      }
+      popLong()
 
-    def popValue(): Value =
-      (stack(top - 1): @switch) match {
-        case INT32   => Value.Int32(popInt())
-        case INT64   => Value.Int64(popLong())
-        case FLOAT32 => Value.Float32(popFloat())
-        case FLOAT64 => Value.Float64(popDouble())
-        case b       => throw new SwamException(s"Malformed stack $b")
-      }
+    def popValue(): Long = {
+      val tpe = popType()
+      if(tpe == LABEL)
+        throw new Exception("Malformed stack")
+      vtop -= 1
+      vstack(vtop)
+    }
 
-    def peekValue(): Value =
-      (stack(top - 1): @switch) match {
-        case INT32   => Value.Int32(peekInt())
-        case INT64   => Value.Int64(peekLong())
-        case FLOAT32 => Value.Float32(peekFloat())
-        case FLOAT64 => Value.Float64(peekDouble())
-        case b       => throw new SwamException(s"Malformed stack $b")
-      }
+    def peekValue(): Long =
+      vstack(vtop - 1)
 
-    def popValues(): Seq[Value] = {
+    def popValues(): Seq[Long] = {
       @tailrec
-      def loop(acc: Seq[Value]): Seq[Value] =
-        if (top == 0 || stack(top - 1) > 3)
+      def loop(acc: Seq[Long]): Seq[Long] =
+        if (ttop <= 0 || tstack(ttop - 1) == LABEL)
           acc
         else
           loop(popValue() +: acc)
       loop(Seq.empty)
     }
 
-    def popValues(n: Int): Seq[Value] = {
+    def popValues(n: Int): Seq[Long] = {
       @tailrec
-      def loop(n: Int, acc: Seq[Value]): Seq[Value] =
+      def loop(n: Int, acc: Seq[Long]): Seq[Long] =
         if (n <= 0)
           acc
         else
@@ -244,33 +185,35 @@ sealed class Frame[F[_]] private (parent: Frame[F],
       loop(n, Seq.empty)
     }
 
-    def pushValue(v: Value): Unit =
-      v match {
-        case Value.Int32(i)   => pushInt(i)
-        case Value.Int64(l)   => pushLong(l)
-        case Value.Float32(f) => pushFloat(f)
-        case Value.Float64(d) => pushDouble(d)
-      }
+    def pushValue(l: Long): Unit = {
+      pushType(VALUE)
+      vstack(vtop) = l
+      vtop += 1
+    }
 
-    def pushValues(values: Seq[Value]): Unit =
+    def pushValues(values: Seq[Long]): Unit =
       values.foreach(pushValue(_))
 
     def pushLabel(lbl: Label): Unit = {
-      push(LABEL)
-      lblstack(lbltop) = lbl
-      lbltop += 1
+      pushType(LABEL)
+      vtop += 1
+      lstack(ltop) = lbl
+      ltop += 1
     }
 
     def popLabel(): Label = {
-      check(pop(), LABEL)
-      lbltop -= 1
-      lblstack(lbltop)
+      val tpe = popType()
+      if(tpe != LABEL)
+        throw new Exception("Malformed stack")
+      vtop -= 1
+      ltop -= 1
+      lstack(ltop)
     }
 
     def getLabel(idx: Int): Label =
-      lblstack(lbltop - 1 - idx)
+      lstack(ltop - 1 - idx)
 
-    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Value], instance: Instance[F])(
+    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Long], instance: Instance[F])(
         implicit F: MonadError[F, Throwable]): F[Frame[F]] =
       if (depth < callDepth)
         F.pure(new Frame[F](self, stackSize, callDepth, depth + 1, code, locals, arity, instance))
@@ -288,11 +231,8 @@ sealed class Frame[F[_]] private (parent: Frame[F],
 
 object Frame {
 
-  private final val INT32 = 0
-  private final val INT64 = 1
-  private final val FLOAT32 = 2
-  private final val FLOAT64 = 3
-  private final val LABEL = 4
+  private final val VALUE = 0
+  private final val LABEL = 1
 
   def makeToplevel[F[_]](instance: Instance[F], conf: EngineConfiguration): Frame[F] =
     new Frame[F](null, conf.stack.height, conf.stack.callDepth, 0, null, null, 0, instance)
