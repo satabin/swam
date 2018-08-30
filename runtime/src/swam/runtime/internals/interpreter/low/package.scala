@@ -16,28 +16,11 @@
 
 package swam
 package runtime
-package config
+package internals
+package interpreter
 
-import com.typesafe.config.Config
+package object low {
 
-class ConfigEngineConfiguration(wrapped: Config) extends EngineConfiguration {
-
-  def useLowLevelAsm = wrapped.getBoolean("swam.runtime.use-low-level-asm")
-
-  object stack extends StackConfiguration {
-
-    def height = wrapped.getInt("swam.runtime.stack.size")
-
-    def callDepth = wrapped.getInt("swam.runtime.stack.call-depth")
-
-  }
-
-  object data extends DataConfiguration {
-
-    def onHeap = wrapped.getBoolean("swam.runtime.data.on-heap")
-
-    def hardMax = wrapped.getInt("swam.runtime.data.hard-max")
-
-  }
+  type Asm = Int
 
 }

@@ -31,10 +31,10 @@ final class LinkException(msg: String, inner: Throwable = null) extends SwamExce
 sealed class RuntimeException(msg: String, inner: Throwable = null) extends SwamException(msg, inner)
 
 /** Raised when a trap is raised in a module. */
-final class TrapException[F[_]](frame: Frame[F], msg: String) extends RuntimeException(msg)
+final class TrapException(frame: StackFrame, msg: String) extends RuntimeException(msg)
 
 /** Raised when call stack overflows. */
-final class StackOverflowException[F[_]](frame: Frame[F]) extends RuntimeException("call stack exhausted")
+final class StackOverflowException(frame: StackFrame) extends RuntimeException("call stack exhausted")
 
 /** Raised when trying to type interface elements with invalid types. */
 final class ConversionException(msg: String) extends RuntimeException(msg)

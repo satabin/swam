@@ -18,6 +18,7 @@ package swam
 package runtime
 package internals
 package interpreter
+package high
 
 import org.openjdk.jmh.infra._
 import org.openjdk.jmh.annotations._

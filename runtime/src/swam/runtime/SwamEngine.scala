@@ -22,9 +22,11 @@ import syntax._
 import binary._
 import imports._
 import validation._
-import internals.compiler._
+import internals.compiler.{low => cl}
+import internals.compiler.{high => ch}
 import internals.instance._
-import internals.interpreter._
+import internals.interpreter.{low => il}
+import internals.interpreter.{high => ih}
 
 import cats._
 import cats.implicits._
@@ -48,9 +50,17 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration) {
 
   private[runtime] val validator = new SpecValidator[F](conf.data.hardMax)
 
-  private[runtime] val compiler = new Compiler[F](this)
+  private[runtime] val compiler =
+    if (conf.useLowLevelAsm)
+      new cl.Compiler[F](this)
+    else
+      new ch.Compiler[F](this)
 
-  private[runtime] val interpreter = new Interpreter[F](this)
+  private[runtime] val interpreter =
+    if (conf.useLowLevelAsm)
+      new il.Interpreter[F](this)
+    else
+      new ih.Interpreter[F](this)
 
   private[runtime] val instantiator = new Instantiator[F](this)
 

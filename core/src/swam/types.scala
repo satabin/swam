@@ -50,6 +50,7 @@ case class ResultType(t: Option[ValType]) extends Type {
       case (ResultType(None), ResultType(None))         => true
       case _                                            => false
     }
+  def arity = if(t.isDefined) 1 else 0
 }
 
 case class FuncType(params: Vector[ValType], t: Vector[ValType]) extends Type {

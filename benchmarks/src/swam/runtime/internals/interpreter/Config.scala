@@ -22,6 +22,7 @@ package interpreter
 import config._
 
 object Config extends EngineConfiguration {
+  val useLowLevelAsm = false
   val stack = new StackConfiguration {
     val height = 5
     val callDepth = 1

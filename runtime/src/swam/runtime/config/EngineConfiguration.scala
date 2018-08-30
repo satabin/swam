@@ -23,6 +23,9 @@ import com.typesafe.config.Config
 /** Holds all the configurable values. */
 trait EngineConfiguration {
 
+  /** Whether engine compiles and run low-level bytecode. */
+  def useLowLevelAsm: Boolean
+
   /** Configures how the stack behaves. */
   val stack: StackConfiguration
 
