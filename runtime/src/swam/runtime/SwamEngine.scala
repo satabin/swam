@@ -50,7 +50,7 @@ import java.nio.file.Path
   * You typically want to reuse the same instance for all your executions
   * over the same effectful type `F`.
   */
-class SwamEngine[F[_]] private (val conf: EngineConfiguration) {
+class SwamEngine[F[_]] private (val conf: EngineConfiguration) extends ModuleLoader[F] {
 
   private[runtime] val validator = new SpecValidator[F](conf.data.hardMax.toBytes.toInt)
 
@@ -68,13 +68,6 @@ class SwamEngine[F[_]] private (val conf: EngineConfiguration) {
 
   private[runtime] val instantiator = new Instantiator[F](this)
 
-  private def readPath(path: Path): BitVector =
-    BitVector.fromChannel(new java.io.FileInputStream(path.toFile).getChannel)
-
-  private def readStream(bytes: BitVector)(implicit F: Effect[F]) =
-    ModuleStream.decoder
-      .decode(bytes)
-
   /** Reads the `.wasm` file at the given path and validates it.
     *
     * If validation fails, returns an error with the validation message wrapped in it.
@@ -87,7 +80,7 @@ class SwamEngine[F[_]] private (val conf: EngineConfiguration) {
     * If validation fails, returns an error with the validation message wrapped in it.
     */
   def validate(bytes: BitVector)(implicit F: Effect[F]): F[Unit] =
-    validate(readStream(bytes))
+    validate(readBytes(bytes))
 
   /** Reads the given stream of binary module sections and validates it.
     *
@@ -115,7 +108,7 @@ class SwamEngine[F[_]] private (val conf: EngineConfiguration) {
     * message wrapped in it.
     */
   def compile(bytes: BitVector)(implicit F: Effect[F]): F[Module[F]] =
-    compile(readStream(bytes))
+    compile(readBytes(bytes))
 
   /** Reads the given stream of binary module sections, validates, and compiles it.
     * The returned compiled [[Module]] can then be instantiated to be run.
