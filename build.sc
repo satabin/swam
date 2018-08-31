@@ -31,7 +31,7 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
   def scalaVersion = "2.12.6"
 
-  def scalacOptions = Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification", "-Ypatmat-exhaust-depth", "40")
+  def scalacOptions = Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification")
 
   def scalacPluginIvyDeps = Agg(ivy"org.spire-math::kind-projector:0.9.7")
 
