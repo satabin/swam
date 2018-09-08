@@ -30,7 +30,7 @@ package object pretty {
     def pretty(idx: Index): Doc =
       idx match {
         case Left(i)           => space ++ int(i)
-        case Right(SomeId(n))  => space ++ str(n)
+        case Right(SomeId(n))  => space ++ str("$") ++ str(n)
         case Right(FreshId(_)) => empty
         case Right(NoId)       => empty
       }
@@ -39,7 +39,7 @@ package object pretty {
   implicit object IdPretty extends Pretty[Id] {
     def pretty(id: Id): Doc =
       id match {
-        case SomeId(n)  => space ++ str(n)
+        case SomeId(n)  => space ++ str("$") ++ str(n)
         case FreshId(_) => empty
         case NoId       => empty
       }
@@ -80,7 +80,7 @@ package object pretty {
       empty
     else
       line ++ seq(line, ps.map {
-        case (SomeId(n), tpe) => str("(param ") ++ str(n) ++ space ++ tpe.pretty ++ str(")")
+        case (SomeId(n), tpe) => str("(param ") ++ str("$") ++ str(n) ++ space ++ tpe.pretty ++ str(")")
         case (_, tpe)         => str("(param ") ++ tpe.pretty ++ str(")")
       })
 
@@ -90,30 +90,55 @@ package object pretty {
     else
       line ++ seq(line, rs.map(r => str("(result ") ++ r.pretty ++ str(")")))
 
-  implicit object ExprPretty extends Pretty[Expr] {
-    def pretty(e: Expr): Doc = {
-      @tailrec
-      def loop(e: Expr, acc: List[Doc]): Doc =
-        (e, acc) match {
-          case (Seq(), _) => seq(line, acc.reverse)
-          case (Seq(op @ Binop(_), rest @ _*), d2 :: d1 :: restd) =>
-            loop(rest, binop(op, d1, d2) :: restd)
-          case (Seq(op @ Unop(_), rest @ _*), d :: restd) =>
-            loop(rest, unop(op, d) :: restd)
-          case (Seq(op @ Testop(_), rest @ _*), d :: restd) =>
-            loop(rest, unop(op, d) :: restd)
-          case (Seq(op @ Relop(_), rest @ _*), d2 :: d1 :: restd) =>
-            loop(rest, binop(op, d1, d2) :: restd)
-          case (Seq(i @ If(_, _, _, _, _, _), rest @ _*), d :: restd) =>
-            loop(rest, foldedif(i, d) :: restd)
-          case (Seq(op, rest @ _*), _) =>
-            loop(rest, InstPretty.pretty(op) :: acc)
-        }
-      loop(e, Nil)
+  /** Simple expression rendering with not folding at all. */
+  object simple {
+    implicit object ExprPretty extends Pretty[Expr] {
+      def pretty(e: Expr): Doc =
+        seq(line, e)
     }
   }
 
-  implicit object InstPretty extends Pretty[Inst] {
+  /** Untyped folded-like pretty printing. Unary and binary operators
+    * are represented folded, as well as for if and for.
+    * However, function calls are not and this may result in some weird-looking,
+    * albeit correct, rendering.
+    */
+  object untyped {
+    implicit object ExprPretty extends Pretty[Expr] {
+      def pretty(e: Expr): Doc = {
+        @tailrec
+        def loop(e: Expr, acc: List[Doc]): Doc =
+          (e, acc) match {
+            case (Seq(), _) => seq(line, acc.reverse)
+            case (Seq(op @ Binop(_), rest @ _*), d2 :: d1 :: restd) =>
+              loop(rest, binop(op, d1, d2) :: restd)
+            case (Seq(op @ Unop(_), rest @ _*), d :: restd) =>
+              loop(rest, unop(op, d) :: restd)
+            case (Seq(op @ Testop(_), rest @ _*), d :: restd) =>
+              loop(rest, unop(op, d) :: restd)
+            case (Seq(op @ Relop(_), rest @ _*), d2 :: d1 :: restd) =>
+              loop(rest, binop(op, d1, d2) :: restd)
+            case (Seq(i @ If(_, _, _, _, _, _), rest @ _*), d :: restd) =>
+              loop(rest, foldedif(i, d) :: restd)
+            case (Seq(op @ BrIf(_), rest @ _*), d :: restd) =>
+              loop(rest, unop(op, d) :: restd)
+            case (Seq(op @ SetLocal(_), rest @ _*), d :: restd) =>
+              loop(rest, unop(op, d) :: restd)
+            case (Seq(op @ TeeLocal(_), rest @ _*), d :: restd) =>
+              loop(rest, unop(op, d) :: restd)
+            case (Seq(op @ SetGlobal(_), rest @ _*), d :: restd) =>
+              loop(rest, unop(op, d) :: restd)
+            case (Seq(op @ Store(_, _, _), rest @ _*), d :: restd) =>
+              loop(rest, unop(op, d) :: restd)
+            case (Seq(op, rest @ _*), _) =>
+              loop(rest, InstPretty.pretty(op) :: acc)
+          }
+        loop(e, Nil)
+      }
+    }
+  }
+
+  implicit def InstPretty(implicit E: Pretty[Expr]): Pretty[Inst] = new Pretty[Inst] {
     def pretty(i: Inst): Doc =
       i match {
         case i32.Const(v)               => str("i32.const ") ++ int(v)
@@ -152,14 +177,14 @@ package object pretty {
         case i32.TruncSF64()            => str("i32.trunc_s/f64")
         case i32.TruncUF64()            => str("i32.trunc_u/f64")
         case i32.ReinterpretF32()       => str("i32.reinterpret/f32")
-        case i32.Load(offset, align)    => group(nest(2, str("i32.load") ++ memarg(offset, align, 4)))
-        case i32.Store(offset, align)   => group(nest(2, str("i32.store") ++ memarg(offset, align, 4)))
-        case i32.Load8S(offset, align)  => group(nest(2, str("i32.load8_s") ++ memarg(offset, align, 1)))
-        case i32.Load8U(offset, align)  => group(nest(2, str("i32.load8_u") ++ memarg(offset, align, 1)))
-        case i32.Load16S(offset, align) => group(nest(2, str("i32.load16_s") ++ memarg(offset, align, 2)))
-        case i32.Load16U(offset, align) => group(nest(2, str("i32.load16_u") ++ memarg(offset, align, 2)))
-        case i32.Store8(offset, align)  => group(nest(2, str("i32.store8") ++ memarg(offset, align, 1)))
-        case i32.Store16(offset, align) => group(nest(2, str("i32.store16") ++ memarg(offset, align, 2)))
+        case i32.Load(align, offset)    => group(nest(2, str("i32.load") ++ memarg(align, offset, 2)))
+        case i32.Store(align, offset)   => group(nest(2, str("i32.store") ++ memarg(align, offset, 2)))
+        case i32.Load8S(align, offset)  => group(nest(2, str("i32.load8_s") ++ memarg(align, offset, 0)))
+        case i32.Load8U(align, offset)  => group(nest(2, str("i32.load8_u") ++ memarg(align, offset, 0)))
+        case i32.Load16S(align, offset) => group(nest(2, str("i32.load16_s") ++ memarg(align, offset, 1)))
+        case i32.Load16U(align, offset) => group(nest(2, str("i32.load16_u") ++ memarg(align, offset, 1)))
+        case i32.Store8(align, offset)  => group(nest(2, str("i32.store8") ++ memarg(align, offset, 0)))
+        case i32.Store16(align, offset) => group(nest(2, str("i32.store16") ++ memarg(align, offset, 1)))
 
         case i64.Const(v)               => str("i64.const ") ++ long(v)
         case i64.Clz()                  => str("i64.clz")
@@ -198,17 +223,17 @@ package object pretty {
         case i64.TruncSF64()            => str("i64.trunc_s/f64")
         case i64.TruncUF64()            => str("i64.trunc_u/f64")
         case i64.ReinterpretF64()       => str("i64.reinterpret/f64")
-        case i64.Load(offset, align)    => group(nest(2, str("i64.load") ++ memarg(offset, align, 8)))
-        case i64.Store(offset, align)   => group(nest(2, str("i64.store") ++ memarg(offset, align, 8)))
-        case i64.Load8S(offset, align)  => group(nest(2, str("i64.load8_s") ++ memarg(offset, align, 1)))
-        case i64.Load8U(offset, align)  => group(nest(2, str("i64.load8_u") ++ memarg(offset, align, 1)))
-        case i64.Load16S(offset, align) => group(nest(2, str("i64.load16_s") ++ memarg(offset, align, 2)))
-        case i64.Load16U(offset, align) => group(nest(2, str("i64.load16_u") ++ memarg(offset, align, 2)))
-        case i64.Load32S(offset, align) => group(nest(2, str("i64.load32_s") ++ memarg(offset, align, 4)))
-        case i64.Load32U(offset, align) => group(nest(2, str("i64.load32_u") ++ memarg(offset, align, 4)))
-        case i64.Store8(offset, align)  => group(nest(2, str("i64.store8") ++ memarg(offset, align, 1)))
-        case i64.Store16(offset, align) => group(nest(2, str("i64.store16") ++ memarg(offset, align, 2)))
-        case i64.Store32(offset, align) => group(nest(2, str("i64.store32") ++ memarg(offset, align, 4)))
+        case i64.Load(align, offset)    => group(nest(2, str("i64.load") ++ memarg(align, offset, 4)))
+        case i64.Store(align, offset)   => group(nest(2, str("i64.store") ++ memarg(align, offset, 4)))
+        case i64.Load8S(align, offset)  => group(nest(2, str("i64.load8_s") ++ memarg(align, offset, 0)))
+        case i64.Load8U(align, offset)  => group(nest(2, str("i64.load8_u") ++ memarg(align, offset, 0)))
+        case i64.Load16S(align, offset) => group(nest(2, str("i64.load16_s") ++ memarg(align, offset, 1)))
+        case i64.Load16U(align, offset) => group(nest(2, str("i64.load16_u") ++ memarg(align, offset, 1)))
+        case i64.Load32S(align, offset) => group(nest(2, str("i64.load32_s") ++ memarg(align, offset, 2)))
+        case i64.Load32U(align, offset) => group(nest(2, str("i64.load32_u") ++ memarg(align, offset, 2)))
+        case i64.Store8(align, offset)  => group(nest(2, str("i64.store8") ++ memarg(align, offset, 0)))
+        case i64.Store16(align, offset) => group(nest(2, str("i64.store16") ++ memarg(align, offset, 1)))
+        case i64.Store32(align, offset) => group(nest(2, str("i64.store32") ++ memarg(align, offset, 2)))
 
         case f32.Const(v)             => str("f32.const ") ++ float(v)
         case f32.Abs()                => str("f32.abs")
@@ -237,8 +262,8 @@ package object pretty {
         case f32.ConvertSI64()        => str("f32.convert_s/i64")
         case f32.ConvertUI64()        => str("f32.convert_u/i64")
         case f32.ReinterpretI32()     => str("f32.reinterpret/i32")
-        case f32.Load(offset, align)  => group(nest(2, str("f32.load") ++ memarg(offset, align, 4)))
-        case f32.Store(offset, align) => group(nest(2, str("f32.store") ++ memarg(offset, align, 4)))
+        case f32.Load(align, offset)  => group(nest(2, str("f32.load") ++ memarg(align, offset, 2)))
+        case f32.Store(align, offset) => group(nest(2, str("f32.store") ++ memarg(align, offset, 2)))
 
         case f64.Const(v)             => str("f64.const ") ++ double(v)
         case f64.Abs()                => str("f64.abs")
@@ -267,8 +292,8 @@ package object pretty {
         case f64.ConvertSI64()        => str("f64.convert_s/i64")
         case f64.ConvertUI64()        => str("f64.convert_u/i64")
         case f64.ReinterpretI64()     => str("f64.reinterpret/i64")
-        case f64.Load(offset, align)  => group(nest(2, str("f64.load") ++ memarg(offset, align, 8)))
-        case f64.Store(offset, align) => group(nest(2, str("f64.store") ++ memarg(offset, align, 8)))
+        case f64.Load(align, offset)  => group(nest(2, str("f64.load") ++ memarg(align, offset, 4)))
+        case f64.Store(align, offset) => group(nest(2, str("f64.store") ++ memarg(align, offset, 4)))
 
         case Drop()   => str("drop")
         case Select() => str("select")
@@ -324,24 +349,24 @@ package object pretty {
   private def double(d: Double): Doc =
     str(d.toString)
 
-  private def memarg(offset: Int, align: Int, default: Int): Doc =
+  private def memarg(align: Int, offset: Int, default: Int): Doc =
     (offset, align) match {
       case (0, `default`) => empty
-      case (0, _)         => line ++ str("align=") ++ int(align)
+      case (0, _)         => line ++ str("align=") ++ int(1 << align)
       case (_, `default`) => line ++ str("offset=") ++ int(offset)
-      case (_, _)         => group(line ++ str("offset=") ++ int(offset) ++ line ++ str("align=") ++ int(align))
+      case (_, _)         => group(line ++ str("offset=") ++ int(offset) ++ line ++ str("align=") ++ int(1 << align))
     }
 
   @inline
-  private def inst(i: Inst): Doc = i.pretty
+  private def inst(i: Inst)(implicit E: Pretty[Expr]): Doc = i.pretty
 
-  private def binop(op: Inst, d1: Doc, d2: Doc): Doc =
-    group(nest(2, str("(") ++ op.pretty ++ line ++ fold(d1, empty) ++ line ++ fold(d2, empty)))
+  def binop(op: Inst, d1: Doc, d2: Doc)(implicit E: Pretty[Expr]): Doc =
+    group(nest(2, str("(") ++ op.pretty ++ line ++ fold(d1, empty) ++ line ++ fold(d2, empty) ++ str(")")))
 
-  private def unop(op: Inst, d: Doc): Doc =
+  def unop(op: Inst, d: Doc)(implicit E: Pretty[Expr]): Doc =
     group(nest(2, str("(") ++ op.pretty ++ line ++ fold(d, empty) ++ str(")")))
 
-  private def fold(fst: Doc, rest: Doc): Doc =
+  def fold(fst: Doc, rest: Doc): Doc =
     if (fst == empty)
       rest
     else if (rest == empty)
@@ -349,17 +374,17 @@ package object pretty {
     else
       group(nest(2, str("(") ++ fst ++ line ++ rest ++ str(")")))
 
-  private def foldedblock(b: Block): Doc = {
+  def foldedblock(b: Block)(implicit E: Pretty[Expr]): Doc = {
     val Block(lbl, tpe, instr, endlbl) = b
     group(nest(2, str("(block") ++ lbl.pretty ++ tpe.pretty ++ line ++ instr.pretty) ++ str(")"))
   }
 
-  private def foldedloop(l: Loop): Doc = {
+  def foldedloop(l: Loop)(implicit E: Pretty[Expr]): Doc = {
     val Loop(lbl, tpe, instr, endlbl) = l
     group(nest(2, str("(loop") ++ lbl.pretty ++ tpe.pretty ++ line ++ instr.pretty) ++ str(")"))
   }
 
-  private def foldedif(i: If, cond: Doc): Doc = {
+  def foldedif(i: If, cond: Doc)(implicit E: Pretty[Expr]): Doc = {
     val If(lbl, tpe, t, elselbl, e, endlbl) = i
     group(
       nest(2, str("(if") ++ lbl.pretty ++ tpe.pretty ++ line ++ cond) ++ line ++ group(nest(
@@ -431,7 +456,7 @@ package object pretty {
       str((b & 0xff).toHexString)
   }
 
-  implicit object FieldPretty extends Pretty[Field] {
+  implicit def FieldPretty(implicit E: Pretty[Expr]): Pretty[Field] = new Pretty[Field] {
     def pretty(f: Field): Doc =
       f match {
         case Type(id, pnames, tpe) =>
@@ -440,7 +465,7 @@ package object pretty {
                  str("(type") ++ id.pretty ++ line ++ group(
                    nest(2, str("(func")) ++ functype(pnames.zip(tpe.params), tpe.t) ++ str(")"))) ++ str(")"))
         case Import(mod, name, desc) =>
-          group(nest(2, str("(import") ++ line ++ str(mod) ++ line ++ str(name) ++ desc.pretty) ++ str(")"))
+          group(nest(2, str("(import") ++ line ++ str("\"") ++ str(mod) ++ str("\"") ++ line ++ str("\"") ++ str(name) ++ str("\"") ++ line ++ desc.pretty) ++ str(")"))
         case Function(id, tu, Seq(), is) =>
           group(nest(2, str("(func") ++ id.pretty ++ tu.pretty ++ line ++ is.pretty) ++ str(")"))
         case Function(id, tu, locals, is) =>
@@ -454,7 +479,7 @@ package object pretty {
         case Global(id, tpe, init) =>
           group(nest(2, str("(global") ++ id.pretty ++ tpe.pretty ++ line ++ init.pretty) ++ str(")"))
         case Export(name, desc) =>
-          group(nest(2, str("(export") ++ line ++ str(name) ++ line ++ desc.pretty) ++ str(")"))
+          group(nest(2, str("(export") ++ line ++ str("\"") ++ str(name) ++ str("\"") ++ line ++ desc.pretty) ++ str(")"))
         case StartFunc(idx) =>
           str("(start ") ++ idx.pretty ++ str(")")
         case Elem(table, offset, init) =>
@@ -471,7 +496,7 @@ package object pretty {
       }
   }
 
-  implicit object ModulePretty extends Pretty[Module] {
+  implicit def ModulePretty(implicit E: Pretty[Expr]): Pretty[Module] = new Pretty[Module] {
     def pretty(m: Module): Doc =
       group(nest(2, str("(module") ++ m.id.pretty ++ line ++ seq(line, m.fields)) ++ str(")"))
   }
