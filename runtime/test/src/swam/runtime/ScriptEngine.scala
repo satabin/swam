@@ -129,7 +129,7 @@ class ScriptEngine {
             } yield Left((rest, ctx))
           case AssertTrap(action, failure) =>
             (execute(ctx, action) >> IO.raiseError(new Exception("A trap was expected"))).recoverWith {
-              case i: TrapException[_] =>
+              case i: TrapException =>
                 if (i.getMessage.startsWith(failure))
                   IO.pure(Left((rest, ctx)))
                 else
@@ -137,7 +137,7 @@ class ScriptEngine {
             }
           case AssertModuleTrap(m, failure) =>
             (instantiate(ctx, m) >> IO.raiseError(new Exception("A trap was expected"))).recoverWith {
-              case e: TrapException[_] =>
+              case e: TrapException =>
                 if (e.getMessage.startsWith(failure))
                   IO.pure(Left((rest, ctx)))
                 else
@@ -145,7 +145,7 @@ class ScriptEngine {
             }
           case AssertExhaustion(action, failure) =>
             (execute(ctx, action) >> IO.raiseError(new Exception("A trap was expected"))).recoverWith {
-              case i: StackOverflowException[_] =>
+              case i: StackOverflowException =>
                 if (i.getMessage.startsWith(failure))
                   IO.pure(Left((rest, ctx)))
                 else

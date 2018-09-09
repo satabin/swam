@@ -18,6 +18,7 @@ package swam
 package runtime
 package internals
 package interpreter
+package high
 
 import config._
 
@@ -40,7 +41,8 @@ sealed class Frame[F[_]] private (parent: Frame[F],
                                   code: ByteBuffer,
                                   private[interpreter] val locals: Array[Long],
                                   private[interpreter] val arity: Int,
-                                  private[interpreter] val instance: Instance[F]) {
+                                  private[interpreter] val instance: Instance[F])
+    extends StackFrame {
   self =>
 
   import Frame._
@@ -156,7 +158,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
 
     def popValue(): Long = {
       val tpe = popType()
-      if(tpe == LABEL)
+      if (tpe == LABEL)
         throw new Exception("Malformed stack")
       vtop -= 1
       vstack(vtop)
@@ -203,7 +205,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
 
     def popLabel(): Label = {
       val tpe = popType()
-      if(tpe != LABEL)
+      if (tpe != LABEL)
         throw new Exception("Malformed stack")
       vtop -= 1
       ltop -= 1
