@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>Swam API Documentation 0.1.0-SNAPSHOT - swam.runtime.MemoryException</title>
-          <meta name="description" content="Swam API Documentation 0.1.0 - SNAPSHOT - swam.runtime.MemoryException" />
-          <meta name="keywords" content="Swam API Documentation 0.1.0 SNAPSHOT swam.runtime.MemoryException" />
+          <title>Swam API Documentation 0.1.0-SNAPSHOT - swam.runtime.StackOverflowException</title>
+          <meta name="description" content="Swam API Documentation 0.1.0 - SNAPSHOT - swam.runtime.StackOverflowException" />
+          <meta name="keywords" content="Swam API Documentation 0.1.0 SNAPSHOT swam.runtime.StackOverflowException" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -206,6 +206,10 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="swam.runtime">runtime</a></dd></dl></div>
     </li><li class="current-entities indented2">
                         <span class="separator"></span>
+                        <a class="class" href="CompileException.html" title="Raised when module compilation is not possible."></a>
+                        <a href="CompileException.html" title="Raised when module compilation is not possible.">CompileException</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
                         <a class="class" href="CompiledData.html" title=""></a>
                         <a href="CompiledData.html" title="">CompiledData</a>
                       </li><li class="current-entities indented2">
@@ -214,8 +218,8 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="CompiledElem.html" title="">CompiledElem</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="ConversionException.html" title=""></a>
-                        <a href="ConversionException.html" title="">ConversionException</a>
+                        <a class="class" href="ConversionException.html" title="Raised when trying to type interface elements with invalid types."></a>
+                        <a href="ConversionException.html" title="Raised when trying to type interface elements with invalid types.">ConversionException</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="Custom.html" title=""></a>
@@ -262,28 +266,40 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="Interface.html" title="All elements that are part of the interface of an instance must implement this interface.">Interface</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="trait" href="Memory.html" title="Memories must implement this interface to be used by Swam."></a>
-                        <a href="Memory.html" title="Memories must implement this interface to be used by Swam.">Memory</a>
+                        <a class="class" href="LinkException.html" title="Raised when a problem occurs at module instantiation or when required exports are missing."></a>
+                        <a href="LinkException.html" title="Raised when a problem occurs at module instantiation or when required exports are missing.">LinkException</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="" title=""></a>
-                        <a href="" title="">MemoryException</a>
+                        <a class="trait" href="Memory.html" title="Memories must implement this interface to be used by Swam."></a>
+                        <a href="Memory.html" title="Memories must implement this interface to be used by Swam.">Memory</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="Module.html" title="The runtime representation of a validated and compiled module."></a>
                         <a href="Module.html" title="The runtime representation of a validated and compiled module.">Module</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="RuntimeException.html" title=""></a>
-                        <a href="RuntimeException.html" title="">RuntimeException</a>
+                        <a class="class" href="RuntimeException.html" title="Raised when something goes wrong during module execution."></a>
+                        <a href="RuntimeException.html" title="Raised when something goes wrong during module execution.">RuntimeException</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
+                        <a class="trait" href="StackFrame.html" title="Interface of a stack frame, making it possible to create a call stack on trap for reporting purpose."></a>
+                        <a href="StackFrame.html" title="Interface of a stack frame, making it possible to create a call stack on trap for reporting purpose.">StackFrame</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="" title="Raised when call stack overflows."></a>
+                        <a href="" title="Raised when call stack overflows.">StackOverflowException</a>
+                      </li><li class="current-entities indented2">
+                        <a class="object" href="SwamEngine$.html" title=""></a>
                         <a class="class" href="SwamEngine.html" title="This is the engine used to compile, instantiate and run modules."></a>
                         <a href="SwamEngine.html" title="This is the engine used to compile, instantiate and run modules.">SwamEngine</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="trait" href="Table.html" title="Tables must implement this interface to be used by Swam."></a>
                         <a href="Table.html" title="Tables must implement this interface to be used by Swam.">Table</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="TrapException.html" title="Raised when a trap is raised in a module."></a>
+                        <a href="TrapException.html" title="Raised when a trap is raised in a module.">TrapException</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Value$.html" title=""></a>
                         <a class="class" href="Value.html" title=""></a>
@@ -297,8 +313,8 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       <div id="definition">
         <div class="big-circle class">c</div>
         <p id="owner"><a href="../index.html" class="extype" name="swam">swam</a>.<a href="index.html" class="extype" name="swam.runtime">runtime</a></p>
-        <h1>MemoryException<span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html" title="Permalink">
+        <h1>StackOverflowException<span class="permalink">
+      <a href="../../swam/runtime/StackOverflowException.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
@@ -307,16 +323,16 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
 
       <h4 id="signature" class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">MemoryException</span><span class="result"> extends <a href="RuntimeException.html" class="extype" name="swam.runtime.RuntimeException">RuntimeException</a></span>
+        <span class="name">StackOverflowException</span><span class="result"> extends <a href="RuntimeException.html" class="extype" name="swam.runtime.RuntimeException">RuntimeException</a></span>
       </span>
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="http://github.com/satabin/swam/tree/master//runtime/src/swam/runtime/exceptions.scala#L1" target="_blank">exceptions.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Raised when call stack overflows.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="http://github.com/satabin/swam/tree/master//runtime/src/swam/runtime/exceptions.scala#L1" target="_blank">exceptions.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -346,7 +362,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="swam.runtime.MemoryException"><span>MemoryException</span></li><li class="in" name="swam.runtime.RuntimeException"><span>RuntimeException</span></li><li class="in" name="swam.SwamException"><span>SwamException</span></li><li class="in" name="java.lang.Exception"><span>Exception</span></li><li class="in" name="java.lang.Throwable"><span>Throwable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="swam.runtime.StackOverflowException"><span>StackOverflowException</span></li><li class="in" name="swam.runtime.RuntimeException"><span>RuntimeException</span></li><li class="in" name="swam.SwamException"><span>SwamException</span></li><li class="in" name="java.lang.Exception"><span>Exception</span></li><li class="in" name="java.lang.Throwable"><span>Throwable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -366,10 +382,10 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="swam.runtime.MemoryException#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(msg:String):swam.runtime.MemoryException"></a><a id="&lt;init&gt;:MemoryException"></a>
+              <ol><li name="swam.runtime.StackOverflowException#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(frame:swam.runtime.StackFrame):swam.runtime.StackOverflowException"></a><a id="&lt;init&gt;:StackOverflowException"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#&lt;init&gt;(msg:String):swam.runtime.MemoryException" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#&lt;init&gt;(frame:swam.runtime.StackFrame):swam.runtime.StackOverflowException" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -378,7 +394,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">MemoryException</span><span class="params">(<span name="msg">msg: <span class="extype" name="scala.Predef.String">String</span></span>)</span>
+        <span class="name">StackOverflowException</span><span class="params">(<span name="frame">frame: <a href="StackFrame.html" class="extype" name="swam.runtime.StackFrame">StackFrame</a></span>)</span>
       </span>
       
       
@@ -395,7 +411,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                 <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#!=(x$1:Any):Boolean" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#!=(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -411,7 +427,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html###():Int" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html###():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -427,7 +443,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#==(x$1:Any):Boolean" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#==(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -443,7 +459,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#addSuppressed" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="addSuppressed(x$1:Throwable):Unit"></a><a id="addSuppressed(Throwable):Unit"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#addSuppressed(x$1:Throwable):Unit" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#addSuppressed(x$1:Throwable):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -459,7 +475,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#asInstanceOf[T0]:T0" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#asInstanceOf[T0]:T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -475,7 +491,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#clone():Object" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#clone():Object" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -499,7 +515,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#eq(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -515,7 +531,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#equals" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a><a id="equals(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#equals(x$1:Any):Boolean" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#equals(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -531,7 +547,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#fillInStackTrace" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="fillInStackTrace():Throwable"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#fillInStackTrace():Throwable" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#fillInStackTrace():Throwable" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -547,7 +563,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#finalize():Unit" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#finalize():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -569,7 +585,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#getCause" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getCause():Throwable"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#getCause():Throwable" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#getCause():Throwable" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -585,7 +601,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#getClass():Class[_]" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#getClass():Class[_]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -604,7 +620,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#getLocalizedMessage" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getLocalizedMessage():String"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#getLocalizedMessage():String" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#getLocalizedMessage():String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -620,7 +636,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#getMessage" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getMessage():String"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#getMessage():String" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#getMessage():String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -636,7 +652,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#getStackTrace" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getStackTrace():Array[StackTraceElement]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#getStackTrace():Array[StackTraceElement]" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#getStackTrace():Array[StackTraceElement]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -652,7 +668,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#getSuppressed" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getSuppressed():Array[Throwable]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#getSuppressed():Array[Throwable]" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#getSuppressed():Array[Throwable]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -668,7 +684,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#hashCode():Int" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#hashCode():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -687,7 +703,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#initCause" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="initCause(x$1:Throwable):Throwable"></a><a id="initCause(Throwable):Throwable"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#initCause(x$1:Throwable):Throwable" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#initCause(x$1:Throwable):Throwable" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -703,7 +719,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#isInstanceOf[T0]:Boolean" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#isInstanceOf[T0]:Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -719,7 +735,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#ne(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -735,7 +751,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#notify():Unit" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#notify():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -754,7 +770,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#notifyAll():Unit" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#notifyAll():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -773,7 +789,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#printStackTrace" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="printStackTrace(x$1:java.io.PrintWriter):Unit"></a><a id="printStackTrace(PrintWriter):Unit"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#printStackTrace(x$1:java.io.PrintWriter):Unit" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#printStackTrace(x$1:java.io.PrintWriter):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -789,7 +805,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#printStackTrace" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="printStackTrace(x$1:java.io.PrintStream):Unit"></a><a id="printStackTrace(PrintStream):Unit"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#printStackTrace(x$1:java.io.PrintStream):Unit" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#printStackTrace(x$1:java.io.PrintStream):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -805,7 +821,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#printStackTrace" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="printStackTrace():Unit"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#printStackTrace():Unit" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#printStackTrace():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -821,7 +837,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#setStackTrace" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="setStackTrace(x$1:Array[StackTraceElement]):Unit"></a><a id="setStackTrace(Array[StackTraceElement]):Unit"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#setStackTrace(x$1:Array[StackTraceElement]):Unit" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#setStackTrace(x$1:Array[StackTraceElement]):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -837,7 +853,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -853,7 +869,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="java.lang.Throwable#toString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#toString():String" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#toString():String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -869,7 +885,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#wait():Unit" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#wait():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -891,7 +907,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -913,7 +929,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/MemoryException.html#wait(x$1:Long):Unit" title="Permalink">
+      <a href="../../swam/runtime/StackOverflowException.html#wait(x$1:Long):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>

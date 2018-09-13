@@ -142,19 +142,15 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam.runtime">runtime</a></dd></dl></div>
     </li><li class="current-entities indented3">
                         <span class="separator"></span>
-                        <a class="class" href="ConfigEngineConfiguration.html" title=""></a>
-                        <a href="ConfigEngineConfiguration.html" title="">ConfigEngineConfiguration</a>
-                      </li><li class="current-entities indented3">
-                        <span class="separator"></span>
-                        <a class="trait" href="DataConfiguration.html" title=""></a>
+                        <a class="class" href="DataConfiguration.html" title=""></a>
                         <a href="DataConfiguration.html" title="">DataConfiguration</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
-                        <a class="trait" href="EngineConfiguration.html" title="Holds all the configurable values."></a>
+                        <a class="class" href="EngineConfiguration.html" title="Holds all the configurable values."></a>
                         <a href="EngineConfiguration.html" title="Holds all the configurable values.">EngineConfiguration</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
-                        <a class="trait" href="StackConfiguration.html" title=""></a>
+                        <a class="class" href="StackConfiguration.html" title=""></a>
                         <a href="StackConfiguration.html" title="">StackConfiguration</a>
                       </li><li name="swam.runtime.exports" visbl="pub" class="indented3 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="exports"></a><a id="exports:exports"></a>
@@ -300,67 +296,52 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="swam.runtime.config.ConfigEngineConfiguration" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="ConfigEngineConfigurationextendsEngineConfiguration"></a><a id="ConfigEngineConfiguration:ConfigEngineConfiguration"></a>
+              <ol><li name="swam.runtime.config.DataConfiguration" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DataConfigurationextendsProductwithSerializable"></a><a id="DataConfiguration:DataConfiguration"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/config/index.html#ConfigEngineConfigurationextendsEngineConfiguration" title="Permalink">
+      <a href="../../../swam/runtime/config/index.html#DataConfigurationextendsProductwithSerializable" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">class</span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="ConfigEngineConfiguration.html"><span class="name">ConfigEngineConfiguration</span></a><span class="result"> extends <a href="EngineConfiguration.html" class="extype" name="swam.runtime.config.EngineConfiguration">EngineConfiguration</a></span>
+        <a title="" href="DataConfiguration.html"><span class="name">DataConfiguration</span></a><span class="params">(<span name="onHeap">onHeap: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="hardMax">hardMax: <span class="extype" name="squants.information.Information">Information</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       
       
-    </li><li name="swam.runtime.config.DataConfiguration" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="DataConfigurationextendsAnyRef"></a><a id="DataConfiguration:DataConfiguration"></a>
+    </li><li name="swam.runtime.config.EngineConfiguration" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="EngineConfigurationextendsProductwithSerializable"></a><a id="EngineConfiguration:EngineConfiguration"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/config/index.html#DataConfigurationextendsAnyRef" title="Permalink">
+      <a href="../../../swam/runtime/config/index.html#EngineConfigurationextendsProductwithSerializable" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">trait</span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="" href="DataConfiguration.html"><span class="name">DataConfiguration</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+        <a title="Holds all the configurable values." href="EngineConfiguration.html"><span class="name">EngineConfiguration</span></a><span class="params">(<span name="useLowLevelAsm">useLowLevelAsm: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="stack">stack: <a href="StackConfiguration.html" class="extype" name="swam.runtime.config.StackConfiguration">StackConfiguration</a></span>, <span name="data">data: <a href="DataConfiguration.html" class="extype" name="swam.runtime.config.DataConfiguration">DataConfiguration</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       
-      
-    </li><li name="swam.runtime.config.EngineConfiguration" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="EngineConfigurationextendsAnyRef"></a><a id="EngineConfiguration:EngineConfiguration"></a>
+      <p class="shortcomment cmt">Holds all the configurable values.</p><div class="fullcomment"><div class="comment cmt"><p>Holds all the configurable values.
+</p></div><dl class="paramcmts block"><dt class="param">useLowLevelAsm</dt><dd class="cmt"><p>Whether engine compiles and run low-level bytecode.</p></dd><dt class="param">stack</dt><dd class="cmt"><p>Configures how the stack behaves.</p></dd><dt class="param">data</dt><dd class="cmt"><p>Configures how the data part behaves.</p></dd></dl></div>
+    </li><li name="swam.runtime.config.StackConfiguration" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="StackConfigurationextendsProductwithSerializable"></a><a id="StackConfiguration:StackConfiguration"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/config/index.html#EngineConfigurationextendsAnyRef" title="Permalink">
+      <a href="../../../swam/runtime/config/index.html#StackConfigurationextendsProductwithSerializable" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">trait</span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="Holds all the configurable values." href="EngineConfiguration.html"><span class="name">EngineConfiguration</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
-      </span>
-      
-      <p class="shortcomment cmt">Holds all the configurable values.</p>
-    </li><li name="swam.runtime.config.StackConfiguration" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="StackConfigurationextendsAnyRef"></a><a id="StackConfiguration:StackConfiguration"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/config/index.html#StackConfigurationextendsAnyRef" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="StackConfiguration.html"><span class="name">StackConfiguration</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+        <a title="" href="StackConfiguration.html"><span class="name">StackConfiguration</span></a><span class="params">(<span name="size">size: <span class="extype" name="squants.information.Information">Information</span></span>, <span name="callDepth">callDepth: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       
       
@@ -373,9 +354,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               <h3>Value Members</h3>
               <ol>
                 <li name="swam.runtime.config#defaultConfiguration" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="defaultConfiguration:swam.runtime.config.ConfigEngineConfiguration"></a><a id="defaultConfiguration:ConfigEngineConfiguration"></a>
+      <a id="defaultConfiguration:Either[pureconfig.error.ConfigReaderFailures,swam.runtime.config.EngineConfiguration]"></a><a id="defaultConfiguration:Either[ConfigReaderFailures,EngineConfiguration]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/config/index.html#defaultConfiguration:swam.runtime.config.ConfigEngineConfiguration" title="Permalink">
+      <a href="../../../swam/runtime/config/index.html#defaultConfiguration:Either[pureconfig.error.ConfigReaderFailures,swam.runtime.config.EngineConfiguration]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -384,7 +365,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">defaultConfiguration</span><span class="result">: <a href="ConfigEngineConfiguration.html" class="extype" name="swam.runtime.config.ConfigEngineConfiguration">ConfigEngineConfiguration</a></span>
+        <span class="name">defaultConfiguration</span><span class="result">: <span class="extype" name="scala.Either">Either</span>[<span class="extype" name="pureconfig.error.ConfigReaderFailures">ConfigReaderFailures</span>, <a href="EngineConfiguration.html" class="extype" name="swam.runtime.config.EngineConfiguration">EngineConfiguration</a>]</span>
       </span>
       
       

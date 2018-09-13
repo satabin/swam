@@ -222,6 +222,10 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       
     </li><li class="current-entities indented2">
                         <span class="separator"></span>
+                        <a class="class" href="CompileException.html" title="Raised when module compilation is not possible."></a>
+                        <a href="CompileException.html" title="Raised when module compilation is not possible.">CompileException</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
                         <a class="class" href="CompiledData.html" title=""></a>
                         <a href="CompiledData.html" title="">CompiledData</a>
                       </li><li class="current-entities indented2">
@@ -230,8 +234,8 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="CompiledElem.html" title="">CompiledElem</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="ConversionException.html" title=""></a>
-                        <a href="ConversionException.html" title="">ConversionException</a>
+                        <a class="class" href="ConversionException.html" title="Raised when trying to type interface elements with invalid types."></a>
+                        <a href="ConversionException.html" title="Raised when trying to type interface elements with invalid types.">ConversionException</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="Custom.html" title=""></a>
@@ -278,28 +282,40 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="Interface.html" title="All elements that are part of the interface of an instance must implement this interface.">Interface</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="trait" href="Memory.html" title="Memories must implement this interface to be used by Swam."></a>
-                        <a href="Memory.html" title="Memories must implement this interface to be used by Swam.">Memory</a>
+                        <a class="class" href="LinkException.html" title="Raised when a problem occurs at module instantiation or when required exports are missing."></a>
+                        <a href="LinkException.html" title="Raised when a problem occurs at module instantiation or when required exports are missing.">LinkException</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="MemoryException.html" title=""></a>
-                        <a href="MemoryException.html" title="">MemoryException</a>
+                        <a class="trait" href="Memory.html" title="Memories must implement this interface to be used by Swam."></a>
+                        <a href="Memory.html" title="Memories must implement this interface to be used by Swam.">Memory</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="Module.html" title="The runtime representation of a validated and compiled module."></a>
                         <a href="Module.html" title="The runtime representation of a validated and compiled module.">Module</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="RuntimeException.html" title=""></a>
-                        <a href="RuntimeException.html" title="">RuntimeException</a>
+                        <a class="class" href="RuntimeException.html" title="Raised when something goes wrong during module execution."></a>
+                        <a href="RuntimeException.html" title="Raised when something goes wrong during module execution.">RuntimeException</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
+                        <a class="trait" href="StackFrame.html" title="Interface of a stack frame, making it possible to create a call stack on trap for reporting purpose."></a>
+                        <a href="StackFrame.html" title="Interface of a stack frame, making it possible to create a call stack on trap for reporting purpose.">StackFrame</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="StackOverflowException.html" title="Raised when call stack overflows."></a>
+                        <a href="StackOverflowException.html" title="Raised when call stack overflows.">StackOverflowException</a>
+                      </li><li class="current-entities indented2">
+                        <a class="object" href="SwamEngine$.html" title=""></a>
                         <a class="class" href="SwamEngine.html" title="This is the engine used to compile, instantiate and run modules."></a>
                         <a href="SwamEngine.html" title="This is the engine used to compile, instantiate and run modules.">SwamEngine</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="trait" href="Table.html" title="Tables must implement this interface to be used by Swam."></a>
                         <a href="Table.html" title="Tables must implement this interface to be used by Swam.">Table</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="TrapException.html" title="Raised when a trap is raised in a module."></a>
+                        <a href="TrapException.html" title="Raised when a trap is raised in a module.">TrapException</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Value$.html" title=""></a>
                         <a class="class" href="Value.html" title=""></a>
@@ -470,7 +486,39 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Source
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="swam.runtime.CompiledData" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="swam.runtime.CanFail" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CanFail[+T]=Either[String,T]"></a><a id="CanFail[+T]:CanFail[T]"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/index.html#CanFail[+T]=Either[String,T]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">CanFail</span><span class="tparams">[<span name="T">+T</span>]</span><span class="result alias"> = <span class="extype" name="scala.util.Either">Either</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="swam.runtime.CanFail.T">T</span>]</span>
+      </span>
+      
+      
+    </li><li name="swam.runtime.CompileException" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CompileExceptionextendsSwamException"></a><a id="CompileException:CompileException"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/index.html#CompileExceptionextendsSwamException" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="Raised when module compilation is not possible." href="CompileException.html"><span class="name">CompileException</span></a><span class="result"> extends <a href="../SwamException.html" class="extype" name="swam.SwamException">SwamException</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">Raised when module compilation is not possible.</p>
+    </li><li name="swam.runtime.CompiledData" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="CompiledDataextendsProductwithSerializable"></a><a id="CompiledData:CompiledData"></a>
       <span class="permalink">
       <a href="../../swam/runtime/index.html#CompiledDataextendsProductwithSerializable" title="Permalink">
@@ -510,14 +558,14 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Source
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">final </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="ConversionException.html"><span class="name">ConversionException</span></a><span class="result"> extends <a href="RuntimeException.html" class="extype" name="swam.runtime.RuntimeException">RuntimeException</a></span>
+        <a title="Raised when trying to type interface elements with invalid types." href="ConversionException.html"><span class="name">ConversionException</span></a><span class="result"> extends <a href="RuntimeException.html" class="extype" name="swam.runtime.RuntimeException">RuntimeException</a></span>
       </span>
       
-      
+      <p class="shortcomment cmt">Raised when trying to type interface elements with invalid types.</p>
     </li><li name="swam.runtime.Custom" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="CustomextendsProductwithSerializable"></a><a id="Custom:Custom"></a>
       <span class="permalink">
@@ -634,6 +682,22 @@ this interface.</p><div class="fullcomment"><div class="comment cmt"><p>All elem
 this interface.</p><p>Each specialization defines a specific WebAssembly type that can be imported
 or exported.
 </p></div></div>
+    </li><li name="swam.runtime.LinkException" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LinkExceptionextendsSwamException"></a><a id="LinkException:LinkException"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/index.html#LinkExceptionextendsSwamException" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="Raised when a problem occurs at module instantiation or when required exports are missing." href="LinkException.html"><span class="name">LinkException</span></a><span class="result"> extends <a href="../SwamException.html" class="extype" name="swam.SwamException">SwamException</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">Raised when a problem occurs at module instantiation or when required exports are missing.</p>
     </li><li name="swam.runtime.Memory" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="Memory[F[_]]extendsInterface[F,swam.MemType]"></a><a id="Memory[F[_]]:Memory[F]"></a>
       <span class="permalink">
@@ -655,22 +719,6 @@ The Swam engine ensures that this does not occur by running only validated
 WebAssembly code, where size constraints are checked before execution.
 Implementations must respect the contract of each method.</p><p>This interface is <b>not</b> thread-safe, concurrent access to the same
 instance may lead to undefined behaviors.</p></div></div>
-    </li><li name="swam.runtime.MemoryException" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="MemoryExceptionextendsRuntimeException"></a><a id="MemoryException:MemoryException"></a>
-      <span class="permalink">
-      <a href="../../swam/runtime/index.html#MemoryExceptionextendsRuntimeException" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="MemoryException.html"><span class="name">MemoryException</span></a><span class="result"> extends <a href="RuntimeException.html" class="extype" name="swam.runtime.RuntimeException">RuntimeException</a></span>
-      </span>
-      
-      
     </li><li name="swam.runtime.Module" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Module[F[_]]extendsAnyRef"></a><a id="Module[F[_]]:Module[F]"></a>
       <span class="permalink">
@@ -695,14 +743,47 @@ instance may lead to undefined behaviors.</p></div></div>
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">sealed </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="RuntimeException.html"><span class="name">RuntimeException</span></a><span class="result"> extends <a href="../SwamException.html" class="extype" name="swam.SwamException">SwamException</a></span>
+        <a title="Raised when something goes wrong during module execution." href="RuntimeException.html"><span class="name">RuntimeException</span></a><span class="result"> extends <a href="../SwamException.html" class="extype" name="swam.SwamException">SwamException</a></span>
       </span>
       
+      <p class="shortcomment cmt">Raised when something goes wrong during module execution.</p>
+    </li><li name="swam.runtime.StackFrame" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="StackFrameextendsAnyRef"></a><a id="StackFrame:StackFrame"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/index.html#StackFrameextendsAnyRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a title="Interface of a stack frame, making it possible to create a call stack on trap for reporting purpose." href="StackFrame.html"><span class="name">StackFrame</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
       
+      <p class="shortcomment cmt">Interface of a stack frame, making it possible to create
+a call stack on trap for reporting purpose.</p>
+    </li><li name="swam.runtime.StackOverflowException" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="StackOverflowExceptionextendsRuntimeException"></a><a id="StackOverflowException:StackOverflowException"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/index.html#StackOverflowExceptionextendsRuntimeException" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="Raised when call stack overflows." href="StackOverflowException.html"><span class="name">StackOverflowException</span></a><span class="result"> extends <a href="RuntimeException.html" class="extype" name="swam.runtime.RuntimeException">RuntimeException</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">Raised when call stack overflows.</p>
     </li><li name="swam.runtime.SwamEngine" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="SwamEngine[F[_]]extendsAnyRef"></a><a id="SwamEngine[F[_]]:SwamEngine[F]"></a>
       <span class="permalink">
@@ -741,6 +822,22 @@ over the same effectful type <code>F</code>.
 This interface is unsafe, meaning that no exception is expected when
 calling any method on it.</p><p>This interface is <b>not</b> thread-safe, concurrent modifications may
 lead to undefined behaviors.</p></div></div>
+    </li><li name="swam.runtime.TrapException" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="TrapExceptionextendsRuntimeException"></a><a id="TrapException:TrapException"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/index.html#TrapExceptionextendsRuntimeException" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="Raised when a trap is raised in a module." href="TrapException.html"><span class="name">TrapException</span></a><span class="result"> extends <a href="RuntimeException.html" class="extype" name="swam.runtime.RuntimeException">RuntimeException</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">Raised when a trap is raised in a module.</p>
     </li><li name="swam.runtime.Value" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="ValueextendsAnyRef"></a><a id="Value:Value"></a>
       <span class="permalink">
@@ -874,6 +971,22 @@ lead to undefined behaviors.</p></div></div>
       </span>
       <span class="symbol">
         <a title="" href="Import$.html"><span class="name">Import</span></a>
+      </span>
+      
+      
+    </li><li name="swam.runtime.SwamEngine" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="SwamEngine"></a><a id="SwamEngine:SwamEngine"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/index.html#SwamEngine" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="SwamEngine$.html"><span class="name">SwamEngine</span></a>
       </span>
       
       

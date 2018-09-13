@@ -140,6 +140,22 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="swam.runtime">runtime</a></dd></dl></div>
+    </li><li name="swam.runtime.internals.compiler" visbl="pub" class="indented4 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="compiler"></a><a id="compiler:compiler"></a>
+      <span class="permalink">
+      <a href="../../../swam/runtime/internals/index.html#compiler" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../compiler/index.html"><span class="name">compiler</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam.runtime.internals">internals</a></dd></dl></div>
     </li><li name="swam.runtime.internals.interpreter" visbl="pub" class="indented4 current" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="interpreter"></a><a id="interpreter:interpreter"></a>
       <span class="permalink">
@@ -156,14 +172,42 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam.runtime.internals">internals</a></dd></dl></div>
+    </li><li name="swam.runtime.internals.interpreter.high" visbl="pub" class="indented5 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="high"></a><a id="high:high"></a>
+      <span class="permalink">
+      <a href="../../../../swam/runtime/internals/interpreter/index.html#high" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="high/index.html"><span class="name">high</span></a>
+      </span>
+      
+      
+    </li><li name="swam.runtime.internals.interpreter.low" visbl="pub" class="indented5 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="low"></a><a id="low:low"></a>
+      <span class="permalink">
+      <a href="../../../../swam/runtime/internals/interpreter/index.html#low" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="low/index.html"><span class="name">low</span></a>
+      </span>
+      
+      
     </li><li class="current-entities indented4">
-                        <a class="object" href="Frame$.html" title=""></a>
-                        <a class="class" href="Frame.html" title="A call frame containing the local stack of operands."></a>
-                        <a href="Frame.html" title="A call frame containing the local stack of operands.">Frame</a>
-                      </li><li class="current-entities indented4">
                         <span class="separator"></span>
-                        <a class="class" href="InterpreterException.html" title=""></a>
-                        <a href="InterpreterException.html" title="">InterpreterException</a>
+                        <a class="class" href="Interpreter.html" title=""></a>
+                        <a href="Interpreter.html" title="">Interpreter</a>
                       </li><li class="current-entities indented4">
                         <span class="separator"></span>
                         <a class="object" href="package$$Label$.html" title=""></a>
@@ -172,10 +216,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <span class="separator"></span>
                         <a class="class" href="package$$LabelOps.html" title=""></a>
                         <a href="package$$LabelOps.html" title="">LabelOps</a>
-                      </li><li class="current-entities indented4">
-                        <span class="separator"></span>
-                        <a class="class" href="StackOverflowException.html" title=""></a>
-                        <a href="StackOverflowException.html" title="">StackOverflowException</a>
                       </li>
               </ul>
             </div>
@@ -204,7 +244,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="http://github.com/satabin/swam/tree/master//runtime/src/swam/runtime/internals/interpreter/package.scala#L1" target="_blank">package.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="http://github.com/satabin/swam/tree/master//runtime/src/swam/runtime/internals/interpreter/high/package.scala#L1" target="_blank">package.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -256,35 +296,19 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="swam.runtime.internals.interpreter.Frame" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="Frame[F[_]]extendsAnyRef"></a><a id="Frame[F[_]]:Frame[F]"></a>
+              <ol><li name="swam.runtime.internals.interpreter.Interpreter" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="Interpreter[F[_]]extendsAnyRef"></a><a id="Interpreter[F[_]]:Interpreter[F]"></a>
       <span class="permalink">
-      <a href="../../../../swam/runtime/internals/interpreter/index.html#Frame[F[_]]extendsAnyRef" title="Permalink">
+      <a href="../../../../swam/runtime/internals/interpreter/index.html#Interpreter[F[_]]extendsAnyRef" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier">sealed </span>
+        <span class="modifier">abstract </span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="A call frame containing the local stack of operands." href="Frame.html"><span class="name">Frame</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
-      </span>
-      
-      <p class="shortcomment cmt">A call frame containing the local stack of operands.</p>
-    </li><li name="swam.runtime.internals.interpreter.InterpreterException" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="InterpreterException[F[_]]extendsRuntimeException"></a><a id="InterpreterException[F[_]]:InterpreterException[F]"></a>
-      <span class="permalink">
-      <a href="../../../../swam/runtime/internals/interpreter/index.html#InterpreterException[F[_]]extendsRuntimeException" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="InterpreterException.html"><span class="name">InterpreterException</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <a href="../../RuntimeException.html" class="extype" name="swam.runtime.RuntimeException">RuntimeException</a></span>
+        <a title="" href="Interpreter.html"><span class="name">Interpreter</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       
       
@@ -320,22 +344,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       
-    </li><li name="swam.runtime.internals.interpreter.StackOverflowException" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="StackOverflowException[F[_]]extendsException"></a><a id="StackOverflowException[F[_]]:StackOverflowException[F]"></a>
-      <span class="permalink">
-      <a href="../../../../swam/runtime/internals/interpreter/index.html#StackOverflowException[F[_]]extendsException" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="StackOverflowException.html"><span class="name">StackOverflowException</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <span class="extype" name="scala.Exception">Exception</span></span>
-      </span>
-      
-      
     </li></ol>
             </div>
 
@@ -344,23 +352,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <div class="values members">
               <h3>Value Members</h3>
               <ol>
-                <li name="swam.runtime.internals.interpreter.Frame" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="Frame"></a><a id="Frame:Frame"></a>
-      <span class="permalink">
-      <a href="../../../../swam/runtime/internals/interpreter/index.html#Frame" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="Frame$.html"><span class="name">Frame</span></a>
-      </span>
-      
-      
-    </li><li name="swam.runtime.internals.interpreter.Label" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+                <li name="swam.runtime.internals.interpreter.Label" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Label"></a><a id="Label:Label"></a>
       <span class="permalink">
       <a href="../../../../swam/runtime/internals/interpreter/index.html#Label" title="Permalink">

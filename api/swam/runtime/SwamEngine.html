@@ -206,6 +206,10 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="swam.runtime">runtime</a></dd></dl></div>
     </li><li class="current-entities indented2">
                         <span class="separator"></span>
+                        <a class="class" href="CompileException.html" title="Raised when module compilation is not possible."></a>
+                        <a href="CompileException.html" title="Raised when module compilation is not possible.">CompileException</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
                         <a class="class" href="CompiledData.html" title=""></a>
                         <a href="CompiledData.html" title="">CompiledData</a>
                       </li><li class="current-entities indented2">
@@ -214,8 +218,8 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="CompiledElem.html" title="">CompiledElem</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="ConversionException.html" title=""></a>
-                        <a href="ConversionException.html" title="">ConversionException</a>
+                        <a class="class" href="ConversionException.html" title="Raised when trying to type interface elements with invalid types."></a>
+                        <a href="ConversionException.html" title="Raised when trying to type interface elements with invalid types.">ConversionException</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="Custom.html" title=""></a>
@@ -262,28 +266,40 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="Interface.html" title="All elements that are part of the interface of an instance must implement this interface.">Interface</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="trait" href="Memory.html" title="Memories must implement this interface to be used by Swam."></a>
-                        <a href="Memory.html" title="Memories must implement this interface to be used by Swam.">Memory</a>
+                        <a class="class" href="LinkException.html" title="Raised when a problem occurs at module instantiation or when required exports are missing."></a>
+                        <a href="LinkException.html" title="Raised when a problem occurs at module instantiation or when required exports are missing.">LinkException</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="MemoryException.html" title=""></a>
-                        <a href="MemoryException.html" title="">MemoryException</a>
+                        <a class="trait" href="Memory.html" title="Memories must implement this interface to be used by Swam."></a>
+                        <a href="Memory.html" title="Memories must implement this interface to be used by Swam.">Memory</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="Module.html" title="The runtime representation of a validated and compiled module."></a>
                         <a href="Module.html" title="The runtime representation of a validated and compiled module.">Module</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="RuntimeException.html" title=""></a>
-                        <a href="RuntimeException.html" title="">RuntimeException</a>
+                        <a class="class" href="RuntimeException.html" title="Raised when something goes wrong during module execution."></a>
+                        <a href="RuntimeException.html" title="Raised when something goes wrong during module execution.">RuntimeException</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
+                        <a class="trait" href="StackFrame.html" title="Interface of a stack frame, making it possible to create a call stack on trap for reporting purpose."></a>
+                        <a href="StackFrame.html" title="Interface of a stack frame, making it possible to create a call stack on trap for reporting purpose.">StackFrame</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="StackOverflowException.html" title="Raised when call stack overflows."></a>
+                        <a href="StackOverflowException.html" title="Raised when call stack overflows.">StackOverflowException</a>
+                      </li><li class="current-entities indented2">
+                        <a class="object" href="SwamEngine$.html" title=""></a>
                         <a class="class" href="" title="This is the engine used to compile, instantiate and run modules."></a>
                         <a href="" title="This is the engine used to compile, instantiate and run modules.">SwamEngine</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="trait" href="Table.html" title="Tables must implement this interface to be used by Swam."></a>
                         <a href="Table.html" title="Tables must implement this interface to be used by Swam.">Table</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="TrapException.html" title="Raised when a trap is raised in a module."></a>
+                        <a href="TrapException.html" title="Raised when a trap is raised in a module.">TrapException</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Value$.html" title=""></a>
                         <a class="class" href="Value.html" title=""></a>
@@ -295,14 +311,16 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
           <div id="content">
             <body class="class type">
       <div id="definition">
-        <div class="big-circle class">c</div>
+        <a href="SwamEngine$.html" title="See companion object"><div class="big-circle class-companion-object">c</div></a>
         <p id="owner"><a href="../index.html" class="extype" name="swam">swam</a>.<a href="index.html" class="extype" name="swam.runtime">runtime</a></p>
-        <h1>SwamEngine<span class="permalink">
+        <h1><a href="SwamEngine$.html" title="See companion object">SwamEngine</a><span class="permalink">
       <a href="../../swam/runtime/SwamEngine.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
-        <h3><span class="morelinks"></span></h3>
+        <h3><span class="morelinks"><div>
+            Companion <a href="SwamEngine$.html" title="See companion object">object SwamEngine</a>
+          </div></span></h3>
       </div>
 
       <h4 id="signature" class="signature">
@@ -367,26 +385,7 @@ over the same effectful type <code>F</code>.
 
       <div id="template">
         <div id="allMembers">
-        <div id="constructors" class="members">
-              <h3>Instance Constructors</h3>
-              <ol><li name="swam.runtime.SwamEngine#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(conf:swam.runtime.config.EngineConfiguration):swam.runtime.SwamEngine[F]"></a><a id="&lt;init&gt;:SwamEngine[F]"></a>
-      <span class="permalink">
-      <a href="../../swam/runtime/SwamEngine.html#&lt;init&gt;(conf:swam.runtime.config.EngineConfiguration):swam.runtime.SwamEngine[F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">new</span>
-      </span>
-      <span class="symbol">
-        <span class="name">SwamEngine</span><span class="params">(<span name="conf">conf: <a href="config/EngineConfiguration.html" class="extype" name="swam.runtime.config.EngineConfiguration">EngineConfiguration</a> = <span class="symbol"><span class="name"><a href="config/index.html">defaultConfiguration</a></span></span></span>)</span>
-      </span>
-      
-      
-    </li></ol>
-            </div>
+        
 
         
 
