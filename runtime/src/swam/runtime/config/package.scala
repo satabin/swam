@@ -17,10 +17,11 @@
 package swam
 package runtime
 
-import com.typesafe.config.ConfigFactory
+import pureconfig._
+import pureconfig.module.squants._
 
 package object config {
 
-  def defaultConfiguration = new ConfigEngineConfiguration(ConfigFactory.load)
+  def defaultConfiguration = pureconfig.loadConfig[EngineConfiguration]
 
 }

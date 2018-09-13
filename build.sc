@@ -74,7 +74,7 @@ object runtime extends SwamModule with PublishModule {
   def moduleDeps = Seq(core)
 
   def ivyDeps = Agg(
-    ivy"com.typesafe:config:1.3.2")
+    ivy"com.github.pureconfig::pureconfig-squants:0.9.2")
 
   def publishVersion = swamVersion
 

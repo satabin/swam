@@ -237,6 +237,6 @@ object Frame {
   private final val LABEL = 1
 
   def makeToplevel[F[_]](instance: Instance[F], conf: EngineConfiguration): Frame[F] =
-    new Frame[F](null, conf.stack.height, conf.stack.callDepth, 0, null, null, 0, instance)
+    new Frame[F](null, conf.stack.size.toBytes.toInt, conf.stack.callDepth, 0, null, null, 0, instance)
 
 }
