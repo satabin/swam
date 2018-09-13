@@ -73,7 +73,7 @@ class ScriptEngine {
 
   val IO = implicitly[Effect[IO]]
 
-  val engine = new SwamEngine[IO]
+  val engine = SwamEngine[IO]()
 
   val tcompiler = new Compiler[IO]
 
@@ -83,6 +83,7 @@ class ScriptEngine {
         val res = cmd match {
           case ValidModule(mod) =>
             for {
+              engine <- engine
               compiled <- engine.compile(tcompiler.stream(mod, true))
               instance <- compiled.newInstance(ctx.imports)
             } yield
@@ -93,6 +94,7 @@ class ScriptEngine {
               }
           case BinaryModule(id, bs) =>
             for {
+              engine <- engine
               compiled <- engine.compile(BitVector(bs))
               instance <- compiled.newInstance(ctx.imports)
             } yield
@@ -239,12 +241,13 @@ class ScriptEngine {
     val mod =
       m match {
         case ValidModule(m) =>
-          engine.compile(tcompiler.stream(m, false))
+          engine.flatMap(_.compile(tcompiler.stream(m, false)))
         case BinaryModule(_, bs) =>
-          engine.compile(BitVector(bs))
+          engine.flatMap(_.compile(BitVector(bs)))
         case QuotedModule(_, src) =>
           for {
             unresolved <- tcompiler.parse(src)
+            engine <- engine
             m <- engine.compile(tcompiler.stream(unresolved, false))
           } yield m
       }

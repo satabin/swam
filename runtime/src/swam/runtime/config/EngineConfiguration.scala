@@ -18,34 +18,16 @@ package swam
 package runtime
 package config
 
-import com.typesafe.config.Config
+import squants.information._
 
-/** Holds all the configurable values. */
-trait EngineConfiguration {
+/** Holds all the configurable values.
+  *
+  * @param useLowLevelAsm Whether engine compiles and run low-level bytecode.
+  * @param stack Configures how the stack behaves.
+  * @param data Configures how the data part behaves.
+  */
+case class EngineConfiguration(useLowLevelAsm: Boolean, stack: StackConfiguration, data: DataConfiguration)
 
-  /** Whether engine compiles and run low-level bytecode. */
-  def useLowLevelAsm: Boolean
+case class StackConfiguration(size: Information, callDepth: Int)
 
-  /** Configures how the stack behaves. */
-  val stack: StackConfiguration
-
-  /** Configures how the data part behaves. */
-  val data: DataConfiguration
-
-}
-
-trait StackConfiguration {
-
-  def height: Int
-
-  def callDepth: Int
-
-}
-
-trait DataConfiguration {
-
-  def onHeap: Boolean
-
-  def hardMax: Int
-
-}
+case class DataConfiguration(onHeap: Boolean, hardMax: Information)

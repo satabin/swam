@@ -36,6 +36,10 @@ import fs2._
 
 import scodec.bits._
 
+import pureconfig._
+import pureconfig.error._
+import pureconfig.module.squants._
+
 import scala.language.higherKinds
 
 import java.nio.file.Path
@@ -46,9 +50,9 @@ import java.nio.file.Path
   * You typically want to reuse the same instance for all your executions
   * over the same effectful type `F`.
   */
-class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration) {
+class SwamEngine[F[_]] private (val conf: EngineConfiguration) {
 
-  private[runtime] val validator = new SpecValidator[F](conf.data.hardMax)
+  private[runtime] val validator = new SpecValidator[F](conf.data.hardMax.toBytes.toInt)
 
   private[runtime] val compiler =
     if (conf.useLowLevelAsm)
@@ -161,5 +165,18 @@ class SwamEngine[F[_]](val conf: EngineConfiguration = defaultConfiguration) {
     */
   def instantiate(module: Module[F], imports: Imports[F])(implicit F: Effect[F]): F[Instance[F]] =
     instantiator.instantiate(module, imports)
+
+}
+
+object SwamEngine {
+
+  def apply[F[_]]()(implicit F: MonadError[F, Throwable]): F[SwamEngine[F]] =
+    pureconfig.loadConfig[EngineConfiguration]("swam.runtime") match {
+      case Right(config)  => F.pure(new SwamEngine[F](config))
+      case Left(failures) => F.raiseError(new ConfigReaderException[EngineConfiguration](failures))
+    }
+
+  def apply[F[_]](conf: EngineConfiguration): SwamEngine[F] =
+    new SwamEngine[F](conf)
 
 }

@@ -17,19 +17,15 @@
 package swam
 package runtime
 package internals
-package interpreter
 
 import config._
 
-object Config extends EngineConfiguration {
-  val useLowLevelAsm = false
-  val stack = new StackConfiguration {
-    val height = 5
-    val callDepth = 1
-  }
+import squants.information.InformationConversions._
 
-  val data = new DataConfiguration {
-    val onHeap = true
-    val hardMax = 0
-  }
+package object interpreter {
+
+  type Label = Long
+
+  val Config = EngineConfiguration(false, StackConfiguration(5.bytes, 1), DataConfiguration(true, 0.bytes))
+
 }

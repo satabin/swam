@@ -7,10 +7,11 @@ import java.nio.file.Paths
 
 val tcompiler = new Compiler[IO]
 
-val engine = new SwamEngine[IO]
+val engine = SwamEngine[IO]()
 
 def instantiate(p: String): Instance[IO] =
   (for {
+    engine <- engine
     m <- engine.compile(tcompiler.stream(Paths.get(p), true))
     i <- m.newInstance()
   } yield i).unsafeRunSync()
