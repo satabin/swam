@@ -1235,7 +1235,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
           case (tpe, v) => Value.fromRaw(tpe, v)
         }
         // invoke the host function with the parameters
-        f.invoke(params.toVector).map { res =>
+        f.invoke(params.toVector, frame.instance.memories.headOption).map { res =>
           if (frame.isToplevel) {
             Right(res.map(Value.toRaw(_)))
           } else {

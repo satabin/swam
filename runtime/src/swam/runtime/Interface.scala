@@ -46,7 +46,7 @@ abstract class Function[F[_]] extends Interface[F, FuncType] {
     * Implementations must not throw any exception but
     * must encapsulate their effect and failure in an instance of `F`.
     */
-  def invoke(parameters: Vector[Value])(implicit F: MonadError[F, Throwable]): F[Option[Value]]
+  def invoke(parameters: Vector[Value], m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[Option[Value]]
 
 }
 

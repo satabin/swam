@@ -41,10 +41,11 @@ private[exports] object EFunction {
         throw new Exception("This is a bug")
     }
 
-  def wrap[F[_], Ret](res: Option[Value])(implicit F: MonadError[F, Throwable], reader: ValueReader[Ret]): F[Ret] =
+  def wrap[F[_], Ret](res: Option[Value], m: Option[Memory[F]])(implicit F: MonadError[F, Throwable],
+                                                                reader: ValueReader[Ret]): F[Ret] =
     res match {
       case Some(ret) =>
-        reader.read[F](ret)
+        reader.read[F](ret, m)
       case None =>
         throw new Exception("This is a bug")
     }

@@ -28,12 +28,12 @@ import scala.language.higherKinds
 class IFunction2Unit[F[_], P1, P2](f: (P1, P2) => F[Unit])(implicit reader1: ValueReader[P1], reader2: ValueReader[P2])
     extends Function[F] {
   val tpe = FuncType(Vector(reader1.swamType, reader2.swamType), Vector())
-  def invoke(parameters: Vector[Value])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
+  def invoke(parameters: Vector[Value], m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
     parameters match {
       case Seq(p1, p2) =>
         for {
-          p1 <- reader1.read[F](p1)
-          p2 <- reader2.read[F](p2)
+          p1 <- reader1.read[F](p1, m)
+          p2 <- reader2.read[F](p2, m)
           _ <- f(p1, p2)
         } yield None
       case _ =>
@@ -47,14 +47,15 @@ class IFunction2[F[_], P1, P2, Ret](f: (P1, P2) => F[Ret])(implicit reader1: Val
                                                            writer: ValueWriter[Ret])
     extends Function[F] {
   val tpe = FuncType(Vector(reader1.swamType, reader2.swamType), Vector(writer.swamType))
-  def invoke(parameters: Vector[Value])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
+  def invoke(parameters: Vector[Value], m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
     parameters match {
       case Seq(p1, p2) =>
         for {
-          p1 <- reader1.read[F](p1)
-          p2 <- reader2.read[F](p2)
+          p1 <- reader1.read[F](p1, m)
+          p2 <- reader2.read[F](p2, m)
           v <- f(p1, p2)
-        } yield Some(writer.write(v))
+          v <- writer.write(v, m)
+        } yield Some(v)
       case _ =>
         F.raiseError(new ConversionException(
           s"function expects ${tpe.params.mkString("(", ", ", ")")} but got ${parameters.map(_.tpe).mkString("(", ", ", ")")}"))

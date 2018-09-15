@@ -233,7 +233,7 @@ class ScriptEngine {
       i <- ctx.module(pos, modid)
       ps <- values
       f <- i.exports.function(export)
-      res <- f.invoke(ps.toVector)
+      res <- f.invoke(ps.toVector, None)
     } yield res
   }
 

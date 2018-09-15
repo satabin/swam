@@ -102,7 +102,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
         exps.get(name) match {
           case Some(g: Global[F]) =>
             if (reader.swamType == g.tpe.tpe)
-              reader.read[F](g.get)
+              reader.read[F](g.get, memories.headOption)
             else
               F.raiseError(new ConversionException(s"expected type ${g.tpe.tpe} but got type ${reader.swamType}"))
           case Some(fld) =>

@@ -21,3 +21,5 @@ package formats
 /** A formatter is both a [[ValueReader]] and a [[ValueWriter]].
   */
 trait ValueFormatter[T] extends ValueReader[T] with ValueWriter[T]
+
+trait SimpleValueFormatter[T] extends ValueFormatter[T] with SimpleValueReader[T] with SimpleValueWriter[T]
