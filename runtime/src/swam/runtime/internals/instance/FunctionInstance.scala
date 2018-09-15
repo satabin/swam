@@ -34,7 +34,7 @@ private[runtime] case class FunctionInstance[F[_]](tpe: FuncType,
                                                    instance: Instance[F])
     extends Function[F] {
 
-  def invoke(parameters: Vector[Value])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
+  def invoke(parameters: Vector[Value], m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
     instance.interpreter
       .interpret(this, parameters.map(Value.toRaw(_)), instance)
       .map(_.map(Value.fromRaw(tpe.t.head, _)))

@@ -29,7 +29,7 @@ trait DefaultFormatters {
   private def raise[T, F[_]](msg: String)(implicit F: MonadError[F, Throwable]): F[T] =
     F.raiseError(new ConversionException(msg))
 
-  implicit val intFormatter: ValueFormatter[Int] = new ValueFormatter[Int] {
+  implicit val intFormatter: SimpleValueFormatter[Int] = new SimpleValueFormatter[Int] {
     def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[Int] =
       v match {
         case Value.Int32(i) => F.pure(i)
@@ -41,7 +41,7 @@ trait DefaultFormatters {
       ValType.I32
   }
 
-  implicit val longFormatter: ValueFormatter[Long] = new ValueFormatter[Long] {
+  implicit val longFormatter: SimpleValueFormatter[Long] = new SimpleValueFormatter[Long] {
     def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[Long] =
       v match {
         case Value.Int64(l) => F.pure(l)
@@ -53,7 +53,7 @@ trait DefaultFormatters {
       ValType.I64
   }
 
-  implicit val floatFormatter: ValueFormatter[Float] = new ValueFormatter[Float] {
+  implicit val floatFormatter: SimpleValueFormatter[Float] = new SimpleValueFormatter[Float] {
     def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[Float] =
       v match {
         case Value.Float32(f) => F.pure(f)
@@ -65,7 +65,7 @@ trait DefaultFormatters {
       ValType.F32
   }
 
-  implicit val doubleFormatter: ValueFormatter[Double] = new ValueFormatter[Double] {
+  implicit val doubleFormatter: SimpleValueFormatter[Double] = new SimpleValueFormatter[Double] {
     def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[Double] =
       v match {
         case Value.Float64(d) => F.pure(d)
@@ -77,7 +77,7 @@ trait DefaultFormatters {
       ValType.F64
   }
 
-  implicit val boolFormatter: ValueFormatter[Boolean] = new ValueFormatter[Boolean] {
+  implicit val boolFormatter: SimpleValueFormatter[Boolean] = new SimpleValueFormatter[Boolean] {
     def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[Boolean] =
       v match {
         case Value.Int32(i) => F.pure(i != 0)

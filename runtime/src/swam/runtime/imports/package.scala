@@ -54,7 +54,7 @@ package object imports {
       def view(i: T) = i
     }
 
-  implicit def valueAsInterface[T, F[_]](implicit writer: ValueWriter[T]): AsInterface[T, F] =
+  implicit def valueAsInterface[T, F[_]](implicit writer: SimpleValueWriter[T]): AsInterface[T, F] =
     new AsInterface[T, F] {
       def view(t: T): Global[F] =
         new Global[F] {

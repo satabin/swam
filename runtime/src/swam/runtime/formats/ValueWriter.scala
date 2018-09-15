@@ -18,13 +18,30 @@ package swam
 package runtime
 package formats
 
+import cats._
+
+import scala.language.higherKinds
+
 /** A writer is used to transform a scala value into a
   *  web assembly value.
   */
 trait ValueWriter[T] {
 
-  def write(v: T): Value
+  def write[F[_]](v: T, m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[Value]
 
   val swamType: ValType
+
+}
+
+/** A writer is used to transform a scala value into a
+  *  simple web assembly value. A simple value can be writter without memory instance.
+  */
+trait SimpleValueWriter[T] extends ValueWriter[T] {
+
+  @inline
+  final override def write[F[_]](v: T, m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[Value] =
+    F.pure(write(v))
+
+  def write(v: T): Value
 
 }

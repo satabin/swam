@@ -71,16 +71,3 @@ object TCMap {
     new TCMap(Map(pairs: _*))
 
 }
-
-object test {
-
-  import cats._
-  import cats.implicits._
-
-  val m = TCMap[String, Show]("test" -> 2, "toto" -> "test")
-
-  val elem = m.get("test").get
-
-  elem.typeclass.show(elem.value)
-
-}

@@ -27,11 +27,12 @@ import cats.implicits._
 
 import scala.language.higherKinds
 
-abstract class EFunction0[Ret, F[_]] private (f: Function[F])(implicit F: MonadError[F, Throwable])
+abstract class EFunction0[Ret, F[_]] private (f: Function[F], m: Option[Memory[F]])(
+    implicit F: MonadError[F, Throwable])
     extends EFunction[Ret, F]
     with Function0[F[Ret]] {
   def apply(): F[Ret] =
-    f.invoke(Vector()).flatMap(wrap(_))
+    f.invoke(Vector(), m).flatMap(wrap(_))
 }
 
 private[runtime] object EFunction0 {
@@ -41,7 +42,7 @@ private[runtime] object EFunction0 {
       case Some(f: Function[F]) =>
         f.tpe match {
           case FuncType(Vector(), Vector()) =>
-            F.pure(new EFunction0[Unit, F](f) {
+            F.pure(new EFunction0[Unit, F](f, self.memories.headOption) {
               def wrap(res: Option[Value]): F[Unit] = EFunction.wrapUnit[F](res)
             })
           case functype =>
@@ -59,8 +60,8 @@ private[runtime] object EFunction0 {
       case Some(f: Function[F]) =>
         f.tpe match {
           case FuncType(Vector(), Vector(reader.swamType)) =>
-            F.pure(new EFunction0[Ret, F](f) {
-              def wrap(res: Option[Value]): F[Ret] = EFunction.wrap[F, Ret](res)
+            F.pure(new EFunction0[Ret, F](f, self.memories.headOption) {
+              def wrap(res: Option[Value]): F[Ret] = EFunction.wrap[F, Ret](res, self.memories.headOption)
             })
           case functype =>
             F.raiseError(new RuntimeException(s"invalid function type (expected () => Unit but got $functype)"))

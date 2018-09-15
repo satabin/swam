@@ -27,13 +27,19 @@ import cats.implicits._
 
 import scala.language.higherKinds
 
-abstract class EFunction2[P1, P2, Ret, F[_]] private (f: Function[F])(implicit F: MonadError[F, Throwable],
-                                                                      writer1: ValueWriter[P1],
-                                                                      writer2: ValueWriter[P2])
+abstract class EFunction2[P1, P2, Ret, F[_]] private (f: Function[F], m: Option[Memory[F]])(
+    implicit F: MonadError[F, Throwable],
+    writer1: ValueWriter[P1],
+    writer2: ValueWriter[P2])
     extends EFunction[Ret, F]
     with Function2[P1, P2, F[Ret]] {
   def apply(p1: P1, p2: P2): F[Ret] =
-    f.invoke(Vector(writer1.write(p1), writer2.write(p2))).flatMap(wrap(_))
+    for {
+      p1 <- writer1.write(p1, m)
+      p2 <- writer2.write(p2, m)
+      v <- f.invoke(Vector(p1, p2), m)
+      v <- wrap(v)
+    } yield v
 }
 
 object EFunction2 {
@@ -46,7 +52,7 @@ object EFunction2 {
       case Some(f: Function[F]) =>
         val expectedt = FuncType(Vector(writer1.swamType, writer2.swamType), Vector())
         if (f.tpe == expectedt)
-          F.pure(new EFunction2[P1, P2, Unit, F](f) {
+          F.pure(new EFunction2[P1, P2, Unit, F](f, self.memories.headOption) {
             def wrap(res: Option[Value]): F[Unit] = EFunction.wrapUnit[F](res)
           })
         else
@@ -66,8 +72,8 @@ object EFunction2 {
       case Some(f: Function[F]) =>
         val expectedt = FuncType(Vector(writer1.swamType, writer2.swamType), Vector(reader.swamType))
         if (f.tpe == expectedt)
-          F.pure(new EFunction2[P1, P2, Ret, F](f) {
-            def wrap(res: Option[Value]): F[Ret] = EFunction.wrap[F, Ret](res)
+          F.pure(new EFunction2[P1, P2, Ret, F](f, self.memories.headOption) {
+            def wrap(res: Option[Value]): F[Ret] = EFunction.wrap[F, Ret](res, self.memories.headOption)
           })
         else
           F.raiseError(new RuntimeException(s"invalid return type (expected $expectedt but got ${f.tpe}"))
