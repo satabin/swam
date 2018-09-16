@@ -70,31 +70,31 @@ sealed abstract class MemoryInst(opcode: OpCode) extends Inst(opcode) {
 
 object MemoryInst {
   def unapply(inst: MemoryInst): Option[(Int, Int)] =
-    Some(inst.offset -> inst.align)
+    Some(inst.align -> inst.offset)
 }
 
 sealed abstract class LoadInst(val tpe: ValType, opcode: OpCode) extends MemoryInst(opcode)
 object Load {
   def unapply(op: LoadInst): Option[(ValType, Int, Int)] =
-    Some((op.tpe, op.offset, op.align))
+    Some((op.tpe, op.align, op.offset))
 }
 
 sealed abstract class LoadNInst(val tpe: ValType, val n: Int, opcode: OpCode) extends MemoryInst(opcode)
 object LoadN {
   def unapply(op: LoadNInst): Option[(ValType, Int, Int, Int)] =
-    Some((op.tpe, op.n, op.offset, op.align))
+    Some((op.tpe, op.n, op.align, op.offset))
 }
 
 sealed abstract class StoreInst(val tpe: ValType, opcode: OpCode) extends MemoryInst(opcode)
 object Store {
   def unapply(op: StoreInst): Option[(ValType, Int, Int)] =
-    Some((op.tpe, op.offset, op.align))
+    Some((op.tpe, op.align, op.offset))
 }
 
 sealed abstract class StoreNInst(val tpe: ValType, val n: Int, opcode: OpCode) extends MemoryInst(opcode)
 object StoreN {
   def unapply(op: StoreNInst): Option[(ValType, Int, Int, Int)] =
-    Some((op.tpe, op.n, op.offset, op.align))
+    Some((op.tpe, op.n, op.align, op.offset))
 }
 
 sealed abstract class VarInst(opcode: OpCode) extends Inst(opcode) {
@@ -152,16 +152,16 @@ object i32 {
 
   case object ReinterpretF32 extends Convertop(ValType.F32, ValType.I32, OpCode.I32ReinterpretF32)
 
-  case class Load(offset: Int, align: Int) extends LoadInst(ValType.I32, OpCode.I32Load)
-  case class Store(offset: Int, align: Int) extends StoreInst(ValType.I32, OpCode.I32Store)
+  case class Load(align: Int, offset: Int) extends LoadInst(ValType.I32, OpCode.I32Load)
+  case class Store(align: Int, offset: Int) extends StoreInst(ValType.I32, OpCode.I32Store)
 
-  case class Load8S(offset: Int, align: Int) extends LoadNInst(ValType.I32, 8, OpCode.I32Load8S)
-  case class Load8U(offset: Int, align: Int) extends LoadNInst(ValType.I32, 8, OpCode.I32Load8U)
-  case class Load16S(offset: Int, align: Int) extends LoadNInst(ValType.I32, 16, OpCode.I32Load16S)
-  case class Load16U(offset: Int, align: Int) extends LoadNInst(ValType.I32, 16, OpCode.I32Load16U)
+  case class Load8S(align: Int, offset: Int) extends LoadNInst(ValType.I32, 8, OpCode.I32Load8S)
+  case class Load8U(align: Int, offset: Int) extends LoadNInst(ValType.I32, 8, OpCode.I32Load8U)
+  case class Load16S(align: Int, offset: Int) extends LoadNInst(ValType.I32, 16, OpCode.I32Load16S)
+  case class Load16U(align: Int, offset: Int) extends LoadNInst(ValType.I32, 16, OpCode.I32Load16U)
 
-  case class Store8(offset: Int, align: Int) extends StoreNInst(ValType.I32, 8, OpCode.I32Store8)
-  case class Store16(offset: Int, align: Int) extends StoreNInst(ValType.I32, 16, OpCode.I32Store16)
+  case class Store8(align: Int, offset: Int) extends StoreNInst(ValType.I32, 8, OpCode.I32Store8)
+  case class Store16(align: Int, offset: Int) extends StoreNInst(ValType.I32, 16, OpCode.I32Store16)
 
 }
 
@@ -212,19 +212,19 @@ object i64 {
 
   case object ReinterpretF64 extends Convertop(ValType.F64, ValType.I64, OpCode.I64ReinterpretF64)
 
-  case class Load(offset: Int, align: Int) extends LoadInst(ValType.I64, OpCode.I64Load)
-  case class Store(offset: Int, align: Int) extends StoreInst(ValType.I64, OpCode.I64Store)
+  case class Load(align: Int, offset: Int) extends LoadInst(ValType.I64, OpCode.I64Load)
+  case class Store(align: Int, offset: Int) extends StoreInst(ValType.I64, OpCode.I64Store)
 
-  case class Load8S(offset: Int, align: Int) extends LoadNInst(ValType.I64, 8, OpCode.I64Load8S)
-  case class Load8U(offset: Int, align: Int) extends LoadNInst(ValType.I64, 8, OpCode.I64Load8U)
-  case class Load16S(offset: Int, align: Int) extends LoadNInst(ValType.I64, 16, OpCode.I64Load16S)
-  case class Load16U(offset: Int, align: Int) extends LoadNInst(ValType.I64, 16, OpCode.I64Load16U)
-  case class Load32S(offset: Int, align: Int) extends LoadNInst(ValType.I64, 32, OpCode.I64Load32S)
-  case class Load32U(offset: Int, align: Int) extends LoadNInst(ValType.I64, 32, OpCode.I64Load32U)
+  case class Load8S(align: Int, offset: Int) extends LoadNInst(ValType.I64, 8, OpCode.I64Load8S)
+  case class Load8U(align: Int, offset: Int) extends LoadNInst(ValType.I64, 8, OpCode.I64Load8U)
+  case class Load16S(align: Int, offset: Int) extends LoadNInst(ValType.I64, 16, OpCode.I64Load16S)
+  case class Load16U(align: Int, offset: Int) extends LoadNInst(ValType.I64, 16, OpCode.I64Load16U)
+  case class Load32S(align: Int, offset: Int) extends LoadNInst(ValType.I64, 32, OpCode.I64Load32S)
+  case class Load32U(align: Int, offset: Int) extends LoadNInst(ValType.I64, 32, OpCode.I64Load32U)
 
-  case class Store8(offset: Int, align: Int) extends StoreNInst(ValType.I64, 8, OpCode.I64Store8)
-  case class Store16(offset: Int, align: Int) extends StoreNInst(ValType.I64, 16, OpCode.I64Store16)
-  case class Store32(offset: Int, align: Int) extends StoreNInst(ValType.I64, 32, OpCode.I64Store32)
+  case class Store8(align: Int, offset: Int) extends StoreNInst(ValType.I64, 8, OpCode.I64Store8)
+  case class Store16(align: Int, offset: Int) extends StoreNInst(ValType.I64, 16, OpCode.I64Store16)
+  case class Store32(align: Int, offset: Int) extends StoreNInst(ValType.I64, 32, OpCode.I64Store32)
 
 }
 
@@ -264,8 +264,8 @@ object f32 {
 
   case object ReinterpretI32 extends Convertop(ValType.I32, ValType.F32, OpCode.F32ReinterpretI32)
 
-  case class Load(offset: Int, align: Int) extends LoadInst(ValType.F32, OpCode.F32Load)
-  case class Store(offset: Int, align: Int) extends StoreInst(ValType.F32, OpCode.F32Store)
+  case class Load(align: Int, offset: Int) extends LoadInst(ValType.F32, OpCode.F32Load)
+  case class Store(align: Int, offset: Int) extends StoreInst(ValType.F32, OpCode.F32Store)
 
 }
 
@@ -305,8 +305,8 @@ object f64 {
 
   case object ReinterpretI64 extends Convertop(ValType.I64, ValType.F64, OpCode.F64ReinterpretI64)
 
-  case class Load(offset: Int, align: Int) extends LoadInst(ValType.F64, OpCode.F64Load)
-  case class Store(offset: Int, align: Int) extends StoreInst(ValType.F64, OpCode.F64Store)
+  case class Load(align: Int, offset: Int) extends LoadInst(ValType.F64, OpCode.F64Load)
+  case class Store(align: Int, offset: Int) extends StoreInst(ValType.F64, OpCode.F64Store)
 
 }
 

@@ -91,22 +91,22 @@ class Resolver[F[_]] {
       case i32.TruncSF64()      => F.pure((r.i32.TruncSF64, ctx))
       case i32.TruncUF64()      => F.pure((r.i32.TruncUF64, ctx))
       case i32.ReinterpretF32() => F.pure((r.i32.ReinterpretF32, ctx))
-      case i32.Load(offset: Int, align: Int) =>
-        F.pure((r.i32.Load(offset, align), ctx))
-      case i32.Store(offset: Int, align: Int) =>
-        F.pure((r.i32.Store(offset, align), ctx))
-      case i32.Load8S(offset: Int, align: Int) =>
-        F.pure((r.i32.Load8S(offset, align), ctx))
-      case i32.Load8U(offset: Int, align: Int) =>
-        F.pure((r.i32.Load8U(offset, align), ctx))
-      case i32.Load16S(offset: Int, align: Int) =>
-        F.pure((r.i32.Load16S(offset, align), ctx))
-      case i32.Load16U(offset: Int, align: Int) =>
-        F.pure((r.i32.Load16U(offset, align), ctx))
-      case i32.Store8(offset: Int, align: Int) =>
-        F.pure((r.i32.Store8(offset, align), ctx))
-      case i32.Store16(offset: Int, align: Int) =>
-        F.pure((r.i32.Store16(offset, align), ctx))
+      case i32.Load(align, offset) =>
+        F.pure((r.i32.Load(align, offset), ctx))
+      case i32.Store(align, offset) =>
+        F.pure((r.i32.Store(align, offset), ctx))
+      case i32.Load8S(align, offset) =>
+        F.pure((r.i32.Load8S(align, offset), ctx))
+      case i32.Load8U(align, offset) =>
+        F.pure((r.i32.Load8U(align, offset), ctx))
+      case i32.Load16S(align, offset) =>
+        F.pure((r.i32.Load16S(align, offset), ctx))
+      case i32.Load16U(align, offset) =>
+        F.pure((r.i32.Load16U(align, offset), ctx))
+      case i32.Store8(align, offset) =>
+        F.pure((r.i32.Store8(align, offset), ctx))
+      case i32.Store16(align, offset) =>
+        F.pure((r.i32.Store16(align, offset), ctx))
       case i64.Const(v)             => F.pure((r.i64.Const(v), ctx))
       case i64.Clz()                => F.pure((r.i64.Clz, ctx))
       case i64.Ctz()                => F.pure((r.i64.Ctz, ctx))
@@ -144,26 +144,26 @@ class Resolver[F[_]] {
       case i64.TruncSF64()          => F.pure((r.i64.TruncSF64, ctx))
       case i64.TruncUF64()          => F.pure((r.i64.TruncUF64, ctx))
       case i64.ReinterpretF64()     => F.pure((r.i64.ReinterpretF64, ctx))
-      case i64.Load(offset, align)  => F.pure((r.i64.Load(offset, align), ctx))
-      case i64.Store(offset, align) => F.pure((r.i64.Store(offset, align), ctx))
-      case i64.Load8S(offset, align) =>
-        F.pure((r.i64.Load8S(offset, align), ctx))
-      case i64.Load8U(offset, align) =>
-        F.pure((r.i64.Load8U(offset, align), ctx))
-      case i64.Load16S(offset, align) =>
-        F.pure((r.i64.Load16S(offset, align), ctx))
-      case i64.Load16U(offset, align) =>
-        F.pure((r.i64.Load16U(offset, align), ctx))
-      case i64.Load32S(offset, align) =>
-        F.pure((r.i64.Load32S(offset, align), ctx))
-      case i64.Load32U(offset, align) =>
-        F.pure((r.i64.Load32U(offset, align), ctx))
-      case i64.Store8(offset, align) =>
-        F.pure((r.i64.Store8(offset, align), ctx))
-      case i64.Store16(offset, align) =>
-        F.pure((r.i64.Store16(offset, align), ctx))
-      case i64.Store32(offset, align) =>
-        F.pure((r.i64.Store32(offset, align), ctx))
+      case i64.Load(align, offset)  => F.pure((r.i64.Load(align, offset), ctx))
+      case i64.Store(align, offset) => F.pure((r.i64.Store(align, offset), ctx))
+      case i64.Load8S(align, offset) =>
+        F.pure((r.i64.Load8S(align, offset), ctx))
+      case i64.Load8U(align, offset) =>
+        F.pure((r.i64.Load8U(align, offset), ctx))
+      case i64.Load16S(align, offset) =>
+        F.pure((r.i64.Load16S(align, offset), ctx))
+      case i64.Load16U(align, offset) =>
+        F.pure((r.i64.Load16U(align, offset), ctx))
+      case i64.Load32S(align, offset) =>
+        F.pure((r.i64.Load32S(align, offset), ctx))
+      case i64.Load32U(align, offset) =>
+        F.pure((r.i64.Load32U(align, offset), ctx))
+      case i64.Store8(align, offset) =>
+        F.pure((r.i64.Store8(align, offset), ctx))
+      case i64.Store16(align, offset) =>
+        F.pure((r.i64.Store16(align, offset), ctx))
+      case i64.Store32(align, offset) =>
+        F.pure((r.i64.Store32(align, offset), ctx))
       case f32.Const(v)             => F.pure((r.f32.Const(v), ctx))
       case f32.Abs()                => F.pure((r.f32.Abs, ctx))
       case f32.Neg()                => F.pure((r.f32.Neg, ctx))
@@ -191,8 +191,8 @@ class Resolver[F[_]] {
       case f32.ConvertSI64()        => F.pure((r.f32.ConvertSI64, ctx))
       case f32.ConvertUI64()        => F.pure((r.f32.ConvertUI64, ctx))
       case f32.ReinterpretI32()     => F.pure((r.f32.ReinterpretI32, ctx))
-      case f32.Load(offset, align)  => F.pure((r.f32.Load(offset, align), ctx))
-      case f32.Store(offset, align) => F.pure((r.f32.Store(offset, align), ctx))
+      case f32.Load(align, offset)  => F.pure((r.f32.Load(align, offset), ctx))
+      case f32.Store(align, offset) => F.pure((r.f32.Store(align, offset), ctx))
       case f64.Const(v)             => F.pure((r.f64.Const(v), ctx))
       case f64.Abs()                => F.pure((r.f64.Abs, ctx))
       case f64.Neg()                => F.pure((r.f64.Neg, ctx))
@@ -220,8 +220,8 @@ class Resolver[F[_]] {
       case f64.ConvertSI64()        => F.pure((r.f64.ConvertSI64, ctx))
       case f64.ConvertUI64()        => F.pure((r.f64.ConvertUI64, ctx))
       case f64.ReinterpretI64()     => F.pure((r.f64.ReinterpretI64, ctx))
-      case f64.Load(offset, align)  => F.pure((r.f64.Load(offset, align), ctx))
-      case f64.Store(offset, align) => F.pure((r.f64.Store(offset, align), ctx))
+      case f64.Load(align, offset)  => F.pure((r.f64.Load(align, offset), ctx))
+      case f64.Store(align, offset) => F.pure((r.f64.Store(align, offset), ctx))
       case Drop()                   => F.pure((r.Drop, ctx))
       case Select()                 => F.pure((r.Select, ctx))
       case GetLocal(idx) =>

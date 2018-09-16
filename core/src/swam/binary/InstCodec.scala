@@ -32,7 +32,7 @@ trait InstCodec extends TypeCodec {
     hex"0b"
 
   private val block: Codec[(ResultType, Vector[Inst])] =
-    blockType.xmap[ResultType](ResultType(_), _.t) ~ expr
+    blockType.xmap[ResultType](ResultType(_), _.t) ~ lazily(expr)
 
   private val ifThenElse: Codec[ResultType ~ Vector[Inst] ~ Vector[Inst]] =
     "if" | lazily(
@@ -454,7 +454,7 @@ trait InstCodec extends TypeCodec {
           varuint32.encode(idx).map(BitVector.fromByte(inst.opcode.toByte) ++ _)
         case MemoryInst(offset, align) =>
           memarg
-            .encode(offset -> align)
+            .encode(align -> offset)
             .map(BitVector.fromByte(inst.opcode.toByte) ++ _)
         case MemorySize =>
           constant(hex"00")

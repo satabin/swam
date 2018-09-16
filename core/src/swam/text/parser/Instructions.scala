@@ -225,7 +225,7 @@ object Instructions {
     )
 
   private def memarg(n: Int): P[(Int, Int)] =
-    P(("offset=" ~~ uint32).?.map(_.getOrElse(0)) ~ ("align=" ~~ uint32).?.map(a => log2(a.getOrElse(n))))
+    P(("offset=" ~~ uint32).?.map(_.getOrElse(0)) ~ ("align=" ~~ uint32).?.map(a => log2(a.getOrElse(n)))).map(_.swap)
 
   private val memarg1 = memarg(1)
   private val memarg2 = memarg(2)

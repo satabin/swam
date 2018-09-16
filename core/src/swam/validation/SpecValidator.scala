@@ -174,7 +174,7 @@ class SpecValidator[F[_]](dataHardMax: Int) extends Validator[F] {
           case None =>
             F.raiseError(new ValidationException(s"unknown global $x."))
         }
-      case Load(t, offset, align) =>
+      case Load(t, align, offset) =>
         ctx.mems.lift(0) match {
           case Some(_) =>
             if ((1 << align) <= t.width / 8)
@@ -184,7 +184,7 @@ class SpecValidator[F[_]](dataHardMax: Int) extends Validator[F] {
           case None =>
             F.raiseError(new ValidationException("unknown memory 0."))
         }
-      case LoadN(t, n, offset, align) =>
+      case LoadN(t, n, align, offset) =>
         ctx.mems.lift(0) match {
           case Some(_) =>
             if ((1 << align) <= n / 8)
@@ -194,7 +194,7 @@ class SpecValidator[F[_]](dataHardMax: Int) extends Validator[F] {
           case None =>
             F.raiseError(new ValidationException("unknown memory 0."))
         }
-      case Store(t, offset, align) =>
+      case Store(t, align, offset) =>
         ctx.mems.lift(0) match {
           case Some(_) =>
             if ((1 << align) <= t.width / 8)
@@ -207,7 +207,7 @@ class SpecValidator[F[_]](dataHardMax: Int) extends Validator[F] {
           case None =>
             F.raiseError(new ValidationException("unknown memory 0."))
         }
-      case StoreN(t, n, offset, align) =>
+      case StoreN(t, n, align, offset) =>
         ctx.mems.lift(0) match {
           case Some(_) =>
             if ((1 << align) <= n / 8)

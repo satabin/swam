@@ -357,25 +357,25 @@ class Compiler[F[_]](engine: SwamEngine[F]) extends compiler.Compiler[F] {
           case op @ Convertop(_, _) =>
             builder += op.opcode.toByte
             loop(instIdx + 1, ctx.copy(offset = ctx.offset + 1), false)
-          case op @ Load(_, offset, align) =>
+          case op @ Load(_, align, offset) =>
             builder += op.opcode.toByte
-            storeInt(builder, offset)
             storeInt(builder, align)
+            storeInt(builder, offset)
             loop(instIdx + 1, ctx.copy(offset = ctx.offset + 9), false)
-          case op @ LoadN(_, _, offset, align) =>
+          case op @ LoadN(_, _, align, offset) =>
             builder += op.opcode.toByte
-            storeInt(builder, offset)
             storeInt(builder, align)
+            storeInt(builder, offset)
             loop(instIdx + 1, ctx.copy(offset = ctx.offset + 9), false)
-          case op @ Store(_, offset, align) =>
+          case op @ Store(_, align, offset) =>
             builder += op.opcode.toByte
-            storeInt(builder, offset)
             storeInt(builder, align)
+            storeInt(builder, offset)
             loop(instIdx + 1, ctx.pop(2).copy(offset = ctx.offset + 9), false)
-          case op @ StoreN(_, _, offset, align) =>
+          case op @ StoreN(_, _, align, offset) =>
             builder += op.opcode.toByte
-            storeInt(builder, offset)
             storeInt(builder, align)
+            storeInt(builder, offset)
             loop(instIdx + 1, ctx.copy(offset = ctx.offset + 9), false)
           case MemoryGrow =>
             builder += Asm.MemoryGrow.toByte

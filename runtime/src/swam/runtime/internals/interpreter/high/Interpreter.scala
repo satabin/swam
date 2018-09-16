@@ -784,8 +784,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
           }
         // === memory instructions ===
         case OpCode.I32Load =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -797,8 +797,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I32Load8U =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -810,8 +810,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I32Load8S =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -823,8 +823,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I32Load16U =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -836,8 +836,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I32Load16S =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -849,8 +849,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I64Load =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -862,8 +862,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I64Load8U =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -875,8 +875,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I64Load8S =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -888,8 +888,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I64Load16U =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -901,8 +901,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I64Load16S =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -914,8 +914,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I64Load32U =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -927,8 +927,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I64Load32S =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -940,8 +940,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.F32Load =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -953,8 +953,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.F64Load =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
           val ea = i + offset
@@ -966,8 +966,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I32Store =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popInt()
           val i = frame.stack.popInt()
@@ -979,8 +979,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I32Store8 =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popInt()
           val i = frame.stack.popInt()
@@ -993,8 +993,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I32Store16 =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popInt()
           val i = frame.stack.popInt()
@@ -1007,8 +1007,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I64Store =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popLong()
           val i = frame.stack.popInt()
@@ -1020,8 +1020,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I64Store8 =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popLong()
           val i = frame.stack.popInt()
@@ -1034,8 +1034,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I64Store16 =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popLong()
           val i = frame.stack.popInt()
@@ -1048,8 +1048,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.I64Store32 =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popLong()
           val i = frame.stack.popInt()
@@ -1062,8 +1062,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.F32Store =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popFloat()
           val i = frame.stack.popInt()
@@ -1075,8 +1075,8 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
             F.pure(Left(frame))
           }
         case OpCode.F64Store =>
-          val offset = frame.readInt()
           val align = frame.readInt()
+          val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popDouble()
           val i = frame.stack.popInt()

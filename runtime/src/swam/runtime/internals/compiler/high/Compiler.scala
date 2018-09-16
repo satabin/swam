@@ -159,10 +159,10 @@ class Compiler[F[_]](engine: SwamEngine[F]) extends compiler.Compiler[F] {
           builder += op.opcode.toByte
           storeLong(builder, JDouble.doubleToRawLongBits(v))
           (builder, false)
-        case ((builder, _), op @ MemoryInst(offset, align)) =>
+        case ((builder, _), op @ MemoryInst(align, offset)) =>
           builder += op.opcode.toByte
-          storeInt(builder, offset)
           storeInt(builder, align)
+          storeInt(builder, offset)
           (builder, false)
         case ((builder, _), op @ VarInst(idx)) =>
           builder += op.opcode.toByte
