@@ -184,10 +184,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a class="object" href="TCMap$.html" title=""></a>
                         <a class="class" href="TCMap.html" title="A map whose elements may be of any type as long as a given typeclass for them is provided."></a>
                         <a href="TCMap.html" title="A map whose elements may be of any type as long as a given typeclass for them is provided.">TCMap</a>
-                      </li><li class="current-entities indented3">
-                        <span class="separator"></span>
-                        <a class="object" href="test$.html" title=""></a>
-                        <a href="test$.html" title="">test</a>
                       </li>
               </ul>
             </div>
@@ -473,9 +469,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               
         </dd></dl></div>
     </li><li name="swam.runtime.imports.IFunction0#invoke" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="invoke(parameters:Vector[swam.runtime.Value])(implicitF:cats.MonadError[F,Throwable]):F[Option[swam.runtime.Value]]"></a><a id="invoke(Vector[Value])(MonadError[F,Throwable]):F[Option[Value]]"></a>
+      <a id="invoke(parameters:Vector[swam.runtime.Value],m:Option[swam.runtime.Memory[F]])(implicitF:cats.MonadError[F,Throwable]):F[Option[swam.runtime.Value]]"></a><a id="invoke(Vector[Value],Option[Memory[F]])(MonadError[F,Throwable]):F[Option[Value]]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/imports/IFunction0.html#invoke(parameters:Vector[swam.runtime.Value])(implicitF:cats.MonadError[F,Throwable]):F[Option[swam.runtime.Value]]" title="Permalink">
+      <a href="../../../swam/runtime/imports/IFunction0.html#invoke(parameters:Vector[swam.runtime.Value],m:Option[swam.runtime.Memory[F]])(implicitF:cats.MonadError[F,Throwable]):F[Option[swam.runtime.Value]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -484,7 +480,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">invoke</span><span class="params">(<span name="parameters">parameters: <span class="extype" name="scala.Vector">Vector</span>[<a href="../Value.html" class="extype" name="swam.runtime.Value">Value</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.IFunction0.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.imports.IFunction0.F">F</span>[<span class="extype" name="scala.Option">Option</span>[<a href="../Value.html" class="extype" name="swam.runtime.Value">Value</a>]]</span>
+        <span class="name">invoke</span><span class="params">(<span name="parameters">parameters: <span class="extype" name="scala.Vector">Vector</span>[<a href="../Value.html" class="extype" name="swam.runtime.Value">Value</a>]</span>, <span name="m">m: <span class="extype" name="scala.Option">Option</span>[<a href="../Memory.html" class="extype" name="swam.runtime.Memory">Memory</a>[<span class="extype" name="swam.runtime.imports.IFunction0.F">F</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.IFunction0.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.imports.IFunction0.F">F</span>[<span class="extype" name="scala.Option">Option</span>[<a href="../Value.html" class="extype" name="swam.runtime.Value">Value</a>]]</span>
       </span>
       
       <p class="shortcomment cmt">Invokes the function and returns its result.</p><div class="fullcomment"><div class="comment cmt"><p>Invokes the function and returns its result.</p><p>Implementations must not throw any exception but

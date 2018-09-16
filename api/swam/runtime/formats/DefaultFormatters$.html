@@ -140,10 +140,38 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam.runtime">runtime</a></dd></dl></div>
+    </li><li name="swam.runtime.formats.string" visbl="pub" class="indented4 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="string"></a><a id="string:string"></a>
+      <span class="permalink">
+      <a href="../../../swam/runtime/formats/index.html#string" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="string/index.html"><span class="name">string</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="swam.runtime.formats">formats</a></dd></dl></div>
     </li><li class="current-entities indented3">
                         <a class="object" href="" title=""></a>
                         <a class="trait" href="DefaultFormatters.html" title="A collection of default formatters for primitive Scala types."></a>
                         <a href="DefaultFormatters.html" title="A collection of default formatters for primitive Scala types.">DefaultFormatters</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="trait" href="SimpleValueFormatter.html" title=""></a>
+                        <a href="SimpleValueFormatter.html" title="">SimpleValueFormatter</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="trait" href="SimpleValueReader.html" title="A reader is used to transform a simple web assembly value into a scala object."></a>
+                        <a href="SimpleValueReader.html" title="A reader is used to transform a simple web assembly value into a scala object.">SimpleValueReader</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="trait" href="SimpleValueWriter.html" title="A writer is used to transform a scala value into a simple web assembly value."></a>
+                        <a href="SimpleValueWriter.html" title="A writer is used to transform a scala value into a simple web assembly value.">SimpleValueWriter</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
                         <a class="trait" href="ValueFormatter.html" title="A formatter is both a ValueReader and a ValueWriter."></a>
@@ -308,9 +336,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="swam.runtime.formats.DefaultFormatters#boolFormatter" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="boolFormatter:swam.runtime.formats.ValueFormatter[Boolean]"></a><a id="boolFormatter:ValueFormatter[Boolean]"></a>
+      <a id="boolFormatter:swam.runtime.formats.SimpleValueFormatter[Boolean]"></a><a id="boolFormatter:SimpleValueFormatter[Boolean]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/DefaultFormatters$.html#boolFormatter:swam.runtime.formats.ValueFormatter[Boolean]" title="Permalink">
+      <a href="../../../swam/runtime/formats/DefaultFormatters$.html#boolFormatter:swam.runtime.formats.SimpleValueFormatter[Boolean]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -319,7 +347,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">boolFormatter</span><span class="result">: <a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+        <span class="name">boolFormatter</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DefaultFormatters.html" class="extype" name="swam.runtime.formats.DefaultFormatters">DefaultFormatters</a></dd></dl></div>
@@ -348,9 +376,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               
         </dd></dl></div>
     </li><li name="swam.runtime.formats.DefaultFormatters#doubleFormatter" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="doubleFormatter:swam.runtime.formats.ValueFormatter[Double]"></a><a id="doubleFormatter:ValueFormatter[Double]"></a>
+      <a id="doubleFormatter:swam.runtime.formats.SimpleValueFormatter[Double]"></a><a id="doubleFormatter:SimpleValueFormatter[Double]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/DefaultFormatters$.html#doubleFormatter:swam.runtime.formats.ValueFormatter[Double]" title="Permalink">
+      <a href="../../../swam/runtime/formats/DefaultFormatters$.html#doubleFormatter:swam.runtime.formats.SimpleValueFormatter[Double]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -359,7 +387,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">doubleFormatter</span><span class="result">: <a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="scala.Double">Double</span>]</span>
+        <span class="name">doubleFormatter</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DefaultFormatters.html" class="extype" name="swam.runtime.formats.DefaultFormatters">DefaultFormatters</a></dd></dl></div>
@@ -418,9 +446,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               
         </dd></dl></div>
     </li><li name="swam.runtime.formats.DefaultFormatters#floatFormatter" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="floatFormatter:swam.runtime.formats.ValueFormatter[Float]"></a><a id="floatFormatter:ValueFormatter[Float]"></a>
+      <a id="floatFormatter:swam.runtime.formats.SimpleValueFormatter[Float]"></a><a id="floatFormatter:SimpleValueFormatter[Float]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/DefaultFormatters$.html#floatFormatter:swam.runtime.formats.ValueFormatter[Float]" title="Permalink">
+      <a href="../../../swam/runtime/formats/DefaultFormatters$.html#floatFormatter:swam.runtime.formats.SimpleValueFormatter[Float]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -429,7 +457,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">floatFormatter</span><span class="result">: <a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="scala.Float">Float</span>]</span>
+        <span class="name">floatFormatter</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="scala.Float">Float</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DefaultFormatters.html" class="extype" name="swam.runtime.formats.DefaultFormatters">DefaultFormatters</a></dd></dl></div>
@@ -472,9 +500,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               
         </dd></dl></div>
     </li><li name="swam.runtime.formats.DefaultFormatters#intFormatter" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="intFormatter:swam.runtime.formats.ValueFormatter[Int]"></a><a id="intFormatter:ValueFormatter[Int]"></a>
+      <a id="intFormatter:swam.runtime.formats.SimpleValueFormatter[Int]"></a><a id="intFormatter:SimpleValueFormatter[Int]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/DefaultFormatters$.html#intFormatter:swam.runtime.formats.ValueFormatter[Int]" title="Permalink">
+      <a href="../../../swam/runtime/formats/DefaultFormatters$.html#intFormatter:swam.runtime.formats.SimpleValueFormatter[Int]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -483,7 +511,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">intFormatter</span><span class="result">: <a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="scala.Int">Int</span>]</span>
+        <span class="name">intFormatter</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DefaultFormatters.html" class="extype" name="swam.runtime.formats.DefaultFormatters">DefaultFormatters</a></dd></dl></div>
@@ -504,9 +532,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="swam.runtime.formats.DefaultFormatters#longFormatter" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="longFormatter:swam.runtime.formats.ValueFormatter[Long]"></a><a id="longFormatter:ValueFormatter[Long]"></a>
+      <a id="longFormatter:swam.runtime.formats.SimpleValueFormatter[Long]"></a><a id="longFormatter:SimpleValueFormatter[Long]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/DefaultFormatters$.html#longFormatter:swam.runtime.formats.ValueFormatter[Long]" title="Permalink">
+      <a href="../../../swam/runtime/formats/DefaultFormatters$.html#longFormatter:swam.runtime.formats.SimpleValueFormatter[Long]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -515,7 +543,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">longFormatter</span><span class="result">: <a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="scala.Long">Long</span>]</span>
+        <span class="name">longFormatter</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="scala.Long">Long</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DefaultFormatters.html" class="extype" name="swam.runtime.formats.DefaultFormatters">DefaultFormatters</a></dd></dl></div>
