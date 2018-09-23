@@ -329,7 +329,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">SwamEngine</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+        <span class="name">SwamEngine</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <a href="../ModuleLoader.html" class="extype" name="swam.ModuleLoader">ModuleLoader</a>[<span class="extype" name="swam.runtime.SwamEngine.F">F</span>]</span>
       </span>
       </h4>
 
@@ -341,7 +341,7 @@ over the same effectful type <code>F</code>.
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><a href="../ModuleLoader.html" class="extype" name="swam.ModuleLoader">ModuleLoader</a>[<span class="extype" name="swam.runtime.SwamEngine.F">F</span>], <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -367,7 +367,7 @@ over the same effectful type <code>F</code>.
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="swam.runtime.SwamEngine"><span>SwamEngine</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="swam.runtime.SwamEngine"><span>SwamEngine</span></li><li class="in" name="swam.ModuleLoader"><span>ModuleLoader</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -792,6 +792,38 @@ message wrapped in it.
                 <span class="name">@native</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li name="swam.ModuleLoader#readBytes" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="readBytes(bytes:scodec.bits.BitVector)(implicitF:cats.effect.Effect[F]):fs2.Stream[F,swam.syntax.Section]"></a><a id="readBytes(BitVector)(Effect[F]):Stream[F,Section]"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/SwamEngine.html#readBytes(bytes:scodec.bits.BitVector)(implicitF:cats.effect.Effect[F]):fs2.Stream[F,swam.syntax.Section]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">readBytes</span><span class="params">(<span name="bytes">bytes: <span class="extype" name="scodec.bits.BitVector">BitVector</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.runtime.SwamEngine.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.runtime.SwamEngine.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Reads a binary module from the given bytes.</p><div class="fullcomment"><div class="comment cmt"><p>Reads a binary module from the given bytes.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../ModuleLoader.html" class="extype" name="swam.ModuleLoader">ModuleLoader</a></dd></dl></div>
+    </li><li name="swam.ModuleLoader#readPath" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="readPath(path:java.nio.file.Path)(implicitF:cats.effect.Effect[F]):fs2.Stream[F,swam.syntax.Section]"></a><a id="readPath(Path)(Effect[F]):Stream[F,Section]"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/SwamEngine.html#readPath(path:java.nio.file.Path)(implicitF:cats.effect.Effect[F]):fs2.Stream[F,swam.syntax.Section]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">readPath</span><span class="params">(<span name="path">path: <span class="extype" name="java.nio.file.Path">Path</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.runtime.SwamEngine.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.runtime.SwamEngine.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../ModuleLoader.html" class="extype" name="swam.ModuleLoader">ModuleLoader</a></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
@@ -953,7 +985,9 @@ message wrapped in it.
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="scala.AnyRef">
+        <div class="parent" name="swam.ModuleLoader">
+              <h3>Inherited from <a href="../ModuleLoader.html" class="extype" name="swam.ModuleLoader">ModuleLoader</a>[<span class="extype" name="swam.runtime.SwamEngine.F">F</span>]</h3>
+            </div><div class="parent" name="scala.AnyRef">
               <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
             </div><div class="parent" name="scala.Any">
               <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
