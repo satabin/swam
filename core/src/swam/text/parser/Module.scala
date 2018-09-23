@@ -30,19 +30,19 @@ object ModuleParsers {
   import Types._
 
   private val `type`: P[Seq[Type]] =
-    P(Index ~ word("type") ~/ id.!.? ~ functype ~ ")").map {
+    P(Index ~ word("type") ~/ id.? ~ functype ~ ")").map {
       case (idx, id, (p, tpe)) => Seq(Type(makeId(id), p, tpe)(idx))
     }
 
   private val importdesc: P[ImportDesc] =
     P(
-      ("(" ~ Index ~ ((word("func") ~/ id.!.?.map(makeId(_)) ~ typeuse)
+      ("(" ~ Index ~ ((word("func") ~/ id.?.map(makeId(_)) ~ typeuse)
         .map((ImportDesc.Func.apply _).tupled)
-        | (word("table") ~/ id.!.?.map(makeId(_)) ~ tabletype)
+        | (word("table") ~/ id.?.map(makeId(_)) ~ tabletype)
           .map((ImportDesc.Table.apply _).tupled)
-        | (word("memory") ~/ id.!.?.map(makeId(_)) ~ memtype)
+        | (word("memory") ~/ id.?.map(makeId(_)) ~ memtype)
           .map((ImportDesc.Memory.apply _).tupled)
-        | (word("global") ~/ id.!.?.map(makeId(_)) ~ globaltype)
+        | (word("global") ~/ id.?.map(makeId(_)) ~ globaltype)
           .map((ImportDesc.Global.apply _).tupled))).map {
         case (idx, d) => d(idx)
       } ~ ")")
@@ -53,7 +53,7 @@ object ModuleParsers {
     }
 
   private val locals: P[Seq[Local]] =
-    P("(" ~ Index ~ word("local") ~/ ((id.! ~/ valtype).map {
+    P("(" ~ Index ~ word("local") ~/ ((id ~/ valtype).map {
       case (id, tpe) => Seq(Local(SomeId(id), tpe) _)
     }
       | valtype.rep.map(_.map(Local(NoId, _) _))) ~ ")").rep
@@ -66,7 +66,7 @@ object ModuleParsers {
 
   private val function: P[Seq[Field]] =
     P(
-      Index ~ word("func") ~/ id.!.? ~ inlineexport.rep ~ (NoCut(typeuse ~ locals ~ instrs)
+      Index ~ word("func") ~/ id.? ~ inlineexport.rep ~ (NoCut(typeuse ~ locals ~ instrs)
         .map {
           case (tu, locals, instrs) =>
             (idx: Int, id: Option[String], exports: Seq[String]) =>
@@ -91,7 +91,7 @@ object ModuleParsers {
     }
 
   private val table: P[Seq[Field]] =
-    P(Index ~ word("table") ~/ id.!.? ~ inlineexport.rep ~ (tabletype.map {
+    P(Index ~ word("table") ~/ id.? ~ inlineexport.rep ~ (tabletype.map {
       case (tpe) =>
         (idx: Int, id: Option[String], exports: Seq[String]) =>
           {
@@ -123,7 +123,7 @@ object ModuleParsers {
       }) ~ ")").map { case (idx, id, exports, f) => f(idx, id, exports) }
 
   private val memory: P[Seq[Field]] =
-    P(Index ~ word("memory") ~/ id.!.? ~ inlineexport.rep ~ (memtype.map {
+    P(Index ~ word("memory") ~/ id.? ~ inlineexport.rep ~ (memtype.map {
       tpe => (idx: Int, id: Option[String], exports: Seq[String]) =>
         {
           val id1 = if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
@@ -155,7 +155,7 @@ object ModuleParsers {
       }) ~ ")").map { case (idx, id, exports, f) => f(idx, id, exports) }
 
   private val global: P[Seq[Field]] =
-    P(Index ~ word("global") ~/ id.!.? ~ inlineexport.rep ~ ((globaltype ~ expr)
+    P(Index ~ word("global") ~/ id.? ~ inlineexport.rep ~ ((globaltype ~ expr)
       .map {
         case (tpe, e) =>
           (idx: Int, id: Option[String], exports: Seq[String]) =>
@@ -215,7 +215,7 @@ object ModuleParsers {
 
   val module: P[Module] =
     P(
-      ("(" ~ Index ~ word("module") ~/ id.!.? ~ fields ~ ")")
+      ("(" ~ Index ~ word("module") ~/ id.? ~ fields ~ ")")
         | Index ~ PassWith(None) ~ field.rep(min = 1).map(_.flatten)).map {
       case (idx, id, flds) => Module(makeId(id), flds)(idx)
     }

@@ -51,8 +51,8 @@ object Lexical {
   val keyword: P0 =
     P(CharIn('a' to 'z') ~ idchar.rep)
 
-  val id: P0 =
-    P("$" ~ idchar.rep(min = 1))
+  val id: P[String] =
+    P("$" ~ idchar.rep(min = 1).!)
 
   private val sign: P[Int] =
     CharIn("+-").?.!.map {
@@ -169,7 +169,7 @@ object Lexical {
     P(s ~ !idchar).opaque(s)
 
   val index: P[Index] =
-    P(uint32.map(Left(_)) | id.!.map(id => Right(SomeId(id))))
+    P(uint32.map(Left(_)) | id.map(id => Right(SomeId(id))))
       .opaque("index or name")
 
 }

@@ -30,7 +30,7 @@ object Instructions {
   import Types._
 
   private val label: P[Id] =
-    P(id.!.?.map {
+    P(id.?.map {
       case Some(id) => SomeId(id)
       case None     => NoId
     })
