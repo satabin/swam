@@ -29,22 +29,22 @@ object TestScriptParser {
   val module: P[TestModule] =
     P(
       NoCut(
-        ("(" ~ Index ~ word("module") ~ (id.!.? ~ ((word("binary") ~/ bstring.rep
+        ("(" ~ Index ~ word("module") ~ (id.? ~ ((word("binary") ~/ bstring.rep
           .map(ss => (idx: Int, id: Option[String]) => BinaryModule(id, ss.flatten.toArray)(idx))) | (word("quote") ~/ string.rep
           .map(ss => (idx: Int, id: Option[String]) => QuotedModule(id, ss.mkString("", "", ""))(idx))))))
           .map { case (idx, (id, f)) => f(idx, id) } ~ ")")
         | ModuleParsers.module.map(ValidModule(_)))
 
   val register: P[Register] =
-    P("(" ~ Index ~ word("register") ~/ string ~ id.!.? ~ ")").map {
+    P("(" ~ Index ~ word("register") ~/ string ~ id.? ~ ")").map {
       case (pos, name, id) => Register(name, id)(pos)
     }
 
   val action: P[Action] =
-    P("(" ~ Index ~ ((word("invoke") ~/ id.!.? ~ string ~ expr).map {
+    P("(" ~ Index ~ ((word("invoke") ~/ id.? ~ string ~ expr).map {
       case (id, name, params) => Invoke(id, name, params) _
     }
-      | (word("get") ~/ id.!.? ~ string).map {
+      | (word("get") ~/ id.? ~ string).map {
         case (id, name) => Get(id, name) _
       }) ~ ")").map { case (idx, f) => f(idx) }
 
@@ -81,13 +81,13 @@ object TestScriptParser {
           }) ~ ")").map { case (idx, f) => f(idx) }
 
   val meta: P[Meta] =
-    P("(" ~ Index ~ ((word("script") ~/ id.!.? ~ script).map {
+    P("(" ~ Index ~ ((word("script") ~/ id.? ~ script).map {
       case (id, sc) => Script(id, sc) _
     }
-      | (word("input") ~/ id.!.? ~ string).map {
+      | (word("input") ~/ id.? ~ string).map {
         case (id, f) => Input(id, f) _
       }
-      | (word("output") ~/ id.!.? ~ string.?).map {
+      | (word("output") ~/ id.? ~ string.?).map {
         case (id, f) => Output(id, f) _
       }) ~ ")").map { case (idx, f) => f(idx) }
 

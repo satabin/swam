@@ -15,25 +15,26 @@
  */
 
 package swam
-package text
-package unresolved
+package decompilation
 
-sealed trait Id {
-  def toOption: Option[String]
-}
-object Id {
-  def fromOption(o: Option[String]): Id =
-    o match {
-      case Some(n) => SomeId(n)
-      case None    => NoId
-    }
-}
-case class SomeId(id: String) extends Id {
-  def toOption: Option[String] = Some(id)
-}
-case class FreshId(nb: Int) extends Id {
-  def toOption: Option[String] = Some(s"#fresh-$nb")
-}
-case object NoId extends Id {
-  def toOption: Option[String] = None
+import syntax.Section
+import syntax.pretty._
+import util.pretty._
+
+import cats.implicits._
+import cats.effect._
+
+import fs2._
+
+import scala.language.higherKinds
+
+/** A decompiler from binary format, that formats sections as they come.
+  * This is a raw decompiler, not performing any validation, nor transforming
+  * the binary format.
+  */
+class RawDecompiler[F[_]] extends Decompiler[F] {
+
+  def decompile(sections: Stream[F, Section])(implicit F: Effect[F]): F[Doc] =
+    sections.map(_.pretty).compile.toList.map(seq(newline, _))
+
 }

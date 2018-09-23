@@ -15,25 +15,6 @@
  */
 
 package swam
-package text
-package unresolved
+package decompilation
 
-sealed trait Id {
-  def toOption: Option[String]
-}
-object Id {
-  def fromOption(o: Option[String]): Id =
-    o match {
-      case Some(n) => SomeId(n)
-      case None    => NoId
-    }
-}
-case class SomeId(id: String) extends Id {
-  def toOption: Option[String] = Some(id)
-}
-case class FreshId(nb: Int) extends Id {
-  def toOption: Option[String] = Some(s"#fresh-$nb")
-}
-case object NoId extends Id {
-  def toOption: Option[String] = None
-}
+class DecompilerException(msg: String) extends SwamException(msg)

@@ -47,7 +47,7 @@ object Types {
 
   private val params: P[Vector[Param]] =
     P(
-      ("(" ~ word("param") ~ id.!.map(SomeId(_)) ~ valtype ~ ")").rep(min = 1)
+      ("(" ~ word("param") ~ id.map(SomeId(_)) ~ valtype ~ ")").rep(min = 1)
         | ("(" ~ word("param") ~ valtype.rep
           .map(_.map(NoId -> _)) ~ ")")
     ).rep.map(_.flatten.toVector)

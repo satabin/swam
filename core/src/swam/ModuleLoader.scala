@@ -15,25 +15,30 @@
  */
 
 package swam
-package text
-package unresolved
 
-sealed trait Id {
-  def toOption: Option[String]
-}
-object Id {
-  def fromOption(o: Option[String]): Id =
-    o match {
-      case Some(n) => SomeId(n)
-      case None    => NoId
-    }
-}
-case class SomeId(id: String) extends Id {
-  def toOption: Option[String] = Some(id)
-}
-case class FreshId(nb: Int) extends Id {
-  def toOption: Option[String] = Some(s"#fresh-$nb")
-}
-case object NoId extends Id {
-  def toOption: Option[String] = None
+import binary._
+import syntax._
+
+import cats.effect._
+
+import scodec.bits._
+
+import fs2._
+
+import java.nio.file.Path
+
+import scala.language.higherKinds
+
+/** Base class for anything that requires reading a module from stream or file.
+  */
+class ModuleLoader[F[_]] {
+
+  def readPath(path: Path)(implicit F: Effect[F]): Stream[F, Section] =
+    readBytes(BitVector.fromChannel(new java.io.FileInputStream(path.toFile).getChannel))
+
+  /** Reads a binary module from the given bytes. */
+  def readBytes(bytes: BitVector)(implicit F: Effect[F]): Stream[F, Section] =
+    ModuleStream.decoder
+      .decode(bytes)
+
 }
