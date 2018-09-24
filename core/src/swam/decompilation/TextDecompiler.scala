@@ -168,28 +168,33 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
           val start = decompileStart(env.start, env.functionNames)
           // and finally, at last, the functions
           val functions =
-            decompileFunctions(env.functions.map(env.types(_)).zip(env.code), env.types, env.functionNames, env.localNames, fidx)
+            decompileFunctions(env.functions.map(env.types(_)).zip(env.code),
+                               env.types,
+                               env.functionNames,
+                               env.localNames,
+                               fidx)
           // build the map from index to type
           val types = imports.zipWithIndex.collect {
             case (u.Import(_, _, u.ImportDesc.Func(id, u.TypeUse(_, ps, rs))), idx) =>
               val i = id match {
                 case u.SomeId(_) => Right(id)
-                case _ => Left(idx)
+                case _           => Left(idx)
               }
               (i -> FuncType(ps.map(_._2), rs))
           } ++ functions.zipWithIndex.map {
             case (u.Function(id, u.TypeUse(_, ps, rs), _, _), idx) =>
               val i = id match {
                 case u.SomeId(_) => Right(id)
-                case _ => Left(idx + fidx)
+                case _           => Left(idx + fidx)
               }
               (i -> FuncType(ps.map(_._2), rs))
           }
           val id = env.moduleName match {
             case Some(Valid(n)) => u.SomeId(n)
-            case _ => u.NoId
+            case _              => u.NoId
           }
-          (u.Module(id, imports ++ exports ++ memories ++ data ++ tables ++ elems ++ start ++ functions)(-1), types.toMap)
+          (u.Module(id, imports ++ exports ++ memories ++ data ++ tables ++ elems ++ start ++ functions)(-1),
+           types.toMap)
         case None =>
           (u.Module(u.NoId, Seq.empty)(-1), Map.empty)
       }
@@ -228,7 +233,7 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
       case Export(name, ExternalKind.Function, idx) =>
         val fid = functionNames.get(idx) match {
           case Some(Valid(n)) => Right(u.SomeId(n))
-          case _    => Left(idx)
+          case _              => Left(idx)
         }
         u.Export(name, u.ExportDesc.Func(fid)(-1))(-1)
       case Export(name, ExternalKind.Table, idx) =>
@@ -243,7 +248,7 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
     mems.map(u.Memory(u.NoId, _)(-1))
 
   private def decompileData(data: Vector[Data],
-                                   functypes: Vector[FuncType],
+                            functypes: Vector[FuncType],
                             functionNames: Map[Int, String],
                             localNames: Map[(Int, Int), String]): Seq[u.Data] =
     data.map {
@@ -255,7 +260,7 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
     tables.map(u.Table(u.NoId, _)(-1))
 
   private def decompileElems(elems: Vector[Elem],
-                                   functypes: Vector[FuncType],
+                             functypes: Vector[FuncType],
                              functionNames: Map[Int, String],
                              localNames: Map[(Int, Int), String]): Seq[u.Elem] =
     elems.map {
@@ -263,7 +268,7 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
         val funs = init.map(idx =>
           functionNames.get(idx) match {
             case Some(Valid(n)) => Right(u.SomeId(n))
-            case _    => Left(idx)
+            case _              => Left(idx)
         })
         u.Elem(Left(idx), decompileExpr(offset, -1, functypes, functionNames, localNames), funs)(-1)
     }
@@ -273,14 +278,14 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
       case Some(idx) =>
         functionNames.get(idx) match {
           case Some(Valid(n)) => Seq(u.StartFunc(Right(u.SomeId(n)))(-1))
-          case _    => Seq(u.StartFunc(Left(idx))(-1))
+          case _              => Seq(u.StartFunc(Left(idx))(-1))
         }
       case None =>
         Seq.empty
     }
 
   private def decompileFunctions(functions: Seq[(FuncType, FuncBody)],
-                                   functypes: Vector[FuncType],
+                                 functypes: Vector[FuncType],
                                  functionNames: Map[Int, String],
                                  localNames: Map[(Int, Int), String],
                                  fidx: Int): Seq[u.Function] =
@@ -289,13 +294,13 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
         val gidx = idx + fidx
         val id = functionNames.get(gidx) match {
           case Some(Valid(n)) => u.SomeId(n)
-          case _    => u.NoId
+          case _              => u.NoId
         }
         val params = tpe.params.zipWithIndex.map {
           case (tpe, i) =>
             localNames.get((gidx, i)) match {
               case Some(Valid(n)) => (u.SomeId(n), tpe)
-              case _    => (u.NoId, tpe)
+              case _              => (u.NoId, tpe)
             }
         }
         val nbparams = params.size
@@ -309,7 +314,7 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
               val ls = (count - 1 to 0).map { i =>
                 val id = localNames.get((gidx, idx + i)) match {
                   case Some(Valid(n)) => u.SomeId(n)
-                  case _    => u.NoId
+                  case _              => u.NoId
                 }
                 u.Local(id, tpe)(-1)
               }
@@ -322,10 +327,10 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
 
   private def decompileExpr(expr: Expr,
                             fidx: Int,
-                                   functypes: Vector[FuncType],
+                            functypes: Vector[FuncType],
                             functionNames: Map[Int, String],
                             localNames: Map[(Int, Int), String]): u.Expr =
-                              expr.map(decompileInstruction(_, fidx, functypes, functionNames, localNames))
+    expr.map(decompileInstruction(_, fidx, functypes, functionNames, localNames))
 
   private def decompileInstruction(i: Inst,
                                    fidx: Int,
@@ -335,12 +340,12 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
     def getLocalId(idx: Int) =
       localNames.get((fidx, idx)) match {
         case Some(Valid(n)) => Right(u.SomeId(n))
-        case _    => Left(idx)
+        case _              => Left(idx)
       }
     def getFunId(idx: Int) =
       functionNames.get(idx) match {
         case Some(Valid(n)) => Right(u.SomeId(n))
-        case _ => Left(idx)
+        case _              => Left(idx)
       }
     i match {
       case i32.Const(v)       => u.i32.Const(v)(-1)
@@ -504,8 +509,10 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
       case MemoryGrow         => u.MemoryGrow()(-1)
       case Nop                => u.Nop()(-1)
       case Unreachable        => u.Unreachable()(-1)
-      case Block(tpe, is)     => u.Block(u.NoId, tpe, decompileExpr(is, fidx, functypes, functionNames, localNames), u.NoId)(-1)
-      case Loop(tpe, is)      => u.Loop(u.NoId, tpe, decompileExpr(is, fidx, functypes, functionNames, localNames), u.NoId)(-1)
+      case Block(tpe, is) =>
+        u.Block(u.NoId, tpe, decompileExpr(is, fidx, functypes, functionNames, localNames), u.NoId)(-1)
+      case Loop(tpe, is) =>
+        u.Loop(u.NoId, tpe, decompileExpr(is, fidx, functypes, functionNames, localNames), u.NoId)(-1)
       case If(tpe, theni, elsei) =>
         u.If(u.NoId,
              tpe,
@@ -513,8 +520,8 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
              u.NoId,
              decompileExpr(elsei, fidx, functypes, functionNames, localNames),
              u.NoId)(-1)
-      case Br(label) => u.Br(Left(label))(-1)
-      case BrIf(label) => u.BrIf(Left(label))(-1)
+      case Br(label)           => u.Br(Left(label))(-1)
+      case BrIf(label)         => u.BrIf(Left(label))(-1)
       case BrTable(table, lbl) => u.BrTable(table.map(Left(_)), Left(lbl))(-1)
       case Return              => u.Return()(-1)
       case Call(lbl)           => u.Call(getFunId(lbl))(-1)
