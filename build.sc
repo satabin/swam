@@ -42,9 +42,9 @@ object core extends SwamModule with PublishModule {
   def ivyDeps = Agg(
     ivy"com.lihaoyi::fastparse:1.0.0",
     ivy"com.beachape::enumeratum:1.5.13",
-    ivy"org.typelevel::cats-effect:1.0.0-RC2",
-    ivy"co.fs2::fs2-core:0.10.5",
-    ivy"co.fs2::fs2-io:0.10.5",
+    ivy"org.typelevel::cats-effect:1.0.0",
+    ivy"co.fs2::fs2-core:0.10.6",
+    ivy"co.fs2::fs2-io:0.10.6",
     ivy"org.scodec::scodec-stream:1.1.0",
     ivy"org.scodec::scodec-core:1.10.3")
 

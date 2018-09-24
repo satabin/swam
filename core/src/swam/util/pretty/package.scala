@@ -26,15 +26,6 @@ package object pretty {
   val empty: Doc =
     Empty
 
-  def nest(indent: Int, d: Doc): Doc =
-    Nest(indent, d)
-
-  def str(t: String): Doc =
-    Text(t)
-
-  def break(sp: Int, off: Int): Doc =
-    Break(sp, off)
-
   val line: Doc =
     Break(1, 0)
 
@@ -43,6 +34,18 @@ package object pretty {
 
   val newline: Doc =
     Newline
+
+  def nest(indent: Int, d: Doc): Doc =
+    Nest(indent, d)
+
+  def str(t: String): Doc =
+    if (t.isEmpty)
+      Empty
+    else
+      Text(t)
+
+  def break(sp: Int, off: Int): Doc =
+    Break(sp, off)
 
   def group(d: Doc): Doc =
     Group(d)
