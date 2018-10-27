@@ -129,7 +129,7 @@ class Compiler[F[_]](engine: SwamEngine[F]) extends compiler.Compiler[F] {
 
   private val dataOnHeap = engine.conf.data.onHeap
 
-  def compile(sections: Stream[F, Section]): Stream[F, runtime.Module[F]] =
+  def compile(sections: Stream[F, Section])(implicit F: MonadError[F, Throwable]): Stream[F, runtime.Module[F]] =
     sections
       .fold(Context()) {
         case (ctx, Section.Imports(is)) =>
@@ -226,7 +226,7 @@ class Compiler[F[_]](engine: SwamEngine[F]) extends compiler.Compiler[F] {
           ctx.data
         )
       }
-      .handleErrorWith(t => Stream.raiseError(new CompileException("An error occurred during compilation", t)))
+      .handleErrorWith(t => Stream.raiseError[F](new CompileException("An error occurred during compilation", t)))
 
   private def compile(insts: Vector[Inst],
                       ctx: FunctionContext,

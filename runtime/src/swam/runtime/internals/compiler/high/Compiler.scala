@@ -42,7 +42,7 @@ class Compiler[F[_]](engine: SwamEngine[F]) extends compiler.Compiler[F] {
 
   private val dataOnHeap = engine.conf.data.onHeap
 
-  def compile(sections: Stream[F, Section]): Stream[F, runtime.Module[F]] =
+  def compile(sections: Stream[F, Section])(implicit F: MonadError[F, Throwable]): Stream[F, runtime.Module[F]] =
     sections
       .fold(Context()) {
         case (ctx, Section.Imports(is)) =>

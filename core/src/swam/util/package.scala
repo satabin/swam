@@ -19,8 +19,10 @@ package swam
 import cats.effect._
 
 import java.nio.file.Path
+import java.util.concurrent.Executors
 
 import scala.io.Source
+import scala.concurrent.ExecutionContext
 
 import scala.language.higherKinds
 
@@ -28,9 +30,13 @@ import fs2.{io, text => stext}
 
 package object util {
 
+  val blockingExecutionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2))
+
+  implicit val cs = IO.contextShift(blockingExecutionContext)
+
   def readFile(f: Path): IO[String] =
     io.file
-      .readAll[IO](f, 4096)
+      .readAll[IO](f, blockingExecutionContext, 4096)
       .through(stext.utf8Decode)
       .compile
       .fold(new StringBuilder) { (sb, s) =>

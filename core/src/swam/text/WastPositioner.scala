@@ -33,7 +33,7 @@ class WastPositioner(file: Path) extends Positioner[TextFilePosition] {
 
   private val lineStream =
     io.file
-      .readAll[IO](file, 4096)
+      .readAll[IO](file, blockingExecutionContext, 4096)
       .through(text.utf8Decode)
       .through(text.lines)
 

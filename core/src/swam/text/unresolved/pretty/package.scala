@@ -465,7 +465,10 @@ package object pretty {
                  str("(type") ++ id.pretty ++ line ++ group(
                    nest(2, str("(func")) ++ functype(pnames.zip(tpe.params), tpe.t) ++ str(")"))) ++ str(")"))
         case Import(mod, name, desc) =>
-          group(nest(2, str("(import") ++ line ++ str("\"") ++ str(mod) ++ str("\"") ++ line ++ str("\"") ++ str(name) ++ str("\"") ++ line ++ desc.pretty) ++ str(")"))
+          group(
+            nest(2,
+                 str("(import") ++ line ++ str("\"") ++ str(mod) ++ str("\"") ++ line ++ str("\"") ++ str(name) ++ str(
+                   "\"") ++ line ++ desc.pretty) ++ str(")"))
         case Function(id, tu, Seq(), is) =>
           group(nest(2, str("(func") ++ id.pretty ++ tu.pretty ++ line ++ is.pretty) ++ str(")"))
         case Function(id, tu, locals, is) =>
@@ -479,7 +482,8 @@ package object pretty {
         case Global(id, tpe, init) =>
           group(nest(2, str("(global") ++ id.pretty ++ tpe.pretty ++ line ++ init.pretty) ++ str(")"))
         case Export(name, desc) =>
-          group(nest(2, str("(export") ++ line ++ str("\"") ++ str(name) ++ str("\"") ++ line ++ desc.pretty) ++ str(")"))
+          group(
+            nest(2, str("(export") ++ line ++ str("\"") ++ str(name) ++ str("\"") ++ line ++ desc.pretty) ++ str(")"))
         case StartFunc(idx) =>
           str("(start ") ++ idx.pretty ++ str(")")
         case Elem(table, offset, init) =>
