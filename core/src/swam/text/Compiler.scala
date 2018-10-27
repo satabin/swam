@@ -32,7 +32,7 @@ import java.nio.file.Path
 
 import fs2._
 
-import fastparse.core._
+import fastparse._
 
 class Compiler[F[_]](implicit val F: Effect[F]) {
 
@@ -67,9 +67,9 @@ class Compiler[F[_]](implicit val F: Effect[F]) {
 
   private[swam] def parse(input: String): F[unresolved.Module] =
     F.liftIO {
-      IO(ModuleParsers.file.parse(input)).flatMap {
-        case Parsed.Success(m, _)        => IO.pure(m)
-        case f @ Parsed.Failure(_, _, _) => IO.raiseError(ParseError(f))
+      IO(fastparse.parse(input, ModuleParsers.file(_))).flatMap {
+        case Parsed.Success(m, _)          => IO.pure(m)
+        case f @ Parsed.Failure(_, idx, _) => IO.raiseError(new ParserException(f.msg, idx))
       }
     }
 

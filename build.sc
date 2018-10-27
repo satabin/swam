@@ -40,7 +40,7 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 object core extends SwamModule with PublishModule {
 
   def ivyDeps = Agg(
-    ivy"com.lihaoyi::fastparse:1.0.0",
+    ivy"com.lihaoyi::fastparse:2.0.4",
     ivy"com.beachape::enumeratum:1.5.13",
     ivy"co.fs2::fs2-core:1.0.0",
     ivy"co.fs2::fs2-io:1.0.0",

@@ -21,7 +21,7 @@ package parser
 import unresolved._
 
 import fastparse._
-import fastparse.all._
+import NoWhitespace._
 
 import java.lang.{Float => JFloat, Double => JDouble, Long => JLong}
 
@@ -29,42 +29,38 @@ import scala.annotation.tailrec
 
 object Lexical {
 
-  val comment: P0 =
+  def comment[_: P]: P0 =
     P(linecomment | blockcomment)
 
-  val linecomment: P0 =
+  def linecomment[_: P]: P0 =
     P(";;" ~/ CharsWhile(_ != '\u000a', min = 0))
 
-  val blockcomment: P0 =
+  def blockcomment[_: P]: P0 =
     P("(;" ~/ (CharsWhile(!";(".contains(_)) | !";)" ~ ";" | !"(;" ~ "(" | blockcomment).rep ~ ";)")
 
-  val ws: P0 =
+  def ws[_: P]: P0 =
     P(NoTrace((CharIn(" \u0009\u000a\u000d") | comment).rep))
 
-  val white = WhitespaceApi.Wrapper {
-    ws
-  }
+  def idchar[_: P]: P0 =
+    P(CharIn("0-9A-Za-z!#$%&'*+\\-./:<=>?@\\\\^_`|~"))
 
-  val idchar: P0 =
-    P(CharIn('0' to '9', 'A' to 'Z', 'a' to 'z', "!#$%&'*+-./:<=>?@\\^_`|~"))
+  def keyword[_: P]: P0 =
+    P(CharIn("a-z") ~ idchar.rep)
 
-  val keyword: P0 =
-    P(CharIn('a' to 'z') ~ idchar.rep)
+  def id[_: P]: P[String] =
+    P("$" ~ idchar.rep(1).!)
 
-  val id: P[String] =
-    P("$" ~ idchar.rep(min = 1).!)
-
-  private val sign: P[Int] =
-    CharIn("+-").?.!.map {
+  private def sign[_: P] =
+    P(CharIn("+\\-").?.!.map {
       case "" | "+" => 1
       case "-"      => -1
-    }
+    })
 
-  private val digit: P[Int] =
-    CharIn('0' to '9').!.map(_(0) - '0')
+  private def digit[_: P] =
+    P(CharIn("0-9").!.map(_(0) - '0'))
 
-  private val hexdigit: P[Int] =
-    CharIn('0' to '9', 'A' to 'F', 'a' to 'f').!.map { s =>
+  private def hexdigit[_: P] =
+    P(CharIn("0-9a-fA-F").!.map { s =>
       val c = s(0)
       if (c >= '0' && c <= '9')
         c - '0'
@@ -72,34 +68,34 @@ object Lexical {
         c - 'a' + 10
       else
         c - 'A' + 10
-    }
+    })
 
-  private val num: P[BigInt] =
+  private def num[_: P] =
     P(digit.rep(min = 1, sep = "_".?).map(_.foldLeft(BigInt(0))(10 * _ + _)))
 
-  private val hexnum: P[BigInt] =
+  private def hexnum[_: P] =
     P(hexdigit.rep(min = 1, sep = "_".?).map(_.foldLeft(BigInt(0))(16 * _ + _)))
 
-  val uint32: P[Int] =
+  def uint32[_: P] =
     P(
       "0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_, 16)) | num.!.map(_.replaceAll("_", ""))
         .map(Integer.parseUnsignedInt(_)))
 
-  val int32: P[Int] =
+  def int32[_: P] =
     P(
       sign.! ~ ("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(Integer.parseUnsignedInt(_, 16)) | num.!.map(
         _.replaceAll("_", "")).map(Integer.parseUnsignedInt(_)))).map {
       case (s, n) => if (s == "-") -1 * n else n
     }
 
-  val int64: P[Long] =
+  def int64[_: P] =
     P(
       sign.! ~ ("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(JLong.parseUnsignedLong(_, 16)) | num.!.map(
         _.replaceAll("_", "")).map(JLong.parseUnsignedLong(_)))).map {
       case (s, n) => if (s == "-") -1l * n else n
     }
 
-  private val rfloat: P[String] =
+  private def rfloat[_: P] =
     P(
       ("0x" ~ hexnum ~ "." ~ hexnum ~ CharIn("Pp") ~ sign ~ num).!
         | ("0x" ~ hexnum.! ~ (CharIn("Pp") ~ sign ~ num).!).map {
@@ -112,7 +108,7 @@ object Lexical {
         | ("0x" ~ hexnum).!.map(_ + ".0p0")
         | (num ~ ("." ~ num.?).? ~ (CharIn("Ee") ~ sign ~ num).?).!).map(_.replaceAll("_", ""))
 
-  val float32: P[Float] =
+  def float32[_: P] =
     P(
       (sign.! ~ rfloat).map { case (s, f) => if (s == "-") -1 * JFloat.parseFloat(f) else JFloat.parseFloat(f) }
         | (sign.! ~ "inf").map(s => if (s == "-") Float.NegativeInfinity else Float.PositiveInfinity)
@@ -124,7 +120,7 @@ object Lexical {
         | (sign.! ~ "nan").map(s =>
           if (s == "-") JFloat.intBitsToFloat(0xffc00000) else JFloat.intBitsToFloat(0x7fc00000)))
 
-  val float64: P[Double] =
+  def float64[_: P] =
     P((sign.! ~ rfloat).map { case (s, f) => if (s == "-") -1 * JDouble.parseDouble(f) else JDouble.parseDouble(f) }
       | (sign.! ~ "inf").map(s => if (s == "-") Double.NegativeInfinity else Double.PositiveInfinity)
       | (sign.! ~ "nan:0x" ~ hexnum).map {
@@ -135,7 +131,7 @@ object Lexical {
       | (sign.! ~ "nan").map(s =>
         if (s == "-") JDouble.longBitsToDouble(0xfff8000000000000l) else JDouble.longBitsToDouble(0x7ff8000000000000l)))
 
-  val string: P[String] =
+  def string[_: P] =
     P(
       "\"" ~ (CharsWhile(c => c >= '\u0020' && c != '\u007f' && c != '"' && c != '\\').!
         | P("\\t").map(_ => '\t')
@@ -150,7 +146,7 @@ object Lexical {
           .map(_.toChar)).rep.map(_.mkString) ~ "\""
     )
 
-  val bstring: P[Array[Byte]] =
+  def bstring[_: P] =
     P(
       "\"" ~ (CharPred(c => c >= '\u0020' && c != '\u007f' && c != '"' && c != '\\').!.map(_(0))
         | P("\\t").map(_ => '\t'.toChar)
@@ -165,10 +161,11 @@ object Lexical {
           .map(_.toChar)).map(Character.toChars(_).map(_.toByte)).rep.map(_.flatten.toArray) ~ "\""
     )
 
-  def word(s: String): P0 =
+  @inline
+  def word[_: P](s: String) =
     P(s ~ !idchar).opaque(s)
 
-  val index: P[Index] =
+  def index[_: P] =
     P(uint32.map(Left(_)) | id.map(id => Right(SomeId(id))))
       .opaque("index or name")
 

@@ -20,21 +20,21 @@ package parser
 
 import unresolved._
 
-import fastparse.noApi._
+import fastparse._
+import WastWhitespace._
 
 object ModuleParsers {
 
   import Lexical._
-  import white._
   import Instructions._
   import Types._
 
-  private val `type`: P[Seq[Type]] =
-    P(Index ~ word("type") ~/ id.? ~ functype ~ ")").map {
+  private def `type`[_: P]: P[Seq[Type]] =
+    P((Index ~ word("type") ~/ id.? ~ functype ~ ")").map {
       case (idx, id, (p, tpe)) => Seq(Type(makeId(id), p, tpe)(idx))
-    }
+    })
 
-  private val importdesc: P[ImportDesc] =
+  private def importdesc[_: P]: P[ImportDesc] =
     P(
       ("(" ~ Index ~ ((word("func") ~/ id.?.map(makeId(_)) ~ typeuse)
         .map((ImportDesc.Func.apply _).tupled)
@@ -47,25 +47,25 @@ object ModuleParsers {
         case (idx, d) => d(idx)
       } ~ ")")
 
-  private val `import`: P[Seq[Import]] =
-    P(Index ~ word("import") ~/ string ~ string ~ importdesc ~ ")").map {
+  private def `import`[_: P]: P[Seq[Import]] =
+    P((Index ~ word("import") ~/ string ~ string ~ importdesc ~ ")").map {
       case (idx, mod, name, desc) => Seq(Import(mod, name, desc)(idx))
-    }
+    })
 
-  private val locals: P[Seq[Local]] =
-    P("(" ~ Index ~ word("local") ~/ ((id ~/ valtype).map {
+  private def locals[_: P]: P[Seq[Local]] =
+    P(("(" ~ Index ~ word("local") ~/ ((id ~/ valtype).map {
       case (id, tpe) => Seq(Local(SomeId(id), tpe) _)
     }
       | valtype.rep.map(_.map(Local(NoId, _) _))) ~ ")").rep
       .map(_.flatMap {
         case (idx, fs) => fs.map(_(idx))
-      })
+      }))
 
-  private val inlineexport: P[String] =
+  private def inlineexport[_: P]: P[String] =
     P("(" ~ word("export") ~/ string ~ ")")
 
-  private val function: P[Seq[Field]] =
-    P(
+  private def function[_: P]: P[Seq[Field]] =
+    P((
       Index ~ word("func") ~/ id.? ~ inlineexport.rep ~ (NoCut(typeuse ~ locals ~ instrs)
         .map {
           case (tu, locals, instrs) =>
@@ -88,10 +88,10 @@ object ModuleParsers {
               }
         }) ~ ")").map {
       case (idx, id, exports, f) => f(idx, id, exports)
-    }
+    })
 
-  private val table: P[Seq[Field]] =
-    P(Index ~ word("table") ~/ id.? ~ inlineexport.rep ~ (tabletype.map {
+  private def table[_: P]: P[Seq[Field]] =
+    P((Index ~ word("table") ~/ id.? ~ inlineexport.rep ~ (tabletype.map {
       case (tpe) =>
         (idx: Int, id: Option[String], exports: Seq[String]) =>
           {
@@ -120,10 +120,10 @@ object ModuleParsers {
               exports.map(Export(_, ExportDesc.Table(Right(id1))(idx))(idx)) :+
                 Import(name1, name2, ImportDesc.Table(id1, tpe)(idx))(idx)
             }
-      }) ~ ")").map { case (idx, id, exports, f) => f(idx, id, exports) }
+      }) ~ ")").map { case (idx, id, exports, f) => f(idx, id, exports) })
 
-  private val memory: P[Seq[Field]] =
-    P(Index ~ word("memory") ~/ id.? ~ inlineexport.rep ~ (memtype.map {
+  private def memory[_: P]: P[Seq[Field]] =
+    P((Index ~ word("memory") ~/ id.? ~ inlineexport.rep ~ (memtype.map {
       tpe => (idx: Int, id: Option[String], exports: Seq[String]) =>
         {
           val id1 = if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
@@ -152,10 +152,10 @@ object ModuleParsers {
               exports
                 .map(Export(_, ExportDesc.Memory(Right(id1))(idx))(idx)) :+ imp
             }
-      }) ~ ")").map { case (idx, id, exports, f) => f(idx, id, exports) }
+      }) ~ ")").map { case (idx, id, exports, f) => f(idx, id, exports) })
 
-  private val global: P[Seq[Field]] =
-    P(Index ~ word("global") ~/ id.? ~ inlineexport.rep ~ ((globaltype ~ expr)
+  private def global[_: P]: P[Seq[Field]] =
+    P((Index ~ word("global") ~/ id.? ~ inlineexport.rep ~ ((globaltype ~ expr)
       .map {
         case (tpe, e) =>
           (idx: Int, id: Option[String], exports: Seq[String]) =>
@@ -173,9 +173,9 @@ object ModuleParsers {
               .map(Export(_, ExportDesc.Global(Right(id1))(idx))(idx)) :+ Import(name1,
                                                                                  name2,
                                                                                  ImportDesc.Global(id1, tpe)(idx))(idx)
-      }) ~ ")").map { case (idx, id, exports, f) => f(idx, id, exports) }
+      }) ~ ")").map { case (idx, id, exports, f) => f(idx, id, exports) })
 
-  private val exportdesc: P[ExportDesc] =
+  private def exportdesc[_: P]: P[ExportDesc] =
     P(
       "(" ~ (Index ~ ((word("func") ~/ index.map(ExportDesc.Func.apply))
         | (word("table") ~/ index.map(ExportDesc.Table.apply))
@@ -183,44 +183,44 @@ object ModuleParsers {
         | (word("global") ~/ index.map(ExportDesc.Global.apply))))
         .map { case (idx, e) => e(idx) } ~ ")")
 
-  private val export: P[Seq[Export]] =
-    P(Index ~ word("export") ~/ string ~ exportdesc ~ ")").map {
+  private def export[_: P]: P[Seq[Export]] =
+    P((Index ~ word("export") ~/ string ~ exportdesc ~ ")").map {
       case (idx, name, desc) => Seq(Export(name, desc)(idx))
-    }
+    })
 
-  private val start: P[Seq[StartFunc]] =
-    P(Index ~ word("start") ~/ index ~ ")").map {
+  private def start[_: P]: P[Seq[StartFunc]] =
+    P((Index ~ word("start") ~/ index ~ ")").map {
       case (idx, f) => Seq(StartFunc(f)(idx))
-    }
+    })
 
-  private val elem: P[Seq[Elem]] =
-    P(
-      Index ~ word("elem") ~/ (index | PassWith(Left(0))) ~ ("(" ~ word("offset") ~/ expr ~ ")" | foldedinstr | instr
+  private def elem[_: P]: P[Seq[Elem]] =
+    P((
+      Index ~ word("elem") ~/ (index | Pass(Left(0))) ~ ("(" ~ word("offset") ~/ expr ~ ")" | foldedinstr | instr
         .map(Seq(_))) ~ index.rep ~ ")").map {
       case (idx, x, e, y) => Seq(Elem(x, e, y)(idx))
-    }
+    })
 
-  private val data: P[Seq[Data]] =
-    P(
-      Index ~ word("data") ~/ (index | PassWith(Left(0))) ~ ("(" ~ word("offset") ~/ expr ~ ")" | foldedinstr) ~ bstring.rep
+  private def data[_: P]: P[Seq[Data]] =
+    P((
+      Index ~ word("data") ~/ (index | Pass(Left(0))) ~ ("(" ~ word("offset") ~/ expr ~ ")" | foldedinstr) ~ bstring.rep
         .map(_.flatten.toArray) ~ ")").map {
       case (idx, x, e, b) => Seq(Data(x, e, b)(idx))
-    }
+    })
 
-  private val field: P[Seq[Field]] =
+  private def field[_: P]: P[Seq[Field]] =
     P("(" ~ (`type` | `import` | function | table | memory | global | export | start | elem | data))
 
-  val fields: P[Seq[Field]] =
+  def fields[_: P]: P[Seq[Field]] =
     P(field.rep.map(_.flatten))
 
-  val module: P[Module] =
-    P(
+  def module[_: P]: P[Module] =
+    P((
       ("(" ~ Index ~ word("module") ~/ id.? ~ fields ~ ")")
-        | Index ~ PassWith(None) ~ field.rep(min = 1).map(_.flatten)).map {
+        | Index ~ Pass(None) ~ field.rep(1).map(_.flatten)).map {
       case (idx, id, flds) => Module(makeId(id), flds)(idx)
-    }
+    })
 
-  val file: P[Module] =
+  def file[_: P]: P[Module] =
     P(ws ~ module ~ ws ~ End)
 
   private def idOrFresh(id: Option[String], idx: Int): Id =

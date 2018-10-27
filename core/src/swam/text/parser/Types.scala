@@ -20,14 +20,14 @@ package parser
 
 import unresolved._
 
-import fastparse.noApi._
+import fastparse._
+import WastWhitespace._
 
 object Types {
 
   import Lexical._
-  import white._
 
-  val valtype: P[ValType] =
+  def valtype[_: P]: P[ValType] =
     P(
       word("i32").map(_ => ValType.I32)
         | word("i64").map(_ => ValType.I64)
@@ -35,51 +35,52 @@ object Types {
         | word("f64").map(_ => ValType.F64)
     )
 
-  val resulttype: P[ResultType] =
+  def resulttype[_: P]: P[ResultType] =
     P(result.?.map(ResultType(_)))
 
-  val functype: P[(Vector[Id], FuncType)] =
-    P("(" ~ word("func") ~ params ~ results ~ ")").map {
+  def functype[_: P]: P[(Vector[Id], FuncType)] =
+    P(("(" ~ word("func") ~ params ~ results ~ ")").map {
       case (params, results) =>
         val (ns, ps) = params.unzip
         (ns, FuncType(ps, results))
-    }
+    })
 
-  private val params: P[Vector[Param]] =
-    P(
-      ("(" ~ word("param") ~ id.map(SomeId(_)) ~ valtype ~ ")").rep(min = 1)
+  private def params[_: P]: P[Vector[Param]] =
+    P((
+      ("(" ~ word("param") ~ id.map(SomeId(_)) ~ valtype ~ ")").rep(1)
         | ("(" ~ word("param") ~ valtype.rep
           .map(_.map(NoId -> _)) ~ ")")
-    ).rep.map(_.flatten.toVector)
+    ).rep.map(_.flatten.toVector))
 
-  private val results: P[Vector[ValType]] =
+  private def results[_: P]: P[Vector[ValType]] =
     P(
       ("(" ~ word("result") ~/ valtype.rep ~ ")").rep
         .map(_.flatten.toVector)
     )
 
-  private val result: P[ValType] =
+  private def result[_: P]: P[ValType] =
     P("(" ~ word("result") ~/ valtype ~ ")")
 
-  val limits: P[Limits] =
-    P(uint32 ~ uint32.?).map { case (min, max) => new Limits(min, max) }
+  def limits[_: P]: P[Limits] =
+    P((uint32 ~ uint32.?).map { case (min, max) => new Limits(min, max) })
 
-  val memtype: P[MemType] =
-    limits.map(MemType)
+  def memtype[_: P]: P[MemType] =
+    P(limits.map(MemType))
 
-  val tabletype: P[TableType] =
-    P(limits ~ elemtype).map { case (l, t) => TableType(t, l) }
+  def tabletype[_: P]: P[TableType] =
+    P((limits ~ elemtype).map { case (l, t) => TableType(t, l) })
 
-  val elemtype: P[ElemType] =
+  def elemtype[_: P]: P[ElemType] =
     P(word("anyfunc").map(_ => ElemType.AnyFunc))
 
-  val globaltype: P[GlobalType] =
+  def globaltype[_: P]: P[GlobalType] =
     P(
       valtype.map(GlobalType(_, Mut.Const))
         | "(" ~ word("mut") ~/ valtype.map(GlobalType(_, Mut.Var)) ~ ")"
     )
 
-  def typeuse: P[TypeUse] =
-    P(("(" ~ word("type") ~ index ~ ")").? ~ params ~ results)
-      .map(TypeUse.tupled)
+  def typeuse[_: P]: P[TypeUse] =
+    P(
+      (("(" ~ word("type") ~ index ~ ")").? ~ params ~ results)
+        .map(TypeUse.tupled))
 }

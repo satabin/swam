@@ -33,8 +33,6 @@ import cats.effect._
 import scodec.bits._
 import scodec.stream.decode.DecodingError
 
-import fastparse.core._
-
 import java.lang.{Float => JFloat, Double => JDouble}
 
 object Constant {

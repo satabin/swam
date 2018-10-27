@@ -18,15 +18,15 @@ package swam
 package text
 package parser
 
-import fastparse.noApi._
+import fastparse._
+import WastWhitespace._
 
 object TestScriptParser {
 
   import Lexical._
-  import white._
   import Instructions._
 
-  val module: P[TestModule] =
+  def module[_: P]: P[TestModule] =
     P(
       NoCut(
         ("(" ~ Index ~ word("module") ~ (id.? ~ ((word("binary") ~/ bstring.rep
@@ -35,12 +35,12 @@ object TestScriptParser {
           .map { case (idx, (id, f)) => f(idx, id) } ~ ")")
         | ModuleParsers.module.map(ValidModule(_)))
 
-  val register: P[Register] =
+  def register[_: P]: P[Register] =
     P("(" ~ Index ~ word("register") ~/ string ~ id.? ~ ")").map {
       case (pos, name, id) => Register(name, id)(pos)
     }
 
-  val action: P[Action] =
+  def action[_: P]: P[Action] =
     P("(" ~ Index ~ ((word("invoke") ~/ id.? ~ string ~ expr).map {
       case (id, name, params) => Invoke(id, name, params) _
     }
@@ -48,7 +48,7 @@ object TestScriptParser {
         case (id, name) => Get(id, name) _
       }) ~ ")").map { case (idx, f) => f(idx) }
 
-  val assertion: P[Assertion] =
+  def assertion[_: P]: P[Assertion] =
     P(
       "(" ~ Index ~ ((word("assert_return") ~/ action ~ expr.filter(_.size <= 1)).map {
         case (action, result) => AssertReturn(action, result) _
@@ -80,7 +80,7 @@ object TestScriptParser {
             case (action, msg) => AssertExhaustion(action, msg) _
           }) ~ ")").map { case (idx, f) => f(idx) }
 
-  val meta: P[Meta] =
+  def meta[_: P]: P[Meta] =
     P("(" ~ Index ~ ((word("script") ~/ id.? ~ script).map {
       case (id, sc) => Script(id, sc) _
     }
@@ -91,10 +91,10 @@ object TestScriptParser {
         case (id, f) => Output(id, f) _
       }) ~ ")").map { case (idx, f) => f(idx) }
 
-  val command: P[Command] =
-    P(register | action | assertion | meta | module)
+  def command[_: P]: P[Command] =
+    P(NoCut(register) | NoCut(action) | NoCut(assertion) | NoCut(meta) | module)
 
-  val script: P[Seq[Command]] =
+  def script[_: P]: P[Seq[Command]] =
     P(ws ~ command.rep ~ ws ~ End)
 
 }
