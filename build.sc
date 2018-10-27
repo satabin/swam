@@ -117,7 +117,7 @@ object benchmarks extends SwamModule with Jmh {
 
 }
 
-def unidoc(ev: Evaluator[Any]) = T.command {
+def unidoc(ev: Evaluator) = T.command {
 
   def isInfra(x: ScalaModule): Boolean =
     x match {
