@@ -1255,7 +1255,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
         Array.copy(params, 0, ilocals, 0, params.length)
         frame.stack.pushFrame(tpe.t.size, code, ilocals, inst).map { frame =>
           // push the implicit block label on the called frame
-          frame.stack.pushLabel(Label(tpe.t.size, code.limit - 1))
+          frame.stack.pushLabel(Label(tpe.t.size, code.limit() - 1))
           Left(frame)
         }
       case _ =>

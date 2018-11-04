@@ -122,7 +122,7 @@ package object imports {
       def view(_b: ByteBuffer) = new Memory[F] {
         val b = _b.duplicate()
         b.order(ByteOrder.LITTLE_ENDIAN)
-        def tpe: swam.MemType = MemType(Limits(b.limit / pageSize, Some(b.capacity / pageSize)))
+        def tpe: swam.MemType = MemType(Limits(b.limit() / pageSize, Some(b.capacity / pageSize)))
         def grow(by: Int): Boolean = {
           val newSize = size + by * pageSize
           if (newSize > b.capacity) {
