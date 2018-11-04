@@ -32,7 +32,11 @@ import fastparse._
 
 import cats.effect._
 
+import scala.concurrent.ExecutionContext
+
 object SpecTests extends TestSuite {
+
+  implicit val cs = IO.contextShift(ExecutionContext.Implicits.global)
 
   def run(wast: File) = {
     val positioner = new WastPositioner(wast.path)

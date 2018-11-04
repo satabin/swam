@@ -40,10 +40,8 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 object core extends SwamModule with PublishModule {
 
   def ivyDeps = Agg(
-    ivy"com.lihaoyi::fastparse:2.0.4",
     ivy"com.beachape::enumeratum:1.5.13",
     ivy"co.fs2::fs2-core:1.0.0",
-    ivy"co.fs2::fs2-io:1.0.0",
     ivy"org.scodec::scodec-stream:1.2.0",
     ivy"org.scodec::core:1.10.4")
 
@@ -65,6 +63,27 @@ object core extends SwamModule with PublishModule {
     def testFrameworks = Seq("swam.util.Framework")
     def moduleDeps = Seq(core, util.test)
   }
+
+}
+
+object text extends SwamModule with PublishModule {
+  def moduleDeps = Seq(core)
+
+  def ivyDeps = Agg(
+    ivy"com.lihaoyi::fastparse:2.0.4",
+    ivy"co.fs2::fs2-io:1.0.0")
+
+  def publishVersion = swamVersion
+
+  def artifactName = "swam-text"
+
+  def pomSettings = PomSettings(
+    description = "Swam text library to parse and compile text format",
+    organization = "org.gnieh",
+    url = swamUrl,
+    licenses = Seq(swamLicense),
+    versionControl = VersionControl.github("satabin", "swam"),
+    developers = Seq(swamDeveloper))
 
 }
 
@@ -93,8 +112,14 @@ object runtime extends SwamModule with PublishModule {
       ivy"com.github.pathikrit::better-files:3.5.0",
       ivy"com.lihaoyi::pprint:0.5.3")
     def testFrameworks = Seq("swam.util.Framework")
-    def moduleDeps = Seq(runtime, util.test)
+    def moduleDeps = Seq(runtime, text, util.test)
   }
+
+}
+
+object examples extends SwamModule {
+
+  def moduleDeps = Seq(runtime, text)
 
 }
 

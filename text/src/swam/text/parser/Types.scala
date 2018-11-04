@@ -46,11 +46,12 @@ object Types {
     })
 
   private def params[_: P]: P[Vector[Param]] =
-    P((
-      ("(" ~ word("param") ~ id.map(SomeId(_)) ~ valtype ~ ")").rep(1)
-        | ("(" ~ word("param") ~ valtype.rep
-          .map(_.map(NoId -> _)) ~ ")")
-    ).rep.map(_.flatten.toVector))
+    P(
+      (
+        ("(" ~ word("param") ~ id.map(SomeId(_)) ~ valtype ~ ")").rep(1)
+          | ("(" ~ word("param") ~ valtype.rep
+            .map(_.map(NoId -> _)) ~ ")")
+      ).rep.map(_.flatten.toVector))
 
   private def results[_: P]: P[Vector[ValType]] =
     P(

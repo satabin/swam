@@ -3,11 +3,13 @@
 [WebAssembly][1] implementation in Scala.
 
 This project defines several modules:
- - The [`core`](core/) module is a library taht makes it possible to manipulate [text][2] and [binary][3] representations of WebAssembly modules. In particular it contains:
-   - a complete parser for text representation;
+ - The [`core`](core/) module is a library that makes it possible to manipulate [binary][3] representation of WebAssembly modules. In particular it contains:
    - a streaming parser for the binary format;
    - a compiler from text to binary format.
  - The [`runtime`](runtime/) module is a [non-web embedding][4] to instantiate and run WebAssembly modules.
+ - The [`text`](text/) module is a library that makes it possible to manipulate [text][2] representation of WebAssembly modules.
+   It is not included in the `core` module as text representation is more of a debug feature, and the runtime does not want to bring
+   that dependency with it.
 
 If you want more details, please refer to the [API documentation][5].
 
@@ -58,13 +60,13 @@ println(f(4).unsafeRunSync())
 
 Then you can run it this way:
 ```shell
-$ mill -i runtime.repl -c 'import $file.examples.logged'
+$ mill -i examples.repl -c 'import $file.examples.logged'
 ```
 
 All examples can be found under the [examples](examples/) directory.
 For each `<name>.sc` file in the `examples` directory, you may run it with:
 ```shell
-$ mill -i runtime.repl -c 'import $file.examples.<name>'
+$ mill -i examples.repl -c 'import $file.examples.<name>'
 ```
 
 [1]: https://webassembly.org/

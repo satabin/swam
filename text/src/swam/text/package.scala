@@ -28,13 +28,11 @@ import scala.language.higherKinds
 
 import fs2.{io, text => stext}
 
-package object util {
+package object text {
 
   val blockingExecutionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2))
 
-  implicit val cs = IO.contextShift(blockingExecutionContext)
-
-  def readFile(f: Path): IO[String] =
+  def readFile(f: Path)(implicit cs: ContextShift[IO]): IO[String] =
     io.file
       .readAll[IO](f, blockingExecutionContext, 4096)
       .through(stext.utf8Decode)
@@ -45,3 +43,4 @@ package object util {
       .map(_.result)
 
 }
+

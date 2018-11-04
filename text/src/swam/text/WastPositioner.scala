@@ -29,7 +29,7 @@ import scala.collection.Searching._
 
 /** Loads the content of the file and renders a [[TextFilePosition]].
   */
-class WastPositioner(file: Path) extends Positioner[TextFilePosition] {
+class WastPositioner(file: Path)(implicit cs: ContextShift[IO]) extends Positioner[TextFilePosition] {
 
   private val lineStream =
     io.file
