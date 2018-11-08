@@ -1,9 +1,6 @@
 language: scala
 dist: xenial
 
-jdk:
-  - openjdk8
-
 script:
   - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.3.2/0.3.2 && chmod +x ~/bin/mill
   - export PATH=~/bin/mill:$PATH
