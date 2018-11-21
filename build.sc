@@ -70,7 +70,7 @@ object text extends SwamModule with PublishModule {
   def moduleDeps = Seq(core)
 
   def ivyDeps = Agg(
-    ivy"com.lihaoyi::fastparse:2.0.4",
+    ivy"com.lihaoyi::fastparse:2.0.5",
     ivy"co.fs2::fs2-io:1.0.0")
 
   def publishVersion = swamVersion
