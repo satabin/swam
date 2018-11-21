@@ -5,7 +5,7 @@ import mill.scalalib.publish._
 import mill.scalalib.scalafmt._
 
 import ammonite.ops._
-import mill.modules.Jvm.subprocess
+import mill.modules.Jvm.runSubprocess
 
 import coursier.maven.MavenRepository
 
@@ -205,7 +205,7 @@ def unidoc(ev: Evaluator) = T.command {
     }
   }.flatten
 
-  if (files.nonEmpty) subprocess(
+  if (files.nonEmpty) runSubprocess(
     "scala.tools.nsc.ScalaDoc",
     scalaCompilerClasspath ++ compileClasspath.filter(_.path.ext != "pom").map(_.path),
     mainArgs = (files ++ options).toSeq
