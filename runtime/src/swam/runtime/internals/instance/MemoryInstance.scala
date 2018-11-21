@@ -89,6 +89,7 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
   def doGrow(size: Int): Boolean = {
     val old = buffer
     buffer = allocate(size)
+    old.position(0)
     buffer.put(old)
     true
   }

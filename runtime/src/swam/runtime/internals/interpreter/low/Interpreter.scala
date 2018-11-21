@@ -78,7 +78,6 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
   private def run(frame: Frame[F])(implicit F: MonadError[F, Throwable]): F[Option[Long]] =
     F.tailRecM(frame) { frame =>
       val opcode = frame.readByte() & 0xff
-      //println(s"opcode 0x${opcode.toHexString}")
       (opcode: @switch) match {
         // === constants ===
         case Asm.I32Const =>
