@@ -1,6 +1,8 @@
 # Swam [![Build Status](https://travis-ci.org/satabin/swam.svg?branch=master)](https://travis-ci.org/satabin/swam)
 
-[WebAssembly][1] implementation in Scala.
+[WebAssembly][1] implementation in Scala with [cats][7].
+
+[![Cats Friendly Badge][6]][7]
 
 This project defines several modules:
  - The [`core`](core/) module is a library that makes it possible to manipulate [binary][3] representation of WebAssembly modules. In particular it contains:
@@ -74,3 +76,5 @@ $ mill -i examples.repl -c 'import $file.examples.<name>'
 [3]: https://webassembly.org/docs/binary-encoding/
 [4]: https://webassembly.org/docs/non-web/
 [5]: https://satabin.github.io/swam/api/
+[6]: https://typelevel.org/cats/img/cats-badge-tiny.png
+[7]: https://typelevel.org/cats
