@@ -4,6 +4,8 @@
 
 [![Cats Friendly Badge][6]][7]
 
+[![Join the chat at https://gitter.im/dotnet/coreclr](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/satabin/swam?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
+
 This project defines several modules:
  - The [`core`](core/) module is a library that makes it possible to manipulate [binary][3] representation of WebAssembly modules. In particular it contains:
    - a streaming parser for the binary format;
