@@ -262,16 +262,16 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="FuncBody.html" title="">FuncBody</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="GetGlobal.html" title=""></a>
-                        <a href="GetGlobal.html" title="">GetGlobal</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="GetLocal.html" title=""></a>
-                        <a href="GetLocal.html" title="">GetLocal</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
                         <a class="class" href="Global.html" title=""></a>
                         <a href="Global.html" title="">Global</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="GlobalGet.html" title=""></a>
+                        <a href="GlobalGet.html" title="">GlobalGet</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="GlobalSet.html" title=""></a>
+                        <a href="GlobalSet.html" title="">GlobalSet</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="IBinop.html" title=""></a>
@@ -322,6 +322,18 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="LocalEntry.html" title="">LocalEntry</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
+                        <a class="class" href="LocalGet.html" title=""></a>
+                        <a href="LocalGet.html" title="">LocalGet</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="LocalSet.html" title=""></a>
+                        <a href="LocalSet.html" title="">LocalSet</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="LocalTee.html" title=""></a>
+                        <a href="LocalTee.html" title="">LocalTee</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
                         <a class="class" href="Loop.html" title=""></a>
                         <a href="Loop.html" title="">Loop</a>
                       </li><li class="current-entities indented2">
@@ -362,14 +374,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="Select$.html" title="">Select</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="SetGlobal.html" title=""></a>
-                        <a href="SetGlobal.html" title="">SetGlobal</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="SetLocal.html" title=""></a>
-                        <a href="SetLocal.html" title="">SetLocal</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
                         <a class="object" href="Store$.html" title=""></a>
                         <a href="Store$.html" title="">Store</a>
                       </li><li class="current-entities indented2">
@@ -384,10 +388,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <span class="separator"></span>
                         <a class="class" href="StoreNInst.html" title=""></a>
                         <a href="StoreNInst.html" title="">StoreNInst</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="TeeLocal.html" title=""></a>
-                        <a href="TeeLocal.html" title="">TeeLocal</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Testop$.html" title=""></a>
                         <a class="class" href="Testop.html" title=""></a>
@@ -836,38 +836,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       
-    </li><li name="swam.syntax.GetGlobal" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="GetGlobalextendsVarInstwithProductwithSerializable"></a><a id="GetGlobal:GetGlobal"></a>
-      <span class="permalink">
-      <a href="../../swam/syntax/index.html#GetGlobalextendsVarInstwithProductwithSerializable" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="GetGlobal.html"><span class="name">GetGlobal</span></a><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span><span class="result"> extends <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
-      </span>
-      
-      
-    </li><li name="swam.syntax.GetLocal" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="GetLocalextendsVarInstwithProductwithSerializable"></a><a id="GetLocal:GetLocal"></a>
-      <span class="permalink">
-      <a href="../../swam/syntax/index.html#GetLocalextendsVarInstwithProductwithSerializable" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="GetLocal.html"><span class="name">GetLocal</span></a><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span><span class="result"> extends <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
-      </span>
-      
-      
     </li><li name="swam.syntax.Global" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="GlobalextendsProductwithSerializable"></a><a id="Global:Global"></a>
       <span class="permalink">
@@ -881,6 +849,38 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       <span class="symbol">
         <a title="" href="Global.html"><span class="name">Global</span></a><span class="params">(<span name="tpe">tpe: <a href="../GlobalType.html" class="extype" name="swam.GlobalType">GlobalType</a></span>, <span name="init">init: <a href="#Expr=Vector[swam.syntax.Inst]" class="extmbr" name="swam.syntax.Expr">Expr</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
+    </li><li name="swam.syntax.GlobalGet" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GlobalGetextendsVarInstwithProductwithSerializable"></a><a id="GlobalGet:GlobalGet"></a>
+      <span class="permalink">
+      <a href="../../swam/syntax/index.html#GlobalGetextendsVarInstwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="GlobalGet.html"><span class="name">GlobalGet</span></a><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span><span class="result"> extends <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
+    </li><li name="swam.syntax.GlobalSet" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GlobalSetextendsVarInstwithProductwithSerializable"></a><a id="GlobalSet:GlobalSet"></a>
+      <span class="permalink">
+      <a href="../../swam/syntax/index.html#GlobalSetextendsVarInstwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="GlobalSet.html"><span class="name">GlobalSet</span></a><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span><span class="result"> extends <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       
       
@@ -1044,6 +1044,54 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       
+    </li><li name="swam.syntax.LocalGet" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LocalGetextendsVarInstwithProductwithSerializable"></a><a id="LocalGet:LocalGet"></a>
+      <span class="permalink">
+      <a href="../../swam/syntax/index.html#LocalGetextendsVarInstwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="LocalGet.html"><span class="name">LocalGet</span></a><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span><span class="result"> extends <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
+    </li><li name="swam.syntax.LocalSet" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LocalSetextendsVarInstwithProductwithSerializable"></a><a id="LocalSet:LocalSet"></a>
+      <span class="permalink">
+      <a href="../../swam/syntax/index.html#LocalSetextendsVarInstwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="LocalSet.html"><span class="name">LocalSet</span></a><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span><span class="result"> extends <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
+    </li><li name="swam.syntax.LocalTee" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LocalTeeextendsVarInstwithProductwithSerializable"></a><a id="LocalTee:LocalTee"></a>
+      <span class="permalink">
+      <a href="../../swam/syntax/index.html#LocalTeeextendsVarInstwithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="LocalTee.html"><span class="name">LocalTee</span></a><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span><span class="result"> extends <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
     </li><li name="swam.syntax.Loop" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="LoopextendsInstwithProductwithSerializable"></a><a id="Loop:Loop"></a>
       <span class="permalink">
@@ -1124,38 +1172,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       
-    </li><li name="swam.syntax.SetGlobal" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="SetGlobalextendsVarInstwithProductwithSerializable"></a><a id="SetGlobal:SetGlobal"></a>
-      <span class="permalink">
-      <a href="../../swam/syntax/index.html#SetGlobalextendsVarInstwithProductwithSerializable" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="SetGlobal.html"><span class="name">SetGlobal</span></a><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span><span class="result"> extends <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
-      </span>
-      
-      
-    </li><li name="swam.syntax.SetLocal" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="SetLocalextendsVarInstwithProductwithSerializable"></a><a id="SetLocal:SetLocal"></a>
-      <span class="permalink">
-      <a href="../../swam/syntax/index.html#SetLocalextendsVarInstwithProductwithSerializable" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="SetLocal.html"><span class="name">SetLocal</span></a><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span><span class="result"> extends <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
-      </span>
-      
-      
     </li><li name="swam.syntax.StoreInst" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="StoreInstextendsMemoryInst"></a><a id="StoreInst:StoreInst"></a>
       <span class="permalink">
@@ -1185,22 +1201,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       <span class="symbol">
         <a title="" href="StoreNInst.html"><span class="name">StoreNInst</span></a><span class="result"> extends <a href="MemoryInst.html" class="extype" name="swam.syntax.MemoryInst">MemoryInst</a></span>
-      </span>
-      
-      
-    </li><li name="swam.syntax.TeeLocal" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="TeeLocalextendsVarInstwithProductwithSerializable"></a><a id="TeeLocal:TeeLocal"></a>
-      <span class="permalink">
-      <a href="../../swam/syntax/index.html#TeeLocalextendsVarInstwithProductwithSerializable" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="TeeLocal.html"><span class="name">TeeLocal</span></a><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span><span class="result"> extends <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       
       

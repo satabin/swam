@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>Swam API Documentation 0.1.0-SNAPSHOT - swam.syntax.SetLocal</title>
-          <meta name="description" content="Swam API Documentation 0.1.0 - SNAPSHOT - swam.syntax.SetLocal" />
-          <meta name="keywords" content="Swam API Documentation 0.1.0 SNAPSHOT swam.syntax.SetLocal" />
+          <title>Swam API Documentation 0.1.0-SNAPSHOT - swam.syntax.LocalSet</title>
+          <meta name="description" content="Swam API Documentation 0.1.0 - SNAPSHOT - swam.syntax.LocalSet" />
+          <meta name="keywords" content="Swam API Documentation 0.1.0 SNAPSHOT swam.syntax.LocalSet" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -191,16 +191,16 @@
                         <a href="FuncBody.html" title="">FuncBody</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="GetGlobal.html" title=""></a>
-                        <a href="GetGlobal.html" title="">GetGlobal</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="GetLocal.html" title=""></a>
-                        <a href="GetLocal.html" title="">GetLocal</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
                         <a class="class" href="Global.html" title=""></a>
                         <a href="Global.html" title="">Global</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="GlobalGet.html" title=""></a>
+                        <a href="GlobalGet.html" title="">GlobalGet</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="GlobalSet.html" title=""></a>
+                        <a href="GlobalSet.html" title="">GlobalSet</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="class" href="IBinop.html" title=""></a>
@@ -251,6 +251,18 @@
                         <a href="LocalEntry.html" title="">LocalEntry</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
+                        <a class="class" href="LocalGet.html" title=""></a>
+                        <a href="LocalGet.html" title="">LocalGet</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="" title=""></a>
+                        <a href="" title="">LocalSet</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="LocalTee.html" title=""></a>
+                        <a href="LocalTee.html" title="">LocalTee</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
                         <a class="class" href="Loop.html" title=""></a>
                         <a href="Loop.html" title="">Loop</a>
                       </li><li class="current-entities indented2">
@@ -291,14 +303,6 @@
                         <a href="Select$.html" title="">Select</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="SetGlobal.html" title=""></a>
-                        <a href="SetGlobal.html" title="">SetGlobal</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="" title=""></a>
-                        <a href="" title="">SetLocal</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
                         <a class="object" href="Store$.html" title=""></a>
                         <a href="Store$.html" title="">Store</a>
                       </li><li class="current-entities indented2">
@@ -313,10 +317,6 @@
                         <span class="separator"></span>
                         <a class="class" href="StoreNInst.html" title=""></a>
                         <a href="StoreNInst.html" title="">StoreNInst</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="TeeLocal.html" title=""></a>
-                        <a href="TeeLocal.html" title="">TeeLocal</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Testop$.html" title=""></a>
                         <a class="class" href="Testop.html" title=""></a>
@@ -358,8 +358,8 @@
       <div id="definition">
         <div class="big-circle class">c</div>
         <p id="owner"><a href="../index.html" class="extype" name="swam">swam</a>.<a href="index.html" class="extype" name="swam.syntax">syntax</a></p>
-        <h1>SetLocal<span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html" title="Permalink">
+        <h1>LocalSet<span class="permalink">
+      <a href="../../swam/syntax/LocalSet.html" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span></h1>
@@ -372,7 +372,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">SetLocal</span><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span><span class="result"> extends <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">LocalSet</span><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span><span class="result"> extends <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
 
@@ -407,7 +407,7 @@
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="swam.syntax.SetLocal"><span>SetLocal</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="swam.syntax.VarInst"><span>VarInst</span></li><li class="in" name="swam.syntax.Inst"><span>Inst</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="swam.syntax.LocalSet"><span>LocalSet</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="swam.syntax.VarInst"><span>VarInst</span></li><li class="in" name="swam.syntax.Inst"><span>Inst</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -427,10 +427,10 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="swam.syntax.SetLocal#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(idx:swam.LocalIdx):swam.syntax.SetLocal"></a><a id="&lt;init&gt;:SetLocal"></a>
+              <ol><li name="swam.syntax.LocalSet#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(idx:swam.LocalIdx):swam.syntax.LocalSet"></a><a id="&lt;init&gt;:LocalSet"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#&lt;init&gt;(idx:swam.LocalIdx):swam.syntax.SetLocal" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#&lt;init&gt;(idx:swam.LocalIdx):swam.syntax.LocalSet" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -439,7 +439,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">SetLocal</span><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span>
+        <span class="name">LocalSet</span><span class="params">(<span name="idx">idx: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>)</span>
       </span>
       
       
@@ -456,7 +456,7 @@
                 <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#!=(x$1:Any):Boolean" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#!=(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -472,7 +472,7 @@
     </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="##():Int"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html###():Int" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html###():Int" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -488,7 +488,7 @@
     </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#==(x$1:Any):Boolean" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#==(x$1:Any):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -504,7 +504,7 @@
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#asInstanceOf[T0]:T0" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#asInstanceOf[T0]:T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -520,7 +520,7 @@
     </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a><a id="clone():AnyRef"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#clone():Object" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#clone():Object" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -535,8 +535,6 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@native</span><span class="args">()</span>
               
-                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
-              
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
@@ -546,7 +544,7 @@
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#eq(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -559,10 +557,32 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <span class="permalink">
+      <a href="../../swam/syntax/LocalSet.html#finalize():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#getClass():Class[_]" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#getClass():Class[_]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -577,13 +597,11 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
                 <span class="name">@native</span><span class="args">()</span>
               
-                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
-              
         </dd></dl></div>
-    </li><li name="swam.syntax.SetLocal#idx" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="swam.syntax.LocalSet#idx" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="idx:swam.LocalIdx"></a><a id="idx:LocalIdx"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#idx:swam.LocalIdx" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#idx:swam.LocalIdx" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -595,11 +613,11 @@
         <span class="name">idx</span><span class="result">: <a href="../index.html#LocalIdx=Int" class="extmbr" name="swam.LocalIdx">LocalIdx</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="swam.syntax.SetLocal">SetLocal</a> → <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="swam.syntax.LocalSet">LocalSet</a> → <a href="VarInst.html" class="extype" name="swam.syntax.VarInst">VarInst</a></dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#isInstanceOf[T0]:Boolean" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#isInstanceOf[T0]:Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -615,7 +633,7 @@
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#ne(x$1:AnyRef):Boolean" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -631,7 +649,7 @@
     </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#notify():Unit" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#notify():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -646,13 +664,11 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@native</span><span class="args">()</span>
               
-                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
-              
         </dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#notifyAll():Unit" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#notifyAll():Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -667,13 +683,11 @@
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@native</span><span class="args">()</span>
               
-                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
-              
         </dd></dl></div>
     </li><li name="swam.syntax.Inst#opcode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="opcode:swam.OpCode"></a><a id="opcode:OpCode"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#opcode:swam.OpCode" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#opcode:swam.OpCode" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -689,7 +703,7 @@
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -703,9 +717,31 @@
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <span class="permalink">
+      <a href="../../swam/syntax/LocalSet.html#wait():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -727,7 +763,7 @@
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
       <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#wait(x$1:Long):Unit" title="Permalink">
+      <a href="../../swam/syntax/LocalSet.html#wait(x$1:Long):Unit" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -748,64 +784,13 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="wait():Unit"></a>
-      <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#wait():Unit" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">(<span>
-      
-      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
-    </span>)</span>
-              
-        </dd></dl></div>
     </li>
               </ol>
             </div>
 
         
 
-        <div class="values members">
-              <h3>Deprecated Value Members</h3>
-              <ol><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="finalize():Unit"></a>
-      <span class="permalink">
-      <a href="../../swam/syntax/SetLocal.html#finalize():Unit" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name deprecated" title="Deprecated: (Since version ) see corresponding Javadoc for more information.">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@Deprecated</span>
-              
-                <span class="name">@deprecated</span>
-              
-                <span class="name">@throws</span><span class="args">(<span>
-      
-      <span class="symbol">classOf[java.lang.Throwable]</span>
-    </span>)</span>
-              
-        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version )</i> see corresponding Javadoc for more information.</p></dd></dl></div>
-    </li></ol>
-            </div>
+        
         </div>
 
         <div id="inheritedMembers">
