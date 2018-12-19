@@ -22,25 +22,10 @@ import java.nio.file.Path
 import java.util.concurrent.Executors
 
 import scala.io.Source
-import scala.concurrent.ExecutionContext
-
-import scala.language.higherKinds
-
-import fs2.{io, text => stext}
 
 package object text {
 
-  val blockingExecutionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2))
-
-  def readFile(f: Path)(implicit cs: ContextShift[IO]): IO[String] =
-    io.file
-      .readAll[IO](f, blockingExecutionContext, 4096)
-      .through(stext.utf8Decode)
-      .compile
-      .fold(new StringBuilder) { (sb, s) =>
-        sb.append(s)
-      }
-      .map(_.result)
+  def readFile(f: Path): IO[String] =
+    IO(Source.fromFile(f.toFile, "UTF-8").mkString)
 
 }
-

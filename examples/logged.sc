@@ -5,9 +5,6 @@ import swam.runtime.imports._
 import swam.runtime.formats.DefaultFormatters._
 import cats.effect._
 import java.nio.file.Paths
-import scala.concurrent.ExecutionContext
-
-implicit val cs = IO.contextShift(ExecutionContext.Implicits.global)
 
 val tcompiler = new Compiler[IO]
 

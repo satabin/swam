@@ -23,33 +23,26 @@ import java.nio.file.Path
 
 import cats.effect._
 
-import fs2.{io, text, Stream}
-
 import scala.collection.Searching._
+import scala.collection.immutable.VectorBuilder
+
+import scala.io.Source
 
 /** Loads the content of the file and renders a [[TextFilePosition]].
   */
-class WastPositioner(file: Path)(implicit cs: ContextShift[IO]) extends Positioner[TextFilePosition] {
-
-  private val lineStream =
-    io.file
-      .readAll[IO](file, blockingExecutionContext, 4096)
-      .through(text.utf8Decode)
-      .through(text.lines)
+class WastPositioner(file: Path) extends Positioner[TextFilePosition] {
 
   private val lines =
-    lineStream.compile.toVector
-      .unsafeRunSync()
+    IO(Source.fromFile(file.toFile, "UTF-8").getLines.toVector).unsafeRunSync()
 
   private val offsets =
-    lineStream
-      .mapAccumulate(0) { (offset, line) =>
-        (offset + line.size + 1, offset)
+    lines
+      .foldLeft((0, new VectorBuilder[Int])) {
+        case ((offset, acc), line) =>
+          (offset + line.size + 1, acc += offset)
       }
-      .map(_._2)
-      .compile
-      .toVector
-      .unsafeRunSync()
+      ._2
+      .result()
 
   // returns the index of the line containing the position
   private def findLine(pos: Int): Int =

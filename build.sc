@@ -29,7 +29,7 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
     MavenRepository("https://oss.sonatype.org/content/repositories/snapshots"),
     MavenRepository("https:/dl.bintray.com/tpolecat/maven"))
 
-  def scalaVersion = "2.12.8"
+  def scalaVersion = "2.12.7"
 
   def scalacOptions = Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification")
 

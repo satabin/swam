@@ -42,7 +42,7 @@ class Compiler[F[_]](implicit val F: Effect[F]) {
 
   private val binaryParser = new SwamParser[F]
 
-  def compile(file: Path)(implicit cs: ContextShift[IO]): F[Module] =
+  def compile(file: Path): F[Module] =
     for {
       input <- F.liftIO(readFile(file))
       unresolved <- parse(input)
@@ -58,7 +58,7 @@ class Compiler[F[_]](implicit val F: Effect[F]) {
   def stream(module: unresolved.Module, debug: Boolean): Stream[F, Section] =
     Stream.force(resolver.resolve(module, debug))
 
-  def stream(file: Path, debug: Boolean)(implicit cs: ContextShift[IO]): Stream[F, Section] =
+  def stream(file: Path, debug: Boolean): Stream[F, Section] =
     Stream.force(for {
       input <- F.liftIO(readFile(file))
       unresolved <- parse(input)
