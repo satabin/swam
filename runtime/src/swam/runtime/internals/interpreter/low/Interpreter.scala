@@ -750,21 +750,21 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
           else
             frame.stack.pushValue(v2)
           F.pure(Left(frame))
-        case Asm.GetLocal =>
+        case Asm.LocalGet =>
           val idx = frame.readInt()
           frame.stack.pushValue(frame.locals(idx))
           F.pure(Left(frame))
-        case Asm.SetLocal =>
+        case Asm.LocalSet =>
           val idx = frame.readInt()
           val v = frame.stack.popValue()
           frame.locals(idx) = v
           F.pure(Left(frame))
-        case Asm.TeeLocal =>
+        case Asm.LocalTee =>
           val idx = frame.readInt()
           val v = frame.stack.peekValue()
           frame.locals(idx) = v
           F.pure(Left(frame))
-        case Asm.GetGlobal =>
+        case Asm.GlobalGet =>
           val idx = frame.readInt()
           frame.instance.globals(idx) match {
             case i: GlobalInstance[F] =>
@@ -773,7 +773,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
               frame.stack.pushValue(Value.toRaw(g.get))
           }
           F.pure(Left(frame))
-        case Asm.SetGlobal =>
+        case Asm.GlobalSet =>
           val idx = frame.readInt()
           val v = frame.stack.popValue()
           frame.instance.globals(idx) match {

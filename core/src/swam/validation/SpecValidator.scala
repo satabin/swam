@@ -141,32 +141,32 @@ class SpecValidator[F[_]](dataHardMax: Int) extends Validator[F] {
           (t, ctxb) = ctx
           ctx <- ctxb.pop(t)
         } yield ctx.push(t)
-      case GetLocal(x) =>
+      case LocalGet(x) =>
         ctx.locals.lift(x) match {
           case Some(t) => F.pure(ctx.push(t))
           case None =>
             F.raiseError(new ValidationException(s"unknown local $x."))
         }
-      case SetLocal(x) =>
+      case LocalSet(x) =>
         ctx.locals.lift(x) match {
           case Some(t) => for (ctx <- ctx.pop(t)) yield ctx
           case None =>
             F.raiseError(new ValidationException(s"unknown local $x."))
         }
-      case TeeLocal(x) =>
+      case LocalTee(x) =>
         ctx.locals.lift(x) match {
           case Some(t) =>
             for (ctx <- ctx.pop(t)) yield ctx.push(t)
           case None =>
             F.raiseError(new ValidationException(s"unknown local $x."))
         }
-      case GetGlobal(x) =>
+      case GlobalGet(x) =>
         ctx.globals.lift(x) match {
           case Some(GlobalType(t, _)) => F.pure(ctx.push(t))
           case None =>
             F.raiseError(new ValidationException(s"unknown global $x."))
         }
-      case SetGlobal(x) =>
+      case GlobalSet(x) =>
         ctx.globals.lift(x) match {
           case Some(GlobalType(t, Mut.Var)) => for (ctx <- ctx.pop(t)) yield ctx
           case Some(_) =>
@@ -338,7 +338,7 @@ class SpecValidator[F[_]](dataHardMax: Int) extends Validator[F] {
         }
       case CallIndirect(x) =>
         ctx.tables.lift(0) match {
-          case Some(TableType(ElemType.AnyFunc, _)) =>
+          case Some(TableType(ElemType.FuncRef, _)) =>
             ctx.types.lift(x) match {
               case Some(FuncType(ins, outs)) =>
                 for {
@@ -500,7 +500,7 @@ class SpecValidator[F[_]](dataHardMax: Int) extends Validator[F] {
   def validateConst(instr: Inst, ctx: Ctx)(implicit F: MonadError[F, Throwable]): F[Unit] =
     instr match {
       case Const(_) => F.pure(())
-      case GetGlobal(x) =>
+      case GlobalGet(x) =>
         ctx.globals.lift(x) match {
           case Some(_) =>
             F.pure(())

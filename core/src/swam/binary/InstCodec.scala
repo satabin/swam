@@ -91,16 +91,16 @@ trait InstCodec extends TypeCodec {
               Attempt.successful(DecodeResult(Drop, remainder))
             case OpCode.Select =>
               Attempt.successful(DecodeResult(Select, remainder))
-            case OpCode.GetLocal =>
-              varuint32.decode(remainder).map(_.map(GetLocal))
-            case OpCode.SetLocal =>
-              varuint32.decode(remainder).map(_.map(SetLocal))
-            case OpCode.TeeLocal =>
-              varuint32.decode(remainder).map(_.map(TeeLocal))
-            case OpCode.GetGlobal =>
-              varuint32.decode(remainder).map(_.map(GetGlobal))
-            case OpCode.SetGlobal =>
-              varuint32.decode(remainder).map(_.map(SetGlobal))
+            case OpCode.LocalGet =>
+              varuint32.decode(remainder).map(_.map(LocalGet))
+            case OpCode.LocalSet =>
+              varuint32.decode(remainder).map(_.map(LocalSet))
+            case OpCode.LocalTee =>
+              varuint32.decode(remainder).map(_.map(LocalTee))
+            case OpCode.GlobalGet =>
+              varuint32.decode(remainder).map(_.map(GlobalGet))
+            case OpCode.GlobalSet =>
+              varuint32.decode(remainder).map(_.map(GlobalSet))
             case OpCode.I32Load => memarg.decode(remainder).map(_.map(i32.Load))
             case OpCode.I64Load => memarg.decode(remainder).map(_.map(i64.Load))
             case OpCode.F32Load => memarg.decode(remainder).map(_.map(f32.Load))
@@ -442,15 +442,15 @@ trait InstCodec extends TypeCodec {
         case Drop => Attempt.successful(BitVector.fromByte(OpCode.Drop.toByte))
         case Select =>
           Attempt.successful(BitVector.fromByte(OpCode.Select.toByte))
-        case GetLocal(idx) =>
+        case LocalGet(idx) =>
           varuint32.encode(idx).map(BitVector.fromByte(inst.opcode.toByte) ++ _)
-        case SetLocal(idx) =>
+        case LocalSet(idx) =>
           varuint32.encode(idx).map(BitVector.fromByte(inst.opcode.toByte) ++ _)
-        case TeeLocal(idx) =>
+        case LocalTee(idx) =>
           varuint32.encode(idx).map(BitVector.fromByte(inst.opcode.toByte) ++ _)
-        case GetGlobal(idx) =>
+        case GlobalGet(idx) =>
           varuint32.encode(idx).map(BitVector.fromByte(inst.opcode.toByte) ++ _)
-        case SetGlobal(idx) =>
+        case GlobalSet(idx) =>
           varuint32.encode(idx).map(BitVector.fromByte(inst.opcode.toByte) ++ _)
         case MemoryInst(offset, align) =>
           memarg

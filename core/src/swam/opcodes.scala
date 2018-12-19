@@ -36,11 +36,11 @@ object OpCode {
   final val Drop = 0x1a
   final val Select = 0x1b
   // reserved 0x1c-0x1f
-  final val GetLocal = 0x20
-  final val SetLocal = 0x21
-  final val TeeLocal = 0x22
-  final val GetGlobal = 0x23
-  final val SetGlobal = 0x24
+  final val LocalGet = 0x20
+  final val LocalSet = 0x21
+  final val LocalTee = 0x22
+  final val GlobalGet = 0x23
+  final val GlobalSet = 0x24
   // reserved 0x25-0x27
   final val I32Load = 0x28
   final val I64Load = 0x29

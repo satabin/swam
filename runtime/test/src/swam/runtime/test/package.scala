@@ -36,7 +36,7 @@ package object test {
     def size = 10
     def update(i: Int, f: Function[IO]) =
       a(i) = f
-    def tpe = TableType(ElemType.AnyFunc, Limits(10, Some(20)))
+    def tpe = TableType(ElemType.FuncRef, Limits(10, Some(20)))
   }
 
   def buffer = {

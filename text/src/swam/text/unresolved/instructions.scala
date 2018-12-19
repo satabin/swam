@@ -307,11 +307,11 @@ object f64 {
 case class Drop()(val pos: Int) extends Inst
 case class Select()(val pos: Int) extends Inst
 
-case class GetLocal(idx: Index)(val pos: Int) extends Inst
-case class SetLocal(idx: Index)(val pos: Int) extends Inst
-case class TeeLocal(idx: Index)(val pos: Int) extends Inst
-case class GetGlobal(idx: Index)(val pos: Int) extends Inst
-case class SetGlobal(idx: Index)(val pos: Int) extends Inst
+case class LocalGet(idx: Index)(val pos: Int) extends Inst
+case class LocalSet(idx: Index)(val pos: Int) extends Inst
+case class LocalTee(idx: Index)(val pos: Int) extends Inst
+case class GlobalGet(idx: Index)(val pos: Int) extends Inst
+case class GlobalSet(idx: Index)(val pos: Int) extends Inst
 
 case class MemorySize()(val pos: Int) extends Inst
 case class MemoryGrow()(val pos: Int) extends Inst

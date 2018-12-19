@@ -107,7 +107,7 @@ package object imports {
   implicit def arrayAsInterface[F[_]]: AsInterface[Array[Function[F]], F] =
     new AsInterface[Array[Function[F]], F] {
       def view(a: Array[Function[F]]) = new Table[F] {
-        def tpe = TableType(ElemType.AnyFunc, Limits(0, Some(size)))
+        def tpe = TableType(ElemType.FuncRef, Limits(0, Some(size)))
         def size =
           a.length
         def apply(idx: Int) =

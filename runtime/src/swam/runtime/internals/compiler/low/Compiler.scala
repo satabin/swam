@@ -390,24 +390,24 @@ class Compiler[F[_]](engine: SwamEngine[F]) extends compiler.Compiler[F] {
           case Select =>
             builder += Asm.Select.toByte
             loop(instIdx + 1, ctx.pop(2 /* pop 3 push 1 */ ).copy(offset = ctx.offset + 1), false)
-          case GetLocal(idx) =>
-            builder += Asm.GetLocal.toByte
+          case LocalGet(idx) =>
+            builder += Asm.LocalGet.toByte
             storeInt(builder, idx)
             loop(instIdx + 1, ctx.push(1).copy(offset = ctx.offset + 5), false)
-          case SetLocal(idx) =>
-            builder += Asm.SetLocal.toByte
+          case LocalSet(idx) =>
+            builder += Asm.LocalSet.toByte
             storeInt(builder, idx)
             loop(instIdx + 1, ctx.pop(1).copy(offset = ctx.offset + 5), false)
-          case TeeLocal(idx) =>
-            builder += Asm.TeeLocal.toByte
+          case LocalTee(idx) =>
+            builder += Asm.LocalTee.toByte
             storeInt(builder, idx)
             loop(instIdx + 1, ctx.copy(offset = ctx.offset + 5), false)
-          case GetGlobal(idx) =>
-            builder += Asm.GetGlobal.toByte
+          case GlobalGet(idx) =>
+            builder += Asm.GlobalGet.toByte
             storeInt(builder, idx)
             loop(instIdx + 1, ctx.push(1).copy(offset = ctx.offset + 5), false)
-          case SetGlobal(idx) =>
-            builder += Asm.SetGlobal.toByte
+          case GlobalSet(idx) =>
+            builder += Asm.GlobalSet.toByte
             storeInt(builder, idx)
             loop(instIdx + 1, ctx.pop(1).copy(offset = ctx.offset + 5), false)
           case Nop =>

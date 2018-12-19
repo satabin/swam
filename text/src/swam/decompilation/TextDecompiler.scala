@@ -74,11 +74,11 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
               loop(rest, foldedcall(i, acc))
             case (Seq(op @ u.BrIf(_), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
-            case (Seq(op @ u.SetLocal(_), rest @ _*), d :: restd) =>
+            case (Seq(op @ u.LocalSet(_), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
-            case (Seq(op @ u.TeeLocal(_), rest @ _*), d :: restd) =>
+            case (Seq(op @ u.LocalTee(_), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
-            case (Seq(op @ u.SetGlobal(_), rest @ _*), d :: restd) =>
+            case (Seq(op @ u.GlobalSet(_), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
             case (Seq(op @ u.Store(_, _, _), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
@@ -500,11 +500,11 @@ class TextDecompiler[F[_]] extends Decompiler[F] {
       case f64.Store(a, o)    => u.f64.Store(a, o)(-1)
       case Drop               => u.Drop()(-1)
       case Select             => u.Select()(-1)
-      case GetLocal(idx)      => u.GetLocal(getLocalId(idx))(-1)
-      case SetLocal(idx)      => u.SetLocal(getLocalId(idx))(-1)
-      case TeeLocal(idx)      => u.TeeLocal(getLocalId(idx))(-1)
-      case GetGlobal(idx)     => u.GetGlobal(Left(idx))(-1)
-      case SetGlobal(idx)     => u.SetGlobal(Left(idx))(-1)
+      case LocalGet(idx)      => u.LocalGet(getLocalId(idx))(-1)
+      case LocalSet(idx)      => u.LocalSet(getLocalId(idx))(-1)
+      case LocalTee(idx)      => u.LocalTee(getLocalId(idx))(-1)
+      case GlobalGet(idx)     => u.GlobalGet(Left(idx))(-1)
+      case GlobalSet(idx)     => u.GlobalSet(Left(idx))(-1)
       case MemorySize         => u.MemorySize()(-1)
       case MemoryGrow         => u.MemoryGrow()(-1)
       case Nop                => u.Nop()(-1)

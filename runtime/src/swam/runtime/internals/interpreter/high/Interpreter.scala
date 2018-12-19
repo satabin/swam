@@ -749,21 +749,21 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
           else
             frame.stack.pushValue(v2)
           F.pure(Left(frame))
-        case OpCode.GetLocal =>
+        case OpCode.LocalGet =>
           val idx = frame.readInt()
           frame.stack.pushValue(frame.locals(idx))
           F.pure(Left(frame))
-        case OpCode.SetLocal =>
+        case OpCode.LocalSet =>
           val idx = frame.readInt()
           val v = frame.stack.popValue()
           frame.locals(idx) = v
           F.pure(Left(frame))
-        case OpCode.TeeLocal =>
+        case OpCode.LocalTee =>
           val idx = frame.readInt()
           val v = frame.stack.peekValue()
           frame.locals(idx) = v
           F.pure(Left(frame))
-        case OpCode.GetGlobal =>
+        case OpCode.GlobalGet =>
           val idx = frame.readInt()
           frame.instance.globals(idx) match {
             case i: GlobalInstance[F] =>
@@ -772,7 +772,7 @@ private[runtime] class Interpreter[F[_]](engine: SwamEngine[F]) extends interpre
               frame.stack.pushValue(Value.toRaw(g.get))
           }
           F.pure(Left(frame))
-        case OpCode.SetGlobal =>
+        case OpCode.GlobalSet =>
           val idx = frame.readInt()
           val v = frame.stack.popValue()
           frame.instance.globals(idx) match {
