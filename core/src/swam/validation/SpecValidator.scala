@@ -531,98 +531,106 @@ class SpecValidator[F[_]](dataHardMax: Int) extends Validator[F] {
 
   }
 
-  private type Acc = ((Int, Vector[Int], Vector[Import], Context[F]), Section)
+  private type Acc = ((Int, Vector[Int], Vector[Import], Int, Context[F]), Option[Section])
 
   def validate(stream: Stream[F, Section])(implicit F: MonadError[F, Throwable]): Stream[F, Section] =
-    stream
-      .evalMapAccumulate((0, Vector.empty[Int], Vector.empty[Import], EmptyContext[F])) { (acc, sec) =>
-        acc match {
-          case (idx, tpes, imports, ctx) =>
-            if (sec.id > 0 && sec.id <= idx)
-              F.raiseError[Acc](
-                new ValidationException(s"${nameOf(sec.id)} section may not appear after ${nameOf(idx)} section")
-              )
-            else
-              sec match {
-                case Section.Types(functypes) =>
-                  for (_ <- validateAll(functypes, validateFuncType))
-                    yield ((sec.id, tpes, imports, ctx.copy[F](types = functypes)), sec)
-                case Section.Imports(imports) =>
-                  for (_ <- validateAll(imports, ctx, validateImport))
-                    yield {
-                      val ctx1 = ctx.copy[F](funcs = imported.funcs(ctx.types, imports),
-                                             tables = imported.tables(imports),
-                                             mems = imported.mems(imports),
-                                             globals = imported.globals(imports))
-                      ((sec.id, tpes, imports, ctx1), sec)
-                    }
-                case Section.Functions(tpes) =>
-                  F.pure {
-                    val funcs = tpes.map(ctx.types(_))
-                    ((sec.id, tpes, imports, ctx.copy[F](funcs = ctx.funcs ++ funcs)), sec)
+    // emit a `None` at the end to allow us to perform last checks
+    stream.noneTerminate
+      .evalMapAccumulate((0, Vector.empty[Int], Vector.empty[Import], 0, EmptyContext[F])) {
+        case (acc @ (idx, tpes, imports, codes, ctx), Some(sec)) =>
+          if (sec.id > 0 && sec.id <= idx)
+            F.raiseError[Acc](
+              new ValidationException(s"${nameOf(sec.id)} section may not appear after ${nameOf(idx)} section")
+            )
+          else
+            sec match {
+              case Section.Types(functypes) =>
+                for (_ <- validateAll(functypes, validateFuncType))
+                  yield ((sec.id, tpes, imports, codes, ctx.copy[F](types = functypes)), Option(sec))
+              case Section.Imports(imports) =>
+                for (_ <- validateAll(imports, ctx, validateImport))
+                  yield {
+                    val ctx1 = ctx.copy[F](funcs = imported.funcs(ctx.types, imports),
+                                           tables = imported.tables(imports),
+                                           mems = imported.mems(imports),
+                                           globals = imported.globals(imports))
+                    ((sec.id, tpes, imports, codes, ctx1), Option(sec))
                   }
-                case Section.Tables(tables) =>
-                  if (ctx.tables.size + tables.size > 1)
-                    F.raiseError[Acc](new ValidationException("at most one table is allowed."))
-                  else
-                    for (_ <- validateAll(tables, validateTableType))
-                      yield ((sec.id, tpes, imports, ctx.copy[F](tables = ctx.tables ++ tables)), sec)
-                case Section.Memories(mems) =>
-                  if (ctx.mems.size + mems.size > 1)
-                    F.raiseError[Acc](new ValidationException("at most one memory is allowed."))
-                  else
-                    for (_ <- validateAll(mems, validateMemType))
-                      yield ((sec.id, tpes, imports, ctx.copy[F](mems = ctx.mems ++ mems)), sec)
-                case Section.Globals(globals) =>
-                  for (_ <- validateAll(globals,
-                                        EmptyContext[F].copy[F](globals = imported.globals(imports)),
-                                        validateGlobal))
-                    yield ((sec.id, tpes, imports, ctx.copy[F](globals = ctx.globals ++ globals.map(_.tpe))), sec)
-                case Section.Exports(exports) =>
-                  val duplicate = exports
-                    .groupBy(_.fieldName)
-                    .mapValues(_.size)
-                    .find(_._2 > 1)
-                  duplicate match {
-                    case Some((name, _)) =>
-                      F.raiseError[Acc](new ValidationException(s"duplicate export name $name."))
-                    case None =>
-                      for (_ <- validateAll(exports, ctx, validateExport))
-                        yield ((sec.id, tpes, imports, ctx), sec)
+              case Section.Functions(tpes) =>
+                F.pure {
+                  val funcs = tpes.map(ctx.types(_))
+                  ((sec.id, tpes, imports, codes, ctx.copy[F](funcs = ctx.funcs ++ funcs)), Option(sec))
+                }
+              case Section.Tables(tables) =>
+                if (ctx.tables.size + tables.size > 1)
+                  F.raiseError[Acc](new ValidationException("at most one table is allowed."))
+                else
+                  for (_ <- validateAll(tables, validateTableType))
+                    yield ((sec.id, tpes, imports, codes, ctx.copy[F](tables = ctx.tables ++ tables)), Option(sec))
+              case Section.Memories(mems) =>
+                if (ctx.mems.size + mems.size > 1)
+                  F.raiseError[Acc](new ValidationException("at most one memory is allowed."))
+                else
+                  for (_ <- validateAll(mems, validateMemType))
+                    yield ((sec.id, tpes, imports, codes, ctx.copy[F](mems = ctx.mems ++ mems)), Option(sec))
+              case Section.Globals(globals) =>
+                for (_ <- validateAll(globals,
+                                      EmptyContext[F].copy[F](globals = imported.globals(imports)),
+                                      validateGlobal))
+                  yield
+                    ((sec.id, tpes, imports, codes, ctx.copy[F](globals = ctx.globals ++ globals.map(_.tpe))),
+                     Option(sec))
+              case Section.Exports(exports) =>
+                val duplicate = exports
+                  .groupBy(_.fieldName)
+                  .mapValues(_.size)
+                  .find(_._2 > 1)
+                duplicate match {
+                  case Some((name, _)) =>
+                    F.raiseError[Acc](new ValidationException(s"duplicate export name $name."))
+                  case None =>
+                    for (_ <- validateAll(exports, ctx, validateExport))
+                      yield ((sec.id, tpes, imports, codes, ctx), Option(sec))
+                }
+              case Section.Start(start) =>
+                for (_ <- validateStart(start, ctx))
+                  yield ((sec.id, tpes, imports, codes, ctx), Option(sec))
+              case Section.Elements(elem) =>
+                for (_ <- validateAll(elem, ctx, validateElem))
+                  yield ((sec.id, tpes, imports, codes, ctx), Option(sec))
+              case Section.Code(code) =>
+                if (code.size != tpes.size)
+                  F.raiseError[Acc](
+                    new ValidationException("code and function sections must have the same number of elements")
+                  )
+                else {
+                  val funcs = code.zip(tpes).map {
+                    case (FuncBody(locals, code), typeIdx) =>
+                      val locs = locals.flatMap {
+                        case LocalEntry(count, tpe) =>
+                          Vector.fill(count)(tpe)
+                      }
+                      Func(typeIdx, locs, code)
                   }
-                case Section.Start(start) =>
-                  for (_ <- validateStart(start, ctx))
-                    yield ((sec.id, tpes, imports, ctx), sec)
-                case Section.Elements(elem) =>
-                  for (_ <- validateAll(elem, ctx, validateElem))
-                    yield ((sec.id, tpes, imports, ctx), sec)
-                case Section.Code(code) =>
-                  if (code.size != tpes.size)
-                    F.raiseError[Acc](
-                      new ValidationException("code and function sections must have the same number of elements")
-                    )
-                  else {
-                    val funcs = code.zip(tpes).map {
-                      case (FuncBody(locals, code), typeIdx) =>
-                        val locs = locals.flatMap {
-                          case LocalEntry(count, tpe) =>
-                            Vector.fill(count)(tpe)
-                        }
-                        Func(typeIdx, locs, code)
-                    }
-                    for (_ <- validateAll(funcs, ctx, validateFunction))
-                      yield ((sec.id, tpes, imports, ctx), sec)
-                  }
-                case Section.Datas(data) =>
-                  for (_ <- validateAll(data, ctx, validateData))
-                    yield ((sec.id, tpes, imports, ctx), sec)
-                case Section.Custom(_, _) =>
-                  // ignore the custom sections
-                  F.pure((acc, sec))
-              }
-        }
+                  for (_ <- validateAll(funcs, ctx, validateFunction))
+                    yield ((sec.id, tpes, imports, code.size, ctx), Option(sec))
+                }
+              case Section.Datas(data) =>
+                for (_ <- validateAll(data, ctx, validateData))
+                  yield ((sec.id, tpes, imports, codes, ctx), Option(sec))
+              case Section.Custom(_, _) =>
+                // ignore the custom sections
+                F.pure((acc, Option(sec)))
+            }
+        case (acc @ (idx, tpes, imports, codes, ctx), None) =>
+          if (tpes.size != codes)
+            F.raiseError[Acc](
+              new ValidationException("code and function sections must have the same number of elements"))
+          else
+            F.pure((acc, Option.empty[Section]))
       }
       .map(_._2)
+      .unNoneTerminate
 
   private def nameOf(id: Int) =
     id match {
