@@ -72,7 +72,7 @@ object Types {
     P((limits ~ elemtype).map { case (l, t) => TableType(t, l) })
 
   def elemtype[_: P]: P[ElemType] =
-    P(word("anyfunc").map(_ => ElemType.AnyFunc))
+    P(word("funcref").map(_ => ElemType.FuncRef))
 
   def globaltype[_: P]: P[GlobalType] =
     P(

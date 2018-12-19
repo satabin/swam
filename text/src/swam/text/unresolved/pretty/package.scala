@@ -122,11 +122,11 @@ package object pretty {
               loop(rest, foldedif(i, d) :: restd)
             case (Seq(op @ BrIf(_), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
-            case (Seq(op @ SetLocal(_), rest @ _*), d :: restd) =>
+            case (Seq(op @ LocalSet(_), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
-            case (Seq(op @ TeeLocal(_), rest @ _*), d :: restd) =>
+            case (Seq(op @ LocalTee(_), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
-            case (Seq(op @ SetGlobal(_), rest @ _*), d :: restd) =>
+            case (Seq(op @ GlobalSet(_), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
             case (Seq(op @ Store(_, _, _), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
@@ -298,11 +298,11 @@ package object pretty {
         case Drop()   => str("drop")
         case Select() => str("select")
 
-        case GetLocal(idx)  => nest(2, str("get_local") ++ idx.pretty)
-        case SetLocal(idx)  => nest(2, str("set_local") ++ idx.pretty)
-        case TeeLocal(idx)  => nest(2, str("tee_local") ++ idx.pretty)
-        case GetGlobal(idx) => nest(2, str("get_global") ++ idx.pretty)
-        case SetGlobal(idx) => nest(2, str("set_global") ++ idx.pretty)
+        case LocalGet(idx)  => nest(2, str("local.get") ++ idx.pretty)
+        case LocalSet(idx)  => nest(2, str("local.set") ++ idx.pretty)
+        case LocalTee(idx)  => nest(2, str("local.tee") ++ idx.pretty)
+        case GlobalGet(idx) => nest(2, str("global.get") ++ idx.pretty)
+        case GlobalSet(idx) => nest(2, str("global.set") ++ idx.pretty)
 
         case MemorySize() => str("memory.size")
         case MemoryGrow() => str("memory.grow")
@@ -404,7 +404,7 @@ package object pretty {
   implicit object ElemTypePretty extends Pretty[ElemType] {
     def pretty(et: ElemType): Doc =
       et match {
-        case ElemType.AnyFunc => str("anyfunc")
+        case ElemType.FuncRef => str("funcref")
       }
   }
 

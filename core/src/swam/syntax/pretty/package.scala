@@ -51,7 +51,7 @@ package object pretty {
         case TableType(tpe, limits) => limits.pretty ++ space ++ tpe.pretty
         case MemType(limits)        => limits.pretty
         case GlobalType(tpe, mut)   => mut.pretty ++ space ++ tpe.pretty
-        case ElemType.AnyFunc       => str("anyfunc")
+        case ElemType.FuncRef       => str("funcref")
       }
   }
 
@@ -216,11 +216,11 @@ package object pretty {
         case Drop   => str("drop")
         case Select => str("select")
 
-        case GetLocal(idx)  => str(s"get_local $idx")
-        case SetLocal(idx)  => str(s"set_local $idx")
-        case TeeLocal(idx)  => str(s"tee_local $idx")
-        case GetGlobal(idx) => str(s"get_global $idx")
-        case SetGlobal(idx) => str(s"set_global $idx")
+        case LocalGet(idx)  => str(s"local.get $idx")
+        case LocalSet(idx)  => str(s"local.set $idx")
+        case LocalTee(idx)  => str(s"local.tee $idx")
+        case GlobalGet(idx) => str(s"global.get $idx")
+        case GlobalSet(idx) => str(s"global.set $idx")
 
         case MemorySize => str("memory.size")
         case MemoryGrow => str("memory.grow")

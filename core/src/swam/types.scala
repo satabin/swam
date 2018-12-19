@@ -98,7 +98,7 @@ case class TableType(elemtype: ElemType, limits: Limits) extends Type {
 sealed trait ElemType extends Type
 
 object ElemType {
-  case object AnyFunc extends ElemType {
+  case object FuncRef extends ElemType {
     def <:<(that: Type): Boolean = true
   }
 }

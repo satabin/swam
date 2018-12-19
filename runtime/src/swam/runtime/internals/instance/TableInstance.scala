@@ -25,7 +25,7 @@ private[runtime] class TableInstance[F[_]](min: Int, max: Option[Int]) extends T
 
   private val elems = Array.ofDim[Function[F]](min)
 
-  val tpe = TableType(ElemType.AnyFunc, Limits(min, max))
+  val tpe = TableType(ElemType.FuncRef, Limits(min, max))
 
   def size = elems.length
 

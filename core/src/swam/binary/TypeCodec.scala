@@ -35,7 +35,7 @@ trait TypeCodec {
                                           None -> 0x40))
 
   val elemType: Codec[ElemType] =
-    mappedEnum(byte, Map[ElemType, Byte](ElemType.AnyFunc -> 0x70))
+    mappedEnum(byte, Map[ElemType, Byte](ElemType.FuncRef -> 0x70))
 
   val funcType: Codec[FuncType] =
     mappedEnum(byte, Map[Unit, Byte](() -> 0x60)) ~>

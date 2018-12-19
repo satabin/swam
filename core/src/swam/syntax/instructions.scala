@@ -313,11 +313,11 @@ object f64 {
 case object Drop extends Inst(OpCode.Drop)
 case object Select extends Inst(OpCode.Select)
 
-case class GetLocal(idx: LocalIdx) extends VarInst(OpCode.GetLocal)
-case class SetLocal(idx: LocalIdx) extends VarInst(OpCode.SetLocal)
-case class TeeLocal(idx: LocalIdx) extends VarInst(OpCode.TeeLocal)
-case class GetGlobal(idx: LocalIdx) extends VarInst(OpCode.GetGlobal)
-case class SetGlobal(idx: LocalIdx) extends VarInst(OpCode.SetGlobal)
+case class LocalGet(idx: LocalIdx) extends VarInst(OpCode.LocalGet)
+case class LocalSet(idx: LocalIdx) extends VarInst(OpCode.LocalSet)
+case class LocalTee(idx: LocalIdx) extends VarInst(OpCode.LocalTee)
+case class GlobalGet(idx: LocalIdx) extends VarInst(OpCode.GlobalGet)
+case class GlobalSet(idx: LocalIdx) extends VarInst(OpCode.GlobalSet)
 
 case object MemorySize extends Inst(OpCode.MemorySize)
 case object MemoryGrow extends Inst(OpCode.MemoryGrow)
