@@ -33,7 +33,7 @@ object Lexical {
     P(linecomment | blockcomment)
 
   def linecomment[_: P]: P0 =
-    P(";;" ~/ CharsWhile(_ != '\u000a', min = 0))
+    P(";;" ~/ CharsWhile(_ != '\u000a', 0))
 
   def blockcomment[_: P]: P0 =
     P("(;" ~/ (CharsWhile(!";(".contains(_)) | !";)" ~ ";" | !"(;" ~ "(" | blockcomment).rep ~ ";)")
