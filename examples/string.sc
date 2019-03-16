@@ -4,13 +4,14 @@ import runtime._
 import cats.effect._
 import java.nio.file.Paths
 
-val tcompiler = new Compiler[IO]
+val tcompiler = Compiler[IO]
 
-val engine = SwamEngine[IO]()
+val engine = SwamEngine[IO]
 
 val strings =
   for {
     engine <- engine
+    tcompiler <- tcompiler
     m <- engine.compile(tcompiler.stream(Paths.get("examples/string.wat"), true))
     i <- m.newInstance()
     s1 <- {

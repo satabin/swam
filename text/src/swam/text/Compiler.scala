@@ -34,7 +34,7 @@ import fs2._
 
 import fastparse._
 
-class Compiler[F[_]](implicit val F: Effect[F]) {
+class Compiler[F[_]] private(implicit val F: Effect[F]) {
 
   private val resolver = new Resolver[F]
 
@@ -72,4 +72,9 @@ class Compiler[F[_]](implicit val F: Effect[F]) {
       }
     }
 
+}
+
+object Compiler {
+  def apply[F[_]](implicit F: Effect[F]): F[Compiler[F]] =
+    F.pure(new Compiler[F])
 }

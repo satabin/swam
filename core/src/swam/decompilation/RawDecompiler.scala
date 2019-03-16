@@ -21,6 +21,7 @@ import syntax.Section
 import syntax.pretty._
 import util.pretty._
 
+import cats._
 import cats.implicits._
 import cats.effect._
 
@@ -32,9 +33,14 @@ import scala.language.higherKinds
   * This is a raw decompiler, not performing any validation, nor transforming
   * the binary format.
   */
-class RawDecompiler[F[_]] extends Decompiler[F] {
+class RawDecompiler[F[_]] private() extends Decompiler[F] {
 
   def decompile(sections: Stream[F, Section])(implicit F: Effect[F]): F[Doc] =
     sections.map(_.pretty).compile.toList.map(seq(newline, _))
 
+}
+
+object RawDecompiler {
+  def apply[F[_]](implicit F: Monad[F]): F[RawDecompiler[F]] =
+    F.pure(new RawDecompiler[F])
 }

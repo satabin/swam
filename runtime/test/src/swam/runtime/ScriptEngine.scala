@@ -71,9 +71,9 @@ class ScriptEngine {
 
   val IO = implicitly[Effect[IO]]
 
-  val engine = SwamEngine[IO]()
+  val engine = SwamEngine[IO]
 
-  val tcompiler = new Compiler[IO]
+  val tcompiler = Compiler[IO]
 
   def run(commands: Seq[Command], positioner: Positioner[TextFilePosition]): IO[Unit] =
     IO.tailRecM((commands, ExecutionContext(spectestlib, Map.empty, None))) {
@@ -82,6 +82,7 @@ class ScriptEngine {
           case ValidModule(mod) =>
             for {
               engine <- engine
+              tcompiler <- tcompiler
               compiled <- engine.compile(tcompiler.stream(mod, true))
               instance <- compiled.newInstance(ctx.imports)
             } yield
@@ -93,6 +94,7 @@ class ScriptEngine {
           case BinaryModule(id, bs) =>
             for {
               engine <- engine
+              tcompiler <- tcompiler
               compiled <- engine.compile(BitVector(bs))
               instance <- compiled.newInstance(ctx.imports)
             } yield
@@ -239,13 +241,22 @@ class ScriptEngine {
     val mod =
       m match {
         case ValidModule(m) =>
-          engine.flatMap(_.compile(tcompiler.stream(m, false)))
+          for {
+            engine <- engine
+            tcompiler <- tcompiler
+            res <- engine.compile(tcompiler.stream(m, false))
+          } yield res
         case BinaryModule(_, bs) =>
-          engine.flatMap(_.compile(BitVector(bs)))
+          for {
+            engine <- engine
+            tcompiler <- tcompiler
+            res <- engine.compile(BitVector(bs))
+          } yield res
         case QuotedModule(_, src) =>
           for {
-            unresolved <- tcompiler.parse(src)
             engine <- engine
+            tcompiler <- tcompiler
+            unresolved <- tcompiler.parse(src)
             m <- engine.compile(tcompiler.stream(unresolved, false))
           } yield m
       }
