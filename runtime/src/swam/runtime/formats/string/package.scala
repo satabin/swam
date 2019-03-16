@@ -19,6 +19,7 @@ package runtime
 package formats
 
 import cats._
+import cats.implicits._
 
 import scala.collection.mutable.ArrayBuilder
 
@@ -35,14 +36,19 @@ package object string {
           val size = m.size
           val bytes = ArrayBuilder.make[Byte]
           F.tailRecM(i) { i =>
-            if (i >= size) {
+            if (i >= size)
               F.raiseError(new RuntimeException("non terminated string"))
-            } else if (m.readByte(i) == 0) {
-              F.pure(Right(new String(bytes.result, "ASCII")))
-            } else {
-              bytes += m.readByte(i)
-              F.pure(Left(i + 1))
-            }
+            else
+              m.readByte(i).flatMap { b =>
+                if (b == 0) {
+                  F.pure(Right(new String(bytes.result, "ASCII")))
+                } else {
+                  m.readByte(i).map { b =>
+                    bytes += b
+                    Left(i + 1)
+                  }
+                }
+              }
           }
         case (_, Some(_)) => F.raiseError(new RuntimeException(s"expected i32 but got ${v.tpe}"))
         case (_, None)    => F.raiseError(new RuntimeException("missing memory"))
@@ -58,25 +64,25 @@ package object string {
       (v, m) match {
         case (Value.Int32(idx), Some(m)) =>
           val msize = m.size
-          if (idx >= msize - 4) {
+          if (idx >= msize - 4)
             F.raiseError(new RuntimeException("out of bound memory access"))
-          } else {
-            val ssize = m.readInt(idx)
-            println(ssize)
-            if ((idx + 4 + ssize) > msize) {
-              F.raiseError(new RuntimeException("out of bound memory access"))
-            } else {
-              val bytes = ArrayBuilder.make[Byte]
-              F.tailRecM(0) { i =>
-                if (i >= ssize) {
-                  F.pure(Right(new String(bytes.result, "UTF8")))
-                } else {
-                  bytes += m.readByte(idx + 4 + i)
-                  F.pure(Left(i + 1))
+          else
+            m.readInt(idx).flatMap { ssize =>
+              if ((idx + 4 + ssize) > msize) {
+                F.raiseError(new RuntimeException("out of bound memory access"))
+              } else {
+                val bytes = ArrayBuilder.make[Byte]
+                F.tailRecM(0) { i =>
+                  if (i >= ssize)
+                    F.pure(Right(new String(bytes.result, "UTF8")))
+                  else
+                    m.readByte(idx + 4 + i).map { b =>
+                      bytes += b
+                      Left(i + 1)
+                    }
                 }
               }
             }
-          }
         case (_, Some(_)) => F.raiseError(new RuntimeException(s"expected i32 but got ${v.tpe}"))
         case (_, None)    => F.raiseError(new RuntimeException("missing memory"))
       }

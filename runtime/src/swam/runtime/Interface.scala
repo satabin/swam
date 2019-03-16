@@ -123,79 +123,79 @@ trait Memory[F[_]] extends Interface[F, MemType] {
     * This method should never throw an exception. If growing is not possible,
     * whatever the reason, it must simply return `false`.
     */
-  def grow(by: Int): Boolean
+  def grow(by: Int): F[Boolean]
 
   /** Writes a byte at the given index in memory.
     *
     *  $boundaries
     */
-  def writeByte(idx: Int, v: Byte): Unit
+  def writeByte(idx: Int, v: Byte): F[Unit]
 
   /** Reads a byte at the given index in memory.
     *
     *  $boundaries
     */
-  def readByte(idx: Int): Byte
+  def readByte(idx: Int): F[Byte]
 
   /** Writes a short at the given index in memory.
     *
     *  $boundaries
     */
-  def writeShort(idx: Int, v: Short): Unit
+  def writeShort(idx: Int, v: Short): F[Unit]
 
   /** Reads a short at the given index in memory.
     *
     *  $boundaries
     */
-  def readShort(idx: Int): Short
+  def readShort(idx: Int): F[Short]
 
   /** Writes a integer at the given index in memory.
     *
     *  $boundaries
     */
-  def writeInt(idx: Int, v: Int): Unit
+  def writeInt(idx: Int, v: Int): F[Unit]
 
   /** Reads a integer at the given index in memory.
     *
     *  $boundaries
     */
-  def readInt(idx: Int): Int
+  def readInt(idx: Int): F[Int]
 
   /** Writes a long at the given index in memory.
     *
     *  $boundaries
     */
-  def writeLong(idx: Int, v: Long): Unit
+  def writeLong(idx: Int, v: Long): F[Unit]
 
   /** Reads a long at the given index in memory.
     *
     *  $boundaries
     */
-  def readLong(idx: Int): Long
+  def readLong(idx: Int): F[Long]
 
   /** Writes a float at the given index in memory.
     *
     *  $boundaries
     */
-  def writeFloat(idx: Int, v: Float): Unit
+  def writeFloat(idx: Int, v: Float): F[Unit]
 
   /** Reads a float at the given index in memory.
     *
     *  $boundaries
     */
-  def readFloat(idx: Int): Float
+  def readFloat(idx: Int): F[Float]
 
   /** Writes a double at the given index in memory.
     *
     *  $boundaries
     */
-  def writeDouble(idx: Int, v: Double): Unit
+  def writeDouble(idx: Int, v: Double): F[Unit]
 
   /** Reads a double at the given index in memory.
     *
     *  $boundaries
     */
-  def readDouble(idx: Int): Double
+  def readDouble(idx: Int): F[Double]
 
   /** Writes the bytes in the provided buffer at the given index in memory.
     *
@@ -204,5 +204,5 @@ trait Memory[F[_]] extends Interface[F, MemType] {
     *
     *  $boundaries
     */
-  def writeBytes(idx: Int, bytes: ByteBuffer): Unit
+  def writeBytes(idx: Int, bytes: ByteBuffer): F[Unit]
 }

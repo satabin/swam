@@ -20,6 +20,7 @@ package runtime
 import formats._
 
 import cats._
+import cats.effect._
 
 import java.nio.{ByteBuffer, ByteOrder}
 
@@ -117,13 +118,13 @@ package object imports {
       }
     }
 
-  implicit def byteBufferAsInsterface[F[_]]: AsInterface[ByteBuffer, F] =
+  implicit def byteBufferAsInsterface[F[_]](implicit F: Async[F]): AsInterface[ByteBuffer, F] =
     new AsInterface[ByteBuffer, F] {
       def view(_b: ByteBuffer) = new Memory[F] {
         val b = _b.duplicate()
         b.order(ByteOrder.LITTLE_ENDIAN)
         def tpe: swam.MemType = MemType(Limits(b.limit() / pageSize, Some(b.capacity / pageSize)))
-        def grow(by: Int): Boolean = {
+        def grow(by: Int) = F.delay {
           val newSize = size + by * pageSize
           if (newSize > b.capacity) {
             false
@@ -132,23 +133,23 @@ package object imports {
             true
           }
         }
-        def readByte(idx: Int): Byte = b.get(idx)
-        def readDouble(idx: Int): Double = b.getDouble(idx)
-        def readFloat(idx: Int): Float = b.getFloat(idx)
-        def readInt(idx: Int): Int = b.getInt(idx)
-        def readLong(idx: Int): Long = b.getLong(idx)
-        def readShort(idx: Int): Short = b.getShort(idx)
-        def size: Int = b.limit
-        def writeByte(idx: Int, v: Byte): Unit = b.put(idx, v)
-        def writeBytes(idx: Int, bytes: ByteBuffer): Unit = {
+        def readByte(idx: Int) = F.delay(b.get(idx))
+        def readDouble(idx: Int) = F.delay(b.getDouble(idx))
+        def readFloat(idx: Int) = F.delay(b.getFloat(idx))
+        def readInt(idx: Int) = F.delay(b.getInt(idx))
+        def readLong(idx: Int) = F.delay(b.getLong(idx))
+        def readShort(idx: Int) = F.delay(b.getShort(idx))
+        def size = b.limit
+        def writeByte(idx: Int, v: Byte) = F.delay(b.put(idx, v))
+        def writeBytes(idx: Int, bytes: ByteBuffer) = F.delay {
           b.position(idx)
           b.put(bytes)
         }
-        def writeDouble(idx: Int, v: Double): Unit = b.putDouble(idx, v)
-        def writeFloat(idx: Int, v: Float): Unit = b.putFloat(idx, v)
-        def writeInt(idx: Int, v: Int): Unit = b.putInt(idx, v)
-        def writeLong(idx: Int, v: Long): Unit = b.putLong(idx, v)
-        def writeShort(idx: Int, v: Short): Unit = b.putShort(idx, v)
+        def writeDouble(idx: Int, v: Double) = F.delay(b.putDouble(idx, v))
+        def writeFloat(idx: Int, v: Float) = F.delay(b.putFloat(idx, v))
+        def writeInt(idx: Int, v: Int) = F.delay(b.putInt(idx, v))
+        def writeLong(idx: Int, v: Long) = F.delay(b.putLong(idx, v))
+        def writeShort(idx: Int, v: Short) = F.delay(b.putShort(idx, v))
 
       }
     }

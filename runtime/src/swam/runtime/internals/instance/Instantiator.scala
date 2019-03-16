@@ -24,6 +24,7 @@ import compiler._
 import interpreter._
 
 import cats._
+import cats.effect._
 import cats.implicits._
 
 import runtime._
@@ -36,7 +37,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F]) {
   private val dataOnHeap = engine.conf.data.onHeap
   private val dataHardMax = engine.conf.data.hardMax
 
-  def instantiate(module: Module[F], imports: Imports[F])(implicit F: MonadError[F, Throwable]): F[Instance[F]] = {
+  def instantiate(module: Module[F], imports: Imports[F])(implicit F: Async[F]): F[Instance[F]] = {
     for {
       // check and order the imports
       imports <- check(module.imports, imports)
@@ -90,7 +91,7 @@ private[runtime] class Instantiator[F[_]](engine: SwamEngine[F]) {
   }
 
   private def allocate(module: Module[F], globals: Vector[GlobalInstance[F]], imports: Vector[Interface[F, Type]])(
-      implicit F: MonadError[F, Throwable]): F[Instance[F]] = {
+      implicit F: Async[F]): F[Instance[F]] = {
 
     val instance = new Instance[F](module, interpreter)
 
