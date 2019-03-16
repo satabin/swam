@@ -14,6 +14,9 @@ import jmh.Jmh
 import $file.headers
 import headers.Headers
 
+import $file.mdoc
+import mdoc.MdocModule
+
 val swamVersion = "0.1.0-SNAPSHOT"
 
 val swamLicense = License.`Apache-2.0`
@@ -29,7 +32,7 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
     MavenRepository("https://oss.sonatype.org/content/repositories/snapshots"),
     MavenRepository("https:/dl.bintray.com/tpolecat/maven"))
 
-  def scalaVersion = "2.12.7"
+  def scalaVersion = "2.12.8"
 
   def scalacOptions = Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification")
 
@@ -117,9 +120,17 @@ object runtime extends SwamModule with PublishModule {
 
 }
 
-object examples extends SwamModule {
+object examples extends SwamModule with MdocModule {
 
   def moduleDeps = Seq(runtime, text)
+
+  def mdocVersion = "1.2.10"
+
+  def mdocSite = Map("VERSION" -> swamVersion)
+
+  def mdocNameFilter = Some("*.md")
+
+  def mdocTargetDirectory = os.pwd / 'site / 'content / 'examples
 
 }
 
@@ -155,14 +166,13 @@ def unidoc(ev: Evaluator) = T.command {
   val modules = ev.rootModule.millInternal.segmentsToModules.values
       .collect{ case x: ScalaModule if !isInfra(x) => x}
       .toSeq
-  val outDir = T.ctx().dest
   val base = ev.rootModule.millModuleBasePath.value.toNIO.toString
 
   val sources = ev.evaluate(mill.api.Strict.Agg[define.Task[_]](modules.map(_.allSources): _*)).values.collect {
     case paths: Seq[PathRef] => paths
   }.flatten
 
-  val javadocDir = outDir / 'javadoc
+  val javadocDir = os.pwd / 'site / 'content / 'api
   mkdir(javadocDir)
 
   val files = for{
