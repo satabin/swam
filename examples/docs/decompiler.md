@@ -1,3 +1,10 @@
+---
+title: Decompilers
+---
+
+Decompilers make it possible to have human readyble representations of a compiled WebAssembly module. For instance, having defined [functions to compute fibonacci numbers](/examples/fibo.wat).
+
+```scala mdoc:silent
 import swam._
 import text._
 import decompilation._
@@ -20,10 +27,15 @@ def compdec(p: String): (Doc, Doc) =
     td <- tdecompiler.decompile(tcompiler.stream(Paths.get(p), true))
   } yield (rd, td)).unsafeRunSync()
 
-val (rd, td) = compdec("examples/fibo.wat")
+val (rd, td) = compdec("fibo.wat")
+```
 
-println("********* Raw decompilation")
+The simple raw decompiler simply prints a text version of the module sections. It can render modules that are not valid.
+```scala mdoc
 println(rd.render(0))
-println()
-println("********* Smart decompilation")
+```
+
+The smart text decompiler renders a formatted text version of the module. The module must be valid to be rendered.
+```scala mdoc
 println(td.render(0))
+```
