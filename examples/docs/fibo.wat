@@ -16,7 +16,7 @@
       call $naive
       i64.add
     end)
-  
+
   (func $inner (param $n2 i64) (param $n1 i64) (param $n i64) (result i64)
     (if (result i64) (i64.gt_s (local.get $n) (i64.const 0))
       (then

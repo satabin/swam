@@ -49,3 +49,8 @@ build.log
 #ensime
 .ensime*
 ensime.sbt
+
+# website
+site/content/api
+site/content/examples
+site/output

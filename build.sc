@@ -128,8 +128,6 @@ object examples extends SwamModule with MdocModule {
 
   def mdocSite = Map("VERSION" -> swamVersion)
 
-  def mdocNameFilter = Some("*.md")
-
   def mdocTargetDirectory = os.pwd / 'site / 'content / 'examples
 
 }

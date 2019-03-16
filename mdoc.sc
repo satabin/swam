@@ -120,12 +120,12 @@ trait MdocModule extends ScalaModule {
     val site = mdocSite().flatMap { case (k, v) => Seq(s"site.$k", v) }
     val opts = mdocScalacOptions()
     val pOpts = mdocPluginJars().map(pathRef => "-Xplugin:" + pathRef.path.toIO.getAbsolutePath)
-    val mdocArgs = List("--in", in, "--out", out, "--scalac-options", (opts ++ pOpts).mkString(" ")) ++ re.toSeq.flatMap(Seq("--include", _)) ++ site
+    val mdocArgs = List("--in", in, "--out", out, "--scalac-options", (opts ++ pOpts).mkString(" "), "--no-link-hygiene") ++ re.toSeq.flatMap(Seq("--include", _)) ++ site
     os.proc(
       'java,
       "-cp", mdocClasspath().map(_.path.toIO.getAbsolutePath).mkString(java.io.File.pathSeparator),
       "mdoc.Main",
       mdocArgs
-    ).call(millSourcePath)
+    ).call(os.Path(in))
   }
 }

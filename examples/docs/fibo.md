@@ -1,3 +1,9 @@
+---
+title: Recursion
+---
+
+Recursive functions are allowed. For instance, having defined [functions to compute fibonacci numbers](/examples/fibo.wat).
+
 ```scala mdoc:silent
 import swam._
 import text._
@@ -31,6 +37,8 @@ val i = instantiate("fibo.wat")
 val naive = i.exports.typed.function1[Long, Long]("naive").unsafeRunSync()
 val clever = i.exports.typed.function1[Long, Long]("clever").unsafeRunSync()
 ```
+
+This would result in:
 
 ```scala mdoc
 time(naive(30).unsafeRunSync())
