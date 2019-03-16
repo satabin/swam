@@ -23,4 +23,4 @@ If you want more details, please refer to the [website][website].
 [4]: https://webassembly.org/docs/non-web/
 [6]: https://typelevel.org/cats/img/cats-badge-tiny.png
 [7]: https://typelevel.org/cats
-[website][https://swam.gnieh.org]
+[website]: https://swam.gnieh.org
