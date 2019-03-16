@@ -46,7 +46,7 @@
 
     <main>
       <div class="container">
-        <p>Recursive functions are allowed. For instance, having defined functions to compute fibonacci numbers.</p>
+        <p>Recursive functions are allowed. For instance, having defined <a href="/examples/fibo.wat">functions to compute fibonacci numbers</a>.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">swam._</span>
 <span class="k">import</span> <span class="nn">text._</span>
@@ -84,7 +84,7 @@
 <p>This would result in:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">time</span><span class="o">(</span><span class="n">naive</span><span class="o">(</span><span class="mi">30</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">())</span>
-<span class="c1">// Time: 11689ms
+<span class="c1">// Time: 11587ms
 // res0: Long = 1346269L
 </span><span class="n">time</span><span class="o">(</span><span class="n">clever</span><span class="o">(</span><span class="mi">30</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">())</span>
 <span class="c1">// Time: 1ms
