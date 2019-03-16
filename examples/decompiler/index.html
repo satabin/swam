@@ -1,0 +1,242 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Swam - Decompilers</title>
+    <link rel="stylesheet" href="/css/stylesheet.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="/css/materialize.min.css" media="screen,projection"/>
+    <style>body{font-family: overpass, sans-serif; }</style>
+
+    <meta name="generator" content="Nanoc 4.11.2">
+  </head>
+  <body>
+    <header>
+      <div class="navbar-fixed">
+        <ul id='examples' class='dropdown-content'>
+          
+          <li><a href="/examples/string/">Strings</a></li>
+          
+          <li><a href="/examples/fibo/">Recursion</a></li>
+          
+          <li><a href="/examples/logged/">Imports</a></li>
+          
+          <li><a href="/examples/decompiler/">Decompilers</a></li>
+          
+        </ul>
+        <nav class="blue-grey darken-2">
+          <a href="#!" class="brand-logo">Swam</a>
+          <a href="#" data-target="collapsed" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+          <div class="nav-wrapper">
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+              <li><a href="/">Home</a></li>
+              <li><a class="dropdown-trigger" href="#!" data-target="examples">Examples<i class="material-icons right">arrow_drop_down</i></a></li>
+              <li><a href="https://github.com/satabin/swam">Github</a></li>
+              <li><a href="/api/">Scaladoc</a></li>
+            </ul>
+          </div>
+          <div class="nav-content">
+          </div>
+        </nav>
+      </div>
+
+    </header>
+
+    <ul class="sidenav" id="collapsed">
+      <li><a href="/">Home</a></li>
+      <li><a href="/examples/">Examples</a></li>
+      <li><a href="https://github.com/satabin/swam">Github</a></li>
+      <li><a href="/api/">Scaladoc</a></li>
+    </ul>
+
+    <main>
+      <div class="container">
+        <p>Decompilers make it possible to have human readyble representations of a compiled WebAssembly module. For instance, having defined <a href="/examples/fibo.wat">functions to compute fibonacci numbers</a>.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">swam._</span>
+<span class="k">import</span> <span class="nn">text._</span>
+<span class="k">import</span> <span class="nn">decompilation._</span>
+<span class="k">import</span> <span class="nn">util.pretty._</span>
+<span class="k">import</span> <span class="nn">cats.effect._</span>
+<span class="k">import</span> <span class="nn">java.nio.file.Paths</span>
+
+<span class="k">val</span> <span class="n">tcompiler</span> <span class="k">=</span> <span class="nc">Compiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+
+<span class="k">val</span> <span class="n">rdecompiler</span> <span class="k">=</span> <span class="nc">RawDecompiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+
+<span class="k">val</span> <span class="n">tdecompiler</span> <span class="k">=</span> <span class="nc">TextDecompiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+
+<span class="k">def</span> <span class="n">compdec</span><span class="o">(</span><span class="n">p</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="o">(</span><span class="kt">Doc</span><span class="o">,</span> <span class="kt">Doc</span><span class="o">)</span> <span class="k">=</span>
+  <span class="o">(</span><span class="k">for</span> <span class="o">{</span>
+    <span class="n">tcompiler</span> <span class="k">&lt;-</span> <span class="n">tcompiler</span>
+    <span class="n">rdecompiler</span> <span class="k">&lt;-</span> <span class="n">rdecompiler</span>
+    <span class="n">tdecompiler</span> <span class="k">&lt;-</span> <span class="n">tdecompiler</span>
+    <span class="n">rd</span> <span class="k">&lt;-</span> <span class="n">rdecompiler</span><span class="o">.</span><span class="n">decompile</span><span class="o">(</span><span class="n">tcompiler</span><span class="o">.</span><span class="n">stream</span><span class="o">(</span><span class="nc">Paths</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">p</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
+    <span class="n">td</span> <span class="k">&lt;-</span> <span class="n">tdecompiler</span><span class="o">.</span><span class="n">decompile</span><span class="o">(</span><span class="n">tcompiler</span><span class="o">.</span><span class="n">stream</span><span class="o">(</span><span class="nc">Paths</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">p</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
+  <span class="o">}</span> <span class="k">yield</span> <span class="o">(</span><span class="n">rd</span><span class="o">,</span> <span class="n">td</span><span class="o">)).</span><span class="n">unsafeRunSync</span><span class="o">()</span>
+
+<span class="k">val</span> <span class="o">(</span><span class="n">rd</span><span class="o">,</span> <span class="n">td</span><span class="o">)</span> <span class="k">=</span> <span class="n">compdec</span><span class="o">(</span><span class="s">"fibo.wat"</span><span class="o">)</span>
+</code></pre></div></div>
+
+<p>The simple raw decompiler simply prints a text version of the module sections. It can render modules that are not valid.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">println</span><span class="o">(</span><span class="n">rd</span><span class="o">.</span><span class="n">render</span><span class="o">(</span><span class="mi">0</span><span class="o">))</span>
+<span class="c1">// ; section "Types"
+// ; type 0
+// [i64] → [i64]
+// ; type 1
+// [i64, i64, i64] → [i64]
+// ; section "Imports"
+// 
+// ; section "Functions"
+// ; function type 0
+// 0
+// ; function type 1
+// 1
+// ; function type 2
+// 0
+// ; section "Tables"
+// 
+// ; section "Memories"
+// 
+// ; section "Globals"
+// 
+// ; section "Exports"
+// {name naive, func 0}
+// {name clever, func 2}
+// ; section "Elements"
+// 
+// ; section "Code"
+// ; function body 0
+// local.get 0
+// i64.const 2
+// i64.lt_s
+// if [i64]
+//   i64.const 1
+// else
+//   local.get 0
+//   i64.const 2
+//   i64.sub
+//   call 0
+//   local.get 0
+//   i64.const 1
+//   i64.sub
+//   call 0
+//   i64.add
+// end
+// ; function body 1
+// local.get 2
+// i64.const 0
+// i64.gt_s
+// if [i64]
+//   local.get 1
+//   local.get 1
+//   local.get 0
+//   i64.add
+//   local.get 2
+//   i64.const 1
+//   i64.sub
+//   call 1
+// else
+//   local.get 0
+// end
+// ; function body 2
+// i64.const 1
+// i64.const 1
+// local.get 0
+// call 1
+// ; section "Data"
+// 
+// ; custom section "name"
+// 00046669626f01170300056e616976650105696e6e65720206636c65766572021b03000401000169010c0300026e3201026e3102016e020401000169
+</span></code></pre></div></div>
+
+<p>The smart text decompiler renders a formatted text version of the module. The module must be valid to be rendered.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">println</span><span class="o">(</span><span class="n">td</span><span class="o">.</span><span class="n">render</span><span class="o">(</span><span class="mi">0</span><span class="o">))</span>
+<span class="c1">// (module $fibo
+//   (export
+//     "naive"
+//     (func $naive))
+//   (export
+//     "clever"
+//     (func $clever))
+//   (func $naive
+//     (param $i i64)
+//     (result i64)
+//     (if (result i64)
+//       (i64.lt_s
+//         (local.get $i)
+//         (i64.const 2))
+//     (then
+//       i64.const 1)
+//     (else
+//       (i64.add
+//         ((call $naive
+//           ((i64.sub
+//             (local.get $i)
+//             (i64.const 2)))))
+//         ((call $naive
+//           ((i64.sub
+//             (local.get $i)
+//             (i64.const 1))))))))
+//   (func $inner
+//     (param $n2 i64)
+//     (param $n1 i64)
+//     (param $n i64)
+//     (result i64)
+//     (if (result i64)
+//       (i64.gt_s
+//         (local.get $n)
+//         (i64.const 0))
+//     (then
+//       (call $inner
+//         ((i64.sub
+//           (local.get $n)
+//           (i64.const 1)))
+//         ((i64.add
+//           (local.get $n1)
+//           (local.get $n2)))
+//         (local.get $n1)))
+//     (else
+//       local.get $n2))
+//   (func $clever
+//     (param $i i64)
+//     (result i64)
+//     (call $inner
+//       (local.get $i)
+//       (i64.const 1)
+//       (i64.const 1))))
+</span></code></pre></div></div>
+
+
+      </div>
+    </main>
+
+    <footer class="page-footer blue-grey lighten-2">
+      <div class="footer-copyright blue-grey darken-2">
+        <div class="container">
+          Copyright © 2019 <a class="grey-text text-lighten-4" href="https://twitter.com/lucassatabin">@lucassatabin</a>
+          <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" class="grey-text text-lighten-4 right" /></a>
+        </div>
+      </div>
+    </footer>
+
+    <script type="text/javascript" src="/js/materialize.min.js"></script>
+    <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.sidenav');
+      var instances = M.Sidenav.init(elems, {});
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.dropdown-trigger');
+      var instances = M.Dropdown.init(elems, {});
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.materialboxed');
+      var instances = M.Materialbox.init(elems, {});
+    });
+    </script>
+  </body>
+</html>
