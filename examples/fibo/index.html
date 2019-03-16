@@ -1,0 +1,123 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Swam - Recursion</title>
+    <link rel="stylesheet" href="/css/stylesheet.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="/css/materialize.min.css" media="screen,projection"/>
+    <style>body{font-family: overpass, sans-serif; }</style>
+
+    <meta name="generator" content="Nanoc 4.11.2">
+  </head>
+  <body>
+    <header>
+      <div class="navbar-fixed">
+        <ul id='examples' class='dropdown-content'>
+          
+          <li><a href="/examples/fibo/">Recursion</a></li>
+          
+        </ul>
+        <nav class="blue-grey darken-2">
+          <a href="#!" class="brand-logo">Swam</a>
+          <a href="#" data-target="collapsed" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+          <div class="nav-wrapper">
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+              <li><a href="/">Home</a></li>
+              <li><a class="dropdown-trigger" href="#!" data-target="examples">Examples<i class="material-icons right">arrow_drop_down</i></a></li>
+              <li><a href="https://github.com/satabin/swam">Github</a></li>
+              <li><a href="/api/">Scaladoc</a></li>
+            </ul>
+          </div>
+          <div class="nav-content">
+          </div>
+        </nav>
+      </div>
+
+    </header>
+
+    <ul class="sidenav" id="collapsed">
+      <li><a href="/">Home</a></li>
+      <li><a href="/examples/">Examples</a></li>
+      <li><a href="https://github.com/satabin/swam">Github</a></li>
+      <li><a href="/api/">Scaladoc</a></li>
+    </ul>
+
+    <main>
+      <div class="container">
+        <p>Recursive functions are allowed. For instance, having defined functions to compute fibonacci numbers.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">swam._</span>
+<span class="k">import</span> <span class="nn">text._</span>
+<span class="k">import</span> <span class="nn">runtime._</span>
+<span class="k">import</span> <span class="nn">formats.DefaultFormatters._</span>
+<span class="k">import</span> <span class="nn">cats.effect._</span>
+<span class="k">import</span> <span class="nn">java.nio.file.Paths</span>
+
+<span class="k">val</span> <span class="n">tcompiler</span> <span class="k">=</span> <span class="nc">Compiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+
+<span class="k">val</span> <span class="n">engine</span> <span class="k">=</span> <span class="nc">SwamEngine</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+
+<span class="k">def</span> <span class="n">instantiate</span><span class="o">(</span><span class="n">p</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="kt">Instance</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span> <span class="k">=</span>
+  <span class="o">(</span><span class="k">for</span> <span class="o">{</span>
+    <span class="n">engine</span> <span class="k">&lt;-</span> <span class="n">engine</span>
+    <span class="n">tcompiler</span> <span class="k">&lt;-</span> <span class="n">tcompiler</span>
+    <span class="n">m</span> <span class="k">&lt;-</span> <span class="n">engine</span><span class="o">.</span><span class="n">compile</span><span class="o">(</span><span class="n">tcompiler</span><span class="o">.</span><span class="n">stream</span><span class="o">(</span><span class="nc">Paths</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">p</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
+    <span class="n">i</span> <span class="k">&lt;-</span> <span class="n">m</span><span class="o">.</span><span class="n">newInstance</span><span class="o">()</span>
+  <span class="o">}</span> <span class="k">yield</span> <span class="n">i</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">()</span>
+
+<span class="k">def</span> <span class="n">time</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="n">t</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">T</span><span class="o">)</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="n">start</span> <span class="k">=</span> <span class="nc">System</span><span class="o">.</span><span class="n">currentTimeMillis</span>
+  <span class="k">val</span> <span class="n">res</span> <span class="k">=</span> <span class="n">t</span>
+  <span class="k">val</span> <span class="n">end</span> <span class="k">=</span> <span class="nc">System</span><span class="o">.</span><span class="n">currentTimeMillis</span>
+  <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"Time: ${end - start}ms"</span><span class="o">)</span>
+  <span class="n">res</span>
+<span class="o">}</span>
+
+<span class="k">val</span> <span class="n">i</span> <span class="k">=</span> <span class="n">instantiate</span><span class="o">(</span><span class="s">"fibo.wat"</span><span class="o">)</span>
+
+<span class="k">val</span> <span class="n">naive</span> <span class="k">=</span> <span class="n">i</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">typed</span><span class="o">.</span><span class="n">function1</span><span class="o">[</span><span class="kt">Long</span>, <span class="kt">Long</span><span class="o">](</span><span class="s">"naive"</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">()</span>
+<span class="k">val</span> <span class="n">clever</span> <span class="k">=</span> <span class="n">i</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">typed</span><span class="o">.</span><span class="n">function1</span><span class="o">[</span><span class="kt">Long</span>, <span class="kt">Long</span><span class="o">](</span><span class="s">"clever"</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">()</span>
+</code></pre></div></div>
+
+<p>This would result in:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">time</span><span class="o">(</span><span class="n">naive</span><span class="o">(</span><span class="mi">30</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">())</span>
+<span class="c1">// Time: 11689ms
+// res0: Long = 1346269L
+</span><span class="n">time</span><span class="o">(</span><span class="n">clever</span><span class="o">(</span><span class="mi">30</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">())</span>
+<span class="c1">// Time: 1ms
+// res1: Long = 1346269L
+</span></code></pre></div></div>
+
+
+      </div>
+    </main>
+
+    <footer class="page-footer blue-grey lighten-2">
+      <div class="footer-copyright blue-grey darken-2">
+        <div class="container">
+          Copyright © 2019 <a class="grey-text text-lighten-4" href="https://twitter.com/lucassatabin">@lucassatabin</a>
+          <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" class="grey-text text-lighten-4 right" /></a>
+        </div>
+      </div>
+    </footer>
+
+    <script type="text/javascript" src="/js/materialize.min.js"></script>
+    <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.sidenav');
+      var instances = M.Sidenav.init(elems, {});
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.dropdown-trigger');
+      var instances = M.Dropdown.init(elems, {});
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.materialboxed');
+      var instances = M.Materialbox.init(elems, {});
+    });
+    </script>
+  </body>
+</html>
