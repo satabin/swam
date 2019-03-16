@@ -392,9 +392,9 @@ instance may lead to undefined behaviors.</p></div><dl class="attributes block">
         <div class="values members">
               <h3>Abstract Value Members</h3>
               <ol><li name="swam.runtime.Memory#grow" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="grow(by:Int):Boolean"></a><a id="grow(Int):Boolean"></a>
+      <a id="grow(by:Int):F[Boolean]"></a><a id="grow(Int):F[Boolean]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#grow(by:Int):Boolean" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#grow(by:Int):F[Boolean]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -403,7 +403,7 @@ instance may lead to undefined behaviors.</p></div><dl class="attributes block">
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">grow</span><span class="params">(<span name="by">by: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">grow</span><span class="params">(<span name="by">by: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Tries to grow the available space by <code>by</code> pages.</p><div class="fullcomment"><div class="comment cmt"><p>Tries to grow the available space by <code>by</code> pages.</p><p>Instances should use the constant <a href="index.html#pageSize:Int" class="extmbr" name="swam.runtime#pageSize">swam.runtime.pageSize</a> to ensure
@@ -412,9 +412,9 @@ This method should never throw an exception. If growing is not possible,
 whatever the reason, it must simply return <code>false</code>.
 </p></div></div>
     </li><li name="swam.runtime.Memory#readByte" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="readByte(idx:Int):Byte"></a><a id="readByte(Int):Byte"></a>
+      <a id="readByte(idx:Int):F[Byte]"></a><a id="readByte(Int):F[Byte]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#readByte(idx:Int):Byte" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#readByte(idx:Int):F[Byte]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -423,16 +423,16 @@ whatever the reason, it must simply return <code>false</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">readByte</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Byte">Byte</span></span>
+        <span class="name">readByte</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Byte">Byte</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Reads a byte at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Reads a byte at the given index in memory.</p><p> Implementations need not check for boundaries in this
                    method since the Swam engine already checks it.
 </p></div></div>
     </li><li name="swam.runtime.Memory#readDouble" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="readDouble(idx:Int):Double"></a><a id="readDouble(Int):Double"></a>
+      <a id="readDouble(idx:Int):F[Double]"></a><a id="readDouble(Int):F[Double]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#readDouble(idx:Int):Double" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#readDouble(idx:Int):F[Double]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -441,16 +441,16 @@ whatever the reason, it must simply return <code>false</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">readDouble</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Double">Double</span></span>
+        <span class="name">readDouble</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Reads a double at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Reads a double at the given index in memory.</p><p> Implementations need not check for boundaries in this
                    method since the Swam engine already checks it.
 </p></div></div>
     </li><li name="swam.runtime.Memory#readFloat" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="readFloat(idx:Int):Float"></a><a id="readFloat(Int):Float"></a>
+      <a id="readFloat(idx:Int):F[Float]"></a><a id="readFloat(Int):F[Float]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#readFloat(idx:Int):Float" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#readFloat(idx:Int):F[Float]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -459,16 +459,16 @@ whatever the reason, it must simply return <code>false</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">readFloat</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Float">Float</span></span>
+        <span class="name">readFloat</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Float">Float</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Reads a float at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Reads a float at the given index in memory.</p><p> Implementations need not check for boundaries in this
                    method since the Swam engine already checks it.
 </p></div></div>
     </li><li name="swam.runtime.Memory#readInt" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="readInt(idx:Int):Int"></a><a id="readInt(Int):Int"></a>
+      <a id="readInt(idx:Int):F[Int]"></a><a id="readInt(Int):F[Int]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#readInt(idx:Int):Int" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#readInt(idx:Int):F[Int]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -477,16 +477,16 @@ whatever the reason, it must simply return <code>false</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">readInt</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+        <span class="name">readInt</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Reads a integer at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Reads a integer at the given index in memory.</p><p> Implementations need not check for boundaries in this
                    method since the Swam engine already checks it.
 </p></div></div>
     </li><li name="swam.runtime.Memory#readLong" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="readLong(idx:Int):Long"></a><a id="readLong(Int):Long"></a>
+      <a id="readLong(idx:Int):F[Long]"></a><a id="readLong(Int):F[Long]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#readLong(idx:Int):Long" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#readLong(idx:Int):F[Long]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -495,16 +495,16 @@ whatever the reason, it must simply return <code>false</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">readLong</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+        <span class="name">readLong</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Long">Long</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Reads a long at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Reads a long at the given index in memory.</p><p> Implementations need not check for boundaries in this
                    method since the Swam engine already checks it.
 </p></div></div>
     </li><li name="swam.runtime.Memory#readShort" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="readShort(idx:Int):Short"></a><a id="readShort(Int):Short"></a>
+      <a id="readShort(idx:Int):F[Short]"></a><a id="readShort(Int):F[Short]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#readShort(idx:Int):Short" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#readShort(idx:Int):F[Short]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -513,7 +513,7 @@ whatever the reason, it must simply return <code>false</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">readShort</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Short">Short</span></span>
+        <span class="name">readShort</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Short">Short</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Reads a short at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Reads a short at the given index in memory.</p><p> Implementations need not check for boundaries in this
@@ -552,9 +552,9 @@ whatever the reason, it must simply return <code>false</code>.
       
       <p class="shortcomment cmt">Returns the type of this interface element.</p><div class="fullcomment"><div class="comment cmt"><p>Returns the type of this interface element.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Interface.html" class="extype" name="swam.runtime.Interface">Interface</a></dd></dl></div>
     </li><li name="swam.runtime.Memory#writeByte" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="writeByte(idx:Int,v:Byte):Unit"></a><a id="writeByte(Int,Byte):Unit"></a>
+      <a id="writeByte(idx:Int,v:Byte):F[Unit]"></a><a id="writeByte(Int,Byte):F[Unit]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#writeByte(idx:Int,v:Byte):Unit" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#writeByte(idx:Int,v:Byte):F[Unit]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -563,16 +563,16 @@ whatever the reason, it must simply return <code>false</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writeByte</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="v">v: <span class="extype" name="scala.Byte">Byte</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">writeByte</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="v">v: <span class="extype" name="scala.Byte">Byte</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Writes a byte at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Writes a byte at the given index in memory.</p><p> Implementations need not check for boundaries in this
                    method since the Swam engine already checks it.
 </p></div></div>
     </li><li name="swam.runtime.Memory#writeBytes" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="writeBytes(idx:Int,bytes:java.nio.ByteBuffer):Unit"></a><a id="writeBytes(Int,ByteBuffer):Unit"></a>
+      <a id="writeBytes(idx:Int,bytes:java.nio.ByteBuffer):F[Unit]"></a><a id="writeBytes(Int,ByteBuffer):F[Unit]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#writeBytes(idx:Int,bytes:java.nio.ByteBuffer):Unit" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#writeBytes(idx:Int,bytes:java.nio.ByteBuffer):F[Unit]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -581,7 +581,7 @@ whatever the reason, it must simply return <code>false</code>.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writeBytes</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="bytes">bytes: <span class="extype" name="java.nio.ByteBuffer">ByteBuffer</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">writeBytes</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="bytes">bytes: <span class="extype" name="java.nio.ByteBuffer">ByteBuffer</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Writes the bytes in the provided buffer at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Writes the bytes in the provided buffer at the given index in memory.</p><p>This method is used by Swam to initialize the memory upon module
@@ -589,9 +589,9 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
                    method since the Swam engine already checks it.
 </p></div></div>
     </li><li name="swam.runtime.Memory#writeDouble" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="writeDouble(idx:Int,v:Double):Unit"></a><a id="writeDouble(Int,Double):Unit"></a>
+      <a id="writeDouble(idx:Int,v:Double):F[Unit]"></a><a id="writeDouble(Int,Double):F[Unit]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#writeDouble(idx:Int,v:Double):Unit" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#writeDouble(idx:Int,v:Double):F[Unit]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -600,16 +600,16 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writeDouble</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="v">v: <span class="extype" name="scala.Double">Double</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">writeDouble</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="v">v: <span class="extype" name="scala.Double">Double</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Writes a double at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Writes a double at the given index in memory.</p><p> Implementations need not check for boundaries in this
                    method since the Swam engine already checks it.
 </p></div></div>
     </li><li name="swam.runtime.Memory#writeFloat" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="writeFloat(idx:Int,v:Float):Unit"></a><a id="writeFloat(Int,Float):Unit"></a>
+      <a id="writeFloat(idx:Int,v:Float):F[Unit]"></a><a id="writeFloat(Int,Float):F[Unit]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#writeFloat(idx:Int,v:Float):Unit" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#writeFloat(idx:Int,v:Float):F[Unit]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -618,16 +618,16 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writeFloat</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="v">v: <span class="extype" name="scala.Float">Float</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">writeFloat</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="v">v: <span class="extype" name="scala.Float">Float</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Writes a float at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Writes a float at the given index in memory.</p><p> Implementations need not check for boundaries in this
                    method since the Swam engine already checks it.
 </p></div></div>
     </li><li name="swam.runtime.Memory#writeInt" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="writeInt(idx:Int,v:Int):Unit"></a><a id="writeInt(Int,Int):Unit"></a>
+      <a id="writeInt(idx:Int,v:Int):F[Unit]"></a><a id="writeInt(Int,Int):F[Unit]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#writeInt(idx:Int,v:Int):Unit" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#writeInt(idx:Int,v:Int):F[Unit]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -636,16 +636,16 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writeInt</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="v">v: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">writeInt</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="v">v: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Writes a integer at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Writes a integer at the given index in memory.</p><p> Implementations need not check for boundaries in this
                    method since the Swam engine already checks it.
 </p></div></div>
     </li><li name="swam.runtime.Memory#writeLong" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="writeLong(idx:Int,v:Long):Unit"></a><a id="writeLong(Int,Long):Unit"></a>
+      <a id="writeLong(idx:Int,v:Long):F[Unit]"></a><a id="writeLong(Int,Long):F[Unit]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#writeLong(idx:Int,v:Long):Unit" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#writeLong(idx:Int,v:Long):F[Unit]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -654,16 +654,16 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writeLong</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="v">v: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">writeLong</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="v">v: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Writes a long at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Writes a long at the given index in memory.</p><p> Implementations need not check for boundaries in this
                    method since the Swam engine already checks it.
 </p></div></div>
     </li><li name="swam.runtime.Memory#writeShort" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="writeShort(idx:Int,v:Short):Unit"></a><a id="writeShort(Int,Short):Unit"></a>
+      <a id="writeShort(idx:Int,v:Short):F[Unit]"></a><a id="writeShort(Int,Short):F[Unit]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#writeShort(idx:Int,v:Short):Unit" title="Permalink">
+      <a href="../../swam/runtime/Memory.html#writeShort(idx:Int,v:Short):F[Unit]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -672,7 +672,7 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">writeShort</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="v">v: <span class="extype" name="scala.Short">Short</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">writeShort</span><span class="params">(<span name="idx">idx: <span class="extype" name="scala.Int">Int</span></span>, <span name="v">v: <span class="extype" name="scala.Short">Short</span></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Memory.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Writes a short at the given index in memory.</p><div class="fullcomment"><div class="comment cmt"><p>Writes a short at the given index in memory.</p><p> Implementations need not check for boundaries in this
@@ -766,6 +766,8 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@native</span><span class="args">()</span>
               
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
@@ -804,28 +806,6 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="finalize():Unit"></a>
-      <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#finalize():Unit" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">(<span>
-      
-      <span class="symbol">classOf[java.lang.Throwable]</span>
-    </span>)</span>
-              
-        </dd></dl></div>
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
@@ -843,6 +823,8 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
                 <span class="name">@native</span><span class="args">()</span>
+              
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
               
         </dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -862,6 +844,8 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
                 <span class="name">@native</span><span class="args">()</span>
+              
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
               
         </dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -914,6 +898,8 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@native</span><span class="args">()</span>
               
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
         </dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
@@ -932,6 +918,8 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@native</span><span class="args">()</span>
+              
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
               
         </dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -966,28 +954,6 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="wait():Unit"></a>
-      <span class="permalink">
-      <a href="../../swam/runtime/Memory.html#wait():Unit" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">(<span>
-      
-      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
-    </span>)</span>
-              
-        </dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
       <span class="permalink">
@@ -1034,13 +1000,64 @@ instantiation and should not be used otherwise.</p><p> Implementations need not 
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/Memory.html#wait():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
     </li>
               </ol>
             </div>
 
         
 
-        
+        <div class="values members">
+              <h3>Deprecated Value Members</h3>
+              <ol><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/Memory.html#finalize():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version ) see corresponding Javadoc for more information.">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@Deprecated</span>
+              
+                <span class="name">@deprecated</span>
+              
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version )</i> see corresponding Javadoc for more information.</p></dd></dl></div>
+    </li></ol>
+            </div>
         </div>
 
         <div id="inheritedMembers">
