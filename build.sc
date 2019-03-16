@@ -158,7 +158,7 @@ def unidoc(ev: Evaluator) = T.command {
   val outDir = T.ctx().dest
   val base = ev.rootModule.millModuleBasePath.value.toNIO.toString
 
-  val sources = ev.evaluate(mill.util.Strict.Agg[define.Task[_]](modules.map(_.allSources): _*)).values.collect {
+  val sources = ev.evaluate(mill.api.Strict.Agg[define.Task[_]](modules.map(_.allSources): _*)).values.collect {
     case paths: Seq[PathRef] => paths
   }.flatten
 
@@ -172,13 +172,13 @@ def unidoc(ev: Evaluator) = T.command {
     if (p.isFile && ((p.ext == "scala") || (p.ext == "java")))
   } yield p.toNIO.toString
 
-  val pluginOptions = ev.evaluate(mill.util.Strict.Agg[define.Task[_]](modules.map(_.scalacPluginClasspath): _*)).values.collect {
+  val pluginOptions = ev.evaluate(mill.api.Strict.Agg[define.Task[_]](modules.map(_.scalacPluginClasspath): _*)).values.collect {
     case a: Agg[_] => a.items.collect {
       case p: PathRef => s"-Xplugin:${p.path}"
     }
   }.flatten.distinct
 
-  val scalacOptions = ev.evaluate(mill.util.Strict.Agg[define.Task[_]](modules.map(_.scalacOptions): _*)).values.collect {
+  val scalacOptions = ev.evaluate(mill.api.Strict.Agg[define.Task[_]](modules.map(_.scalacOptions): _*)).values.collect {
     case l: List[_] => l.collect {
       case s: String => s
     }
@@ -193,13 +193,13 @@ def unidoc(ev: Evaluator) = T.command {
 
   val options = Seq("-d", javadocDir.toNIO.toString, "-usejavacp", "-doc-title", "Swam API Documentation", "-doc-version", swamVersion, "-skip-packages", "fastparse", "-doc-source-url", urlString, "-sourcepath", base) ++ pluginOptions ++ scalacOptions
 
-  val scalaCompilerClasspath = ev.evaluate(mill.util.Strict.Agg[define.Task[_]](modules.map(_.scalaCompilerClasspath): _*)).values.collect {
+  val scalaCompilerClasspath = ev.evaluate(mill.api.Strict.Agg[define.Task[_]](modules.map(_.scalaCompilerClasspath): _*)).values.collect {
     case a: Agg[_] => a.items.collect {
       case p: PathRef => p.path
     }
   }.flatten
 
-  val compileClasspath = ev.evaluate(mill.util.Strict.Agg[define.Task[_]](modules.map(_.compileClasspath): _*)).values.collect {
+  val compileClasspath = ev.evaluate(mill.api.Strict.Agg[define.Task[_]](modules.map(_.compileClasspath): _*)).values.collect {
     case a: Agg[_] => a.items.collect {
       case p: PathRef => p
     }

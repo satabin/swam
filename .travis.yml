@@ -2,7 +2,7 @@ language: scala
 dist: xenial
 
 script:
-  - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.3.5/0.3.5 && chmod +x ~/bin/mill
+  - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.3.6/0.3.6 && chmod +x ~/bin/mill
   - export PATH=~/bin/mill:$PATH
   - mill runtime.compile
   - mill runtime.test
