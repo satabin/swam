@@ -19,11 +19,15 @@ package runtime
 package internals
 package instance
 
+import cats.effect._
+import cats.implicits._
+
 import java.nio.{ByteBuffer, ByteOrder}
 
 import scala.language.higherKinds
 
-private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int)
+private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int)(
+    implicit F: Async[F])
     extends Memory[F] {
 
   val tpe = MemType(Limits(min, max))
@@ -42,47 +46,47 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
 
   def size = buffer.capacity
 
-  def writeByte(idx: Int, v: Byte): Unit =
-    buffer.put(idx, v)
+  def writeByte(idx: Int, v: Byte) =
+    F.delay(buffer.put(idx, v))
 
-  def readByte(idx: Int): Byte =
-    buffer.get(idx)
+  def readByte(idx: Int) =
+    F.delay(buffer.get(idx))
 
-  def writeShort(idx: Int, v: Short): Unit =
-    buffer.putShort(idx, v)
+  def writeShort(idx: Int, v: Short) =
+    F.delay(buffer.putShort(idx, v))
 
-  def readShort(idx: Int): Short =
-    buffer.getShort(idx)
+  def readShort(idx: Int) =
+    F.delay(buffer.getShort(idx))
 
-  def writeInt(idx: Int, v: Int): Unit =
-    buffer.putInt(idx, v)
+  def writeInt(idx: Int, v: Int) =
+    F.delay(buffer.putInt(idx, v))
 
-  def readInt(idx: Int): Int =
-    buffer.getInt(idx)
+  def readInt(idx: Int) =
+    F.delay(buffer.getInt(idx))
 
-  def writeLong(idx: Int, v: Long): Unit =
-    buffer.putLong(idx, v)
+  def writeLong(idx: Int, v: Long) =
+    F.delay(buffer.putLong(idx, v))
 
-  def readLong(idx: Int): Long =
-    buffer.getLong(idx)
+  def readLong(idx: Int) =
+    F.delay(buffer.getLong(idx))
 
-  def writeFloat(idx: Int, v: Float): Unit =
-    buffer.putFloat(idx, v)
+  def writeFloat(idx: Int, v: Float) =
+    F.delay(buffer.putFloat(idx, v))
 
-  def readFloat(idx: Int): Float =
-    buffer.getFloat(idx)
+  def readFloat(idx: Int) =
+    F.delay(buffer.getFloat(idx))
 
-  def writeDouble(idx: Int, v: Double): Unit =
-    buffer.putDouble(idx, v)
+  def writeDouble(idx: Int, v: Double) =
+    F.delay(buffer.putDouble(idx, v))
 
-  def readDouble(idx: Int): Double =
-    buffer.getDouble(idx)
+  def readDouble(idx: Int) =
+    F.delay(buffer.getDouble(idx))
 
-  def grow(by: Int): Boolean =
-    try {
+  def grow(by: Int) =
+    F.delay {
       val newSize = StrictMath.addExact(size, StrictMath.multiplyExact(by, pageSize))
       check(newSize) && doGrow(newSize)
-    } catch {
+    } recover {
       case _: ArithmeticException => false
     }
 
@@ -100,7 +104,7 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
       case None      => size <= hardMax * pageSize
     }
 
-  def writeBytes(idx: Int, bytes: ByteBuffer): Unit = {
+  def writeBytes(idx: Int, bytes: ByteBuffer) = F.delay {
     buffer.position(idx)
     buffer.put(bytes)
   }

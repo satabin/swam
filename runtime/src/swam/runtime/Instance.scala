@@ -178,10 +178,10 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
           }
     }
 
-  private type Mems = Seq[(Int, ByteBuffer)]
+  private type Mems = List[(Int, ByteBuffer)]
 
   private def initMems(implicit F: MonadError[F, Throwable]): F[Mems] =
-    F.tailRecM[(Int, Mems), Mems]((0, Seq.empty)) {
+    F.tailRecM[(Int, Mems), Mems]((0, Nil)) {
       case (idx, acc) =>
         if (idx >= module.data.size)
           F.pure(Right(acc))
@@ -203,10 +203,10 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
       elems.foreach {
         case (idx, f) => tables(0)(idx) = f
       }
-      data.foreach {
-        case (idx, m) => memories(0).writeBytes(idx, m)
+    } >>
+      data.foldM(()) {
+        case (_, (idx, m)) => memories(0).writeBytes(idx, m)
       }
-    }
 
   private def start(implicit F: MonadError[F, Throwable]): F[Unit] =
     module.start match {
