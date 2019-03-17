@@ -220,6 +220,22 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
+    </li><li name="swam.validation.config" visbl="pub" class="indented3 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="config"></a><a id="config:config"></a>
+      <span class="permalink">
+      <a href="../../swam/validation/index.html#config" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="config/index.html"><span class="name">config</span></a>
+      </span>
+      
+      
     </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="object" href="Const$.html" title=""></a>
@@ -230,16 +246,8 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="Context.html" title="A validation context, used when performing module and instruction validation.">Context</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="NoopValidator.html" title=""></a>
-                        <a href="NoopValidator.html" title="">NoopValidator</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
                         <a class="trait" href="OperandType.html" title=""></a>
                         <a href="OperandType.html" title="">OperandType</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
-                        <a class="class" href="SpecValidator.html" title=""></a>
-                        <a href="SpecValidator.html" title="">SpecValidator</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="object" href="Unknown$.html" title=""></a>
@@ -253,7 +261,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a class="class" href="ValidationException.html" title=""></a>
                         <a href="ValidationException.html" title="">ValidationException</a>
                       </li><li class="current-entities indented2">
-                        <span class="separator"></span>
+                        <a class="object" href="Validator$.html" title=""></a>
                         <a class="class" href="Validator.html" title="A validator makes it possible to validate sections in a stream."></a>
                         <a href="Validator.html" title="A validator makes it possible to validate sections in a stream.">Validator</a>
                       </li>
@@ -352,22 +360,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       <p class="shortcomment cmt">A validation context, used when performing module and instruction validation.</p>
-    </li><li name="swam.validation.NoopValidator" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="NoopValidator[F[_]]extendsValidator[F]"></a><a id="NoopValidator[F[_]]:NoopValidator[F]"></a>
-      <span class="permalink">
-      <a href="../../swam/validation/index.html#NoopValidator[F[_]]extendsValidator[F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="NoopValidator.html"><span class="name">NoopValidator</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <a href="Validator.html" class="extype" name="swam.validation.Validator">Validator</a>[<span class="extype" name="swam.validation.NoopValidator.F">F</span>]</span>
-      </span>
-      
-      
     </li><li name="swam.validation.OperandType" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="OperandTypeextendsAnyRef"></a><a id="OperandType:OperandType"></a>
       <span class="permalink">
@@ -381,22 +373,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       <span class="symbol">
         <a title="" href="OperandType.html"><span class="name">OperandType</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
-      </span>
-      
-      
-    </li><li name="swam.validation.SpecValidator" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="SpecValidator[F[_]]extendsValidator[F]"></a><a id="SpecValidator[F[_]]:SpecValidator[F]"></a>
-      <span class="permalink">
-      <a href="../../swam/validation/index.html#SpecValidator[F[_]]extendsValidator[F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">class</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="SpecValidator.html"><span class="name">SpecValidator</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <a href="Validator.html" class="extype" name="swam.validation.Validator">Validator</a>[<span class="extype" name="swam.validation.SpecValidator.F">F</span>]</span>
       </span>
       
       
@@ -501,6 +477,22 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       <span class="symbol">
         <a title="" href="Unknown$.html"><span class="name">Unknown</span></a><span class="result"> extends <a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
+    </li><li name="swam.validation.Validator" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Validator"></a><a id="Validator:Validator"></a>
+      <span class="permalink">
+      <a href="../../swam/validation/index.html#Validator" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="Validator$.html"><span class="name">Validator</span></a>
       </span>
       
       
