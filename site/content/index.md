@@ -20,7 +20,7 @@ This project defines several modules:
    It is not included in the `core` module as text representation is more of a debug feature, and the runtime does not want to bring
    that dependency with it.
 
-If you want more details, please refer to the [examples][examples] or [API documentation][api].
+If you want more details, please refer to the examples or [API documentation][api].
 
 [webassembly]: https://webassembly.org/
 [text-format]: https://webassembly.org/docs/text-format/
@@ -29,4 +29,3 @@ If you want more details, please refer to the [examples][examples] or [API docum
 [api]: /api/
 [cats-friendly-logo]: https://typelevel.org/cats/img/cats-badge-tiny.png
 [cats]: https://typelevel.org/cats
-[examples]: /examples/
