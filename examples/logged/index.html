@@ -44,8 +44,19 @@
     </header>
 
     <ul class="sidenav" id="collapsed">
+      <ul id='examples-collapsed' class='dropdown-content'>
+        
+        <li><a href="/examples/string/">Strings</a></li>
+        
+        <li><a href="/examples/fibo/">Recursion</a></li>
+        
+        <li><a href="/examples/logged/">Imports</a></li>
+        
+        <li><a href="/examples/decompiler/">Decompilers</a></li>
+        
+      </ul>
       <li><a href="/">Home</a></li>
-      <li><a href="/examples/">Examples</a></li>
+      <li><a class="dropdown-trigger" href="#!" data-target="examples-collapsed">Examples<i class="material-icons right">arrow_drop_down</i></a></li>
       <li><a href="https://github.com/satabin/swam">Github</a></li>
       <li><a href="/api/">Scaladoc</a></li>
     </ul>
