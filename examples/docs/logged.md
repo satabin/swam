@@ -15,7 +15,7 @@ import java.nio.file.Paths
 
 val tcompiler = Compiler[IO]
 
-val engine = SwamEngine[IO]
+val engine = Engine[IO]
 
 def log(i: Int) = IO(println(s"got $i"))
 

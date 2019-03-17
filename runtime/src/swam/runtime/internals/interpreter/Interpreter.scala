@@ -26,7 +26,7 @@ import java.nio.ByteBuffer
 
 import scala.language.higherKinds
 
-abstract class Interpreter[F[_]](engine: SwamEngine[F]) {
+abstract class Interpreter[F[_]](engine: Engine[F]) {
 
   private val conf = engine.conf
 

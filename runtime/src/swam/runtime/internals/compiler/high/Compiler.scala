@@ -38,7 +38,7 @@ import java.lang.{Float => JFloat, Double => JDouble}
 
 /** Validates and compiles a module.
   */
-class Compiler[F[_]](engine: SwamEngine[F]) extends compiler.Compiler[F] {
+class Compiler[F[_]](engine: Engine[F]) extends compiler.Compiler[F] {
 
   private val dataOnHeap = engine.conf.data.onHeap
 

@@ -14,7 +14,7 @@ import java.nio.file.Paths
 
 val tcompiler = Compiler[IO]
 
-val engine = SwamEngine[IO]
+val engine = Engine[IO]
 
 def instantiate(p: String): Instance[IO] =
   (for {

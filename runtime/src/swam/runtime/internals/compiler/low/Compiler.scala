@@ -125,7 +125,7 @@ object FunctionContext {
   * otherwise it will break or generate undefined assembly code.
   *
   */
-class Compiler[F[_]](engine: SwamEngine[F]) extends compiler.Compiler[F] {
+class Compiler[F[_]](engine: Engine[F]) extends compiler.Compiler[F] {
 
   private val dataOnHeap = engine.conf.data.onHeap
 

@@ -31,7 +31,7 @@ import runtime._
 
 import scala.language.higherKinds
 
-private[runtime] class Instantiator[F[_]](engine: SwamEngine[F]) {
+private[runtime] class Instantiator[F[_]](engine: Engine[F]) {
 
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap

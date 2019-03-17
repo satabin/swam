@@ -28,9 +28,9 @@ import fs2._
 import scala.language.higherKinds
 
 /** A binary section stream parser.
-  *  The parser uses the validator to validate the stream.
+  * The parser uses the validator to validate the stream.
   */
-class SwamParser[F[_]](validator: Validator[F]) {
+class ModuleParser[F[_]](validator: Validator[F]) {
 
   /** Parses a section stream into a module.
     *  When this method returns, the stream has not been begin execution,

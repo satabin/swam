@@ -71,7 +71,7 @@ class ScriptEngine {
 
   val IO = implicitly[Effect[IO]]
 
-  val engine = SwamEngine[IO]
+  val engine = Engine[IO]
 
   val tcompiler = Compiler[IO]
 

@@ -19,7 +19,7 @@ package swam
 /** This package contains all the classes and types related to
   * running WebAssembly modules.
   *
-  * The entry point for almost all users will be [[SwamEngine]].
+  * The entry point for almost all users will be [[Engine]].
   * A typical use of the engine is:
   * {{{
   * import swam._
@@ -32,13 +32,15 @@ package swam
   *
   * import java.nio.file.Paths
   *
-  * val tcompiler = new Compiler[IO]
-  * val engine = new SwamEngine[IO]
+  * val tcompiler = Compiler[IO]
+  * val engine = Engine[IO]
   *
   * for {
+  *   tcompiler <- tcompiler
+  *   engine <- engine
   *   mod <- engine.compile(/* source of the module */)
   *   inst <- mod.newInstance()
-  *   f <- inst.exports.function1[Int, Int](1)
+  *   f <- inst.exports.function1[Int, Int]("f")
   *   res <- f(43)
   * } yield res
   *

@@ -38,7 +38,7 @@ class Compiler[F[_]] private(validator: Validator[F])(implicit val F: Effect[F])
 
   private val resolver = new Resolver[F]
 
-  private val binaryParser = new SwamParser[F](validator)
+  private val binaryParser = new ModuleParser[F](validator)
 
   def compile(file: Path): F[Module] =
     for {

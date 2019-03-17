@@ -51,7 +51,7 @@ import java.nio.file.Path
   * You typically want to reuse the same instance for all your executions
   * over the same effectful type `F`.
   */
-class SwamEngine[F[_]] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F]) extends ModuleLoader[F] {
+class Engine[F[_]] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F]) extends ModuleLoader[F] {
 
   private[runtime] val compiler =
     if (conf.useLowLevelAsm)
@@ -160,15 +160,15 @@ class SwamEngine[F[_]] private (val conf: EngineConfiguration, private[runtime] 
 
 }
 
-object SwamEngine {
+object Engine {
 
-  def apply[F[_]]()(implicit F: Sync[F]): F[SwamEngine[F]] =
+  def apply[F[_]]()(implicit F: Sync[F]): F[Engine[F]] =
     for {
       validator <- Validator[F]
       conf <- loadConfigF[F, EngineConfiguration]("swam.runtime")
-    } yield new SwamEngine[F](conf, validator)
+    } yield new Engine[F](conf, validator)
 
-  def apply[F[_]](conf: EngineConfiguration, validator: Validator[F]): SwamEngine[F] =
-    new SwamEngine[F](conf, validator)
+  def apply[F[_]](conf: EngineConfiguration, validator: Validator[F]): Engine[F] =
+    new Engine[F](conf, validator)
 
 }

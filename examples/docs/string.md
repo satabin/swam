@@ -13,7 +13,7 @@ import java.nio.file.Paths
 
 val tcompiler = Compiler[IO]
 
-val engine = SwamEngine[IO]
+val engine = Engine[IO]
 
 val strings =
   for {
