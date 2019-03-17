@@ -74,7 +74,7 @@
 
 <span class="k">val</span> <span class="n">tcompiler</span> <span class="k">=</span> <span class="nc">Compiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
 
-<span class="k">val</span> <span class="n">engine</span> <span class="k">=</span> <span class="nc">SwamEngine</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+<span class="k">val</span> <span class="n">engine</span> <span class="k">=</span> <span class="nc">Engine</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
 
 <span class="k">def</span> <span class="n">instantiate</span><span class="o">(</span><span class="n">p</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="kt">Instance</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span> <span class="k">=</span>
   <span class="o">(</span><span class="k">for</span> <span class="o">{</span>
@@ -101,10 +101,10 @@
 <p>This would result in:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">time</span><span class="o">(</span><span class="n">naive</span><span class="o">(</span><span class="mi">30</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">())</span>
-<span class="c1">// Time: 11828ms
+<span class="c1">// Time: 12196ms
 // res0: Long = 1346269L
 </span><span class="n">time</span><span class="o">(</span><span class="n">clever</span><span class="o">(</span><span class="mi">30</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">())</span>
-<span class="c1">// Time: 0ms
+<span class="c1">// Time: 1ms
 // res1: Long = 1346269L
 </span></code></pre></div></div>
 

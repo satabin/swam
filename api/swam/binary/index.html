@@ -127,12 +127,12 @@
                         <a href="InstCodec.html" title="">InstCodec</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="object" href="ModuleStream$.html" title="The module streams expose way to encode and decode WebAssembly modules in binary format."></a>
-                        <a href="ModuleStream$.html" title="The module streams expose way to encode and decode WebAssembly modules in binary format.">ModuleStream</a>
+                        <a class="class" href="ModuleParser.html" title="A binary section stream parser."></a>
+                        <a href="ModuleParser.html" title="A binary section stream parser.">ModuleParser</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="class" href="SwamParser.html" title="A binary section stream parser."></a>
-                        <a href="SwamParser.html" title="A binary section stream parser.">SwamParser</a>
+                        <a class="object" href="ModuleStream$.html" title="The module streams expose way to encode and decode WebAssembly modules in binary format."></a>
+                        <a href="ModuleStream$.html" title="The module streams expose way to encode and decode WebAssembly modules in binary format.">ModuleStream</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="trait" href="TypeCodec.html" title=""></a>
@@ -174,7 +174,7 @@
       
       <p class="shortcomment cmt">This package contains all the classes and types related to
 running WebAssembly modules.</p><div class="fullcomment"><div class="comment cmt"><p>This package contains all the classes and types related to
-running WebAssembly modules.</p><p>The entry point for almost all users will be <a href="../runtime/SwamEngine.html" class="extype" name="swam.runtime.SwamEngine">SwamEngine</a>.
+running WebAssembly modules.</p><p>The entry point for almost all users will be <a href="../runtime/Engine.html" class="extype" name="swam.runtime.Engine">Engine</a>.
 A typical use of the engine is:</p><pre><span class="kw">import</span> swam._
 <span class="kw">import</span> text._
 <span class="kw">import</span> runtime._
@@ -185,13 +185,15 @@ A typical use of the engine is:</p><pre><span class="kw">import</span> swam._
 
 <span class="kw">import</span> java.nio.file.Paths
 
-<span class="kw">val</span> tcompiler = <span class="kw">new</span> Compiler[IO]
-<span class="kw">val</span> engine = <span class="kw">new</span> SwamEngine[IO]
+<span class="kw">val</span> tcompiler = Compiler[IO]
+<span class="kw">val</span> engine = Engine[IO]
 
 <span class="kw">for</span> {
+  tcompiler <span class="kw">&lt;-</span> tcompiler
+  engine <span class="kw">&lt;-</span> engine
   mod <span class="kw">&lt;-</span> engine.compile(<span class="cmt">/* source of the module */</span>)
   inst <span class="kw">&lt;-</span> mod.newInstance()
-  f <span class="kw">&lt;-</span> inst.exports.function1[<span class="std">Int</span>, <span class="std">Int</span>](<span class="num">1</span>)
+  f <span class="kw">&lt;-</span> inst.exports.function1[<span class="std">Int</span>, <span class="std">Int</span>](<span class="lit">"f"</span>)
   res <span class="kw">&lt;-</span> f(<span class="num">43</span>)
 } <span class="kw">yield</span> res
 
@@ -372,10 +374,10 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       
-    </li><li name="swam.binary.SwamParser" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="SwamParser[F[_]]extendsAnyRef"></a><a id="SwamParser[F[_]]:SwamParser[F]"></a>
+    </li><li name="swam.binary.ModuleParser" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ModuleParser[F[_]]extendsAnyRef"></a><a id="ModuleParser[F[_]]:ModuleParser[F]"></a>
       <span class="permalink">
-      <a href="../../swam/binary/index.html#SwamParser[F[_]]extendsAnyRef" title="Permalink">
+      <a href="../../swam/binary/index.html#ModuleParser[F[_]]extendsAnyRef" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -384,11 +386,11 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="A binary section stream parser." href="SwamParser.html"><span class="name">SwamParser</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+        <a title="A binary section stream parser." href="ModuleParser.html"><span class="name">ModuleParser</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       
       <p class="shortcomment cmt">A binary section stream parser.</p><div class="fullcomment"><div class="comment cmt"><p>A binary section stream parser.
- The parser uses the validator to validate the stream.
+The parser uses the validator to validate the stream.
 </p></div></div>
     </li><li name="swam.binary.TypeCodec" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="TypeCodecextendsAnyRef"></a><a id="TypeCodec:TypeCodec"></a>

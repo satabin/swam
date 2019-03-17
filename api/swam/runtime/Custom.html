@@ -102,7 +102,7 @@
       
       <p class="shortcomment cmt">This package contains all the classes and types related to
 running WebAssembly modules.</p><div class="fullcomment"><div class="comment cmt"><p>This package contains all the classes and types related to
-running WebAssembly modules.</p><p>The entry point for almost all users will be <a href="SwamEngine.html" class="extype" name="swam.runtime.SwamEngine">SwamEngine</a>.
+running WebAssembly modules.</p><p>The entry point for almost all users will be <a href="Engine.html" class="extype" name="swam.runtime.Engine">Engine</a>.
 A typical use of the engine is:</p><pre><span class="kw">import</span> swam._
 <span class="kw">import</span> text._
 <span class="kw">import</span> runtime._
@@ -113,13 +113,15 @@ A typical use of the engine is:</p><pre><span class="kw">import</span> swam._
 
 <span class="kw">import</span> java.nio.file.Paths
 
-<span class="kw">val</span> tcompiler = <span class="kw">new</span> Compiler[IO]
-<span class="kw">val</span> engine = <span class="kw">new</span> SwamEngine[IO]
+<span class="kw">val</span> tcompiler = Compiler[IO]
+<span class="kw">val</span> engine = Engine[IO]
 
 <span class="kw">for</span> {
+  tcompiler <span class="kw">&lt;-</span> tcompiler
+  engine <span class="kw">&lt;-</span> engine
   mod <span class="kw">&lt;-</span> engine.compile(<span class="cmt">/* source of the module */</span>)
   inst <span class="kw">&lt;-</span> mod.newInstance()
-  f <span class="kw">&lt;-</span> inst.exports.function1[<span class="std">Int</span>, <span class="std">Int</span>](<span class="num">1</span>)
+  f <span class="kw">&lt;-</span> inst.exports.function1[<span class="std">Int</span>, <span class="std">Int</span>](<span class="lit">"f"</span>)
   res <span class="kw">&lt;-</span> f(<span class="num">43</span>)
 } <span class="kw">yield</span> res
 
@@ -225,6 +227,10 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a class="class" href="" title=""></a>
                         <a href="" title="">Custom</a>
                       </li><li class="current-entities indented2">
+                        <a class="object" href="Engine$.html" title=""></a>
+                        <a class="class" href="Engine.html" title="This is the engine used to compile, instantiate and run modules."></a>
+                        <a href="Engine.html" title="This is the engine used to compile, instantiate and run modules.">Engine</a>
+                      </li><li class="current-entities indented2">
                         <a class="object" href="Export$.html" title=""></a>
                         <a class="trait" href="Export.html" title=""></a>
                         <a href="Export.html" title="">Export</a>
@@ -288,10 +294,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <span class="separator"></span>
                         <a class="class" href="StackOverflowException.html" title="Raised when call stack overflows."></a>
                         <a href="StackOverflowException.html" title="Raised when call stack overflows.">StackOverflowException</a>
-                      </li><li class="current-entities indented2">
-                        <a class="object" href="SwamEngine$.html" title=""></a>
-                        <a class="class" href="SwamEngine.html" title="This is the engine used to compile, instantiate and run modules."></a>
-                        <a href="SwamEngine.html" title="This is the engine used to compile, instantiate and run modules.">SwamEngine</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="trait" href="Table.html" title="Tables must implement this interface to be used by Swam."></a>
