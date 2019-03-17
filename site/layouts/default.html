@@ -38,8 +38,13 @@
     </header>
 
     <ul class="sidenav" id="collapsed">
+      <ul id='examples-collapsed' class='dropdown-content'>
+        <% @items.find_all('/examples/*.md').each do |example| %>
+        <li><%= link_to(example[:title], example) %></li>
+        <% end %>
+      </ul>
       <li><a href="/">Home</a></li>
-      <li><a href="/examples/">Examples</a></li>
+      <li><a class="dropdown-trigger" href="#!" data-target="examples-collapsed">Examples<i class="material-icons right">arrow_drop_down</i></a></li>
       <li><a href="https://github.com/satabin/swam">Github</a></li>
       <li><a href="/api/">Scaladoc</a></li>
     </ul>
