@@ -20,13 +20,14 @@ package validation
 import syntax._
 
 import cats._
+import cats.effect._
 import cats.implicits._
 
 import scala.language.higherKinds
 
 import fs2._
 
-class SpecValidator[F[_]](dataHardMax: Int) extends Validator[F] {
+private class SpecValidator[F[_]](dataHardMax: Int) extends Validator[F] {
 
   type Ctx = Context[F]
 

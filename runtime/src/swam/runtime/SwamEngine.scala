@@ -37,8 +37,9 @@ import fs2._
 import scodec.bits._
 
 import pureconfig._
-import pureconfig.error._
+import pureconfig.generic.auto._
 import pureconfig.module.squants._
+import pureconfig.module.catseffect._
 
 import scala.language.higherKinds
 
@@ -50,9 +51,7 @@ import java.nio.file.Path
   * You typically want to reuse the same instance for all your executions
   * over the same effectful type `F`.
   */
-class SwamEngine[F[_]] private (val conf: EngineConfiguration) extends ModuleLoader[F] {
-
-  private[runtime] val validator = new SpecValidator[F](conf.data.hardMax.toBytes.toInt)
+class SwamEngine[F[_]] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F]) extends ModuleLoader[F] {
 
   private[runtime] val compiler =
     if (conf.useLowLevelAsm)
@@ -163,13 +162,13 @@ class SwamEngine[F[_]] private (val conf: EngineConfiguration) extends ModuleLoa
 
 object SwamEngine {
 
-  def apply[F[_]]()(implicit F: MonadError[F, Throwable]): F[SwamEngine[F]] =
-    pureconfig.loadConfig[EngineConfiguration]("swam.runtime") match {
-      case Right(config)  => F.pure(new SwamEngine[F](config))
-      case Left(failures) => F.raiseError(new ConfigReaderException[EngineConfiguration](failures))
-    }
+  def apply[F[_]]()(implicit F: Sync[F]): F[SwamEngine[F]] =
+    for {
+      validator <- Validator[F]
+      conf <- loadConfigF[F, EngineConfiguration]("swam.runtime")
+    } yield new SwamEngine[F](conf, validator)
 
-  def apply[F[_]](conf: EngineConfiguration): SwamEngine[F] =
-    new SwamEngine[F](conf)
+  def apply[F[_]](conf: EngineConfiguration, validator: Validator[F]): SwamEngine[F] =
+    new SwamEngine[F](conf, validator)
 
 }

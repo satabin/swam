@@ -25,6 +25,8 @@ val swamUrl = "https://github.com/satabin/swam"
 
 val swamDeveloper = Developer("satabin", "Lucas Satabin", "https://github.com/satabin")
 
+  val pureconfigVersion = "0.10.2"
+
 trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
   def repositories = super.repositories ++ Seq(
@@ -36,7 +38,9 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
   def scalacOptions = Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification")
 
-  def scalacPluginIvyDeps = Agg(ivy"org.spire-math::kind-projector:0.9.7")
+  def scalacPluginIvyDeps = Agg(
+    ivy"org.spire-math::kind-projector:0.9.7",
+    ivy"com.olegpy::better-monadic-for:0.3.0-M4")
 
 }
 
@@ -46,6 +50,9 @@ object core extends SwamModule with PublishModule {
     ivy"com.beachape::enumeratum:1.5.13",
     ivy"co.fs2::fs2-core:1.0.0",
     ivy"org.scodec::scodec-stream:1.2.0",
+    ivy"com.github.pureconfig::pureconfig-generic:$pureconfigVersion",
+    ivy"com.github.pureconfig::pureconfig-squants:$pureconfigVersion",
+    ivy"com.github.pureconfig::pureconfig-cats-effect:$pureconfigVersion",
     ivy"org.scodec::core:1.10.4")
 
   def publishVersion = swamVersion
@@ -93,9 +100,6 @@ object text extends SwamModule with PublishModule {
 object runtime extends SwamModule with PublishModule {
 
   def moduleDeps = Seq(core)
-
-  def ivyDeps = Agg(
-    ivy"com.github.pureconfig::pureconfig-squants:0.9.2")
 
   def publishVersion = swamVersion
 

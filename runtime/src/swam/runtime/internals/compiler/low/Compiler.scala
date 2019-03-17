@@ -121,7 +121,7 @@ object FunctionContext {
   * This compiler executes the static part of the specification semantics, i.e. the one
   * dealing with labels and breaks. The static restrictions on the WebAssembly bytecodes
   * make it possible to statically compute the local stack size at any point in a function
-  * body. Of course, it assumes that the module is [[swam.validation.SpecValidator valid]]
+  * body. Of course, it assumes that the module is [[swam.validation.Validator valid]]
   * otherwise it will break or generate undefined assembly code.
   *
   */
