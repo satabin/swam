@@ -15,13 +15,9 @@
  */
 
 package swam
-package runtime
+package validation
+package config
 
-import pureconfig._
-import pureconfig.module.squants._
+import squants.information._
 
-package object config {
-
-  def defaultConfiguration = pureconfig.loadConfig[EngineConfiguration]
-
-}
+case class ValidationConfiguration(hardMax: Information, validate: Boolean)

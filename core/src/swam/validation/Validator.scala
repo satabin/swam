@@ -18,9 +18,15 @@ package swam
 package validation
 
 import syntax._
+import config._
 
 import cats._
+import cats.effect._
 import cats.implicits._
+
+import pureconfig.generic.auto._
+import pureconfig.module.squants._
+import pureconfig.module.catseffect._
 
 import fs2._
 
@@ -35,4 +41,17 @@ abstract class Validator[F[_]] {
     */
   def validate(stream: Stream[F, Section])(implicit F: MonadError[F, Throwable]): Stream[F, Section]
 
+}
+
+object Validator {
+  def apply[F[_]](conf: ValidationConfiguration): Validator[F] =
+if(conf.validate)
+        new SpecValidator[F](conf.hardMax.toBytes.toInt)
+      else
+        new NoopValidator[F]
+
+  def apply[F[_]: Sync]: F[Validator[F]] =
+    for {
+      conf <- loadConfigF[F, ValidationConfiguration]("swam.validation")
+    } yield apply[F](conf)
 }

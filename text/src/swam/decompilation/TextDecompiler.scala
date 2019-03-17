@@ -26,8 +26,8 @@ import util.pretty._
 import binary.custom._
 
 import cats._
-import cats.implicits._
 import cats.effect._
+import cats.implicits._
 
 import fs2._
 
@@ -46,9 +46,7 @@ import scala.language.higherKinds
   * This decompiler also takes advantage of the custom name section if present
   * to add identifier to the output.
   */
-class TextDecompiler[F[_]] private() extends Decompiler[F] {
-
-  private implicit val validator = new SpecValidator[F](65536)
+class TextDecompiler[F[_]] private(validator: Validator[F]) extends Decompiler[F] {
 
   private val Valid = "^([0-9a-zA-Z!#$%&'*+-./:<=>?@\\^_`|~]+)$".r
 
@@ -537,8 +535,13 @@ class TextDecompiler[F[_]] private() extends Decompiler[F] {
 }
 
 object TextDecompiler {
-  def apply[F[_]](implicit F: Monad[F]): F[TextDecompiler[F]] =
-    F.pure(new TextDecompiler[F])
+  def apply[F[_]: Sync]: F[TextDecompiler[F]] =
+    for {
+      validator <- Validator[F]
+    } yield TextDecompiler[F](validator)
+
+  def apply[F[_]](validator: Validator[F]): TextDecompiler[F] =
+    new TextDecompiler[F](validator)
 }
 
 private case class DecompilerEnv(moduleName: Option[String] = None,

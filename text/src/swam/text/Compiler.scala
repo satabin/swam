@@ -34,13 +34,11 @@ import fs2._
 
 import fastparse._
 
-class Compiler[F[_]] private(implicit val F: Effect[F]) {
+class Compiler[F[_]] private(validator: Validator[F])(implicit val F: Effect[F]) {
 
   private val resolver = new Resolver[F]
 
-  private implicit val validator = new SpecValidator[F](65536)
-
-  private val binaryParser = new SwamParser[F]
+  private val binaryParser = new SwamParser[F](validator)
 
   def compile(file: Path): F[Module] =
     for {
@@ -52,7 +50,7 @@ class Compiler[F[_]] private(implicit val F: Effect[F]) {
   def compile(module: unresolved.Module): F[Module] =
     for {
       resolved <- resolver.resolve(module)
-      mod <- binaryParser.parse(resolved, validator)
+      mod <- binaryParser.parse(resolved)
     } yield mod
 
   def stream(module: unresolved.Module, debug: Boolean): Stream[F, Section] =
@@ -76,5 +74,10 @@ class Compiler[F[_]] private(implicit val F: Effect[F]) {
 
 object Compiler {
   def apply[F[_]](implicit F: Effect[F]): F[Compiler[F]] =
-    F.pure(new Compiler[F])
+    for {
+      validator <- Validator[F]
+    } yield Compiler[F](validator)
+
+  def apply[F[_]](validator: Validator[F])(implicit F: Effect[F]): Compiler[F] =
+    new Compiler[F](validator)
 }

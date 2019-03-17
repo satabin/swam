@@ -25,6 +25,6 @@ import fs2._
 
 import scala.language.higherKinds
 
-class NoopValidator[F[_]] extends Validator[F] {
+private class NoopValidator[F[_]] extends Validator[F] {
   def validate(stream: Stream[F, Section])(implicit F: MonadError[F, Throwable]): Stream[F, Section] = stream
 }
