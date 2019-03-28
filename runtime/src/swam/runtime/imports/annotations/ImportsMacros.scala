@@ -60,15 +60,17 @@ private final class ImportsMacros(val c: blackbox.Context) {
 
   private def isEffect(ann: Tree): Boolean = isAnnotation(ann, "effect")
 
+  private val names = Set("global", "pure", "effectful")
+
   private object ExportedName {
     def unapply(ann: Tree): Option[Tree] = {
       ann match {
-        case Apply(Select(New(Select(_, name)), _), args) if name.decodedName.toString == "global" =>
+        case Apply(Select(New(Select(_, name)), _), args) if names.contains(name.decodedName.toString) =>
           args.collectFirst {
             case q"name = $name" => name
             case q"$name"        => name
           }
-        case Apply(Select(New(Ident(name)), _), args) if name.decodedName.toString == "global" =>
+        case Apply(Select(New(Ident(name)), _), args) if names.contains(name.decodedName.toString) =>
           args.collectFirst {
             case q"name = $name" => name
             case q"$name"        => name
@@ -93,8 +95,13 @@ private final class ImportsMacros(val c: blackbox.Context) {
 
       object Export {
         def makeGlobal(writable: Boolean)(vdd: ValOrDefDef): Tree = atPos(vdd.pos) {
+          val evidence =
+            if (writable)
+              q"implicitly[_root_.swam.runtime.formats.SimpleValueFormatter[$f, ${vdd.tpt}]]"
+            else
+              q"implicitly[_root_.swam.runtime.formats.SimpleValueWriter[$f, ${vdd.tpt}]]"
           q"""F.pure(new _root_.swam.runtime.Global[$f] {
-        private val formatter = implicitly[_root_.swam.runtime.formats.SimpleValueFormatter[$f, ${vdd.tpt}]]
+        private val formatter = $evidence
         val tpe = _root_.swam.GlobalType(formatter.swamType, ${if (writable) q"_root_.swam.Mut.Var"
           else q"_root_.swam.Mut.Const"})
         def get: _root_.swam.runtime.Value = formatter.write(t.${TermName(vdd.name.decodedName.toString.trim)})

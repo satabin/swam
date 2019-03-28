@@ -27,6 +27,32 @@ trait DefaultFormatters {
   private def raise[T, F[_]](msg: String)(implicit F: MonadError[F, Throwable]): F[T] =
     F.raiseError(new ConversionException(msg))
 
+  implicit def byteFormatter[F[_]](implicit F: MonadError[F, Throwable]): SimpleValueFormatter[F, Byte] =
+    new SimpleValueFormatter[F, Byte] {
+      def read(v: Value): F[Byte] =
+        v match {
+          case Value.Int32(i) => F.pure(i.toByte)
+          case _              => raise(s"expected i32 but got ${v.tpe}")
+        }
+      def write(i: Byte): Value =
+        Value.Int32(i)
+      val swamType: ValType =
+        ValType.I32
+    }
+
+  implicit def shortFormatter[F[_]](implicit F: MonadError[F, Throwable]): SimpleValueFormatter[F, Short] =
+    new SimpleValueFormatter[F, Short] {
+      def read(v: Value): F[Short] =
+        v match {
+          case Value.Int32(i) => F.pure(i.toShort)
+          case _              => raise(s"expected i32 but got ${v.tpe}")
+        }
+      def write(i: Short): Value =
+        Value.Int32(i)
+      val swamType: ValType =
+        ValType.I32
+    }
+
   implicit def intFormatter[F[_]](implicit F: MonadError[F, Throwable]): SimpleValueFormatter[F, Int] =
     new SimpleValueFormatter[F, Int] {
       def read(v: Value): F[Int] =

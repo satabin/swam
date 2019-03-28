@@ -41,6 +41,9 @@ private[runtime] class TracingMemory[F[_]](inner: Memory[F], tracer: Tracer)(imp
   def unsafeWriteBytes(idx: Int, bytes: ByteBuffer): Unit =
     inner.unsafeWriteBytes(idx, bytes)
 
+  def unsafeReadBytes(idx: Int, length: Int): Array[Byte] =
+    inner.unsafeReadBytes(idx, length)
+
   def unsafeWriteByte(idx: Int, v: Byte): Unit = {
     tracer.traceEvent(EventType.MWrite, List("i8", idx.toString, v.toString))
     inner.unsafeWriteByte(idx, v)
