@@ -21,7 +21,7 @@ def instantiate(p: String): Instance[IO] =
     engine <- engine
     tcompiler <- tcompiler
     m <- engine.compile(tcompiler.stream(Paths.get(p), true))
-    i <- m.newInstance()
+    i <- m.instantiate
   } yield i).unsafeRunSync()
 
 def time[T](t: => T): T = {

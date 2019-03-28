@@ -19,15 +19,11 @@ val engine = Engine[IO]
 
 def log(i: Int) = IO(println(s"got $i"))
 
-type AsIIO[T] = AsInterface[T, IO]
-
-val foo = Imports[IO](module("console", TCMap[String, AsIIO]("log" -> log _)))
-
 val f = (for {
   engine <- engine
   tcompiler <- tcompiler
   mod <- engine.compile(tcompiler.stream(Paths.get("logged.wat"), true))
-  inst <- mod.newInstance(foo)
+  inst <- mod.importing("console", "log" -> log _).instantiate
   f <- inst.exports.typed.function1[Int, Int]("add42")
 } yield f).unsafeRunSync()
 ```
@@ -36,3 +32,20 @@ running function `f` logs the parameter.
 ```scala mdoc
 f(4).unsafeRunSync()
 ```
+
+It is also possible to use [`HList`s][hlist] to represent imported modules with several exposed fields. For instance, let’s import the `console` module with an extra `colors` field exposed.
+
+```scala mdoc:silent
+import shapeless._
+
+for {
+  engine <- engine
+  tcompiler <- tcompiler
+  mod <- engine.compile(tcompiler.stream(Paths.get("logged.wat"), true))
+  inst <- mod.importing("console", "log" -> log _ :: "colors" -> 256 :: HNil).instantiate
+  f <- inst.exports.typed.function1[Int, Int]("add42")
+} yield f
+
+```
+
+[hlist]: https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-2.0.0#heterogenous-lists

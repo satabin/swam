@@ -84,7 +84,7 @@ class ScriptEngine {
               engine <- engine
               tcompiler <- tcompiler
               compiled <- engine.compile(tcompiler.stream(mod, true))
-              instance <- compiled.newInstance(ctx.imports)
+              instance <- compiled.importing(ctx.imports).instantiate
             } yield
               compiled.name match {
                 case Some(name) =>
@@ -96,7 +96,7 @@ class ScriptEngine {
               engine <- engine
               tcompiler <- tcompiler
               compiled <- engine.compile(BitVector(bs))
-              instance <- compiled.newInstance(ctx.imports)
+              instance <- compiled.importing(ctx.imports).instantiate
             } yield
               id match {
                 case Some(name) =>
@@ -260,7 +260,7 @@ class ScriptEngine {
             m <- engine.compile(tcompiler.stream(unresolved, false))
           } yield m
       }
-    mod.flatMap(_.newInstance(ctx.imports))
+    mod.flatMap(_.importing(ctx.imports).instantiate)
   }
 
 }
