@@ -24,7 +24,7 @@ import scala.language.higherKinds
 package object imports {
 
   def NoImports[F[_]]: Imports[F] =
-    new Imports[F](TCMap.empty[String, AsInstance[?, F]])
+    new TCImports[F](TCMap.empty[String, AsInstance[?, F]])
 
   def module[T, F[_]](name: String, mod: T)(implicit I: AsInstance[T, F]): (String, Elem[AsInstance[?, F]]) =
     (name, Elem.fromValue[T, AsInstance[?, F]](mod))

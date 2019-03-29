@@ -34,7 +34,15 @@ import scala.language.higherKinds
   *  functions and variables made available to interact between
   *  both worlds.
   */
-class Imports[F[_]](imports: TCMap[String, AsInstance[?, F]]) {
+trait Imports[F[_]] {
+
+  def find(module: String, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]]
+
+  def updated[T](module: String, m: T)(implicit I: AsInstance[T, F]): Imports[F]
+
+}
+
+private class TCImports[F[_]](imports: TCMap[String, AsInstance[?, F]]) extends Imports[F] {
 
   def find(module: String, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
     imports.get(module) match {
@@ -44,14 +52,17 @@ class Imports[F[_]](imports: TCMap[String, AsInstance[?, F]]) {
     }
 
   def updated[T](module: String, m: T)(implicit I: AsInstance[T, F]): Imports[F] =
-    new Imports(imports.updated(module, m))
+    new TCImports(imports.updated(module, m))
 
 }
 
 object Imports {
 
   def apply[F[_]](imported: (String, Elem[AsInstance[?, F]])*): Imports[F] =
-    new Imports[F](TCMap[String, AsInstance[?, F]](imported: _*))
+    new TCImports[F](TCMap[String, AsInstance[?, F]](imported: _*))
+
+  def apply[F[_]](imported: TCMap[String, AsInstance[?, F]]): Imports[F] =
+    new TCImports[F](imported)
 
 }
 
