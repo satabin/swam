@@ -67,7 +67,7 @@ package object test {
     IO(println("print"))
 
   def spectestlib =
-    new Imports[IO](
+    Imports[IO](
       TCMap[String, AsIsIO]("spectest" -> TCMap[String, AsIIO](
         "memory" -> buffer,
         "global_i32" -> 666,

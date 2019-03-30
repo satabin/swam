@@ -20,7 +20,7 @@ val strings =
     engine <- engine
     tcompiler <- tcompiler
     m <- engine.compile(tcompiler.stream(Paths.get("string.wat"), true))
-    i <- m.newInstance()
+    i <- m.instantiate
     s1 <- {
       import formats.string.cstring
       i.exports.typed.global[String]("c-like")

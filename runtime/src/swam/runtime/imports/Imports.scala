@@ -18,7 +18,14 @@ package swam
 package runtime
 package imports
 
+import formats._
+
 import cats._
+import cats.effect._
+
+import shapeless._
+
+import java.nio.{ByteBuffer, ByteOrder}
 
 import scala.language.higherKinds
 
@@ -27,7 +34,15 @@ import scala.language.higherKinds
   *  functions and variables made available to interact between
   *  both worlds.
   */
-class Imports[F[_]](imports: TCMap[String, AsInstance[?, F]]) {
+trait Imports[F[_]] {
+
+  def find(module: String, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]]
+
+  def updated[T](module: String, m: T)(implicit I: AsInstance[T, F]): Imports[F]
+
+}
+
+private class TCImports[F[_]](imports: TCMap[String, AsInstance[?, F]]) extends Imports[F] {
 
   def find(module: String, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
     imports.get(module) match {
@@ -37,14 +52,17 @@ class Imports[F[_]](imports: TCMap[String, AsInstance[?, F]]) {
     }
 
   def updated[T](module: String, m: T)(implicit I: AsInstance[T, F]): Imports[F] =
-    new Imports(imports.updated(module, m))
+    new TCImports(imports.updated(module, m))
 
 }
 
 object Imports {
 
   def apply[F[_]](imported: (String, Elem[AsInstance[?, F]])*): Imports[F] =
-    new Imports[F](TCMap[String, AsInstance[?, F]](imported: _*))
+    new TCImports[F](TCMap[String, AsInstance[?, F]](imported: _*))
+
+  def apply[F[_]](imported: TCMap[String, AsInstance[?, F]]): Imports[F] =
+    new TCImports[F](imported)
 
 }
 
@@ -57,11 +75,164 @@ trait AsInstance[T, F[_]] {
 
 }
 
+object AsInstance {
+
+  implicit def fromPair[F[_], T](implicit T: AsInterface[T, F]): AsInstance[(String, T), F] =
+    new AsInstance[(String, T), F] {
+      def find(t: (String, T), field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
+        t match {
+          case (`field`, t) => F.pure(T.view(t))
+          case _            => F.raiseError(new LinkException(s"Unknown field $field"))
+        }
+    }
+
+  implicit def hconsAsInstance[F[_], T, L <: HList](implicit T: AsInterface[T, F],
+                                                    L: AsInstance[L, F]): AsInstance[(String, T) :: L, F] =
+    new AsInstance[(String, T) :: L, F] {
+      def find(h: (String, T) :: L, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
+        h match {
+          case (`field`, t) :: _ => F.pure(T.view(t))
+          case _ :: rest         => L.find(rest, field)
+        }
+    }
+
+  implicit def hnilAsInstance[F[_]]: AsInstance[HNil, F] =
+    new AsInstance[HNil, F] {
+      def find(h: HNil, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
+        F.raiseError(new LinkException(s"Unknown field $field"))
+    }
+
+  implicit def tcMapAsInstance[F[_]]: AsInstance[TCMap[String, AsInterface[?, F]], F] =
+    new AsInstance[TCMap[String, AsInterface[?, F]], F] {
+      def find(m: TCMap[String, AsInterface[?, F]], field: String)(
+          implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
+        m.get(field) match {
+          case Some(elem) => F.pure(elem.typeclass.view(elem.value))
+          case None       => F.raiseError(new LinkException(s"Unknown field $field"))
+        }
+    }
+
+  implicit def instanceAsInstance[F[_]]: AsInstance[Instance[F], F] =
+    new AsInstance[Instance[F], F] {
+      def find(i: Instance[F], field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
+        i.exports.field(field)
+    }
+
+}
+
 /** A typeclass that describes what it means for a type to be viewed as
   *  an interface element from the engine.
   */
 trait AsInterface[T, F[_]] {
 
   def view(v: T): Interface[F, Type]
+
+}
+
+object AsInterface {
+
+  implicit def interfaceAsInterface[T <: Interface[F, Type], F[_]]: AsInterface[T, F] =
+    new AsInterface[T, F] {
+      def view(i: T) = i
+    }
+
+  implicit def valueAsInterface[T, F[_]](implicit writer: SimpleValueWriter[T]): AsInterface[T, F] =
+    new AsInterface[T, F] {
+      def view(t: T): Global[F] =
+        new Global[F] {
+          val tpe = GlobalType(writer.swamType, Mut.Const)
+          def get = writer.write(t)
+          def set(v: Value)(implicit F: MonadError[F, Throwable]) =
+            F.raiseError(new RuntimeException("Unable to set immutable global"))
+        }
+    }
+
+  implicit def procedure0AsInterface[F[_]](implicit F: MonadError[F, Throwable]): AsInterface[() => F[Unit], F] =
+    new AsInterface[() => F[Unit], F] {
+      def view(f: () => F[Unit]) = new IFunction0Unit[F](f)
+    }
+
+  implicit def function0AsInsterface[Ret, F[_]](implicit F: MonadError[F, Throwable],
+                                                writer: ValueWriter[Ret]): AsInterface[() => F[Ret], F] =
+    new AsInterface[() => F[Ret], F] {
+      def view(f: () => F[Ret]) = new IFunction0(f)
+    }
+
+  implicit def procedure1AsInterface[P1, F[_]](implicit F: MonadError[F, Throwable],
+                                               reader1: ValueReader[P1]): AsInterface[(P1) => F[Unit], F] =
+    new AsInterface[(P1) => F[Unit], F] {
+      def view(f: (P1) => F[Unit]) = new IFunction1Unit[F, P1](f)
+    }
+
+  implicit def function1AsInterface[P1, Ret, F[_]](implicit F: MonadError[F, Throwable],
+                                                   reader1: ValueReader[P1],
+                                                   writer: ValueWriter[Ret]): AsInterface[(P1) => F[Ret], F] =
+    new AsInterface[(P1) => F[Ret], F] {
+      def view(f: (P1) => F[Ret]) = new IFunction1[F, P1, Ret](f)
+    }
+
+  implicit def procedure2AsInterface[P1, P2, F[_]](implicit F: MonadError[F, Throwable],
+                                                   reader1: ValueReader[P1],
+                                                   reader2: ValueReader[P2]): AsInterface[(P1, P2) => F[Unit], F] =
+    new AsInterface[(P1, P2) => F[Unit], F] {
+      def view(f: (P1, P2) => F[Unit]) = new IFunction2Unit[F, P1, P2](f)
+    }
+
+  implicit def function2AsInterface[P1, P2, Ret, F[_]](implicit F: MonadError[F, Throwable],
+                                                       reader1: ValueReader[P1],
+                                                       reader2: ValueReader[P2],
+                                                       writer: ValueWriter[Ret]): AsInterface[(P1, P2) => F[Ret], F] =
+    new AsInterface[(P1, P2) => F[Ret], F] {
+      def view(f: (P1, P2) => F[Ret]) = new IFunction2[F, P1, P2, Ret](f)
+    }
+
+  implicit def arrayAsInterface[F[_]]: AsInterface[Array[Function[F]], F] =
+    new AsInterface[Array[Function[F]], F] {
+      def view(a: Array[Function[F]]) = new Table[F] {
+        def tpe = TableType(ElemType.FuncRef, Limits(0, Some(size)))
+        def size =
+          a.length
+        def apply(idx: Int) =
+          a(idx)
+        def update(idx: Int, f: Function[F]) =
+          a(idx) = f
+      }
+    }
+
+  implicit def byteBufferAsInsterface[F[_]](implicit F: Async[F]): AsInterface[ByteBuffer, F] =
+    new AsInterface[ByteBuffer, F] {
+      def view(_b: ByteBuffer) = new Memory[F] {
+        val b = _b.duplicate()
+        b.order(ByteOrder.LITTLE_ENDIAN)
+        def tpe: swam.MemType = MemType(Limits(b.limit() / pageSize, Some(b.capacity / pageSize)))
+        def grow(by: Int) = F.delay {
+          val newSize = size + by * pageSize
+          if (newSize > b.capacity) {
+            false
+          } else {
+            b.limit(newSize)
+            true
+          }
+        }
+        def readByte(idx: Int) = F.delay(b.get(idx))
+        def readDouble(idx: Int) = F.delay(b.getDouble(idx))
+        def readFloat(idx: Int) = F.delay(b.getFloat(idx))
+        def readInt(idx: Int) = F.delay(b.getInt(idx))
+        def readLong(idx: Int) = F.delay(b.getLong(idx))
+        def readShort(idx: Int) = F.delay(b.getShort(idx))
+        def size = b.limit
+        def writeByte(idx: Int, v: Byte) = F.delay(b.put(idx, v))
+        def writeBytes(idx: Int, bytes: ByteBuffer) = F.delay {
+          b.position(idx)
+          b.put(bytes)
+        }
+        def writeDouble(idx: Int, v: Double) = F.delay(b.putDouble(idx, v))
+        def writeFloat(idx: Int, v: Float) = F.delay(b.putFloat(idx, v))
+        def writeInt(idx: Int, v: Int) = F.delay(b.putInt(idx, v))
+        def writeLong(idx: Int, v: Long) = F.delay(b.putLong(idx, v))
+        def writeShort(idx: Int, v: Short) = F.delay(b.putShort(idx, v))
+
+      }
+    }
 
 }

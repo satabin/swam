@@ -16,17 +16,15 @@
 
 package swam
 package runtime
+package imports
+package annotations
 
-import cats._
+import scala.language.experimental.macros
 
-import scala.language.higherKinds
-
-package object imports {
-
-  def NoImports[F[_]]: Imports[F] =
-    new TCImports[F](TCMap.empty[String, AsInstance[?, F]])
-
-  def module[T, F[_]](name: String, mod: T)(implicit I: AsInstance[T, F]): (String, Elem[AsInstance[?, F]]) =
-    (name, Elem.fromValue[T, AsInstance[?, F]](mod))
-
+/** Classes annotated with this annotation get an automatic
+  * [[AsInstance]] with exported members annotated with [[global]]
+  */
+@scala.annotation.compileTimeOnly("macro paradise plugin must be enabled")
+class module extends scala.annotation.StaticAnnotation {
+  def macroTransform(annottees: Any*): Any = macro ImportsMacros.moduleMacro
 }

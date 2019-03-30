@@ -51,6 +51,7 @@ class Module[F[_]] private[runtime] (val exports: Vector[Export],
                                      private[runtime] val functions: Vector[CompiledFunction],
                                      private[runtime] val elems: Vector[CompiledElem],
                                      private[runtime] val data: Vector[CompiledData]) {
+  self =>
 
   private lazy val names = {
     val sec = customs.collectFirst {
@@ -72,13 +73,43 @@ class Module[F[_]] private[runtime] (val exports: Vector[Export],
     */
   def name: Option[String] = names.flatMap(_.subsections.collectFirst { case ModuleName(n) => n })
 
-  /** Instantiates this module.
+  /** Instantiates this module with no imports.
     * The returned [[Instance]] can then be used to access exported elements.
     *
     * If instantiation fails, returns an error with the message wrapped in it.
     */
-  def newInstance(imports: Imports[F] = NoImports[F])(implicit F: Effect[F]): F[Instance[F]] =
-    engine.instantiate(this, imports)
+  def instantiate(implicit F: Effect[F]): F[Instance[F]] =
+    engine.instantiate(this, NoImports[F])
+
+  /** A module that can be instantiated with some imports.
+    * This can be reused to instantiate several times the same
+    * module with the same imports.
+    */
+  class Instantiable private[Module] (val imports: Imports[F]) {
+
+    /** The module from which this instantiable was created. */
+    def module: Module[F] = self
+
+    /** Adds a new import to be used when instantiating. */
+    def importing[I](name: String, i: I)(implicit I: AsInstance[I, F]): Instantiable =
+      new Instantiable(imports.updated(name, i))
+
+    /** Instantiates this module with previously provide imports.
+      * The returned [[Instance]] can then be used to access exported elements.
+      *
+      * If instantiation fails, returns an error with the message wrapped in it.
+      */
+    def instantiate(implicit F: Effect[F]): F[Instance[F]] =
+      engine.instantiate(self, imports)
+  }
+
+  /** Adds imports to be used when instantiating. */
+  def importing(imports: Imports[F]): Instantiable =
+    new Instantiable(imports)
+
+  /** Adds a new import to be used when instantiating. */
+  def importing[I](name: String, i: I)(implicit I: AsInstance[I, F]): Instantiable =
+    new Instantiable(Imports[F](module(name, i)))
 
   /** Access to filtered imported elements. */
   object imported {

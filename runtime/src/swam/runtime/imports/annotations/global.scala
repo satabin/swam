@@ -16,17 +16,17 @@
 
 package swam
 package runtime
+package imports
+package annotations
 
-import cats._
-
-import scala.language.higherKinds
-
-package object imports {
-
-  def NoImports[F[_]]: Imports[F] =
-    new TCImports[F](TCMap.empty[String, AsInstance[?, F]])
-
-  def module[T, F[_]](name: String, mod: T)(implicit I: AsInstance[T, F]): (String, Elem[AsInstance[?, F]]) =
-    (name, Elem.fromValue[T, AsInstance[?, F]](mod))
-
+/** `val` and `var` members marked with this annotation are exported as a global
+  * field. `val`s are exported as constant global, and `var`s as mutable global.
+  *
+  * The member type must have a [[swam.runtime.formats.SimpleValueFormatter SimpleValueFormatter]].
+  *
+  * Providing the `name` parameter will override the export name. By default the member name is taken.
+  */
+class global(val name: String) extends scala.annotation.StaticAnnotation {
+  def this() = this("")
 }
+

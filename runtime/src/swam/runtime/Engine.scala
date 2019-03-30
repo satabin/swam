@@ -51,7 +51,8 @@ import java.nio.file.Path
   * You typically want to reuse the same instance for all your executions
   * over the same effectful type `F`.
   */
-class Engine[F[_]] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F]) extends ModuleLoader[F] {
+class Engine[F[_]] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F])
+    extends ModuleLoader[F] {
 
   private[runtime] val compiler =
     if (conf.useLowLevelAsm)
