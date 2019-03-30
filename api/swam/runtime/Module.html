@@ -335,7 +335,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
 
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>The runtime representation of a validated and compiled module.
-</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="http://github.com/satabin/swam/tree/master//runtime/src/swam/runtime/Module.scala#L1" target="_blank">Module.scala</a></dd></dl><div class="toggleContainer block">
+</p></div><dl class="attributes block"> <dt>Self Type</dt><dd><a href="" class="extype" name="swam.runtime.Module">Module</a>[<span class="extype" name="swam.runtime.Module.F">F</span>]</dd><dt>Source</dt><dd><a href="http://github.com/satabin/swam/tree/master//runtime/src/swam/runtime/Module.scala#L1" target="_blank">Module.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -385,7 +385,29 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <div id="allMembers">
         
 
-        
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="swam.runtime.Module.Instantiable" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="InstantiableextendsAnyRef"></a><a id="Instantiable:Instantiable"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/Module.html#InstantiableextendsAnyRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="A module that can be instantiated with some imports." href="Module$Instantiable.html"><span class="name">Instantiable</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">A module that can be instantiated with some imports.</p><div class="fullcomment"><div class="comment cmt"><p>A module that can be instantiated with some imports.
+This can be reused to instantiate several times the same
+module with the same imports.
+</p></div></div>
+    </li></ol>
+            </div>
 
         
 
@@ -604,6 +626,38 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                 <span class="name">@native</span><span class="args">()</span>
               
         </dd></dl></div>
+    </li><li name="swam.runtime.Module#importing" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="importing[I](name:String,i:I)(implicitI:swam.runtime.imports.AsInstance[I,F]):Module.this.Instantiable"></a><a id="importing[I](String,I)(AsInstance[I,F]):Instantiable"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/Module.html#importing[I](name:String,i:I)(implicitI:swam.runtime.imports.AsInstance[I,F]):Module.this.Instantiable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">importing</span><span class="tparams">[<span name="I">I</span>]</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="i">i: <span class="extype" name="swam.runtime.Module.importing.I">I</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="I">I: <a href="imports/AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<span class="extype" name="swam.runtime.Module.importing.I">I</span>, <span class="extype" name="swam.runtime.Module.F">F</span>]</span>)</span><span class="result">: <a href="Module$Instantiable.html" class="extype" name="swam.runtime.Module.Instantiable">Instantiable</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">Adds a new import to be used when instantiating.</p>
+    </li><li name="swam.runtime.Module#importing" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="importing(imports:swam.runtime.imports.Imports[F]):Module.this.Instantiable"></a><a id="importing(Imports[F]):Instantiable"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/Module.html#importing(imports:swam.runtime.imports.Imports[F]):Module.this.Instantiable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">importing</span><span class="params">(<span name="imports">imports: <a href="imports/Imports.html" class="extype" name="swam.runtime.imports.Imports">Imports</a>[<span class="extype" name="swam.runtime.Module.F">F</span>]</span>)</span><span class="result">: <a href="Module$Instantiable.html" class="extype" name="swam.runtime.Module.Instantiable">Instantiable</a></span>
+      </span>
+      
+      <p class="shortcomment cmt">Adds imports to be used when instantiating.</p>
     </li><li name="swam.runtime.Module#imports" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="imports:Vector[swam.runtime.Import]"></a><a id="imports:Vector[Import]"></a>
       <span class="permalink">
@@ -620,6 +674,24 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       
+    </li><li name="swam.runtime.Module#instantiate" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="instantiate(implicitF:cats.effect.Effect[F]):F[swam.runtime.Instance[F]]"></a><a id="instantiate(Effect[F]):F[Instance[F]]"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/Module.html#instantiate(implicitF:cats.effect.Effect[F]):F[swam.runtime.Instance[F]]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">instantiate</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.runtime.Module.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.Module.F">F</span>[<a href="Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="swam.runtime.Module.F">F</span>]]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Instantiates this module with no imports.</p><div class="fullcomment"><div class="comment cmt"><p>Instantiates this module with no imports.
+The returned <a href="Instance.html" class="extype" name="swam.runtime.Instance">Instance</a> can then be used to access exported elements.</p><p>If instantiation fails, returns an error with the message wrapped in it.
+</p></div></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
@@ -669,24 +741,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="swam.runtime.Module#newInstance" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="newInstance(imports:swam.runtime.imports.Imports[F])(implicitF:cats.effect.Effect[F]):F[swam.runtime.Instance[F]]"></a><a id="newInstance(Imports[F])(Effect[F]):F[Instance[F]]"></a>
-      <span class="permalink">
-      <a href="../../swam/runtime/Module.html#newInstance(imports:swam.runtime.imports.Imports[F])(implicitF:cats.effect.Effect[F]):F[swam.runtime.Instance[F]]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">newInstance</span><span class="params">(<span name="imports">imports: <a href="imports/Imports.html" class="extype" name="swam.runtime.imports.Imports">Imports</a>[<span class="extype" name="swam.runtime.Module.F">F</span>] = <span class="symbol"><span class="name"><a href="imports/index.html">NoImports[F]</a></span></span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.runtime.Module.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.Module.F">F</span>[<a href="Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="swam.runtime.Module.F">F</span>]]</span>
-      </span>
-      
-      <p class="shortcomment cmt">Instantiates this module.</p><div class="fullcomment"><div class="comment cmt"><p>Instantiates this module.
-The returned <a href="Instance.html" class="extype" name="swam.runtime.Instance">Instance</a> can then be used to access exported elements.</p><p>If instantiation fails, returns an error with the message wrapped in it.
-</p></div></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <span class="permalink">

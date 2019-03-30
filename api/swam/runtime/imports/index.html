@@ -190,12 +190,28 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam.runtime">runtime</a></dd></dl></div>
+    </li><li name="swam.runtime.imports.annotations" visbl="pub" class="indented4 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="annotations"></a><a id="annotations:annotations"></a>
+      <span class="permalink">
+      <a href="../../../swam/runtime/imports/index.html#annotations" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="annotations/index.html"><span class="name">annotations</span></a>
+      </span>
+      
+      
     </li><li class="current-entities indented3">
-                        <span class="separator"></span>
+                        <a class="object" href="AsInstance$.html" title=""></a>
                         <a class="trait" href="AsInstance.html" title="A typeclass that describes what it means for an imported object to be viewed as an instance from the engine."></a>
                         <a href="AsInstance.html" title="A typeclass that describes what it means for an imported object to be viewed as an instance from the engine.">AsInstance</a>
                       </li><li class="current-entities indented3">
-                        <span class="separator"></span>
+                        <a class="object" href="AsInterface$.html" title=""></a>
                         <a class="trait" href="AsInterface.html" title="A typeclass that describes what it means for a type to be viewed as an interface element from the engine."></a>
                         <a href="AsInterface.html" title="A typeclass that describes what it means for a type to be viewed as an interface element from the engine.">AsInterface</a>
                       </li><li class="current-entities indented3">
@@ -228,7 +244,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="IFunction2Unit.html" title="">IFunction2Unit</a>
                       </li><li class="current-entities indented3">
                         <a class="object" href="Imports$.html" title=""></a>
-                        <a class="class" href="Imports.html" title="Represents the imported elements of an instance."></a>
+                        <a class="trait" href="Imports.html" title="Represents the imported elements of an instance."></a>
                         <a href="Imports.html" title="Represents the imported elements of an instance.">Imports</a>
                       </li><li class="current-entities indented3">
                         <a class="object" href="TCMap$.html" title=""></a>
@@ -476,7 +492,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       
-    </li><li name="swam.runtime.imports.Imports" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="swam.runtime.imports.Imports" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="Imports[F[_]]extendsAnyRef"></a><a id="Imports[F[_]]:Imports[F]"></a>
       <span class="permalink">
       <a href="../../../swam/runtime/imports/index.html#Imports[F[_]]extendsAnyRef" title="Permalink">
@@ -485,7 +501,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
     </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">class</span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
         <a title="Represents the imported elements of an instance." href="Imports.html"><span class="name">Imports</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
@@ -537,118 +553,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       
-    </li><li name="swam.runtime.imports#arrayAsInterface" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="arrayAsInterface[F[_]]:swam.runtime.imports.AsInterface[Array[swam.runtime.Function[F]],F]"></a><a id="arrayAsInterface[F[_]]:AsInterface[Array[Function[F]],F]"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/imports/index.html#arrayAsInterface[F[_]]:swam.runtime.imports.AsInterface[Array[swam.runtime.Function[F]],F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">arrayAsInterface</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result">: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[<span class="extype" name="scala.Array">Array</span>[<a href="../Function.html" class="extype" name="swam.runtime.Function">Function</a>[<span class="extype" name="swam.runtime.imports.arrayAsInterface.F">F</span>]], <span class="extype" name="swam.runtime.imports.arrayAsInterface.F">F</span>]</span>
-      </span>
-      
-      
-    </li><li name="swam.runtime.imports#byteBufferAsInsterface" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="byteBufferAsInsterface[F[_]](implicitF:cats.effect.Async[F]):swam.runtime.imports.AsInterface[java.nio.ByteBuffer,F]"></a><a id="byteBufferAsInsterface[F[_]](Async[F]):AsInterface[ByteBuffer,F]"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/imports/index.html#byteBufferAsInsterface[F[_]](implicitF:cats.effect.Async[F]):swam.runtime.imports.AsInterface[java.nio.ByteBuffer,F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">byteBufferAsInsterface</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Async">Async</span>[<span class="extype" name="swam.runtime.imports.byteBufferAsInsterface.F">F</span>]</span>)</span><span class="result">: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[<span class="extype" name="java.nio.ByteBuffer">ByteBuffer</span>, <span class="extype" name="swam.runtime.imports.byteBufferAsInsterface.F">F</span>]</span>
-      </span>
-      
-      
-    </li><li name="swam.runtime.imports#function0AsInsterface" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="function0AsInsterface[Ret,F[_]](implicitF:cats.MonadError[F,Throwable],implicitwriter:swam.runtime.formats.ValueWriter[Ret]):swam.runtime.imports.AsInterface[()=&gt;F[Ret],F]"></a><a id="function0AsInsterface[Ret,F[_]](MonadError[F,Throwable],ValueWriter[Ret]):AsInterface[()⇒F[Ret],F]"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/imports/index.html#function0AsInsterface[Ret,F[_]](implicitF:cats.MonadError[F,Throwable],implicitwriter:swam.runtime.formats.ValueWriter[Ret]):swam.runtime.imports.AsInterface[()=&gt;F[Ret],F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">function0AsInsterface</span><span class="tparams">[<span name="Ret">Ret</span>, <span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.function0AsInsterface.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>, <span name="writer">writer: <a href="../formats/ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a>[<span class="extype" name="swam.runtime.imports.function0AsInsterface.Ret">Ret</span>]</span>)</span><span class="result">: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[() ⇒ <span class="extype" name="swam.runtime.imports.function0AsInsterface.F">F</span>[<span class="extype" name="swam.runtime.imports.function0AsInsterface.Ret">Ret</span>], <span class="extype" name="swam.runtime.imports.function0AsInsterface.F">F</span>]</span>
-      </span>
-      
-      
-    </li><li name="swam.runtime.imports#function1AsInterface" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="function1AsInterface[P1,Ret,F[_]](implicitF:cats.MonadError[F,Throwable],implicitreader1:swam.runtime.formats.ValueReader[P1],implicitwriter:swam.runtime.formats.ValueWriter[Ret]):swam.runtime.imports.AsInterface[P1=&gt;F[Ret],F]"></a><a id="function1AsInterface[P1,Ret,F[_]](MonadError[F,Throwable],ValueReader[P1],ValueWriter[Ret]):AsInterface[(P1)⇒F[Ret],F]"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/imports/index.html#function1AsInterface[P1,Ret,F[_]](implicitF:cats.MonadError[F,Throwable],implicitreader1:swam.runtime.formats.ValueReader[P1],implicitwriter:swam.runtime.formats.ValueWriter[Ret]):swam.runtime.imports.AsInterface[P1=&gt;F[Ret],F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">function1AsInterface</span><span class="tparams">[<span name="P1">P1</span>, <span name="Ret">Ret</span>, <span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.function1AsInterface.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>, <span name="reader1">reader1: <a href="../formats/ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.imports.function1AsInterface.P1">P1</span>]</span>, <span name="writer">writer: <a href="../formats/ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a>[<span class="extype" name="swam.runtime.imports.function1AsInterface.Ret">Ret</span>]</span>)</span><span class="result">: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[(<span class="extype" name="swam.runtime.imports.function1AsInterface.P1">P1</span>) ⇒ <span class="extype" name="swam.runtime.imports.function1AsInterface.F">F</span>[<span class="extype" name="swam.runtime.imports.function1AsInterface.Ret">Ret</span>], <span class="extype" name="swam.runtime.imports.function1AsInterface.F">F</span>]</span>
-      </span>
-      
-      
-    </li><li name="swam.runtime.imports#function2AsInterface" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="function2AsInterface[P1,P2,Ret,F[_]](implicitF:cats.MonadError[F,Throwable],implicitreader1:swam.runtime.formats.ValueReader[P1],implicitreader2:swam.runtime.formats.ValueReader[P2],implicitwriter:swam.runtime.formats.ValueWriter[Ret]):swam.runtime.imports.AsInterface[(P1,P2)=&gt;F[Ret],F]"></a><a id="function2AsInterface[P1,P2,Ret,F[_]](MonadError[F,Throwable],ValueReader[P1],ValueReader[P2],ValueWriter[Ret]):AsInterface[(P1,P2)⇒F[Ret],F]"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/imports/index.html#function2AsInterface[P1,P2,Ret,F[_]](implicitF:cats.MonadError[F,Throwable],implicitreader1:swam.runtime.formats.ValueReader[P1],implicitreader2:swam.runtime.formats.ValueReader[P2],implicitwriter:swam.runtime.formats.ValueWriter[Ret]):swam.runtime.imports.AsInterface[(P1,P2)=&gt;F[Ret],F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">function2AsInterface</span><span class="tparams">[<span name="P1">P1</span>, <span name="P2">P2</span>, <span name="Ret">Ret</span>, <span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.function2AsInterface.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>, <span name="reader1">reader1: <a href="../formats/ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.imports.function2AsInterface.P1">P1</span>]</span>, <span name="reader2">reader2: <a href="../formats/ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.imports.function2AsInterface.P2">P2</span>]</span>, <span name="writer">writer: <a href="../formats/ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a>[<span class="extype" name="swam.runtime.imports.function2AsInterface.Ret">Ret</span>]</span>)</span><span class="result">: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[(<span class="extype" name="swam.runtime.imports.function2AsInterface.P1">P1</span>, <span class="extype" name="swam.runtime.imports.function2AsInterface.P2">P2</span>) ⇒ <span class="extype" name="swam.runtime.imports.function2AsInterface.F">F</span>[<span class="extype" name="swam.runtime.imports.function2AsInterface.Ret">Ret</span>], <span class="extype" name="swam.runtime.imports.function2AsInterface.F">F</span>]</span>
-      </span>
-      
-      
-    </li><li name="swam.runtime.imports#instanceAsInstance" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="instanceAsInstance[F[_]]:swam.runtime.imports.AsInstance[swam.runtime.Instance[F],F]"></a><a id="instanceAsInstance[F[_]]:AsInstance[Instance[F],F]"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/imports/index.html#instanceAsInstance[F[_]]:swam.runtime.imports.AsInstance[swam.runtime.Instance[F],F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">instanceAsInstance</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result">: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<a href="../Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="swam.runtime.imports.instanceAsInstance.F">F</span>], <span class="extype" name="swam.runtime.imports.instanceAsInstance.F">F</span>]</span>
-      </span>
-      
-      
-    </li><li name="swam.runtime.imports#interfaceAsInterface" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="interfaceAsInterface[T&lt;:swam.runtime.Interface[F,swam.Type],F[_]]:swam.runtime.imports.AsInterface[T,F]"></a><a id="interfaceAsInterface[T&lt;:Interface[F,Type],F[_]]:AsInterface[T,F]"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/imports/index.html#interfaceAsInterface[T&lt;:swam.runtime.Interface[F,swam.Type],F[_]]:swam.runtime.imports.AsInterface[T,F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">interfaceAsInterface</span><span class="tparams">[<span name="T">T &lt;: <a href="../Interface.html" class="extype" name="swam.runtime.Interface">Interface</a>[<span class="extype" name="swam.runtime.imports.interfaceAsInterface.F">F</span>, <a href="../../Type.html" class="extype" name="swam.Type">Type</a>]</span>, <span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result">: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[<span class="extype" name="swam.runtime.imports.interfaceAsInterface.T">T</span>, <span class="extype" name="swam.runtime.imports.interfaceAsInterface.F">F</span>]</span>
-      </span>
-      
-      
     </li><li name="swam.runtime.imports#module" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="module[T,F[_]](name:String,mod:T)(implicitI:swam.runtime.imports.AsInstance[T,F]):(String,swam.runtime.imports.Elem[[α$1$]swam.runtime.imports.AsInstance[α$1$,F]])"></a><a id="module[T,F[_]](String,T)(AsInstance[T,F]):(String,Elem[[α$1$]AsInstance[α$1$,F]])"></a>
       <span class="permalink">
@@ -665,83 +569,35 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       
-    </li><li name="swam.runtime.imports#procedure0AsInterface" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="procedure0AsInterface[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.imports.AsInterface[()=&gt;F[Unit],F]"></a><a id="procedure0AsInterface[F[_]](MonadError[F,Throwable]):AsInterface[()⇒F[Unit],F]"></a>
+    </li><li name="swam.runtime.imports.AsInstance" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AsInstance"></a><a id="AsInstance:AsInstance"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/imports/index.html#procedure0AsInterface[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.imports.AsInterface[()=&gt;F[Unit],F]" title="Permalink">
+      <a href="../../../swam/runtime/imports/index.html#AsInstance" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
+        <span class="modifier"></span>
+        <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <span class="name">procedure0AsInterface</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.procedure0AsInterface.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[() ⇒ <span class="extype" name="swam.runtime.imports.procedure0AsInterface.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>], <span class="extype" name="swam.runtime.imports.procedure0AsInterface.F">F</span>]</span>
+        <a title="" href="AsInstance$.html"><span class="name">AsInstance</span></a>
       </span>
       
       
-    </li><li name="swam.runtime.imports#procedure1AsInterface" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="procedure1AsInterface[P1,F[_]](implicitF:cats.MonadError[F,Throwable],implicitreader1:swam.runtime.formats.ValueReader[P1]):swam.runtime.imports.AsInterface[P1=&gt;F[Unit],F]"></a><a id="procedure1AsInterface[P1,F[_]](MonadError[F,Throwable],ValueReader[P1]):AsInterface[(P1)⇒F[Unit],F]"></a>
+    </li><li name="swam.runtime.imports.AsInterface" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AsInterface"></a><a id="AsInterface:AsInterface"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/imports/index.html#procedure1AsInterface[P1,F[_]](implicitF:cats.MonadError[F,Throwable],implicitreader1:swam.runtime.formats.ValueReader[P1]):swam.runtime.imports.AsInterface[P1=&gt;F[Unit],F]" title="Permalink">
+      <a href="../../../swam/runtime/imports/index.html#AsInterface" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
+        <span class="modifier"></span>
+        <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <span class="name">procedure1AsInterface</span><span class="tparams">[<span name="P1">P1</span>, <span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.procedure1AsInterface.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>, <span name="reader1">reader1: <a href="../formats/ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.imports.procedure1AsInterface.P1">P1</span>]</span>)</span><span class="result">: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[(<span class="extype" name="swam.runtime.imports.procedure1AsInterface.P1">P1</span>) ⇒ <span class="extype" name="swam.runtime.imports.procedure1AsInterface.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>], <span class="extype" name="swam.runtime.imports.procedure1AsInterface.F">F</span>]</span>
-      </span>
-      
-      
-    </li><li name="swam.runtime.imports#procedure2AsInterface" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="procedure2AsInterface[P1,P2,F[_]](implicitF:cats.MonadError[F,Throwable],implicitreader1:swam.runtime.formats.ValueReader[P1],implicitreader2:swam.runtime.formats.ValueReader[P2]):swam.runtime.imports.AsInterface[(P1,P2)=&gt;F[Unit],F]"></a><a id="procedure2AsInterface[P1,P2,F[_]](MonadError[F,Throwable],ValueReader[P1],ValueReader[P2]):AsInterface[(P1,P2)⇒F[Unit],F]"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/imports/index.html#procedure2AsInterface[P1,P2,F[_]](implicitF:cats.MonadError[F,Throwable],implicitreader1:swam.runtime.formats.ValueReader[P1],implicitreader2:swam.runtime.formats.ValueReader[P2]):swam.runtime.imports.AsInterface[(P1,P2)=&gt;F[Unit],F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">procedure2AsInterface</span><span class="tparams">[<span name="P1">P1</span>, <span name="P2">P2</span>, <span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.procedure2AsInterface.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>, <span name="reader1">reader1: <a href="../formats/ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.imports.procedure2AsInterface.P1">P1</span>]</span>, <span name="reader2">reader2: <a href="../formats/ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.imports.procedure2AsInterface.P2">P2</span>]</span>)</span><span class="result">: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[(<span class="extype" name="swam.runtime.imports.procedure2AsInterface.P1">P1</span>, <span class="extype" name="swam.runtime.imports.procedure2AsInterface.P2">P2</span>) ⇒ <span class="extype" name="swam.runtime.imports.procedure2AsInterface.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>], <span class="extype" name="swam.runtime.imports.procedure2AsInterface.F">F</span>]</span>
-      </span>
-      
-      
-    </li><li name="swam.runtime.imports#tcMapAsInstance" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="tcMapAsInstance[F[_]]:swam.runtime.imports.AsInstance[swam.runtime.imports.TCMap[String,[α$3$]swam.runtime.imports.AsInterface[α$3$,F]],F]"></a><a id="tcMapAsInstance[F[_]]:AsInstance[TCMap[String,[α$3$]AsInterface[α$3$,F]],F]"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/imports/index.html#tcMapAsInstance[F[_]]:swam.runtime.imports.AsInstance[swam.runtime.imports.TCMap[String,[α$3$]swam.runtime.imports.AsInterface[α$3$,F]],F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">tcMapAsInstance</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result">: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<a href="TCMap.html" class="extype" name="swam.runtime.imports.TCMap">TCMap</a>[<span class="extype" name="scala.Predef.String">String</span>, [α$3$]<a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[<span class="extype" name="swam.runtime.imports.&lt;refinement&gt;.Λ$.α$3$">α$3$</span>, <span class="extype" name="swam.runtime.imports.tcMapAsInstance.F">F</span>]], <span class="extype" name="swam.runtime.imports.tcMapAsInstance.F">F</span>]</span>
-      </span>
-      
-      
-    </li><li name="swam.runtime.imports#valueAsInterface" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="valueAsInterface[T,F[_]](implicitwriter:swam.runtime.formats.SimpleValueWriter[T]):swam.runtime.imports.AsInterface[T,F]"></a><a id="valueAsInterface[T,F[_]](SimpleValueWriter[T]):AsInterface[T,F]"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/imports/index.html#valueAsInterface[T,F[_]](implicitwriter:swam.runtime.formats.SimpleValueWriter[T]):swam.runtime.imports.AsInterface[T,F]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">valueAsInterface</span><span class="tparams">[<span name="T">T</span>, <span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="writer">writer: <a href="../formats/SimpleValueWriter.html" class="extype" name="swam.runtime.formats.SimpleValueWriter">SimpleValueWriter</a>[<span class="extype" name="swam.runtime.imports.valueAsInterface.T">T</span>]</span>)</span><span class="result">: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[<span class="extype" name="swam.runtime.imports.valueAsInterface.T">T</span>, <span class="extype" name="swam.runtime.imports.valueAsInterface.F">F</span>]</span>
+        <a title="" href="AsInterface$.html"><span class="name">AsInterface</span></a>
       </span>
       
       

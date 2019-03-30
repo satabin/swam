@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Swam - Imports</title>
+    <title>Swam - Annotations</title>
     <link rel="stylesheet" href="/css/stylesheet.css">
     <link rel="stylesheet" href="/css/syntax.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -67,13 +67,44 @@
 
     <main>
       <div class="container">
-        <p>When a module is instantiated, it is possible to import functions or values from Scala into the module. For instance, let’s assume we defined a function that prints its parameter on the console, and a <a href="/examples/logged.wat">simple WebAssembly module that imports and calls it</a>.</p>
+        <p>Using the <code>module</code> annotation, it is possible to mark an entire class or trait as some module that can be imported by Swam modules. The annotated type will have an implicit instance of <code>AsInstance</code> with annotated exported fields. This comes in handy to expose Scala instances to WebAssembly modules.</p>
+
+<p>Following class members can be exported:</p>
+<ul>
+  <li><code>val</code> annotated with <code>global</code> will be exported as contanst global. The <code>val</code> type must have a <code>SimpleValueFormatter</code>.</li>
+  <li><code>var</code> annotated with <code>global</code> will be exported as mutable global. The <code>var</code> type must have a <code>SimpleValueFormatter</code>.</li>
+</ul>
+
+<p>By default the exported field will have the member name, but this can be changed by providing the <code>name</code> parameter.</p>
+
+<p>For instance, let’s define a simple class with three exported members.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">swam.runtime.imports.annotations._</span>
+<span class="k">import</span> <span class="nn">swam.runtime.formats.DefaultFormatters._</span>
+
+<span class="nd">@module</span>
+<span class="k">class</span> <span class="nc">MyModule</span> <span class="o">{</span>
+
+  <span class="nd">@swam</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">imports</span><span class="o">.</span><span class="n">annotations</span><span class="o">.</span><span class="n">global</span>
+  <span class="k">val</span> <span class="n">v1</span> <span class="k">=</span> <span class="mi">23</span>
+
+  <span class="nd">@swam</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">imports</span><span class="o">.</span><span class="n">annotations</span><span class="o">.</span><span class="n">global</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"test"</span><span class="o">)</span>
+  <span class="k">val</span> <span class="n">v2</span> <span class="k">=</span> <span class="mf">2.0d</span>
+
+  <span class="nd">@swam</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">imports</span><span class="o">.</span><span class="n">annotations</span><span class="o">.</span><span class="n">global</span>
+  <span class="k">var</span> <span class="n">v3</span> <span class="k">=</span> <span class="mi">45</span>
+
+<span class="o">}</span>
+
+<span class="k">val</span> <span class="n">m</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">MyModule</span>
+</code></pre></div></div>
+
+<p>Instance <code>m</code> can be used as an <a href="/examples/annotations.wat">import</a> and <code>v3</code> can be mutated from a WebAssembly module.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">swam._</span>
 <span class="k">import</span> <span class="nn">swam.text._</span>
 <span class="k">import</span> <span class="nn">swam.runtime._</span>
 <span class="k">import</span> <span class="nn">swam.runtime.imports._</span>
-<span class="k">import</span> <span class="nn">swam.runtime.formats.DefaultFormatters._</span>
 <span class="k">import</span> <span class="nn">cats.effect._</span>
 <span class="k">import</span> <span class="nn">java.nio.file.Paths</span>
 
@@ -81,37 +112,21 @@
 
 <span class="k">val</span> <span class="n">engine</span> <span class="k">=</span> <span class="nc">Engine</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
 
-<span class="k">def</span> <span class="n">log</span><span class="o">(</span><span class="n">i</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span> <span class="nc">IO</span><span class="o">(</span><span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"got $i"</span><span class="o">))</span>
-
 <span class="k">val</span> <span class="n">f</span> <span class="k">=</span> <span class="o">(</span><span class="k">for</span> <span class="o">{</span>
   <span class="n">engine</span> <span class="k">&lt;-</span> <span class="n">engine</span>
   <span class="n">tcompiler</span> <span class="k">&lt;-</span> <span class="n">tcompiler</span>
-  <span class="n">mod</span> <span class="k">&lt;-</span> <span class="n">engine</span><span class="o">.</span><span class="n">compile</span><span class="o">(</span><span class="n">tcompiler</span><span class="o">.</span><span class="n">stream</span><span class="o">(</span><span class="nc">Paths</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="s">"logged.wat"</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
-  <span class="n">inst</span> <span class="k">&lt;-</span> <span class="n">mod</span><span class="o">.</span><span class="n">importing</span><span class="o">(</span><span class="s">"console"</span><span class="o">,</span> <span class="s">"log"</span> <span class="o">-&gt;</span> <span class="n">log</span> <span class="k">_</span><span class="o">).</span><span class="n">instantiate</span>
-  <span class="n">f</span> <span class="k">&lt;-</span> <span class="n">inst</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">typed</span><span class="o">.</span><span class="n">function1</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">Int</span><span class="o">](</span><span class="s">"add42"</span><span class="o">)</span>
+  <span class="n">mod</span> <span class="k">&lt;-</span> <span class="n">engine</span><span class="o">.</span><span class="n">compile</span><span class="o">(</span><span class="n">tcompiler</span><span class="o">.</span><span class="n">stream</span><span class="o">(</span><span class="nc">Paths</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="s">"annotations.wat"</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
+  <span class="n">inst</span> <span class="k">&lt;-</span> <span class="n">mod</span><span class="o">.</span><span class="n">importing</span><span class="o">(</span><span class="s">"m"</span><span class="o">,</span> <span class="n">m</span><span class="o">).</span><span class="n">instantiate</span>
+  <span class="n">f</span> <span class="k">&lt;-</span> <span class="n">inst</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">typed</span><span class="o">.</span><span class="n">procedure0</span><span class="o">(</span><span class="s">"mutate"</span><span class="o">)</span>
 <span class="o">}</span> <span class="k">yield</span> <span class="n">f</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">()</span>
 </code></pre></div></div>
 
-<p>running function <code>f</code> logs the parameter.</p>
-
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">f</span><span class="o">(</span><span class="mi">4</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">()</span>
-<span class="c1">// got 4
-// res0: Int = 46
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">m</span><span class="o">.</span><span class="n">v3</span>
+<span class="c1">// res0: Int = 45
+</span><span class="n">f</span><span class="o">().</span><span class="n">unsafeRunSync</span><span class="o">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">v3</span>
+<span class="c1">// res2: Int = 25
 </span></code></pre></div></div>
-
-<p>It is also possible to use <a href="https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-2.0.0#heterogenous-lists"><code>HList</code>s</a> to represent imported modules with several exposed fields. For instance, let’s import the <code>console</code> module with an extra <code>colors</code> field exposed.</p>
-
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">shapeless._</span>
-
-<span class="k">for</span> <span class="o">{</span>
-  <span class="n">engine</span> <span class="k">&lt;-</span> <span class="n">engine</span>
-  <span class="n">tcompiler</span> <span class="k">&lt;-</span> <span class="n">tcompiler</span>
-  <span class="n">mod</span> <span class="k">&lt;-</span> <span class="n">engine</span><span class="o">.</span><span class="n">compile</span><span class="o">(</span><span class="n">tcompiler</span><span class="o">.</span><span class="n">stream</span><span class="o">(</span><span class="nc">Paths</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="s">"logged.wat"</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
-  <span class="n">inst</span> <span class="k">&lt;-</span> <span class="n">mod</span><span class="o">.</span><span class="n">importing</span><span class="o">(</span><span class="s">"console"</span><span class="o">,</span> <span class="s">"log"</span> <span class="o">-&gt;</span> <span class="n">log</span> <span class="k">_</span> <span class="o">::</span> <span class="s">"colors"</span> <span class="o">-&gt;</span> <span class="mi">256</span> <span class="o">::</span> <span class="nc">HNil</span><span class="o">).</span><span class="n">instantiate</span>
-  <span class="n">f</span> <span class="k">&lt;-</span> <span class="n">inst</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">typed</span><span class="o">.</span><span class="n">function1</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">Int</span><span class="o">](</span><span class="s">"add42"</span><span class="o">)</span>
-<span class="o">}</span> <span class="k">yield</span> <span class="n">f</span>
-
-</code></pre></div></div>
 
 
       </div>
