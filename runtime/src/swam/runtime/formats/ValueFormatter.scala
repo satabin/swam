@@ -26,4 +26,7 @@ import scala.language.higherKinds
   */
 trait ValueFormatter[F[_], T] extends ValueReader[F, T] with ValueWriter[F, T]
 
-abstract class SimpleValueFormatter[F[_], T](implicit F: MonadError[F, Throwable]) extends SimpleValueWriter[F, T] with SimpleValueReader[F, T] with ValueFormatter[F, T]
+abstract class SimpleValueFormatter[F[_], T](implicit F: MonadError[F, Throwable])
+    extends SimpleValueWriter[F, T]
+    with SimpleValueReader[F, T]
+    with ValueFormatter[F, T]

@@ -45,9 +45,10 @@ abstract class EFunction2[P1, P2, Ret, F[_]] private (f: Function[F], m: Option[
 object EFunction2 {
   import EFunction._
 
-  def apply[P1, P2, F[_]](name: String, self: Instance[F])(implicit F: MonadError[F, Throwable],
-                                                           writer1: ValueWriter[F, P1],
-                                                           writer2: ValueWriter[F, P2]): F[EFunction2[P1, P2, Unit, F]] =
+  def apply[P1, P2, F[_]](name: String, self: Instance[F])(
+      implicit F: MonadError[F, Throwable],
+      writer1: ValueWriter[F, P1],
+      writer2: ValueWriter[F, P2]): F[EFunction2[P1, P2, Unit, F]] =
     self.exps.get(name) match {
       case Some(f: Function[F]) =>
         val expectedt = FuncType(Vector(writer1.swamType, writer2.swamType), Vector())

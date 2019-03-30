@@ -25,7 +25,8 @@ import cats.implicits._
 
 import scala.language.higherKinds
 
-class IFunction1Unit[F[_], P1](f: (P1) => F[Unit])(implicit reader1: ValueReader[F, P1], F: MonadError[F, Throwable]) extends Function[F] {
+class IFunction1Unit[F[_], P1](f: (P1) => F[Unit])(implicit reader1: ValueReader[F, P1], F: MonadError[F, Throwable])
+    extends Function[F] {
   val tpe = FuncType(Vector(reader1.swamType), Vector())
   def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Option[Value]] =
     parameters match {
@@ -40,7 +41,9 @@ class IFunction1Unit[F[_], P1](f: (P1) => F[Unit])(implicit reader1: ValueReader
     }
 }
 
-class IFunction1[F[_], P1, Ret](f: (P1) => F[Ret])(implicit reader1: ValueReader[F, P1], writer: ValueWriter[F, Ret], F: MonadError[F, Throwable])
+class IFunction1[F[_], P1, Ret](f: (P1) => F[Ret])(implicit reader1: ValueReader[F, P1],
+                                                   writer: ValueWriter[F, Ret],
+                                                   F: MonadError[F, Throwable])
     extends Function[F] {
   val tpe = FuncType(Vector(reader1.swamType), Vector(writer.swamType))
   def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Option[Value]] =

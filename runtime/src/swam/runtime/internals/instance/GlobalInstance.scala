@@ -23,7 +23,8 @@ import cats._
 
 import scala.language.higherKinds
 
-private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType)(implicit F: MonadError[F, Throwable]) extends Global[F] {
+private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType)(implicit F: MonadError[F, Throwable])
+    extends Global[F] {
 
   private var raw: Long = 0l
 

@@ -45,10 +45,10 @@ abstract class Validator[F[_]] {
 
 object Validator {
   def apply[F[_]: MonadError[?[_], Throwable]](conf: ValidationConfiguration): Validator[F] =
-if(conf.validate)
-        new SpecValidator[F](conf.hardMax.toBytes.toInt)
-      else
-        new NoopValidator[F]
+    if (conf.validate)
+      new SpecValidator[F](conf.hardMax.toBytes.toInt)
+    else
+      new NoopValidator[F]
 
   def apply[F[_]: Sync]: F[Validator[F]] =
     for {

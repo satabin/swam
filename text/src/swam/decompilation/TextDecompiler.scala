@@ -46,7 +46,7 @@ import scala.language.higherKinds
   * This decompiler also takes advantage of the custom name section if present
   * to add identifier to the output.
   */
-class TextDecompiler[F[_]] private(validator: Validator[F])(implicit F: Effect[F]) extends Decompiler[F] {
+class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Effect[F]) extends Decompiler[F] {
 
   private val Valid = "^([0-9a-zA-Z!#$%&'*+-./:<=>?@\\^_`|~]+)$".r
 

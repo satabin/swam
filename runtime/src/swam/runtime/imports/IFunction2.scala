@@ -25,7 +25,9 @@ import cats.implicits._
 
 import scala.language.higherKinds
 
-class IFunction2Unit[F[_], P1, P2](f: (P1, P2) => F[Unit])(implicit reader1: ValueReader[F, P1], reader2: ValueReader[F, P2], F: MonadError[F, Throwable])
+class IFunction2Unit[F[_], P1, P2](f: (P1, P2) => F[Unit])(implicit reader1: ValueReader[F, P1],
+                                                           reader2: ValueReader[F, P2],
+                                                           F: MonadError[F, Throwable])
     extends Function[F] {
   val tpe = FuncType(Vector(reader1.swamType, reader2.swamType), Vector())
   def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Option[Value]] =

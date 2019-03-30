@@ -42,7 +42,8 @@ trait Imports[F[_]] {
 
 }
 
-private class TCImports[F[_]](imports: TCMap[String, AsInstance[?, F]])(implicit F: MonadError[F, Throwable]) extends Imports[F] {
+private class TCImports[F[_]](imports: TCMap[String, AsInstance[?, F]])(implicit F: MonadError[F, Throwable])
+    extends Imports[F] {
 
   def find(module: String, field: String): F[Interface[F, Type]] =
     imports.get(module) match {
@@ -77,7 +78,8 @@ trait AsInstance[T, F[_]] {
 
 object AsInstance {
 
-  implicit def fromPair[F[_], T](implicit T: AsInterface[T, F], F: MonadError[F, Throwable]): AsInstance[(String, T), F] =
+  implicit def fromPair[F[_], T](implicit T: AsInterface[T, F],
+                                 F: MonadError[F, Throwable]): AsInstance[(String, T), F] =
     new AsInstance[(String, T), F] {
       def find(t: (String, T), field: String): F[Interface[F, Type]] =
         t match {
@@ -103,7 +105,8 @@ object AsInstance {
         F.raiseError(new LinkException(s"Unknown field $field"))
     }
 
-  implicit def tcMapAsInstance[F[_]](implicit F: MonadError[F, Throwable]): AsInstance[TCMap[String, AsInterface[?, F]], F] =
+  implicit def tcMapAsInstance[F[_]](
+      implicit F: MonadError[F, Throwable]): AsInstance[TCMap[String, AsInterface[?, F]], F] =
     new AsInstance[TCMap[String, AsInterface[?, F]], F] {
       def find(m: TCMap[String, AsInterface[?, F]], field: String): F[Interface[F, Type]] =
         m.get(field) match {
@@ -136,7 +139,8 @@ object AsInterface {
       def view(i: T) = i
     }
 
-  implicit def valueAsInterface[T, F[_]](implicit writer: SimpleValueWriter[F, T], F: MonadError[F, Throwable]): AsInterface[T, F] =
+  implicit def valueAsInterface[T, F[_]](implicit writer: SimpleValueWriter[F, T],
+                                         F: MonadError[F, Throwable]): AsInterface[T, F] =
     new AsInterface[T, F] {
       def view(t: T): Global[F] =
         new Global[F] {
@@ -178,10 +182,11 @@ object AsInterface {
       def view(f: (P1, P2) => F[Unit]) = new IFunction2Unit[F, P1, P2](f)
     }
 
-  implicit def function2AsInterface[P1, P2, Ret, F[_]](implicit F: MonadError[F, Throwable],
-                                                       reader1: ValueReader[F, P1],
-                                                       reader2: ValueReader[F, P2],
-                                                       writer: ValueWriter[F, Ret]): AsInterface[(P1, P2) => F[Ret], F] =
+  implicit def function2AsInterface[P1, P2, Ret, F[_]](
+      implicit F: MonadError[F, Throwable],
+      reader1: ValueReader[F, P1],
+      reader2: ValueReader[F, P2],
+      writer: ValueWriter[F, Ret]): AsInterface[(P1, P2) => F[Ret], F] =
     new AsInterface[(P1, P2) => F[Ret], F] {
       def view(f: (P1, P2) => F[Ret]) = new IFunction2[F, P1, P2, Ret](f)
     }

@@ -33,7 +33,7 @@ import scala.language.higherKinds
   * This is a raw decompiler, not performing any validation, nor transforming
   * the binary format.
   */
-class RawDecompiler[F[_]] private(implicit F: Effect[F]) extends Decompiler[F] {
+class RawDecompiler[F[_]] private (implicit F: Effect[F]) extends Decompiler[F] {
 
   def decompile(sections: Stream[F, Section]): F[Doc] =
     sections.map(_.pretty).compile.toList.map(seq(newline, _))

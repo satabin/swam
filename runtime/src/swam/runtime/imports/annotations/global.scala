@@ -29,4 +29,3 @@ package annotations
 class global(val name: String) extends scala.annotation.StaticAnnotation {
   def this() = this("")
 }
-

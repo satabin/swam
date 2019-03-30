@@ -66,7 +66,8 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
         }
     }
 
-  private def initialize(globals: Vector[CompiledGlobal], imports: Vector[Interface[F, Type]]): F[Vector[GlobalInstance[F]]] = {
+  private def initialize(globals: Vector[CompiledGlobal],
+                         imports: Vector[Interface[F, Type]]): F[Vector[GlobalInstance[F]]] = {
     val impglobals = imports.collect {
       case g: Global[F] => g
     }
@@ -88,7 +89,9 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
     }
   }
 
-  private def allocate(module: Module[F], globals: Vector[GlobalInstance[F]], imports: Vector[Interface[F, Type]]): F[Instance[F]] = {
+  private def allocate(module: Module[F],
+                       globals: Vector[GlobalInstance[F]],
+                       imports: Vector[Interface[F, Type]]): F[Instance[F]] = {
 
     val instance = new Instance[F](module, interpreter)
 

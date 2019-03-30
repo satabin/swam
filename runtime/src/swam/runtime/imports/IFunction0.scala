@@ -25,7 +25,8 @@ import cats.implicits._
 
 import scala.language.higherKinds
 
-class IFunction0[F[_], Ret](f: () => F[Ret])(implicit writer: ValueWriter[F, Ret], F: MonadError[F, Throwable]) extends Function[F] {
+class IFunction0[F[_], Ret](f: () => F[Ret])(implicit writer: ValueWriter[F, Ret], F: MonadError[F, Throwable])
+    extends Function[F] {
   val tpe = FuncType(Vector(), Vector(writer.swamType))
   def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Option[Value]] =
     if (parameters.isEmpty)
