@@ -39,6 +39,7 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
   def scalacOptions = Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification")
 
   def scalacPluginIvyDeps = Agg(
+    ivy"org.scalamacros:::paradise:2.1.1",
     ivy"org.spire-math::kind-projector:0.9.7",
     ivy"com.olegpy::better-monadic-for:0.3.0-M4")
 
@@ -141,7 +142,6 @@ object util extends SwamModule {
   object test extends SwamModule {
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest:0.6.4",
-      ivy"org.scalamacros:::paradise:2.1.1",
       ivy"com.github.pathikrit::better-files:3.5.0")
   }
 
