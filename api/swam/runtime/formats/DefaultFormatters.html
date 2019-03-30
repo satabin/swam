@@ -142,29 +142,13 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam.runtime">runtime</a></dd></dl></div>
-    </li><li name="swam.runtime.formats.string" visbl="pub" class="indented4 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="string"></a><a id="string:string"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/formats/index.html#string" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">package</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="string/index.html"><span class="name">string</span></a>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="swam.runtime.formats">formats</a></dd></dl></div>
     </li><li class="current-entities indented3">
                         <a class="object" href="DefaultFormatters$.html" title=""></a>
                         <a class="trait" href="" title="A collection of default formatters for primitive Scala types."></a>
                         <a href="" title="A collection of default formatters for primitive Scala types.">DefaultFormatters</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
-                        <a class="trait" href="SimpleValueFormatter.html" title=""></a>
+                        <a class="class" href="SimpleValueFormatter.html" title=""></a>
                         <a href="SimpleValueFormatter.html" title="">SimpleValueFormatter</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
@@ -172,7 +156,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="SimpleValueReader.html" title="A reader is used to transform a simple web assembly value into a scala object.">SimpleValueReader</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
-                        <a class="trait" href="SimpleValueWriter.html" title="A writer is used to transform a scala value into a simple web assembly value."></a>
+                        <a class="class" href="SimpleValueWriter.html" title="A writer is used to transform a scala value into a simple web assembly value."></a>
                         <a href="SimpleValueWriter.html" title="A writer is used to transform a scala value into a simple web assembly value.">SimpleValueWriter</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
@@ -344,18 +328,18 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="swam.runtime.formats.DefaultFormatters#boolFormatter" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="boolFormatter:swam.runtime.formats.SimpleValueFormatter[Boolean]"></a><a id="boolFormatter:SimpleValueFormatter[Boolean]"></a>
+      <a id="boolFormatter[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.formats.SimpleValueFormatter[F,Boolean]"></a><a id="boolFormatter[F[_]](MonadError[F,Throwable]):SimpleValueFormatter[F,Boolean]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/DefaultFormatters.html#boolFormatter:swam.runtime.formats.SimpleValueFormatter[Boolean]" title="Permalink">
+      <a href="../../../swam/runtime/formats/DefaultFormatters.html#boolFormatter[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.formats.SimpleValueFormatter[F,Boolean]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
-        <span class="kind">val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">boolFormatter</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+        <span class="name">boolFormatter</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.formats.DefaultFormatters.boolFormatter.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="swam.runtime.formats.DefaultFormatters.boolFormatter.F">F</span>, <span class="extype" name="scala.Boolean">Boolean</span>]</span>
       </span>
       
       
@@ -384,18 +368,18 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               
         </dd></dl></div>
     </li><li name="swam.runtime.formats.DefaultFormatters#doubleFormatter" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="doubleFormatter:swam.runtime.formats.SimpleValueFormatter[Double]"></a><a id="doubleFormatter:SimpleValueFormatter[Double]"></a>
+      <a id="doubleFormatter[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.formats.SimpleValueFormatter[F,Double]"></a><a id="doubleFormatter[F[_]](MonadError[F,Throwable]):SimpleValueFormatter[F,Double]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/DefaultFormatters.html#doubleFormatter:swam.runtime.formats.SimpleValueFormatter[Double]" title="Permalink">
+      <a href="../../../swam/runtime/formats/DefaultFormatters.html#doubleFormatter[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.formats.SimpleValueFormatter[F,Double]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
-        <span class="kind">val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">doubleFormatter</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="scala.Double">Double</span>]</span>
+        <span class="name">doubleFormatter</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.formats.DefaultFormatters.doubleFormatter.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="swam.runtime.formats.DefaultFormatters.doubleFormatter.F">F</span>, <span class="extype" name="scala.Double">Double</span>]</span>
       </span>
       
       
@@ -454,18 +438,18 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               
         </dd></dl></div>
     </li><li name="swam.runtime.formats.DefaultFormatters#floatFormatter" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="floatFormatter:swam.runtime.formats.SimpleValueFormatter[Float]"></a><a id="floatFormatter:SimpleValueFormatter[Float]"></a>
+      <a id="floatFormatter[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.formats.SimpleValueFormatter[F,Float]"></a><a id="floatFormatter[F[_]](MonadError[F,Throwable]):SimpleValueFormatter[F,Float]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/DefaultFormatters.html#floatFormatter:swam.runtime.formats.SimpleValueFormatter[Float]" title="Permalink">
+      <a href="../../../swam/runtime/formats/DefaultFormatters.html#floatFormatter[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.formats.SimpleValueFormatter[F,Float]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
-        <span class="kind">val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">floatFormatter</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="scala.Float">Float</span>]</span>
+        <span class="name">floatFormatter</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.formats.DefaultFormatters.floatFormatter.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="swam.runtime.formats.DefaultFormatters.floatFormatter.F">F</span>, <span class="extype" name="scala.Float">Float</span>]</span>
       </span>
       
       
@@ -508,18 +492,18 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               
         </dd></dl></div>
     </li><li name="swam.runtime.formats.DefaultFormatters#intFormatter" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="intFormatter:swam.runtime.formats.SimpleValueFormatter[Int]"></a><a id="intFormatter:SimpleValueFormatter[Int]"></a>
+      <a id="intFormatter[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.formats.SimpleValueFormatter[F,Int]"></a><a id="intFormatter[F[_]](MonadError[F,Throwable]):SimpleValueFormatter[F,Int]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/DefaultFormatters.html#intFormatter:swam.runtime.formats.SimpleValueFormatter[Int]" title="Permalink">
+      <a href="../../../swam/runtime/formats/DefaultFormatters.html#intFormatter[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.formats.SimpleValueFormatter[F,Int]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
-        <span class="kind">val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">intFormatter</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="scala.Int">Int</span>]</span>
+        <span class="name">intFormatter</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.formats.DefaultFormatters.intFormatter.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="swam.runtime.formats.DefaultFormatters.intFormatter.F">F</span>, <span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       
       
@@ -540,18 +524,18 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="swam.runtime.formats.DefaultFormatters#longFormatter" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="longFormatter:swam.runtime.formats.SimpleValueFormatter[Long]"></a><a id="longFormatter:SimpleValueFormatter[Long]"></a>
+      <a id="longFormatter[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.formats.SimpleValueFormatter[F,Long]"></a><a id="longFormatter[F[_]](MonadError[F,Throwable]):SimpleValueFormatter[F,Long]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/DefaultFormatters.html#longFormatter:swam.runtime.formats.SimpleValueFormatter[Long]" title="Permalink">
+      <a href="../../../swam/runtime/formats/DefaultFormatters.html#longFormatter[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.formats.SimpleValueFormatter[F,Long]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
-        <span class="kind">val</span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">longFormatter</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="scala.Long">Long</span>]</span>
+        <span class="name">longFormatter</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.formats.DefaultFormatters.longFormatter.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <a href="SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>[<span class="extype" name="swam.runtime.formats.DefaultFormatters.longFormatter.F">F</span>, <span class="extype" name="scala.Long">Long</span>]</span>
       </span>
       
       

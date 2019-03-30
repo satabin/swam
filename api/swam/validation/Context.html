@@ -168,7 +168,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">Context</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span name="types">types: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="funcs">funcs: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="tables">tables: <span class="extype" name="scala.Vector">Vector</span>[<a href="../TableType.html" class="extype" name="swam.TableType">TableType</a>]</span>, <span name="mems">mems: <span class="extype" name="scala.Vector">Vector</span>[<a href="../MemType.html" class="extype" name="swam.MemType">MemType</a>]</span>, <span name="globals">globals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../GlobalType.html" class="extype" name="swam.GlobalType">GlobalType</a>]</span>, <span name="locals">locals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ValType.html" class="extype" name="swam.ValType">ValType</a>]</span>, <span name="labels">labels: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="ret">ret: <span class="extype" name="scala.Option">Option</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="operands">operands: <span class="extype" name="scala.List">List</span>[<a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a>]</span>, <span name="unreachable">unreachable: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">Context</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span name="types">types: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="funcs">funcs: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="tables">tables: <span class="extype" name="scala.Vector">Vector</span>[<a href="../TableType.html" class="extype" name="swam.TableType">TableType</a>]</span>, <span name="mems">mems: <span class="extype" name="scala.Vector">Vector</span>[<a href="../MemType.html" class="extype" name="swam.MemType">MemType</a>]</span>, <span name="globals">globals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../GlobalType.html" class="extype" name="swam.GlobalType">GlobalType</a>]</span>, <span name="locals">locals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ValType.html" class="extype" name="swam.ValType">ValType</a>]</span>, <span name="labels">labels: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="ret">ret: <span class="extype" name="scala.Option">Option</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="operands">operands: <span class="extype" name="scala.List">List</span>[<a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a>]</span>, <span name="unreachable">unreachable: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.validation.Context.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
 
@@ -225,9 +225,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="swam.validation.Context#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(types:Vector[swam.FuncType],funcs:Vector[swam.FuncType],tables:Vector[swam.TableType],mems:Vector[swam.MemType],globals:Vector[swam.GlobalType],locals:Vector[swam.ValType],labels:Vector[swam.ResultType],ret:Option[swam.ResultType],operands:List[swam.validation.OperandType],unreachable:Boolean):swam.validation.Context[F]"></a><a id="&lt;init&gt;:Context[F]"></a>
+      <a id="&lt;init&gt;(types:Vector[swam.FuncType],funcs:Vector[swam.FuncType],tables:Vector[swam.TableType],mems:Vector[swam.MemType],globals:Vector[swam.GlobalType],locals:Vector[swam.ValType],labels:Vector[swam.ResultType],ret:Option[swam.ResultType],operands:List[swam.validation.OperandType],unreachable:Boolean)(implicitF:cats.MonadError[F,Throwable]):swam.validation.Context[F]"></a><a id="&lt;init&gt;:Context[F]"></a>
       <span class="permalink">
-      <a href="../../swam/validation/Context.html#&lt;init&gt;(types:Vector[swam.FuncType],funcs:Vector[swam.FuncType],tables:Vector[swam.TableType],mems:Vector[swam.MemType],globals:Vector[swam.GlobalType],locals:Vector[swam.ValType],labels:Vector[swam.ResultType],ret:Option[swam.ResultType],operands:List[swam.validation.OperandType],unreachable:Boolean):swam.validation.Context[F]" title="Permalink">
+      <a href="../../swam/validation/Context.html#&lt;init&gt;(types:Vector[swam.FuncType],funcs:Vector[swam.FuncType],tables:Vector[swam.TableType],mems:Vector[swam.MemType],globals:Vector[swam.GlobalType],locals:Vector[swam.ValType],labels:Vector[swam.ResultType],ret:Option[swam.ResultType],operands:List[swam.validation.OperandType],unreachable:Boolean)(implicitF:cats.MonadError[F,Throwable]):swam.validation.Context[F]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -236,7 +236,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Context</span><span class="params">(<span name="types">types: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="funcs">funcs: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="tables">tables: <span class="extype" name="scala.Vector">Vector</span>[<a href="../TableType.html" class="extype" name="swam.TableType">TableType</a>]</span>, <span name="mems">mems: <span class="extype" name="scala.Vector">Vector</span>[<a href="../MemType.html" class="extype" name="swam.MemType">MemType</a>]</span>, <span name="globals">globals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../GlobalType.html" class="extype" name="swam.GlobalType">GlobalType</a>]</span>, <span name="locals">locals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ValType.html" class="extype" name="swam.ValType">ValType</a>]</span>, <span name="labels">labels: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="ret">ret: <span class="extype" name="scala.Option">Option</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="operands">operands: <span class="extype" name="scala.List">List</span>[<a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a>]</span>, <span name="unreachable">unreachable: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span>
+        <span class="name">Context</span><span class="params">(<span name="types">types: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="funcs">funcs: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="tables">tables: <span class="extype" name="scala.Vector">Vector</span>[<a href="../TableType.html" class="extype" name="swam.TableType">TableType</a>]</span>, <span name="mems">mems: <span class="extype" name="scala.Vector">Vector</span>[<a href="../MemType.html" class="extype" name="swam.MemType">MemType</a>]</span>, <span name="globals">globals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../GlobalType.html" class="extype" name="swam.GlobalType">GlobalType</a>]</span>, <span name="locals">locals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ValType.html" class="extype" name="swam.ValType">ValType</a>]</span>, <span name="labels">labels: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="ret">ret: <span class="extype" name="scala.Option">Option</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="operands">operands: <span class="extype" name="scala.List">List</span>[<a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a>]</span>, <span name="unreachable">unreachable: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.validation.Context.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span>
       </span>
       
       
@@ -339,9 +339,9 @@
               
         </dd></dl></div>
     </li><li name="swam.validation.Context#emptyOperands" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="emptyOperands(implicitF:cats.MonadError[F,Throwable]):F[Unit]"></a><a id="emptyOperands(MonadError[F,Throwable]):F[Unit]"></a>
+      <a id="emptyOperands:F[Unit]"></a>
       <span class="permalink">
-      <a href="../../swam/validation/Context.html#emptyOperands(implicitF:cats.MonadError[F,Throwable]):F[Unit]" title="Permalink">
+      <a href="../../swam/validation/Context.html#emptyOperands:F[Unit]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -350,7 +350,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">emptyOperands</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.validation.Context.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.validation.Context.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+        <span class="name">emptyOperands</span><span class="result">: <span class="extype" name="swam.validation.Context.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       
       
@@ -594,9 +594,9 @@
       
       
     </li><li name="swam.validation.Context#pop" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="pop(implicitF:cats.MonadError[F,Throwable]):F[(swam.validation.OperandType,swam.validation.Context[F])]"></a><a id="pop(MonadError[F,Throwable]):F[(OperandType,Context[F])]"></a>
+      <a id="pop:F[(swam.validation.OperandType,swam.validation.Context[F])]"></a><a id="pop:F[(OperandType,Context[F])]"></a>
       <span class="permalink">
-      <a href="../../swam/validation/Context.html#pop(implicitF:cats.MonadError[F,Throwable]):F[(swam.validation.OperandType,swam.validation.Context[F])]" title="Permalink">
+      <a href="../../swam/validation/Context.html#pop:F[(swam.validation.OperandType,swam.validation.Context[F])]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -605,14 +605,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">pop</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.validation.Context.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.validation.Context.F">F</span>[(<a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a>, <a href="" class="extype" name="swam.validation.Context">Context</a>[<span class="extype" name="swam.validation.Context.F">F</span>])]</span>
+        <span class="name">pop</span><span class="result">: <span class="extype" name="swam.validation.Context.F">F</span>[(<a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a>, <a href="" class="extype" name="swam.validation.Context">Context</a>[<span class="extype" name="swam.validation.Context.F">F</span>])]</span>
       </span>
       
       
     </li><li name="swam.validation.Context#pop" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="pop(expected:Vector[swam.ValType])(implicitF:cats.MonadError[F,Throwable]):F[swam.validation.Context[F]]"></a><a id="pop(Vector[ValType])(MonadError[F,Throwable]):F[Context[F]]"></a>
+      <a id="pop(expected:Vector[swam.ValType]):F[swam.validation.Context[F]]"></a><a id="pop(Vector[ValType]):F[Context[F]]"></a>
       <span class="permalink">
-      <a href="../../swam/validation/Context.html#pop(expected:Vector[swam.ValType])(implicitF:cats.MonadError[F,Throwable]):F[swam.validation.Context[F]]" title="Permalink">
+      <a href="../../swam/validation/Context.html#pop(expected:Vector[swam.ValType]):F[swam.validation.Context[F]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -621,14 +621,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">pop</span><span class="params">(<span name="expected">expected: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ValType.html" class="extype" name="swam.ValType">ValType</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.validation.Context.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.validation.Context.F">F</span>[<a href="" class="extype" name="swam.validation.Context">Context</a>[<span class="extype" name="swam.validation.Context.F">F</span>]]</span>
+        <span class="name">pop</span><span class="params">(<span name="expected">expected: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ValType.html" class="extype" name="swam.ValType">ValType</a>]</span>)</span><span class="result">: <span class="extype" name="swam.validation.Context.F">F</span>[<a href="" class="extype" name="swam.validation.Context">Context</a>[<span class="extype" name="swam.validation.Context.F">F</span>]]</span>
       </span>
       
       
     </li><li name="swam.validation.Context#pop" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="pop(expected:swam.validation.OperandType)(implicitF:cats.MonadError[F,Throwable]):F[swam.validation.Context[F]]"></a><a id="pop(OperandType)(MonadError[F,Throwable]):F[Context[F]]"></a>
+      <a id="pop(expected:swam.validation.OperandType):F[swam.validation.Context[F]]"></a><a id="pop(OperandType):F[Context[F]]"></a>
       <span class="permalink">
-      <a href="../../swam/validation/Context.html#pop(expected:swam.validation.OperandType)(implicitF:cats.MonadError[F,Throwable]):F[swam.validation.Context[F]]" title="Permalink">
+      <a href="../../swam/validation/Context.html#pop(expected:swam.validation.OperandType):F[swam.validation.Context[F]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -637,14 +637,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">pop</span><span class="params">(<span name="expected">expected: <a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.validation.Context.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.validation.Context.F">F</span>[<a href="" class="extype" name="swam.validation.Context">Context</a>[<span class="extype" name="swam.validation.Context.F">F</span>]]</span>
+        <span class="name">pop</span><span class="params">(<span name="expected">expected: <a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a></span>)</span><span class="result">: <span class="extype" name="swam.validation.Context.F">F</span>[<a href="" class="extype" name="swam.validation.Context">Context</a>[<span class="extype" name="swam.validation.Context.F">F</span>]]</span>
       </span>
       
       
     </li><li name="swam.validation.Context#pop" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="pop(expected:swam.ValType)(implicitF:cats.MonadError[F,Throwable]):F[swam.validation.Context[F]]"></a><a id="pop(ValType)(MonadError[F,Throwable]):F[Context[F]]"></a>
+      <a id="pop(expected:swam.ValType):F[swam.validation.Context[F]]"></a><a id="pop(ValType):F[Context[F]]"></a>
       <span class="permalink">
-      <a href="../../swam/validation/Context.html#pop(expected:swam.ValType)(implicitF:cats.MonadError[F,Throwable]):F[swam.validation.Context[F]]" title="Permalink">
+      <a href="../../swam/validation/Context.html#pop(expected:swam.ValType):F[swam.validation.Context[F]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -653,7 +653,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">pop</span><span class="params">(<span name="expected">expected: <a href="../ValType.html" class="extype" name="swam.ValType">ValType</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.validation.Context.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.validation.Context.F">F</span>[<a href="" class="extype" name="swam.validation.Context">Context</a>[<span class="extype" name="swam.validation.Context.F">F</span>]]</span>
+        <span class="name">pop</span><span class="params">(<span name="expected">expected: <a href="../ValType.html" class="extype" name="swam.ValType">ValType</a></span>)</span><span class="result">: <span class="extype" name="swam.validation.Context.F">F</span>[<a href="" class="extype" name="swam.validation.Context">Context</a>[<span class="extype" name="swam.validation.Context.F">F</span>]]</span>
       </span>
       
       

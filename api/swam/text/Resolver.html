@@ -247,9 +247,9 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="swam.text.Resolver#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;():swam.text.Resolver[F]"></a><a id="&lt;init&gt;:Resolver[F]"></a>
+      <a id="&lt;init&gt;()(implicitF:cats.MonadError[F,Throwable]):swam.text.Resolver[F]"></a><a id="&lt;init&gt;:Resolver[F]"></a>
       <span class="permalink">
-      <a href="../../swam/text/Resolver.html#&lt;init&gt;():swam.text.Resolver[F]" title="Permalink">
+      <a href="../../swam/text/Resolver.html#&lt;init&gt;()(implicitF:cats.MonadError[F,Throwable]):swam.text.Resolver[F]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -258,7 +258,7 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Resolver</span><span class="params">()</span>
+        <span class="name">Resolver</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.text.Resolver.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span>
       </span>
       
       
@@ -523,9 +523,9 @@
               
         </dd></dl></div>
     </li><li name="swam.text.Resolver#resolve" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="resolve(mod:swam.text.unresolved.Module,debug:Boolean)(implicitF:cats.MonadError[F,Throwable]):F[fs2.Stream[F,swam.syntax.Section]]"></a><a id="resolve(Module,Boolean)(MonadError[F,Throwable]):F[Stream[F,Section]]"></a>
+      <a id="resolve(mod:swam.text.unresolved.Module,debug:Boolean):F[fs2.Stream[F,swam.syntax.Section]]"></a><a id="resolve(Module,Boolean):F[Stream[F,Section]]"></a>
       <span class="permalink">
-      <a href="../../swam/text/Resolver.html#resolve(mod:swam.text.unresolved.Module,debug:Boolean)(implicitF:cats.MonadError[F,Throwable]):F[fs2.Stream[F,swam.syntax.Section]]" title="Permalink">
+      <a href="../../swam/text/Resolver.html#resolve(mod:swam.text.unresolved.Module,debug:Boolean):F[fs2.Stream[F,swam.syntax.Section]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -534,14 +534,14 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">resolve</span><span class="params">(<span name="mod">mod: <a href="unresolved/Module.html" class="extype" name="swam.text.unresolved.Module">Module</a></span>, <span name="debug">debug: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.text.Resolver.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.text.Resolver.F">F</span>[<span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.text.Resolver.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]]</span>
+        <span class="name">resolve</span><span class="params">(<span name="mod">mod: <a href="unresolved/Module.html" class="extype" name="swam.text.unresolved.Module">Module</a></span>, <span name="debug">debug: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result">: <span class="extype" name="swam.text.Resolver.F">F</span>[<span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.text.Resolver.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]]</span>
       </span>
       
       <p class="shortcomment cmt">Resolves the entire module, stopping on the first encountered error.</p>
     </li><li name="swam.text.Resolver#resolve" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="resolve(instr:swam.text.unresolved.Inst,ctx:swam.text.ResolverContext)(implicitF:cats.MonadError[F,Throwable]):F[(swam.syntax.Inst,swam.text.ResolverContext)]"></a><a id="resolve(Inst,ResolverContext)(MonadError[F,Throwable]):F[(Inst,ResolverContext)]"></a>
+      <a id="resolve(instr:swam.text.unresolved.Inst,ctx:swam.text.ResolverContext):F[(swam.syntax.Inst,swam.text.ResolverContext)]"></a><a id="resolve(Inst,ResolverContext):F[(Inst,ResolverContext)]"></a>
       <span class="permalink">
-      <a href="../../swam/text/Resolver.html#resolve(instr:swam.text.unresolved.Inst,ctx:swam.text.ResolverContext)(implicitF:cats.MonadError[F,Throwable]):F[(swam.syntax.Inst,swam.text.ResolverContext)]" title="Permalink">
+      <a href="../../swam/text/Resolver.html#resolve(instr:swam.text.unresolved.Inst,ctx:swam.text.ResolverContext):F[(swam.syntax.Inst,swam.text.ResolverContext)]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -550,7 +550,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">resolve</span><span class="params">(<span name="instr">instr: <a href="unresolved/Inst.html" class="extype" name="swam.text.unresolved.Inst">Inst</a></span>, <span name="ctx">ctx: <a href="ResolverContext.html" class="extype" name="swam.text.ResolverContext">ResolverContext</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.text.Resolver.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.text.Resolver.F">F</span>[(<a href="../syntax/Inst.html" class="extype" name="swam.syntax.Inst">Inst</a>, <a href="ResolverContext.html" class="extype" name="swam.text.ResolverContext">ResolverContext</a>)]</span>
+        <span class="name">resolve</span><span class="params">(<span name="instr">instr: <a href="unresolved/Inst.html" class="extype" name="swam.text.unresolved.Inst">Inst</a></span>, <span name="ctx">ctx: <a href="ResolverContext.html" class="extype" name="swam.text.ResolverContext">ResolverContext</a></span>)</span><span class="result">: <span class="extype" name="swam.text.Resolver.F">F</span>[(<a href="../syntax/Inst.html" class="extype" name="swam.syntax.Inst">Inst</a>, <a href="ResolverContext.html" class="extype" name="swam.text.ResolverContext">ResolverContext</a>)]</span>
       </span>
       
       <p class="shortcomment cmt">Resolves an instruction.</p><div class="fullcomment"><div class="comment cmt"><p>Resolves an instruction.

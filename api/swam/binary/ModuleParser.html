@@ -222,9 +222,9 @@ The parser uses the validator to validate the stream.
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="swam.binary.ModuleParser#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(validator:swam.validation.Validator[F]):swam.binary.ModuleParser[F]"></a><a id="&lt;init&gt;:ModuleParser[F]"></a>
+      <a id="&lt;init&gt;(validator:swam.validation.Validator[F])(implicitF:cats.effect.Sync[F]):swam.binary.ModuleParser[F]"></a><a id="&lt;init&gt;:ModuleParser[F]"></a>
       <span class="permalink">
-      <a href="../../swam/binary/ModuleParser.html#&lt;init&gt;(validator:swam.validation.Validator[F]):swam.binary.ModuleParser[F]" title="Permalink">
+      <a href="../../swam/binary/ModuleParser.html#&lt;init&gt;(validator:swam.validation.Validator[F])(implicitF:cats.effect.Sync[F]):swam.binary.ModuleParser[F]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -233,7 +233,7 @@ The parser uses the validator to validate the stream.
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">ModuleParser</span><span class="params">(<span name="validator">validator: <a href="../validation/Validator.html" class="extype" name="swam.validation.Validator">Validator</a>[<span class="extype" name="swam.binary.ModuleParser.F">F</span>]</span>)</span>
+        <span class="name">ModuleParser</span><span class="params">(<span name="validator">validator: <a href="../validation/Validator.html" class="extype" name="swam.validation.Validator">Validator</a>[<span class="extype" name="swam.binary.ModuleParser.F">F</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Sync">Sync</span>[<span class="extype" name="swam.binary.ModuleParser.F">F</span>]</span>)</span>
       </span>
       
       
@@ -498,9 +498,9 @@ The parser uses the validator to validate the stream.
               
         </dd></dl></div>
     </li><li name="swam.binary.ModuleParser#parse" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="parse(stream:fs2.Stream[F,swam.syntax.Section])(implicitF:cats.effect.Sync[F]):F[swam.syntax.Module]"></a><a id="parse(Stream[F,Section])(Sync[F]):F[Module]"></a>
+      <a id="parse(stream:fs2.Stream[F,swam.syntax.Section]):F[swam.syntax.Module]"></a><a id="parse(Stream[F,Section]):F[Module]"></a>
       <span class="permalink">
-      <a href="../../swam/binary/ModuleParser.html#parse(stream:fs2.Stream[F,swam.syntax.Section])(implicitF:cats.effect.Sync[F]):F[swam.syntax.Module]" title="Permalink">
+      <a href="../../swam/binary/ModuleParser.html#parse(stream:fs2.Stream[F,swam.syntax.Section]):F[swam.syntax.Module]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -509,7 +509,7 @@ The parser uses the validator to validate the stream.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">parse</span><span class="params">(<span name="stream">stream: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.binary.ModuleParser.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Sync">Sync</span>[<span class="extype" name="swam.binary.ModuleParser.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="swam.binary.ModuleParser.F">F</span>[<a href="../syntax/Module.html" class="extype" name="swam.syntax.Module">Module</a>]</span>
+        <span class="name">parse</span><span class="params">(<span name="stream">stream: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.binary.ModuleParser.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>)</span><span class="result">: <span class="extype" name="swam.binary.ModuleParser.F">F</span>[<a href="../syntax/Module.html" class="extype" name="swam.syntax.Module">Module</a>]</span>
       </span>
       
       <p class="shortcomment cmt">Parses a section stream into a module.</p><div class="fullcomment"><div class="comment cmt"><p>Parses a section stream into a module.

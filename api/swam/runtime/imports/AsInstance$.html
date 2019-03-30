@@ -432,9 +432,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               
         </dd></dl></div>
     </li><li name="swam.runtime.imports.AsInstance#fromPair" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="fromPair[F[_],T](implicitT:swam.runtime.imports.AsInterface[T,F]):swam.runtime.imports.AsInstance[(String,T),F]"></a><a id="fromPair[F[_],T](AsInterface[T,F]):AsInstance[(String,T),F]"></a>
+      <a id="fromPair[F[_],T](implicitT:swam.runtime.imports.AsInterface[T,F],implicitF:cats.MonadError[F,Throwable]):swam.runtime.imports.AsInstance[(String,T),F]"></a><a id="fromPair[F[_],T](AsInterface[T,F],MonadError[F,Throwable]):AsInstance[(String,T),F]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/imports/AsInstance$.html#fromPair[F[_],T](implicitT:swam.runtime.imports.AsInterface[T,F]):swam.runtime.imports.AsInstance[(String,T),F]" title="Permalink">
+      <a href="../../../swam/runtime/imports/AsInstance$.html#fromPair[F[_],T](implicitT:swam.runtime.imports.AsInterface[T,F],implicitF:cats.MonadError[F,Throwable]):swam.runtime.imports.AsInstance[(String,T),F]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -443,7 +443,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">fromPair</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="T">T: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[<span class="extype" name="swam.runtime.imports.AsInstance.fromPair.T">T</span>, <span class="extype" name="swam.runtime.imports.AsInstance.fromPair.F">F</span>]</span>)</span><span class="result">: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="swam.runtime.imports.AsInstance.fromPair.T">T</span>), <span class="extype" name="swam.runtime.imports.AsInstance.fromPair.F">F</span>]</span>
+        <span class="name">fromPair</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="T">T</span>]</span><span class="params">(<span class="implicit">implicit </span><span name="T">T: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[<span class="extype" name="swam.runtime.imports.AsInstance.fromPair.T">T</span>, <span class="extype" name="swam.runtime.imports.AsInstance.fromPair.F">F</span>]</span>, <span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.AsInstance.fromPair.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="swam.runtime.imports.AsInstance.fromPair.T">T</span>), <span class="extype" name="swam.runtime.imports.AsInstance.fromPair.F">F</span>]</span>
       </span>
       
       
@@ -486,9 +486,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               
         </dd></dl></div>
     </li><li name="swam.runtime.imports.AsInstance#hconsAsInstance" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="hconsAsInstance[F[_],T,L&lt;:shapeless.HList](implicitT:swam.runtime.imports.AsInterface[T,F],implicitL:swam.runtime.imports.AsInstance[L,F]):swam.runtime.imports.AsInstance[(String,T)::L,F]"></a><a id="hconsAsInstance[F[_],T,L&lt;:HList](AsInterface[T,F],AsInstance[L,F]):AsInstance[::[(String,T),L],F]"></a>
+      <a id="hconsAsInstance[F[_],T,L&lt;:shapeless.HList](implicitT:swam.runtime.imports.AsInterface[T,F],implicitF:cats.MonadError[F,Throwable],implicitL:swam.runtime.imports.AsInstance[L,F]):swam.runtime.imports.AsInstance[(String,T)::L,F]"></a><a id="hconsAsInstance[F[_],T,L&lt;:HList](AsInterface[T,F],MonadError[F,Throwable],AsInstance[L,F]):AsInstance[::[(String,T),L],F]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/imports/AsInstance$.html#hconsAsInstance[F[_],T,L&lt;:shapeless.HList](implicitT:swam.runtime.imports.AsInterface[T,F],implicitL:swam.runtime.imports.AsInstance[L,F]):swam.runtime.imports.AsInstance[(String,T)::L,F]" title="Permalink">
+      <a href="../../../swam/runtime/imports/AsInstance$.html#hconsAsInstance[F[_],T,L&lt;:shapeless.HList](implicitT:swam.runtime.imports.AsInterface[T,F],implicitF:cats.MonadError[F,Throwable],implicitL:swam.runtime.imports.AsInstance[L,F]):swam.runtime.imports.AsInstance[(String,T)::L,F]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -497,14 +497,14 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hconsAsInstance</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="T">T</span>, <span name="L">L &lt;: <span class="extype" name="shapeless.HList">HList</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="T">T: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[<span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.T">T</span>, <span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.F">F</span>]</span>, <span name="L">L: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.L">L</span>, <span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.F">F</span>]</span>)</span><span class="result">: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<span class="extype" name="shapeless.::">::</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.T">T</span>), <span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.L">L</span>], <span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.F">F</span>]</span>
+        <span class="name">hconsAsInstance</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="T">T</span>, <span name="L">L &lt;: <span class="extype" name="shapeless.HList">HList</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="T">T: <a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[<span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.T">T</span>, <span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.F">F</span>]</span>, <span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>, <span name="L">L: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.L">L</span>, <span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.F">F</span>]</span>)</span><span class="result">: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<span class="extype" name="shapeless.::">::</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.T">T</span>), <span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.L">L</span>], <span class="extype" name="swam.runtime.imports.AsInstance.hconsAsInstance.F">F</span>]</span>
       </span>
       
       
     </li><li name="swam.runtime.imports.AsInstance#hnilAsInstance" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="hnilAsInstance[F[_]]:swam.runtime.imports.AsInstance[shapeless.HNil,F]"></a><a id="hnilAsInstance[F[_]]:AsInstance[HNil,F]"></a>
+      <a id="hnilAsInstance[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.imports.AsInstance[shapeless.HNil,F]"></a><a id="hnilAsInstance[F[_]](MonadError[F,Throwable]):AsInstance[HNil,F]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/imports/AsInstance$.html#hnilAsInstance[F[_]]:swam.runtime.imports.AsInstance[shapeless.HNil,F]" title="Permalink">
+      <a href="../../../swam/runtime/imports/AsInstance$.html#hnilAsInstance[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.imports.AsInstance[shapeless.HNil,F]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -513,14 +513,14 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">hnilAsInstance</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result">: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<span class="extype" name="shapeless.HNil">HNil</span>, <span class="extype" name="swam.runtime.imports.AsInstance.hnilAsInstance.F">F</span>]</span>
+        <span class="name">hnilAsInstance</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.AsInstance.hnilAsInstance.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<span class="extype" name="shapeless.HNil">HNil</span>, <span class="extype" name="swam.runtime.imports.AsInstance.hnilAsInstance.F">F</span>]</span>
       </span>
       
       
     </li><li name="swam.runtime.imports.AsInstance#instanceAsInstance" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="instanceAsInstance[F[_]]:swam.runtime.imports.AsInstance[swam.runtime.Instance[F],F]"></a><a id="instanceAsInstance[F[_]]:AsInstance[Instance[F],F]"></a>
+      <a id="instanceAsInstance[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.imports.AsInstance[swam.runtime.Instance[F],F]"></a><a id="instanceAsInstance[F[_]](MonadError[F,Throwable]):AsInstance[Instance[F],F]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/imports/AsInstance$.html#instanceAsInstance[F[_]]:swam.runtime.imports.AsInstance[swam.runtime.Instance[F],F]" title="Permalink">
+      <a href="../../../swam/runtime/imports/AsInstance$.html#instanceAsInstance[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.imports.AsInstance[swam.runtime.Instance[F],F]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -529,7 +529,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">instanceAsInstance</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result">: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<a href="../Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="swam.runtime.imports.AsInstance.instanceAsInstance.F">F</span>], <span class="extype" name="swam.runtime.imports.AsInstance.instanceAsInstance.F">F</span>]</span>
+        <span class="name">instanceAsInstance</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.AsInstance.instanceAsInstance.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<a href="../Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="swam.runtime.imports.AsInstance.instanceAsInstance.F">F</span>], <span class="extype" name="swam.runtime.imports.AsInstance.instanceAsInstance.F">F</span>]</span>
       </span>
       
       
@@ -620,9 +620,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="swam.runtime.imports.AsInstance#tcMapAsInstance" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="tcMapAsInstance[F[_]]:swam.runtime.imports.AsInstance[swam.runtime.imports.TCMap[String,[α$5$]swam.runtime.imports.AsInterface[α$5$,F]],F]"></a><a id="tcMapAsInstance[F[_]]:AsInstance[TCMap[String,[α$5$]AsInterface[α$5$,F]],F]"></a>
+      <a id="tcMapAsInstance[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.imports.AsInstance[swam.runtime.imports.TCMap[String,[α$5$]swam.runtime.imports.AsInterface[α$5$,F]],F]"></a><a id="tcMapAsInstance[F[_]](MonadError[F,Throwable]):AsInstance[TCMap[String,[α$5$]AsInterface[α$5$,F]],F]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/imports/AsInstance$.html#tcMapAsInstance[F[_]]:swam.runtime.imports.AsInstance[swam.runtime.imports.TCMap[String,[α$5$]swam.runtime.imports.AsInterface[α$5$,F]],F]" title="Permalink">
+      <a href="../../../swam/runtime/imports/AsInstance$.html#tcMapAsInstance[F[_]](implicitF:cats.MonadError[F,Throwable]):swam.runtime.imports.AsInstance[swam.runtime.imports.TCMap[String,[α$5$]swam.runtime.imports.AsInterface[α$5$,F]],F]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -631,7 +631,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">tcMapAsInstance</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="result">: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<a href="TCMap.html" class="extype" name="swam.runtime.imports.TCMap">TCMap</a>[<span class="extype" name="scala.Predef.String">String</span>, [α$5$]<a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[<span class="extype" name="swam.runtime.imports.AsInstance.&lt;refinement&gt;.Λ$.α$5$">α$5$</span>, <span class="extype" name="swam.runtime.imports.AsInstance.tcMapAsInstance.F">F</span>]], <span class="extype" name="swam.runtime.imports.AsInstance.tcMapAsInstance.F">F</span>]</span>
+        <span class="name">tcMapAsInstance</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.imports.AsInstance.tcMapAsInstance.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <a href="AsInstance.html" class="extype" name="swam.runtime.imports.AsInstance">AsInstance</a>[<a href="TCMap.html" class="extype" name="swam.runtime.imports.TCMap">TCMap</a>[<span class="extype" name="scala.Predef.String">String</span>, [α$5$]<a href="AsInterface.html" class="extype" name="swam.runtime.imports.AsInterface">AsInterface</a>[<span class="extype" name="swam.runtime.imports.AsInstance.&lt;refinement&gt;.Λ$.α$5$">α$5$</span>, <span class="extype" name="swam.runtime.imports.AsInstance.tcMapAsInstance.F">F</span>]], <span class="extype" name="swam.runtime.imports.AsInstance.tcMapAsInstance.F">F</span>]</span>
       </span>
       
       

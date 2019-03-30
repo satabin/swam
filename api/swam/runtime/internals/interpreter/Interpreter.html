@@ -281,9 +281,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="swam.runtime.internals.interpreter.Interpreter#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(engine:swam.runtime.Engine[F]):swam.runtime.internals.interpreter.Interpreter[F]"></a><a id="&lt;init&gt;:Interpreter[F]"></a>
+      <a id="&lt;init&gt;(engine:swam.runtime.Engine[F])(implicitF:cats.MonadError[F,Throwable]):swam.runtime.internals.interpreter.Interpreter[F]"></a><a id="&lt;init&gt;:Interpreter[F]"></a>
       <span class="permalink">
-      <a href="../../../../swam/runtime/internals/interpreter/Interpreter.html#&lt;init&gt;(engine:swam.runtime.Engine[F]):swam.runtime.internals.interpreter.Interpreter[F]" title="Permalink">
+      <a href="../../../../swam/runtime/internals/interpreter/Interpreter.html#&lt;init&gt;(engine:swam.runtime.Engine[F])(implicitF:cats.MonadError[F,Throwable]):swam.runtime.internals.interpreter.Interpreter[F]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -292,7 +292,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Interpreter</span><span class="params">(<span name="engine">engine: <a href="../../Engine.html" class="extype" name="swam.runtime.Engine">Engine</a>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>]</span>)</span>
+        <span class="name">Interpreter</span><span class="params">(<span name="engine">engine: <a href="../../Engine.html" class="extype" name="swam.runtime.Engine">Engine</a>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span>
       </span>
       
       
@@ -304,9 +304,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <div class="values members">
               <h3>Abstract Value Members</h3>
               <ol><li name="swam.runtime.internals.interpreter.Interpreter#interpret" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="interpret(func:swam.runtime.Function[F],parameters:Vector[Long],instance:swam.runtime.Instance[F])(implicitF:cats.MonadError[F,Throwable]):F[Option[Long]]"></a><a id="interpret(Function[F],Vector[Long],Instance[F])(MonadError[F,Throwable]):F[Option[Long]]"></a>
+      <a id="interpret(func:swam.runtime.Function[F],parameters:Vector[Long],instance:swam.runtime.Instance[F]):F[Option[Long]]"></a><a id="interpret(Function[F],Vector[Long],Instance[F]):F[Option[Long]]"></a>
       <span class="permalink">
-      <a href="../../../../swam/runtime/internals/interpreter/Interpreter.html#interpret(func:swam.runtime.Function[F],parameters:Vector[Long],instance:swam.runtime.Instance[F])(implicitF:cats.MonadError[F,Throwable]):F[Option[Long]]" title="Permalink">
+      <a href="../../../../swam/runtime/internals/interpreter/Interpreter.html#interpret(func:swam.runtime.Function[F],parameters:Vector[Long],instance:swam.runtime.Instance[F]):F[Option[Long]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -315,14 +315,14 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">interpret</span><span class="params">(<span name="func">func: <a href="../../Function.html" class="extype" name="swam.runtime.Function">Function</a>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>]</span>, <span name="parameters">parameters: <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Long">Long</span>]</span>, <span name="instance">instance: <a href="../../Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>[<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Long">Long</span>]]</span>
+        <span class="name">interpret</span><span class="params">(<span name="func">func: <a href="../../Function.html" class="extype" name="swam.runtime.Function">Function</a>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>]</span>, <span name="parameters">parameters: <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Long">Long</span>]</span>, <span name="instance">instance: <a href="../../Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>[<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Long">Long</span>]]</span>
       </span>
       
       
     </li><li name="swam.runtime.internals.interpreter.Interpreter#interpret" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="interpret(funcidx:Int,parameters:Vector[Long],instance:swam.runtime.Instance[F])(implicitF:cats.MonadError[F,Throwable]):F[Option[Long]]"></a><a id="interpret(Int,Vector[Long],Instance[F])(MonadError[F,Throwable]):F[Option[Long]]"></a>
+      <a id="interpret(funcidx:Int,parameters:Vector[Long],instance:swam.runtime.Instance[F]):F[Option[Long]]"></a><a id="interpret(Int,Vector[Long],Instance[F]):F[Option[Long]]"></a>
       <span class="permalink">
-      <a href="../../../../swam/runtime/internals/interpreter/Interpreter.html#interpret(funcidx:Int,parameters:Vector[Long],instance:swam.runtime.Instance[F])(implicitF:cats.MonadError[F,Throwable]):F[Option[Long]]" title="Permalink">
+      <a href="../../../../swam/runtime/internals/interpreter/Interpreter.html#interpret(funcidx:Int,parameters:Vector[Long],instance:swam.runtime.Instance[F]):F[Option[Long]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -331,14 +331,14 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">interpret</span><span class="params">(<span name="funcidx">funcidx: <span class="extype" name="scala.Int">Int</span></span>, <span name="parameters">parameters: <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Long">Long</span>]</span>, <span name="instance">instance: <a href="../../Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>[<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Long">Long</span>]]</span>
+        <span class="name">interpret</span><span class="params">(<span name="funcidx">funcidx: <span class="extype" name="scala.Int">Int</span></span>, <span name="parameters">parameters: <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Long">Long</span>]</span>, <span name="instance">instance: <a href="../../Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>[<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Long">Long</span>]]</span>
       </span>
       
       
     </li><li name="swam.runtime.internals.interpreter.Interpreter#interpretInit" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="interpretInit(tpe:swam.ValType,code:java.nio.ByteBuffer,instance:swam.runtime.Instance[F])(implicitF:cats.MonadError[F,Throwable]):F[Option[Long]]"></a><a id="interpretInit(ValType,ByteBuffer,Instance[F])(MonadError[F,Throwable]):F[Option[Long]]"></a>
+      <a id="interpretInit(tpe:swam.ValType,code:java.nio.ByteBuffer,instance:swam.runtime.Instance[F]):F[Option[Long]]"></a><a id="interpretInit(ValType,ByteBuffer,Instance[F]):F[Option[Long]]"></a>
       <span class="permalink">
-      <a href="../../../../swam/runtime/internals/interpreter/Interpreter.html#interpretInit(tpe:swam.ValType,code:java.nio.ByteBuffer,instance:swam.runtime.Instance[F])(implicitF:cats.MonadError[F,Throwable]):F[Option[Long]]" title="Permalink">
+      <a href="../../../../swam/runtime/internals/interpreter/Interpreter.html#interpretInit(tpe:swam.ValType,code:java.nio.ByteBuffer,instance:swam.runtime.Instance[F]):F[Option[Long]]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -347,7 +347,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">interpretInit</span><span class="params">(<span name="tpe">tpe: <a href="../../../ValType.html" class="extype" name="swam.ValType">ValType</a></span>, <span name="code">code: <span class="extype" name="java.nio.ByteBuffer">ByteBuffer</span></span>, <span name="instance">instance: <a href="../../Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>[<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Long">Long</span>]]</span>
+        <span class="name">interpretInit</span><span class="params">(<span name="tpe">tpe: <a href="../../../ValType.html" class="extype" name="swam.ValType">ValType</a></span>, <span name="code">code: <span class="extype" name="java.nio.ByteBuffer">ByteBuffer</span></span>, <span name="instance">instance: <a href="../../Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.internals.interpreter.Interpreter.F">F</span>[<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Long">Long</span>]]</span>
       </span>
       
       

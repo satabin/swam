@@ -424,9 +424,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       
       <p class="shortcomment cmt">Returns the global value.</p>
     </li><li name="swam.runtime.Global#set" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="set(v:swam.runtime.Value)(implicitF:cats.MonadError[F,Throwable]):F[Unit]"></a><a id="set(Value)(MonadError[F,Throwable]):F[Unit]"></a>
+      <a id="set(v:swam.runtime.Value):F[Unit]"></a><a id="set(Value):F[Unit]"></a>
       <span class="permalink">
-      <a href="../../swam/runtime/Global.html#set(v:swam.runtime.Value)(implicitF:cats.MonadError[F,Throwable]):F[Unit]" title="Permalink">
+      <a href="../../swam/runtime/Global.html#set(v:swam.runtime.Value):F[Unit]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -435,7 +435,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">set</span><span class="params">(<span name="v">v: <a href="Value.html" class="extype" name="swam.runtime.Value">Value</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.Global.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.Global.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+        <span class="name">set</span><span class="params">(<span name="v">v: <a href="Value.html" class="extype" name="swam.runtime.Value">Value</a></span>)</span><span class="result">: <span class="extype" name="swam.runtime.Global.F">F</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       
       <p class="shortcomment cmt">Sets the global value.</p><div class="fullcomment"><div class="comment cmt"><p>Sets the global value.</p><p>Implementations must return a failed <code>F</code> if <code>v</code> is

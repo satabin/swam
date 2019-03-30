@@ -297,9 +297,9 @@ to add identifier to the output.
               
         </dd></dl></div>
     </li><li name="swam.decompilation.TextDecompiler#decompile" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="decompile(sections:fs2.Stream[F,swam.syntax.Section])(implicitF:cats.effect.Effect[F]):F[swam.util.pretty.Doc]"></a><a id="decompile(Stream[F,Section])(Effect[F]):F[Doc]"></a>
+      <a id="decompile(sections:fs2.Stream[F,swam.syntax.Section]):F[swam.util.pretty.Doc]"></a><a id="decompile(Stream[F,Section]):F[Doc]"></a>
       <span class="permalink">
-      <a href="../../swam/decompilation/TextDecompiler.html#decompile(sections:fs2.Stream[F,swam.syntax.Section])(implicitF:cats.effect.Effect[F]):F[swam.util.pretty.Doc]" title="Permalink">
+      <a href="../../swam/decompilation/TextDecompiler.html#decompile(sections:fs2.Stream[F,swam.syntax.Section]):F[swam.util.pretty.Doc]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -308,7 +308,7 @@ to add identifier to the output.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">decompile</span><span class="params">(<span name="sections">sections: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>[<a href="../util/pretty/Doc.html" class="extype" name="swam.util.pretty.Doc">Doc</a>]</span>
+        <span class="name">decompile</span><span class="params">(<span name="sections">sections: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>)</span><span class="result">: <span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>[<a href="../util/pretty/Doc.html" class="extype" name="swam.util.pretty.Doc">Doc</a>]</span>
       </span>
       
       <p class="shortcomment cmt">Returns a pretty-printed <a href="../util/pretty/Doc.html" class="extype" name="swam.util.pretty.Doc">Doc</a> resulting from decompiling
@@ -316,9 +316,9 @@ the module at the given section stream.</p><div class="fullcomment"><div class="
 the module at the given section stream.</p><p>The module is not validated so invalid modules can also be decompiled.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="swam.decompilation.TextDecompiler">TextDecompiler</a> → <a href="Decompiler.html" class="extype" name="swam.decompilation.Decompiler">Decompiler</a></dd></dl></div>
     </li><li name="swam.decompilation.Decompiler#decompile" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="decompile(bytes:scodec.bits.BitVector)(implicitF:cats.effect.Effect[F]):F[swam.util.pretty.Doc]"></a><a id="decompile(BitVector)(Effect[F]):F[Doc]"></a>
+      <a id="decompile(bytes:scodec.bits.BitVector):F[swam.util.pretty.Doc]"></a><a id="decompile(BitVector):F[Doc]"></a>
       <span class="permalink">
-      <a href="../../swam/decompilation/TextDecompiler.html#decompile(bytes:scodec.bits.BitVector)(implicitF:cats.effect.Effect[F]):F[swam.util.pretty.Doc]" title="Permalink">
+      <a href="../../swam/decompilation/TextDecompiler.html#decompile(bytes:scodec.bits.BitVector):F[swam.util.pretty.Doc]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -327,7 +327,7 @@ the module at the given section stream.</p><p>The module is not validated so inv
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">decompile</span><span class="params">(<span name="bytes">bytes: <span class="extype" name="scodec.bits.BitVector">BitVector</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>[<a href="../util/pretty/Doc.html" class="extype" name="swam.util.pretty.Doc">Doc</a>]</span>
+        <span class="name">decompile</span><span class="params">(<span name="bytes">bytes: <span class="extype" name="scodec.bits.BitVector">BitVector</span></span>)</span><span class="result">: <span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>[<a href="../util/pretty/Doc.html" class="extype" name="swam.util.pretty.Doc">Doc</a>]</span>
       </span>
       
       <p class="shortcomment cmt">Returns a pretty-printed <a href="../util/pretty/Doc.html" class="extype" name="swam.util.pretty.Doc">Doc</a> resulting from decompiling
@@ -335,9 +335,9 @@ the module at the given bytes.</p><div class="fullcomment"><div class="comment c
 the module at the given bytes.</p><p>The module is not validated so invalid modules can also be decompiled.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Decompiler.html" class="extype" name="swam.decompilation.Decompiler">Decompiler</a></dd></dl></div>
     </li><li name="swam.decompilation.Decompiler#decompile" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="decompile(path:java.nio.file.Path)(implicitF:cats.effect.Effect[F]):F[swam.util.pretty.Doc]"></a><a id="decompile(Path)(Effect[F]):F[Doc]"></a>
+      <a id="decompile(path:java.nio.file.Path):F[swam.util.pretty.Doc]"></a><a id="decompile(Path):F[Doc]"></a>
       <span class="permalink">
-      <a href="../../swam/decompilation/TextDecompiler.html#decompile(path:java.nio.file.Path)(implicitF:cats.effect.Effect[F]):F[swam.util.pretty.Doc]" title="Permalink">
+      <a href="../../swam/decompilation/TextDecompiler.html#decompile(path:java.nio.file.Path):F[swam.util.pretty.Doc]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -346,7 +346,7 @@ the module at the given bytes.</p><p>The module is not validated so invalid modu
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">decompile</span><span class="params">(<span name="path">path: <span class="extype" name="java.nio.file.Path">Path</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>[<a href="../util/pretty/Doc.html" class="extype" name="swam.util.pretty.Doc">Doc</a>]</span>
+        <span class="name">decompile</span><span class="params">(<span name="path">path: <span class="extype" name="java.nio.file.Path">Path</span></span>)</span><span class="result">: <span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>[<a href="../util/pretty/Doc.html" class="extype" name="swam.util.pretty.Doc">Doc</a>]</span>
       </span>
       
       <p class="shortcomment cmt">Returns a pretty-printed <a href="../util/pretty/Doc.html" class="extype" name="swam.util.pretty.Doc">Doc</a> resulting from decompiling
@@ -354,9 +354,9 @@ the module at the given path.</p><div class="fullcomment"><div class="comment cm
 the module at the given path.</p><p>The module is not validated so invalid modules can also be decompiled.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Decompiler.html" class="extype" name="swam.decompilation.Decompiler">Decompiler</a></dd></dl></div>
     </li><li name="swam.decompilation.TextDecompiler#decompileModule" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="decompileModule(sections:fs2.Stream[F,swam.syntax.Section])(implicitF:cats.effect.Effect[F]):F[(swam.text.unresolved.Module,Map[swam.text.unresolved.Index,swam.FuncType])]"></a><a id="decompileModule(Stream[F,Section])(Effect[F]):F[(Module,Map[Index,FuncType])]"></a>
+      <a id="decompileModule(sections:fs2.Stream[F,swam.syntax.Section]):F[(swam.text.unresolved.Module,Map[swam.text.unresolved.Index,swam.FuncType])]"></a><a id="decompileModule(Stream[F,Section]):F[(Module,Map[Index,FuncType])]"></a>
       <span class="permalink">
-      <a href="../../swam/decompilation/TextDecompiler.html#decompileModule(sections:fs2.Stream[F,swam.syntax.Section])(implicitF:cats.effect.Effect[F]):F[(swam.text.unresolved.Module,Map[swam.text.unresolved.Index,swam.FuncType])]" title="Permalink">
+      <a href="../../swam/decompilation/TextDecompiler.html#decompileModule(sections:fs2.Stream[F,swam.syntax.Section]):F[(swam.text.unresolved.Module,Map[swam.text.unresolved.Index,swam.FuncType])]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -365,7 +365,7 @@ the module at the given path.</p><p>The module is not validated so invalid modul
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">decompileModule</span><span class="params">(<span name="sections">sections: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>[(<a href="../text/unresolved/Module.html" class="extype" name="swam.text.unresolved.Module">Module</a>, <span class="extype" name="scala.Predef.Map">Map</span>[<a href="../text/unresolved/index.html#Index=Either[Int,swam.text.unresolved.Id]" class="extmbr" name="swam.text.unresolved.Index">Index</a>, <a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>])]</span>
+        <span class="name">decompileModule</span><span class="params">(<span name="sections">sections: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>)</span><span class="result">: <span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>[(<a href="../text/unresolved/Module.html" class="extype" name="swam.text.unresolved.Module">Module</a>, <span class="extype" name="scala.Predef.Map">Map</span>[<a href="../text/unresolved/index.html#Index=Either[Int,swam.text.unresolved.Id]" class="extmbr" name="swam.text.unresolved.Index">Index</a>, <a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>])]</span>
       </span>
       
       <p class="shortcomment cmt">Decompiles to an <a href="../text/unresolved/Module.html" class="extype" name="swam.text.unresolved.Module">unresolved text module</a>.</p>
@@ -532,9 +532,9 @@ the module at the given path.</p><p>The module is not validated so invalid modul
               
         </dd></dl></div>
     </li><li name="swam.ModuleLoader#readBytes" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="readBytes(bytes:scodec.bits.BitVector)(implicitF:cats.effect.Effect[F]):fs2.Stream[F,swam.syntax.Section]"></a><a id="readBytes(BitVector)(Effect[F]):Stream[F,Section]"></a>
+      <a id="readBytes(bytes:scodec.bits.BitVector):fs2.Stream[F,swam.syntax.Section]"></a><a id="readBytes(BitVector):Stream[F,Section]"></a>
       <span class="permalink">
-      <a href="../../swam/decompilation/TextDecompiler.html#readBytes(bytes:scodec.bits.BitVector)(implicitF:cats.effect.Effect[F]):fs2.Stream[F,swam.syntax.Section]" title="Permalink">
+      <a href="../../swam/decompilation/TextDecompiler.html#readBytes(bytes:scodec.bits.BitVector):fs2.Stream[F,swam.syntax.Section]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -543,14 +543,14 @@ the module at the given path.</p><p>The module is not validated so invalid modul
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">readBytes</span><span class="params">(<span name="bytes">bytes: <span class="extype" name="scodec.bits.BitVector">BitVector</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>
+        <span class="name">readBytes</span><span class="params">(<span name="bytes">bytes: <span class="extype" name="scodec.bits.BitVector">BitVector</span></span>)</span><span class="result">: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>
       </span>
       
       <p class="shortcomment cmt">Reads a binary module from the given bytes.</p><div class="fullcomment"><div class="comment cmt"><p>Reads a binary module from the given bytes.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../ModuleLoader.html" class="extype" name="swam.ModuleLoader">ModuleLoader</a></dd></dl></div>
     </li><li name="swam.ModuleLoader#readPath" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="readPath(path:java.nio.file.Path)(implicitF:cats.effect.Effect[F]):fs2.Stream[F,swam.syntax.Section]"></a><a id="readPath(Path)(Effect[F]):Stream[F,Section]"></a>
+      <a id="readPath(path:java.nio.file.Path):fs2.Stream[F,swam.syntax.Section]"></a><a id="readPath(Path):Stream[F,Section]"></a>
       <span class="permalink">
-      <a href="../../swam/decompilation/TextDecompiler.html#readPath(path:java.nio.file.Path)(implicitF:cats.effect.Effect[F]):fs2.Stream[F,swam.syntax.Section]" title="Permalink">
+      <a href="../../swam/decompilation/TextDecompiler.html#readPath(path:java.nio.file.Path):fs2.Stream[F,swam.syntax.Section]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -559,7 +559,7 @@ the module at the given path.</p><p>The module is not validated so invalid modul
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">readPath</span><span class="params">(<span name="path">path: <span class="extype" name="java.nio.file.Path">Path</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>
+        <span class="name">readPath</span><span class="params">(<span name="path">path: <span class="extype" name="java.nio.file.Path">Path</span></span>)</span><span class="result">: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.decompilation.TextDecompiler.F">F</span>, <a href="../syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../ModuleLoader.html" class="extype" name="swam.ModuleLoader">ModuleLoader</a></dd></dl></div>

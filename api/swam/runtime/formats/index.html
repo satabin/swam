@@ -174,29 +174,13 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam.runtime">runtime</a></dd></dl></div>
-    </li><li name="swam.runtime.formats.string" visbl="pub" class="indented4 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="string"></a><a id="string:string"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/formats/index.html#string" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">package</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="string/index.html"><span class="name">string</span></a>
-      </span>
-      
-      
     </li><li class="current-entities indented3">
                         <a class="object" href="DefaultFormatters$.html" title=""></a>
                         <a class="trait" href="DefaultFormatters.html" title="A collection of default formatters for primitive Scala types."></a>
                         <a href="DefaultFormatters.html" title="A collection of default formatters for primitive Scala types.">DefaultFormatters</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
-                        <a class="trait" href="SimpleValueFormatter.html" title=""></a>
+                        <a class="class" href="SimpleValueFormatter.html" title=""></a>
                         <a href="SimpleValueFormatter.html" title="">SimpleValueFormatter</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
@@ -204,7 +188,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="SimpleValueReader.html" title="A reader is used to transform a simple web assembly value into a scala object.">SimpleValueReader</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
-                        <a class="trait" href="SimpleValueWriter.html" title="A writer is used to transform a scala value into a simple web assembly value."></a>
+                        <a class="class" href="SimpleValueWriter.html" title="A writer is used to transform a scala value into a simple web assembly value."></a>
                         <a href="SimpleValueWriter.html" title="A writer is used to transform a scala value into a simple web assembly value.">SimpleValueWriter</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
@@ -330,25 +314,25 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       
       <p class="shortcomment cmt">A collection of default formatters for primitive Scala types.</p>
     </li><li name="swam.runtime.formats.SimpleValueFormatter" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="SimpleValueFormatter[T]extendsValueFormatter[T]withSimpleValueReader[T]withSimpleValueWriter[T]"></a><a id="SimpleValueFormatter[T]:SimpleValueFormatter[T]"></a>
+      <a id="SimpleValueFormatter[F[_],T]extendsSimpleValueWriter[F,T]withSimpleValueReader[F,T]withValueFormatter[F,T]"></a><a id="SimpleValueFormatter[F[_],T]:SimpleValueFormatter[F,T]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/index.html#SimpleValueFormatter[T]extendsValueFormatter[T]withSimpleValueReader[T]withSimpleValueWriter[T]" title="Permalink">
+      <a href="../../../swam/runtime/formats/index.html#SimpleValueFormatter[F[_],T]extendsSimpleValueWriter[F,T]withSimpleValueReader[F,T]withValueFormatter[F,T]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="SimpleValueFormatter.html"><span class="name">SimpleValueFormatter</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>] with <a href="SimpleValueReader.html" class="extype" name="swam.runtime.formats.SimpleValueReader">SimpleValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>] with <a href="SimpleValueWriter.html" class="extype" name="swam.runtime.formats.SimpleValueWriter">SimpleValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</span>
+        <a title="" href="SimpleValueFormatter.html"><span class="name">SimpleValueFormatter</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="T">T</span>]</span><span class="result"> extends <a href="SimpleValueWriter.html" class="extype" name="swam.runtime.formats.SimpleValueWriter">SimpleValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>] with <a href="SimpleValueReader.html" class="extype" name="swam.runtime.formats.SimpleValueReader">SimpleValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>] with <a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</span>
       </span>
       
       
     </li><li name="swam.runtime.formats.SimpleValueReader" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="SimpleValueReader[T]extendsValueReader[T]"></a><a id="SimpleValueReader[T]:SimpleValueReader[T]"></a>
+      <a id="SimpleValueReader[F[_],T]extendsValueReader[F,T]"></a><a id="SimpleValueReader[F[_],T]:SimpleValueReader[F,T]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/index.html#SimpleValueReader[T]extendsValueReader[T]" title="Permalink">
+      <a href="../../../swam/runtime/formats/index.html#SimpleValueReader[F[_],T]extendsValueReader[F,T]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -357,7 +341,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="A reader is used to transform a simple web assembly value into a scala object." href="SimpleValueReader.html"><span class="name">SimpleValueReader</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueReader.T">T</span>]</span>
+        <a title="A reader is used to transform a simple web assembly value into a scala object." href="SimpleValueReader.html"><span class="name">SimpleValueReader</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="T">T</span>]</span><span class="result"> extends <a href="ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueReader.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueReader.T">T</span>]</span>
       </span>
       
       <p class="shortcomment cmt">A reader is used to transform a simple web assembly value into a
@@ -365,18 +349,18 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
  scala object. A simple value van be read without memory instance.
 </p></div></div>
     </li><li name="swam.runtime.formats.SimpleValueWriter" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="SimpleValueWriter[T]extendsValueWriter[T]"></a><a id="SimpleValueWriter[T]:SimpleValueWriter[T]"></a>
+      <a id="SimpleValueWriter[F[_],T]extendsValueWriter[F,T]"></a><a id="SimpleValueWriter[F[_],T]:SimpleValueWriter[F,T]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/index.html#SimpleValueWriter[T]extendsValueWriter[T]" title="Permalink">
+      <a href="../../../swam/runtime/formats/index.html#SimpleValueWriter[F[_],T]extendsValueWriter[F,T]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
       <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="A writer is used to transform a scala value into a simple web assembly value." href="SimpleValueWriter.html"><span class="name">SimpleValueWriter</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueWriter.T">T</span>]</span>
+        <a title="A writer is used to transform a scala value into a simple web assembly value." href="SimpleValueWriter.html"><span class="name">SimpleValueWriter</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="T">T</span>]</span><span class="result"> extends <a href="ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueWriter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueWriter.T">T</span>]</span>
       </span>
       
       <p class="shortcomment cmt">A writer is used to transform a scala value into a
@@ -384,9 +368,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
  simple web assembly value. A simple value can be writter without memory instance.
 </p></div></div>
     </li><li name="swam.runtime.formats.ValueFormatter" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="ValueFormatter[T]extendsValueReader[T]withValueWriter[T]"></a><a id="ValueFormatter[T]:ValueFormatter[T]"></a>
+      <a id="ValueFormatter[F[_],T]extendsValueReader[F,T]withValueWriter[F,T]"></a><a id="ValueFormatter[F[_],T]:ValueFormatter[F,T]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/index.html#ValueFormatter[T]extendsValueReader[T]withValueWriter[T]" title="Permalink">
+      <a href="../../../swam/runtime/formats/index.html#ValueFormatter[F[_],T]extendsValueReader[F,T]withValueWriter[F,T]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -395,14 +379,14 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="A formatter is both a ValueReader and a ValueWriter." href="ValueFormatter.html"><span class="name">ValueFormatter</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.formats.ValueFormatter.T">T</span>] with <a href="ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a>[<span class="extype" name="swam.runtime.formats.ValueFormatter.T">T</span>]</span>
+        <a title="A formatter is both a ValueReader and a ValueWriter." href="ValueFormatter.html"><span class="name">ValueFormatter</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="T">T</span>]</span><span class="result"> extends <a href="ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.formats.ValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.ValueFormatter.T">T</span>] with <a href="ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a>[<span class="extype" name="swam.runtime.formats.ValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.ValueFormatter.T">T</span>]</span>
       </span>
       
       <p class="shortcomment cmt">A formatter is both a <a href="ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a> and a <a href="ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a>.</p>
     </li><li name="swam.runtime.formats.ValueReader" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="ValueReader[T]extendsAnyRef"></a><a id="ValueReader[T]:ValueReader[T]"></a>
+      <a id="ValueReader[F[_],T]extendsAnyRef"></a><a id="ValueReader[F[_],T]:ValueReader[F,T]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/index.html#ValueReader[T]extendsAnyRef" title="Permalink">
+      <a href="../../../swam/runtime/formats/index.html#ValueReader[F[_],T]extendsAnyRef" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -411,15 +395,15 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="A reader is used to transform a web assembly value into a scala object." href="ValueReader.html"><span class="name">ValueReader</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+        <a title="A reader is used to transform a web assembly value into a scala object." href="ValueReader.html"><span class="name">ValueReader</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       
       <p class="shortcomment cmt">A reader is used to transform a web assembly value into a
  scala object.</p>
     </li><li name="swam.runtime.formats.ValueWriter" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="ValueWriter[T]extendsAnyRef"></a><a id="ValueWriter[T]:ValueWriter[T]"></a>
+      <a id="ValueWriter[F[_],T]extendsAnyRef"></a><a id="ValueWriter[F[_],T]:ValueWriter[F,T]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/index.html#ValueWriter[T]extendsAnyRef" title="Permalink">
+      <a href="../../../swam/runtime/formats/index.html#ValueWriter[F[_],T]extendsAnyRef" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -428,7 +412,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a title="A writer is used to transform a scala value into a web assembly value." href="ValueWriter.html"><span class="name">ValueWriter</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+        <a title="A writer is used to transform a scala value into a web assembly value." href="ValueWriter.html"><span class="name">ValueWriter</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="T">T</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       
       <p class="shortcomment cmt">A writer is used to transform a scala value into a

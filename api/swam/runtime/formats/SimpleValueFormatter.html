@@ -142,29 +142,13 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam.runtime">runtime</a></dd></dl></div>
-    </li><li name="swam.runtime.formats.string" visbl="pub" class="indented4 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="string"></a><a id="string:string"></a>
-      <span class="permalink">
-      <a href="../../../swam/runtime/formats/index.html#string" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">package</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="string/index.html"><span class="name">string</span></a>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="swam.runtime.formats">formats</a></dd></dl></div>
     </li><li class="current-entities indented3">
                         <a class="object" href="DefaultFormatters$.html" title=""></a>
                         <a class="trait" href="DefaultFormatters.html" title="A collection of default formatters for primitive Scala types."></a>
                         <a href="DefaultFormatters.html" title="A collection of default formatters for primitive Scala types.">DefaultFormatters</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
-                        <a class="trait" href="" title=""></a>
+                        <a class="class" href="" title=""></a>
                         <a href="" title="">SimpleValueFormatter</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
@@ -172,7 +156,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="SimpleValueReader.html" title="A reader is used to transform a simple web assembly value into a scala object.">SimpleValueReader</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
-                        <a class="trait" href="SimpleValueWriter.html" title="A writer is used to transform a scala value into a simple web assembly value."></a>
+                        <a class="class" href="SimpleValueWriter.html" title="A writer is used to transform a scala value into a simple web assembly value."></a>
                         <a href="SimpleValueWriter.html" title="A writer is used to transform a scala value into a simple web assembly value.">SimpleValueWriter</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
@@ -191,9 +175,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
             </div>
           </div>
           <div id="content">
-            <body class="trait type">
+            <body class="class type">
       <div id="definition">
-        <div class="big-circle trait">t</div>
+        <div class="big-circle class">c</div>
         <p id="owner"><a href="../../index.html" class="extype" name="swam">swam</a>.<a href="../index.html" class="extype" name="swam.runtime">runtime</a>.<a href="index.html" class="extype" name="swam.runtime.formats">formats</a></p>
         <h1>SimpleValueFormatter<span class="permalink">
       <a href="../../../swam/runtime/formats/SimpleValueFormatter.html" title="Permalink">
@@ -205,11 +189,11 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
 
       <h4 id="signature" class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <span class="name">SimpleValueFormatter</span><span class="tparams">[<span name="T">T</span>]</span><span class="result"> extends <a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>] with <a href="SimpleValueReader.html" class="extype" name="swam.runtime.formats.SimpleValueReader">SimpleValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>] with <a href="SimpleValueWriter.html" class="extype" name="swam.runtime.formats.SimpleValueWriter">SimpleValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</span>
+        <span class="name">SimpleValueFormatter</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>, <span name="T">T</span>]</span><span class="result"> extends <a href="SimpleValueWriter.html" class="extype" name="swam.runtime.formats.SimpleValueWriter">SimpleValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>] with <a href="SimpleValueReader.html" class="extype" name="swam.runtime.formats.SimpleValueReader">SimpleValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>] with <a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</span>
       </span>
       </h4>
 
@@ -218,7 +202,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
           <span class="toggle">
             Linear Supertypes
           </span>
-          <div class="superTypes hiddenContent"><a href="SimpleValueWriter.html" class="extype" name="swam.runtime.formats.SimpleValueWriter">SimpleValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>], <a href="SimpleValueReader.html" class="extype" name="swam.runtime.formats.SimpleValueReader">SimpleValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>], <a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>], <a href="ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>], <a href="ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>], <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>], <a href="SimpleValueReader.html" class="extype" name="swam.runtime.formats.SimpleValueReader">SimpleValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>], <a href="ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>], <a href="SimpleValueWriter.html" class="extype" name="swam.runtime.formats.SimpleValueWriter">SimpleValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>], <a href="ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>], <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -244,7 +228,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                   <span class="filtertype">Inherited<br />
                   </span>
                   <ol id="linearization">
-                    <li class="in" name="swam.runtime.formats.SimpleValueFormatter"><span>SimpleValueFormatter</span></li><li class="in" name="swam.runtime.formats.SimpleValueWriter"><span>SimpleValueWriter</span></li><li class="in" name="swam.runtime.formats.SimpleValueReader"><span>SimpleValueReader</span></li><li class="in" name="swam.runtime.formats.ValueFormatter"><span>ValueFormatter</span></li><li class="in" name="swam.runtime.formats.ValueWriter"><span>ValueWriter</span></li><li class="in" name="swam.runtime.formats.ValueReader"><span>ValueReader</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                    <li class="in" name="swam.runtime.formats.SimpleValueFormatter"><span>SimpleValueFormatter</span></li><li class="in" name="swam.runtime.formats.ValueFormatter"><span>ValueFormatter</span></li><li class="in" name="swam.runtime.formats.SimpleValueReader"><span>SimpleValueReader</span></li><li class="in" name="swam.runtime.formats.ValueReader"><span>ValueReader</span></li><li class="in" name="swam.runtime.formats.SimpleValueWriter"><span>SimpleValueWriter</span></li><li class="in" name="swam.runtime.formats.ValueWriter"><span>ValueWriter</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                   </ol>
                 </div><div class="ancestors">
               <span class="filtertype"></span>
@@ -262,16 +246,35 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
 
       <div id="template">
         <div id="allMembers">
-        
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="swam.runtime.formats.SimpleValueFormatter#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;()(implicitF:cats.MonadError[F,Throwable]):swam.runtime.formats.SimpleValueFormatter[F,T]"></a><a id="&lt;init&gt;:SimpleValueFormatter[F,T]"></a>
+      <span class="permalink">
+      <a href="../../../swam/runtime/formats/SimpleValueFormatter.html#&lt;init&gt;()(implicitF:cats.MonadError[F,Throwable]):swam.runtime.formats.SimpleValueFormatter[F,T]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">SimpleValueFormatter</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span>
+      </span>
+      
+      
+    </li></ol>
+            </div>
 
         
 
         <div class="values members">
               <h3>Abstract Value Members</h3>
               <ol><li name="swam.runtime.formats.SimpleValueReader#read" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="read[F[_]](v:swam.runtime.Value)(implicitF:cats.MonadError[F,Throwable]):F[T]"></a><a id="read[F[_]](Value)(MonadError[F,Throwable]):F[T]"></a>
+      <a id="read(v:swam.runtime.Value):F[T]"></a><a id="read(Value):F[T]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/SimpleValueFormatter.html#read[F[_]](v:swam.runtime.Value)(implicitF:cats.MonadError[F,Throwable]):F[T]" title="Permalink">
+      <a href="../../../swam/runtime/formats/SimpleValueFormatter.html#read(v:swam.runtime.Value):F[T]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -280,11 +283,11 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">read</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span name="v">v: <a href="../Value.html" class="extype" name="swam.runtime.Value">Value</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.formats.SimpleValueReader.read.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.formats.SimpleValueReader.read.F">F</span>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</span>
+        <span class="name">read</span><span class="params">(<span name="v">v: <a href="../Value.html" class="extype" name="swam.runtime.Value">Value</a></span>)</span><span class="result">: <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SimpleValueReader.html" class="extype" name="swam.runtime.formats.SimpleValueReader">SimpleValueReader</a></dd></dl></div>
-    </li><li name="swam.runtime.formats.ValueWriter#swamType" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
+    </li><li name="swam.runtime.formats.ValueReader#swamType" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="swamType:swam.ValType"></a><a id="swamType:ValType"></a>
       <span class="permalink">
       <a href="../../../swam/runtime/formats/SimpleValueFormatter.html#swamType:swam.ValType" title="Permalink">
@@ -299,7 +302,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="name">swamType</span><span class="result">: <a href="../../ValType.html" class="extype" name="swam.ValType">ValType</a></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a></dd></dl></div>
     </li><li name="swam.runtime.formats.SimpleValueWriter#write" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
       <a id="write(v:T):swam.runtime.Value"></a><a id="write(T):Value"></a>
       <span class="permalink">
@@ -573,9 +576,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               
         </dd></dl></div>
     </li><li name="swam.runtime.formats.SimpleValueReader#read" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="read[F[_]](v:swam.runtime.Value,m:Option[swam.runtime.Memory[F]])(implicitF:cats.MonadError[F,Throwable]):F[T]"></a><a id="read[F[_]](Value,Option[Memory[F]])(MonadError[F,Throwable]):F[T]"></a>
+      <a id="read(v:swam.runtime.Value,m:Option[swam.runtime.Memory[F]]):F[T]"></a><a id="read(Value,Option[Memory[F]]):F[T]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/SimpleValueFormatter.html#read[F[_]](v:swam.runtime.Value,m:Option[swam.runtime.Memory[F]])(implicitF:cats.MonadError[F,Throwable]):F[T]" title="Permalink">
+      <a href="../../../swam/runtime/formats/SimpleValueFormatter.html#read(v:swam.runtime.Value,m:Option[swam.runtime.Memory[F]]):F[T]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -584,7 +587,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">read</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span name="v">v: <a href="../Value.html" class="extype" name="swam.runtime.Value">Value</a></span>, <span name="m">m: <span class="extype" name="scala.Option">Option</span>[<a href="../Memory.html" class="extype" name="swam.runtime.Memory">Memory</a>[<span class="extype" name="swam.runtime.formats.SimpleValueReader.read.F">F</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.formats.SimpleValueReader.read.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.formats.SimpleValueReader.read.F">F</span>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</span>
+        <span class="name">read</span><span class="params">(<span name="v">v: <a href="../Value.html" class="extype" name="swam.runtime.Value">Value</a></span>, <span name="m">m: <span class="extype" name="scala.Option">Option</span>[<a href="../Memory.html" class="extype" name="swam.runtime.Memory">Memory</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>]]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SimpleValueReader.html" class="extype" name="swam.runtime.formats.SimpleValueReader">SimpleValueReader</a> → <a href="ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a></dd><dt>Annotations</dt><dd>
@@ -692,9 +695,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               
         </dd></dl></div>
     </li><li name="swam.runtime.formats.SimpleValueWriter#write" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="write[F[_]](v:T,m:Option[swam.runtime.Memory[F]])(implicitF:cats.MonadError[F,Throwable]):F[swam.runtime.Value]"></a><a id="write[F[_]](T,Option[Memory[F]])(MonadError[F,Throwable]):F[Value]"></a>
+      <a id="write(v:T,m:Option[swam.runtime.Memory[F]]):F[swam.runtime.Value]"></a><a id="write(T,Option[Memory[F]]):F[Value]"></a>
       <span class="permalink">
-      <a href="../../../swam/runtime/formats/SimpleValueFormatter.html#write[F[_]](v:T,m:Option[swam.runtime.Memory[F]])(implicitF:cats.MonadError[F,Throwable]):F[swam.runtime.Value]" title="Permalink">
+      <a href="../../../swam/runtime/formats/SimpleValueFormatter.html#write(v:T,m:Option[swam.runtime.Memory[F]]):F[swam.runtime.Value]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -703,7 +706,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">write</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span name="v">v: <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span></span>, <span name="m">m: <span class="extype" name="scala.Option">Option</span>[<a href="../Memory.html" class="extype" name="swam.runtime.Memory">Memory</a>[<span class="extype" name="swam.runtime.formats.SimpleValueWriter.write.F">F</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.runtime.formats.SimpleValueWriter.write.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.formats.SimpleValueWriter.write.F">F</span>[<a href="../Value.html" class="extype" name="swam.runtime.Value">Value</a>]</span>
+        <span class="name">write</span><span class="params">(<span name="v">v: <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span></span>, <span name="m">m: <span class="extype" name="scala.Option">Option</span>[<a href="../Memory.html" class="extype" name="swam.runtime.Memory">Memory</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>]]</span>)</span><span class="result">: <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>[<a href="../Value.html" class="extype" name="swam.runtime.Value">Value</a>]</span>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="SimpleValueWriter.html" class="extype" name="swam.runtime.formats.SimpleValueWriter">SimpleValueWriter</a> → <a href="ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a></dd><dt>Annotations</dt><dd>
@@ -720,16 +723,16 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="swam.runtime.formats.SimpleValueWriter">
-              <h3>Inherited from <a href="SimpleValueWriter.html" class="extype" name="swam.runtime.formats.SimpleValueWriter">SimpleValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</h3>
+        <div class="parent" name="swam.runtime.formats.ValueFormatter">
+              <h3>Inherited from <a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</h3>
             </div><div class="parent" name="swam.runtime.formats.SimpleValueReader">
-              <h3>Inherited from <a href="SimpleValueReader.html" class="extype" name="swam.runtime.formats.SimpleValueReader">SimpleValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</h3>
-            </div><div class="parent" name="swam.runtime.formats.ValueFormatter">
-              <h3>Inherited from <a href="ValueFormatter.html" class="extype" name="swam.runtime.formats.ValueFormatter">ValueFormatter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</h3>
-            </div><div class="parent" name="swam.runtime.formats.ValueWriter">
-              <h3>Inherited from <a href="ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</h3>
+              <h3>Inherited from <a href="SimpleValueReader.html" class="extype" name="swam.runtime.formats.SimpleValueReader">SimpleValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</h3>
             </div><div class="parent" name="swam.runtime.formats.ValueReader">
-              <h3>Inherited from <a href="ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</h3>
+              <h3>Inherited from <a href="ValueReader.html" class="extype" name="swam.runtime.formats.ValueReader">ValueReader</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</h3>
+            </div><div class="parent" name="swam.runtime.formats.SimpleValueWriter">
+              <h3>Inherited from <a href="SimpleValueWriter.html" class="extype" name="swam.runtime.formats.SimpleValueWriter">SimpleValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</h3>
+            </div><div class="parent" name="swam.runtime.formats.ValueWriter">
+              <h3>Inherited from <a href="ValueWriter.html" class="extype" name="swam.runtime.formats.ValueWriter">ValueWriter</a>[<span class="extype" name="swam.runtime.formats.SimpleValueFormatter.F">F</span>, <span class="extype" name="swam.runtime.formats.SimpleValueFormatter.T">T</span>]</h3>
             </div><div class="parent" name="scala.AnyRef">
               <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
             </div><div class="parent" name="scala.Any">

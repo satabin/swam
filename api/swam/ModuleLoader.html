@@ -359,9 +359,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="swam.ModuleLoader#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;():swam.ModuleLoader[F]"></a><a id="&lt;init&gt;:ModuleLoader[F]"></a>
+      <a id="&lt;init&gt;()(implicitF:cats.effect.Effect[F]):swam.ModuleLoader[F]"></a><a id="&lt;init&gt;:ModuleLoader[F]"></a>
       <span class="permalink">
-      <a href="../swam/ModuleLoader.html#&lt;init&gt;():swam.ModuleLoader[F]" title="Permalink">
+      <a href="../swam/ModuleLoader.html#&lt;init&gt;()(implicitF:cats.effect.Effect[F]):swam.ModuleLoader[F]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -370,7 +370,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">ModuleLoader</span><span class="params">()</span>
+        <span class="name">ModuleLoader</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.ModuleLoader.F">F</span>]</span>)</span>
       </span>
       
       
@@ -635,9 +635,9 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
               
         </dd></dl></div>
     </li><li name="swam.ModuleLoader#readBytes" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="readBytes(bytes:scodec.bits.BitVector)(implicitF:cats.effect.Effect[F]):fs2.Stream[F,swam.syntax.Section]"></a><a id="readBytes(BitVector)(Effect[F]):Stream[F,Section]"></a>
+      <a id="readBytes(bytes:scodec.bits.BitVector):fs2.Stream[F,swam.syntax.Section]"></a><a id="readBytes(BitVector):Stream[F,Section]"></a>
       <span class="permalink">
-      <a href="../swam/ModuleLoader.html#readBytes(bytes:scodec.bits.BitVector)(implicitF:cats.effect.Effect[F]):fs2.Stream[F,swam.syntax.Section]" title="Permalink">
+      <a href="../swam/ModuleLoader.html#readBytes(bytes:scodec.bits.BitVector):fs2.Stream[F,swam.syntax.Section]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -646,14 +646,14 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">readBytes</span><span class="params">(<span name="bytes">bytes: <span class="extype" name="scodec.bits.BitVector">BitVector</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.ModuleLoader.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.ModuleLoader.F">F</span>, <a href="syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>
+        <span class="name">readBytes</span><span class="params">(<span name="bytes">bytes: <span class="extype" name="scodec.bits.BitVector">BitVector</span></span>)</span><span class="result">: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.ModuleLoader.F">F</span>, <a href="syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>
       </span>
       
       <p class="shortcomment cmt">Reads a binary module from the given bytes.</p>
     </li><li name="swam.ModuleLoader#readPath" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="readPath(path:java.nio.file.Path)(implicitF:cats.effect.Effect[F]):fs2.Stream[F,swam.syntax.Section]"></a><a id="readPath(Path)(Effect[F]):Stream[F,Section]"></a>
+      <a id="readPath(path:java.nio.file.Path):fs2.Stream[F,swam.syntax.Section]"></a><a id="readPath(Path):Stream[F,Section]"></a>
       <span class="permalink">
-      <a href="../swam/ModuleLoader.html#readPath(path:java.nio.file.Path)(implicitF:cats.effect.Effect[F]):fs2.Stream[F,swam.syntax.Section]" title="Permalink">
+      <a href="../swam/ModuleLoader.html#readPath(path:java.nio.file.Path):fs2.Stream[F,swam.syntax.Section]" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -662,7 +662,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">readPath</span><span class="params">(<span name="path">path: <span class="extype" name="java.nio.file.Path">Path</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.effect.Effect">Effect</span>[<span class="extype" name="swam.ModuleLoader.F">F</span>]</span>)</span><span class="result">: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.ModuleLoader.F">F</span>, <a href="syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>
+        <span class="name">readPath</span><span class="params">(<span name="path">path: <span class="extype" name="java.nio.file.Path">Path</span></span>)</span><span class="result">: <span class="extype" name="fs2.Stream">Stream</span>[<span class="extype" name="swam.ModuleLoader.F">F</span>, <a href="syntax/Section.html" class="extype" name="swam.syntax.Section">Section</a>]</span>
       </span>
       
       
