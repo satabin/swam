@@ -23,7 +23,7 @@ import scala.language.higherKinds
 
 package object imports {
 
-  def NoImports[F[_]]: Imports[F] =
+  def NoImports[F[_]: MonadError[?[_], Throwable]]: Imports[F] =
     new TCImports[F](TCMap.empty[String, AsInstance[?, F]])
 
   def module[T, F[_]](name: String, mod: T)(implicit I: AsInstance[T, F]): (String, Elem[AsInstance[?, F]]) =

@@ -29,7 +29,7 @@ import scala.language.higherKinds
 
 abstract class EFunction1[P1, Ret, F[_]] private (f: Function[F], m: Option[Memory[F]])(
     implicit F: MonadError[F, Throwable],
-    writer1: ValueWriter[P1])
+    writer1: ValueWriter[F, P1])
     extends EFunction[Ret, F]
     with Function1[P1, F[Ret]] {
   def apply(p1: P1): F[Ret] =
@@ -44,7 +44,7 @@ object EFunction1 {
   import EFunction._
 
   def apply[P1, F[_]](name: String, self: Instance[F])(implicit F: MonadError[F, Throwable],
-                                                       writer1: ValueWriter[P1]): F[EFunction1[P1, Unit, F]] =
+                                                       writer1: ValueWriter[F, P1]): F[EFunction1[P1, Unit, F]] =
     self.exps.get(name) match {
       case Some(f: Function[F]) =>
         val expectedt = FuncType(Vector(writer1.swamType), Vector())
@@ -61,8 +61,8 @@ object EFunction1 {
     }
 
   def apply[P1, Ret, F[_]](name: String, self: Instance[F])(implicit F: MonadError[F, Throwable],
-                                                            writer1: ValueWriter[P1],
-                                                            reader: ValueReader[Ret]): F[EFunction1[P1, Ret, F]] =
+                                                            writer1: ValueWriter[F, P1],
+                                                            reader: ValueReader[F, Ret]): F[EFunction1[P1, Ret, F]] =
     self.exps.get(name) match {
       case Some(f: Function[F]) =>
         val expectedt = FuncType(Vector(writer1.swamType), Vector(reader.swamType))

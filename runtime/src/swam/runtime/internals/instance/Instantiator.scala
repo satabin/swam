@@ -31,13 +31,13 @@ import runtime._
 
 import scala.language.higherKinds
 
-private[runtime] class Instantiator[F[_]](engine: Engine[F]) {
+private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F]) {
 
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
   private val dataHardMax = engine.conf.data.hardMax
 
-  def instantiate(module: Module[F], imports: Imports[F])(implicit F: Async[F]): F[Instance[F]] = {
+  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
       // check and order the imports
       imports <- check(module.imports, imports)
@@ -50,8 +50,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F]) {
     } yield instance
   }
 
-  private def check(mimports: Vector[Import], provided: Imports[F])(
-      implicit F: MonadError[F, Throwable]): F[Vector[Interface[F, Type]]] =
+  private def check(mimports: Vector[Import], provided: Imports[F]): F[Vector[Interface[F, Type]]] =
     F.tailRecM((0, Vector.empty[Interface[F, Type]])) {
       case (idx, acc) =>
         if (idx >= mimports.size) {
@@ -67,8 +66,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F]) {
         }
     }
 
-  private def initialize(globals: Vector[CompiledGlobal], imports: Vector[Interface[F, Type]])(
-      implicit F: MonadError[F, Throwable]): F[Vector[GlobalInstance[F]]] = {
+  private def initialize(globals: Vector[CompiledGlobal], imports: Vector[Interface[F, Type]]): F[Vector[GlobalInstance[F]]] = {
     val impglobals = imports.collect {
       case g: Global[F] => g
     }
@@ -90,8 +88,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F]) {
     }
   }
 
-  private def allocate(module: Module[F], globals: Vector[GlobalInstance[F]], imports: Vector[Interface[F, Type]])(
-      implicit F: Async[F]): F[Instance[F]] = {
+  private def allocate(module: Module[F], globals: Vector[GlobalInstance[F]], imports: Vector[Interface[F, Type]]): F[Instance[F]] = {
 
     val instance = new Instance[F](module, interpreter)
 

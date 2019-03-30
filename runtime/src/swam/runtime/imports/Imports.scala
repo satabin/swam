@@ -36,15 +36,15 @@ import scala.language.higherKinds
   */
 trait Imports[F[_]] {
 
-  def find(module: String, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]]
+  def find(module: String, field: String): F[Interface[F, Type]]
 
   def updated[T](module: String, m: T)(implicit I: AsInstance[T, F]): Imports[F]
 
 }
 
-private class TCImports[F[_]](imports: TCMap[String, AsInstance[?, F]]) extends Imports[F] {
+private class TCImports[F[_]](imports: TCMap[String, AsInstance[?, F]])(implicit F: MonadError[F, Throwable]) extends Imports[F] {
 
-  def find(module: String, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
+  def find(module: String, field: String): F[Interface[F, Type]] =
     imports.get(module) match {
       case Some(elem) => elem.typeclass.find(elem.value, field)
       case None =>
@@ -58,10 +58,10 @@ private class TCImports[F[_]](imports: TCMap[String, AsInstance[?, F]]) extends 
 
 object Imports {
 
-  def apply[F[_]](imported: (String, Elem[AsInstance[?, F]])*): Imports[F] =
+  def apply[F[_]](imported: (String, Elem[AsInstance[?, F]])*)(implicit F: MonadError[F, Throwable]): Imports[F] =
     new TCImports[F](TCMap[String, AsInstance[?, F]](imported: _*))
 
-  def apply[F[_]](imported: TCMap[String, AsInstance[?, F]]): Imports[F] =
+  def apply[F[_]](imported: TCMap[String, AsInstance[?, F]])(implicit F: MonadError[F, Throwable]): Imports[F] =
     new TCImports[F](imported)
 
 }
@@ -71,15 +71,15 @@ object Imports {
   */
 trait AsInstance[T, F[_]] {
 
-  def find(t: T, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]]
+  def find(t: T, field: String): F[Interface[F, Type]]
 
 }
 
 object AsInstance {
 
-  implicit def fromPair[F[_], T](implicit T: AsInterface[T, F]): AsInstance[(String, T), F] =
+  implicit def fromPair[F[_], T](implicit T: AsInterface[T, F], F: MonadError[F, Throwable]): AsInstance[(String, T), F] =
     new AsInstance[(String, T), F] {
-      def find(t: (String, T), field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
+      def find(t: (String, T), field: String): F[Interface[F, Type]] =
         t match {
           case (`field`, t) => F.pure(T.view(t))
           case _            => F.raiseError(new LinkException(s"Unknown field $field"))
@@ -87,34 +87,34 @@ object AsInstance {
     }
 
   implicit def hconsAsInstance[F[_], T, L <: HList](implicit T: AsInterface[T, F],
+                                                    F: MonadError[F, Throwable],
                                                     L: AsInstance[L, F]): AsInstance[(String, T) :: L, F] =
     new AsInstance[(String, T) :: L, F] {
-      def find(h: (String, T) :: L, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
+      def find(h: (String, T) :: L, field: String): F[Interface[F, Type]] =
         h match {
           case (`field`, t) :: _ => F.pure(T.view(t))
           case _ :: rest         => L.find(rest, field)
         }
     }
 
-  implicit def hnilAsInstance[F[_]]: AsInstance[HNil, F] =
+  implicit def hnilAsInstance[F[_]](implicit F: MonadError[F, Throwable]): AsInstance[HNil, F] =
     new AsInstance[HNil, F] {
-      def find(h: HNil, field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
+      def find(h: HNil, field: String): F[Interface[F, Type]] =
         F.raiseError(new LinkException(s"Unknown field $field"))
     }
 
-  implicit def tcMapAsInstance[F[_]]: AsInstance[TCMap[String, AsInterface[?, F]], F] =
+  implicit def tcMapAsInstance[F[_]](implicit F: MonadError[F, Throwable]): AsInstance[TCMap[String, AsInterface[?, F]], F] =
     new AsInstance[TCMap[String, AsInterface[?, F]], F] {
-      def find(m: TCMap[String, AsInterface[?, F]], field: String)(
-          implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
+      def find(m: TCMap[String, AsInterface[?, F]], field: String): F[Interface[F, Type]] =
         m.get(field) match {
           case Some(elem) => F.pure(elem.typeclass.view(elem.value))
           case None       => F.raiseError(new LinkException(s"Unknown field $field"))
         }
     }
 
-  implicit def instanceAsInstance[F[_]]: AsInstance[Instance[F], F] =
+  implicit def instanceAsInstance[F[_]](implicit F: MonadError[F, Throwable]): AsInstance[Instance[F], F] =
     new AsInstance[Instance[F], F] {
-      def find(i: Instance[F], field: String)(implicit F: MonadError[F, Throwable]): F[Interface[F, Type]] =
+      def find(i: Instance[F], field: String): F[Interface[F, Type]] =
         i.exports.field(field)
     }
 
@@ -136,13 +136,13 @@ object AsInterface {
       def view(i: T) = i
     }
 
-  implicit def valueAsInterface[T, F[_]](implicit writer: SimpleValueWriter[T]): AsInterface[T, F] =
+  implicit def valueAsInterface[T, F[_]](implicit writer: SimpleValueWriter[F, T], F: MonadError[F, Throwable]): AsInterface[T, F] =
     new AsInterface[T, F] {
       def view(t: T): Global[F] =
         new Global[F] {
           val tpe = GlobalType(writer.swamType, Mut.Const)
           def get = writer.write(t)
-          def set(v: Value)(implicit F: MonadError[F, Throwable]) =
+          def set(v: Value) =
             F.raiseError(new RuntimeException("Unable to set immutable global"))
         }
     }
@@ -153,35 +153,35 @@ object AsInterface {
     }
 
   implicit def function0AsInsterface[Ret, F[_]](implicit F: MonadError[F, Throwable],
-                                                writer: ValueWriter[Ret]): AsInterface[() => F[Ret], F] =
+                                                writer: ValueWriter[F, Ret]): AsInterface[() => F[Ret], F] =
     new AsInterface[() => F[Ret], F] {
       def view(f: () => F[Ret]) = new IFunction0(f)
     }
 
   implicit def procedure1AsInterface[P1, F[_]](implicit F: MonadError[F, Throwable],
-                                               reader1: ValueReader[P1]): AsInterface[(P1) => F[Unit], F] =
+                                               reader1: ValueReader[F, P1]): AsInterface[(P1) => F[Unit], F] =
     new AsInterface[(P1) => F[Unit], F] {
       def view(f: (P1) => F[Unit]) = new IFunction1Unit[F, P1](f)
     }
 
   implicit def function1AsInterface[P1, Ret, F[_]](implicit F: MonadError[F, Throwable],
-                                                   reader1: ValueReader[P1],
-                                                   writer: ValueWriter[Ret]): AsInterface[(P1) => F[Ret], F] =
+                                                   reader1: ValueReader[F, P1],
+                                                   writer: ValueWriter[F, Ret]): AsInterface[(P1) => F[Ret], F] =
     new AsInterface[(P1) => F[Ret], F] {
       def view(f: (P1) => F[Ret]) = new IFunction1[F, P1, Ret](f)
     }
 
   implicit def procedure2AsInterface[P1, P2, F[_]](implicit F: MonadError[F, Throwable],
-                                                   reader1: ValueReader[P1],
-                                                   reader2: ValueReader[P2]): AsInterface[(P1, P2) => F[Unit], F] =
+                                                   reader1: ValueReader[F, P1],
+                                                   reader2: ValueReader[F, P2]): AsInterface[(P1, P2) => F[Unit], F] =
     new AsInterface[(P1, P2) => F[Unit], F] {
       def view(f: (P1, P2) => F[Unit]) = new IFunction2Unit[F, P1, P2](f)
     }
 
   implicit def function2AsInterface[P1, P2, Ret, F[_]](implicit F: MonadError[F, Throwable],
-                                                       reader1: ValueReader[P1],
-                                                       reader2: ValueReader[P2],
-                                                       writer: ValueWriter[Ret]): AsInterface[(P1, P2) => F[Ret], F] =
+                                                       reader1: ValueReader[F, P1],
+                                                       reader2: ValueReader[F, P2],
+                                                       writer: ValueWriter[F, Ret]): AsInterface[(P1, P2) => F[Ret], F] =
     new AsInterface[(P1, P2) => F[Ret], F] {
       def view(f: (P1, P2) => F[Ret]) = new IFunction2[F, P1, P2, Ret](f)
     }

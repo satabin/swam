@@ -31,10 +31,10 @@ import scala.language.higherKinds
 private[runtime] case class FunctionInstance[F[_]](tpe: FuncType,
                                                    locals: Vector[ValType],
                                                    code: ByteBuffer,
-                                                   instance: Instance[F])
+                                                   instance: Instance[F])(implicit F: MonadError[F, Throwable])
     extends Function[F] {
 
-  def invoke(parameters: Vector[Value], m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
+  def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Option[Value]] =
     instance.interpreter
       .interpret(this, parameters.map(Value.toRaw(_)), instance)
       .map(_.map(Value.fromRaw(tpe.t.head, _)))

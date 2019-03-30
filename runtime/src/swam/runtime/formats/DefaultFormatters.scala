@@ -29,8 +29,8 @@ trait DefaultFormatters {
   private def raise[T, F[_]](msg: String)(implicit F: MonadError[F, Throwable]): F[T] =
     F.raiseError(new ConversionException(msg))
 
-  implicit val intFormatter: SimpleValueFormatter[Int] = new SimpleValueFormatter[Int] {
-    def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[Int] =
+  implicit def intFormatter[F[_]](implicit F: MonadError[F, Throwable]): SimpleValueFormatter[F, Int] = new SimpleValueFormatter[F, Int] {
+    def read(v: Value): F[Int] =
       v match {
         case Value.Int32(i) => F.pure(i)
         case _              => raise(s"expected i32 but got ${v.tpe}")
@@ -41,8 +41,8 @@ trait DefaultFormatters {
       ValType.I32
   }
 
-  implicit val longFormatter: SimpleValueFormatter[Long] = new SimpleValueFormatter[Long] {
-    def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[Long] =
+  implicit def longFormatter[F[_]](implicit F: MonadError[F, Throwable]): SimpleValueFormatter[F, Long] = new SimpleValueFormatter[F, Long] {
+    def read(v: Value): F[Long] =
       v match {
         case Value.Int64(l) => F.pure(l)
         case _              => raise(s"expected i64 but got ${v.tpe}")
@@ -53,8 +53,8 @@ trait DefaultFormatters {
       ValType.I64
   }
 
-  implicit val floatFormatter: SimpleValueFormatter[Float] = new SimpleValueFormatter[Float] {
-    def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[Float] =
+  implicit def floatFormatter[F[_]](implicit F: MonadError[F, Throwable]): SimpleValueFormatter[F, Float] = new SimpleValueFormatter[F, Float] {
+    def read(v: Value): F[Float] =
       v match {
         case Value.Float32(f) => F.pure(f)
         case _                => raise(s"expected f32 but got ${v.tpe}")
@@ -65,8 +65,8 @@ trait DefaultFormatters {
       ValType.F32
   }
 
-  implicit val doubleFormatter: SimpleValueFormatter[Double] = new SimpleValueFormatter[Double] {
-    def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[Double] =
+  implicit def doubleFormatter[F[_]](implicit F: MonadError[F, Throwable]): SimpleValueFormatter[F, Double] = new SimpleValueFormatter[F, Double] {
+    def read(v: Value): F[Double] =
       v match {
         case Value.Float64(d) => F.pure(d)
         case _                => raise(s"expected f64 but got ${v.tpe}")
@@ -77,8 +77,8 @@ trait DefaultFormatters {
       ValType.F64
   }
 
-  implicit val boolFormatter: SimpleValueFormatter[Boolean] = new SimpleValueFormatter[Boolean] {
-    def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[Boolean] =
+  implicit def boolFormatter[F[_]](implicit F: MonadError[F, Throwable]): SimpleValueFormatter[F, Boolean] = new SimpleValueFormatter[F, Boolean] {
+    def read(v: Value): F[Boolean] =
       v match {
         case Value.Int32(i) => F.pure(i != 0)
         case _              => raise(s"expected i32 but got ${v.tpe}")

@@ -31,13 +31,13 @@ import scala.language.higherKinds
 
 /** Base class for anything that requires reading a module from stream or file.
   */
-class ModuleLoader[F[_]] {
+class ModuleLoader[F[_]](implicit F: Effect[F]) {
 
-  def readPath(path: Path)(implicit F: Effect[F]): Stream[F, Section] =
+  def readPath(path: Path): Stream[F, Section] =
     readBytes(BitVector.fromChannel(new java.io.FileInputStream(path.toFile).getChannel))
 
   /** Reads a binary module from the given bytes. */
-  def readBytes(bytes: BitVector)(implicit F: Effect[F]): Stream[F, Section] =
+  def readBytes(bytes: BitVector): Stream[F, Section] =
     ModuleStream.decoder
       .decode(bytes)
 

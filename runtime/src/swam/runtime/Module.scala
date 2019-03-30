@@ -50,7 +50,7 @@ class Module[F[_]] private[runtime] (val exports: Vector[Export],
                                      private[runtime] val start: Option[Int],
                                      private[runtime] val functions: Vector[CompiledFunction],
                                      private[runtime] val elems: Vector[CompiledElem],
-                                     private[runtime] val data: Vector[CompiledData]) {
+                                     private[runtime] val data: Vector[CompiledData])(implicit F: Effect[F]) {
   self =>
 
   private lazy val names = {
@@ -78,7 +78,7 @@ class Module[F[_]] private[runtime] (val exports: Vector[Export],
     *
     * If instantiation fails, returns an error with the message wrapped in it.
     */
-  def instantiate(implicit F: Effect[F]): F[Instance[F]] =
+  def instantiate: F[Instance[F]] =
     engine.instantiate(this, NoImports[F])
 
   /** A module that can be instantiated with some imports.
@@ -99,7 +99,7 @@ class Module[F[_]] private[runtime] (val exports: Vector[Export],
       *
       * If instantiation fails, returns an error with the message wrapped in it.
       */
-    def instantiate(implicit F: Effect[F]): F[Instance[F]] =
+    def instantiate: F[Instance[F]] =
       engine.instantiate(self, imports)
   }
 

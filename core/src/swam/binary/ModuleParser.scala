@@ -30,14 +30,13 @@ import scala.language.higherKinds
 /** A binary section stream parser.
   * The parser uses the validator to validate the stream.
   */
-class ModuleParser[F[_]](validator: Validator[F]) {
+class ModuleParser[F[_]](validator: Validator[F])(implicit F: Sync[F]) {
 
   /** Parses a section stream into a module.
     *  When this method returns, the stream has not been begin execution,
     *  you must call one of the `Sync` run method on the result to start actual parsing.
     */
-  def parse(stream: Stream[F, Section])(
-      implicit F: Sync[F]): F[Module] =
+  def parse(stream: Stream[F, Section]): F[Module] =
     stream
       .through(validator.validate)
       // compile the section stream

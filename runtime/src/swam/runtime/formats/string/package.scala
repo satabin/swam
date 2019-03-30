@@ -28,9 +28,9 @@ import scala.language.higherKinds
 package object string {
 
   /** Decodes a null-terminated ASCII string. */
-  implicit object cstring extends ValueReader[String] {
+  implicit def cstring[F[_]](implicit F: MonadError[F, Throwable]): ValueReader[F, String] = new ValueReader[F, String] {
     val swamType: ValType = ValType.I32
-    def read[F[_]](v: Value, m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[String] =
+    def read(v: Value, m: Option[Memory[F]]): F[String] =
       (v, m) match {
         case (Value.Int32(i), Some(m)) =>
           val size = m.size
@@ -58,9 +58,9 @@ package object string {
   /** Decodes a UTF-8 encoed string starting with its size in bytes
     * encoded in little-endian on 4 bytes.
     */
-  implicit object utf8 extends ValueReader[String] {
+  implicit def utf8[F[_]](implicit F: MonadError[F, Throwable]): ValueReader[F, String] = new ValueReader[F, String] {
     val swamType: ValType = ValType.I32
-    def read[F[_]](v: Value, m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[String] =
+    def read(v: Value, m: Option[Memory[F]]): F[String] =
       (v, m) match {
         case (Value.Int32(idx), Some(m)) =>
           val msize = m.size

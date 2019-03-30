@@ -51,7 +51,7 @@ import java.nio.file.Path
   * You typically want to reuse the same instance for all your executions
   * over the same effectful type `F`.
   */
-class Engine[F[_]] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F])
+class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F])
     extends ModuleLoader[F] {
 
   private[runtime] val compiler =
@@ -72,21 +72,21 @@ class Engine[F[_]] private (val conf: EngineConfiguration, private[runtime] val 
     *
     * If validation fails, returns an error with the validation message wrapped in it.
     */
-  def validate(path: Path)(implicit F: Effect[F]): F[Unit] =
+  def validate(path: Path): F[Unit] =
     validate(readPath(path))
 
   /** Reads the given binary encoded module and validates it.
     *
     * If validation fails, returns an error with the validation message wrapped in it.
     */
-  def validate(bytes: BitVector)(implicit F: Effect[F]): F[Unit] =
+  def validate(bytes: BitVector): F[Unit] =
     validate(readBytes(bytes))
 
   /** Reads the given stream of binary module sections and validates it.
     *
     * If validation fails, returns an error with the validation message wrapped in it.
     */
-  def validate(sections: Stream[F, Section])(implicit F: Effect[F]): F[Unit] =
+  def validate(sections: Stream[F, Section]): F[Unit] =
     sections
       .through(validator.validate)
       .compile
@@ -98,7 +98,7 @@ class Engine[F[_]] private (val conf: EngineConfiguration, private[runtime] val 
     * If validation or compilation fails, returns an error with the
     * message wrapped in it.
     */
-  def compile(path: Path)(implicit F: Effect[F]): F[Module[F]] =
+  def compile(path: Path): F[Module[F]] =
     compile(readPath(path))
 
   /** Reads the given binary encoded module, validates, and compiles it.
@@ -107,7 +107,7 @@ class Engine[F[_]] private (val conf: EngineConfiguration, private[runtime] val 
     * If validation or compilation fails, returns an error with the
     * message wrapped in it.
     */
-  def compile(bytes: BitVector)(implicit F: Effect[F]): F[Module[F]] =
+  def compile(bytes: BitVector): F[Module[F]] =
     compile(readBytes(bytes))
 
   /** Reads the given stream of binary module sections, validates, and compiles it.
@@ -116,7 +116,7 @@ class Engine[F[_]] private (val conf: EngineConfiguration, private[runtime] val 
     * If validation or compilation fails, returns an error with the
     * message wrapped in it.
     */
-  def compile(sections: Stream[F, Section])(implicit F: Effect[F]): F[Module[F]] =
+  def compile(sections: Stream[F, Section]): F[Module[F]] =
     sections
       .through(validator.validate)
       .through(compiler.compile)
@@ -130,7 +130,7 @@ class Engine[F[_]] private (val conf: EngineConfiguration, private[runtime] val 
     * If validation, compilation, or instantiation fails, returns an error with the
     * message wrapped in it.
     */
-  def instantiate(path: Path, imports: Imports[F])(implicit F: Effect[F]): F[Instance[F]] =
+  def instantiate(path: Path, imports: Imports[F]): F[Instance[F]] =
     instantiate(readPath(path), imports)
 
   /** Reads the given binary encoded module, validates, compiles, and instantiates it.
@@ -139,7 +139,7 @@ class Engine[F[_]] private (val conf: EngineConfiguration, private[runtime] val 
     * If validation, compilation, or instantiation fails, returns an error with the
     * message wrapped in it.
     */
-  def instantiate(bytes: BitVector, imports: Imports[F])(implicit F: Effect[F]): F[Instance[F]] =
+  def instantiate(bytes: BitVector, imports: Imports[F]): F[Instance[F]] =
     compile(bytes).flatMap(instantiate(_, imports))
 
   /** Reads the given stream of binary module sections, validates, compiles, and instantiates it.
@@ -148,7 +148,7 @@ class Engine[F[_]] private (val conf: EngineConfiguration, private[runtime] val 
     * If validation, compilation, or instantiation fails, returns an error with the
     * message wrapped in it.
     */
-  def instantiate(sections: Stream[F, Section], imports: Imports[F])(implicit F: Effect[F]): F[Instance[F]] =
+  def instantiate(sections: Stream[F, Section], imports: Imports[F]): F[Instance[F]] =
     compile(sections).flatMap(instantiate(_, imports))
 
   /** Instantiates the previously validated and compiled module.
@@ -156,20 +156,20 @@ class Engine[F[_]] private (val conf: EngineConfiguration, private[runtime] val 
     *
     * If instantiation fails, returns an error with the message wrapped in it.
     */
-  def instantiate(module: Module[F], imports: Imports[F])(implicit F: Effect[F]): F[Instance[F]] =
+  def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] =
     instantiator.instantiate(module, imports)
 
 }
 
 object Engine {
 
-  def apply[F[_]]()(implicit F: Sync[F]): F[Engine[F]] =
+  def apply[F[_]: Effect](): F[Engine[F]] =
     for {
       validator <- Validator[F]
       conf <- loadConfigF[F, EngineConfiguration]("swam.runtime")
     } yield new Engine[F](conf, validator)
 
-  def apply[F[_]](conf: EngineConfiguration, validator: Validator[F]): Engine[F] =
+  def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F]): Engine[F] =
     new Engine[F](conf, validator)
 
 }

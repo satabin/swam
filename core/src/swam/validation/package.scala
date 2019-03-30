@@ -22,7 +22,7 @@ import scala.language.higherKinds
 
 package object validation {
 
-  def EmptyContext[F[_]]: Context[F] =
+  def EmptyContext[F[_]](implicit F: MonadError[F, Throwable]): Context[F] =
     Context[F](
       Vector.empty[FuncType],
       Vector.empty[FuncType],

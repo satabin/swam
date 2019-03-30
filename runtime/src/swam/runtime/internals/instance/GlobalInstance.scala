@@ -23,14 +23,14 @@ import cats._
 
 import scala.language.higherKinds
 
-private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType) extends Global[F] {
+private[runtime] class GlobalInstance[F[_]](val tpe: GlobalType)(implicit F: MonadError[F, Throwable]) extends Global[F] {
 
   private var raw: Long = 0l
 
   def get: Value =
     Value.fromRaw(tpe.tpe, raw)
 
-  def set(v: Value)(implicit F: MonadError[F, Throwable]) =
+  def set(v: Value) =
     if (tpe.mut == Mut.Var)
       if (v.tpe <:< tpe.tpe)
         F.pure(raw = Value.toRaw(v))
