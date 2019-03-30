@@ -69,12 +69,12 @@ private final class ImportsMacros(val c: blackbox.Context) {
         def makeGlobal(writable: Boolean)(sym: Symbol): Tree = {
           q"""F.pure(new _root_.swam.runtime.Global[F] {
             import _root_.cats.implicits._
-        private val formatter = implicitly[_root_.swam.runtime.formats.SimpleValueFormatter[${sym.typeSignature}]]
+        private val formatter = implicitly[_root_.swam.runtime.formats.SimpleValueFormatter[F, ${sym.typeSignature}]]
         val tpe = _root_.swam.GlobalType(formatter.swamType, ${if (writable) q"_root_.swam.Mut.Var"
           else q"_root_.swam.Mut.Const"})
         def get: _root_.swam.runtime.Value = formatter.write(t.${TermName(sym.name.decodedName.toString.trim)})
-        def set(v: _root_.swam.runtime.Value)(implicit F: _root_.cats.MonadError[F,Throwable]) = ${if (writable)
-            q"formatter.read[F](v).map(t.${TermName(sym.name.decodedName.toString.trim)} = _)"
+        def set(v: _root_.swam.runtime.Value) = ${if (writable)
+            q"formatter.read(v).map(t.${TermName(sym.name.decodedName.toString.trim)} = _)"
           else
             q"""F.raiseError(new RuntimeException("Unable to set immutable global"))"""}
       })"""
@@ -114,8 +114,8 @@ private final class ImportsMacros(val c: blackbox.Context) {
 
       val cases = ts.map { case (ename, name, mk) => (cq"$ename => ${mk(name)}") }
 
-      q"""implicit def $asInstanceName[F[_]]: _root_.swam.runtime.imports.AsInstance[${cls.name}, F] = new _root_.swam.runtime.imports.AsInstance[${cls.name}, F] {
-      def find(t: ${cls.name}, field: String)(implicit F: _root_.cats.MonadError[F,Throwable]): F[_root_.swam.runtime.Interface[F, _root_.swam.Type]] =
+      q"""implicit def $asInstanceName[F[_]](implicit F: _root_.cats.MonadError[F,Throwable]): _root_.swam.runtime.imports.AsInstance[${cls.name}, F] = new _root_.swam.runtime.imports.AsInstance[${cls.name}, F] {
+      def find(t: ${cls.name}, field: String): F[_root_.swam.runtime.Interface[F, _root_.swam.Type]] =
         field match {
           case ..$cases
           case _ =>

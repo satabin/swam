@@ -24,6 +24,7 @@ import syntax._
 import interpreter.low.Asm
 
 import cats._
+import cats.effect._
 
 import fs2._
 
@@ -125,11 +126,11 @@ object FunctionContext {
   * otherwise it will break or generate undefined assembly code.
   *
   */
-class Compiler[F[_]](engine: Engine[F]) extends compiler.Compiler[F] {
+class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
 
   private val dataOnHeap = engine.conf.data.onHeap
 
-  def compile(sections: Stream[F, Section])(implicit F: MonadError[F, Throwable]): Stream[F, runtime.Module[F]] =
+  def compile(sections: Stream[F, Section]): Stream[F, runtime.Module[F]] =
     sections
       .fold(Context()) {
         case (ctx, Section.Imports(is)) =>

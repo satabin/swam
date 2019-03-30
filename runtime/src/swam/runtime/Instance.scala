@@ -98,11 +98,11 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
     object typed {
 
       /** Returns a global value for given name and type. */
-      def global[T](name: String)(implicit F: MonadError[F, Throwable], reader: ValueReader[T]): F[T] =
+      def global[T](name: String)(implicit F: MonadError[F, Throwable], reader: ValueReader[F, T]): F[T] =
         exps.get(name) match {
           case Some(g: Global[F]) =>
             if (reader.swamType == g.tpe.tpe)
-              reader.read[F](g.get, memories.headOption)
+              reader.read(g.get, memories.headOption)
             else
               F.raiseError(new ConversionException(s"expected type ${g.tpe.tpe} but got type ${reader.swamType}"))
           case Some(fld) =>
@@ -113,7 +113,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
 
       /** Returns a function for given name and type. */
       def function0[Ret](name: String)(implicit F: MonadError[F, Throwable],
-                                       reader: ValueReader[Ret]): F[e.EFunction0[Ret, F]] =
+                                       reader: ValueReader[F, Ret]): F[e.EFunction0[Ret, F]] =
         e.EFunction0[Ret, F](name, self)
 
       /** Returns a function for given name and type. */
@@ -122,26 +122,26 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
 
       /** Returns a function for given name and type. */
       def function1[P1, Ret](name: String)(implicit F: MonadError[F, Throwable],
-                                           writer1: ValueWriter[P1],
-                                           reader: ValueReader[Ret]): F[e.EFunction1[P1, Ret, F]] =
+                                           writer1: ValueWriter[F, P1],
+                                           reader: ValueReader[F, Ret]): F[e.EFunction1[P1, Ret, F]] =
         e.EFunction1(name, self)
 
       /** Returns a function for given name and type. */
       def procedure1[P1](name: String)(implicit F: MonadError[F, Throwable],
-                                       writer1: ValueWriter[P1]): F[e.EFunction1[P1, Unit, F]] =
+                                       writer1: ValueWriter[F, P1]): F[e.EFunction1[P1, Unit, F]] =
         e.EFunction1[P1, F](name, self)
 
       /** Returns a function for given name and type. */
       def function2[P1, P2, Ret](name: String)(implicit F: MonadError[F, Throwable],
-                                               writer1: ValueWriter[P1],
-                                               writer2: ValueWriter[P2],
-                                               reader: ValueReader[Ret]): F[e.EFunction2[P1, P2, Ret, F]] =
+                                               writer1: ValueWriter[F, P1],
+                                               writer2: ValueWriter[F, P2],
+                                               reader: ValueReader[F, Ret]): F[e.EFunction2[P1, P2, Ret, F]] =
         e.EFunction2(name, self)
 
       /** Returns a function for given name and type. */
       def procedure2[P1, P2](name: String)(implicit F: MonadError[F, Throwable],
-                                           writer1: ValueWriter[P1],
-                                           writer2: ValueWriter[P2]): F[e.EFunction2[P1, P2, Unit, F]] =
+                                           writer1: ValueWriter[F, P1],
+                                           writer2: ValueWriter[F, P2]): F[e.EFunction2[P1, P2, Unit, F]] =
         e.EFunction2[P1, P2, F](name, self)
 
     }

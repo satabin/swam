@@ -55,7 +55,7 @@ private[runtime] object EFunction0 {
     }
 
   def apply[Ret, F[_]](name: String, self: Instance[F])(implicit F: MonadError[F, Throwable],
-                                                        reader: ValueReader[Ret]): F[EFunction0[Ret, F]] =
+                                                        reader: ValueReader[F, Ret]): F[EFunction0[Ret, F]] =
     self.exps.get(name) match {
       case Some(f: Function[F]) =>
         f.tpe match {

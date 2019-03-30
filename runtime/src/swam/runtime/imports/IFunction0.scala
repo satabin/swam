@@ -25,9 +25,10 @@ import cats.implicits._
 
 import scala.language.higherKinds
 
-class IFunction0[F[_], Ret](f: () => F[Ret])(implicit writer: ValueWriter[Ret]) extends Function[F] {
+class IFunction0[F[_], Ret](f: () => F[Ret])(implicit writer: ValueWriter[F, Ret], F: MonadError[F, Throwable])
+    extends Function[F] {
   val tpe = FuncType(Vector(), Vector(writer.swamType))
-  def invoke(parameters: Vector[Value], m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
+  def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Option[Value]] =
     if (parameters.isEmpty)
       for {
         v <- f()
@@ -38,9 +39,9 @@ class IFunction0[F[_], Ret](f: () => F[Ret])(implicit writer: ValueWriter[Ret]) 
         s"function expects ${tpe.params.mkString("(", ", ", ")")} but got ${parameters.map(_.tpe).mkString("(", ", ", ")")}"))
 }
 
-class IFunction0Unit[F[_]](f: () => F[Unit]) extends Function[F] {
+class IFunction0Unit[F[_]](f: () => F[Unit])(implicit F: MonadError[F, Throwable]) extends Function[F] {
   val tpe = FuncType(Vector(), Vector())
-  def invoke(parameters: Vector[Value], m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[Option[Value]] =
+  def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Option[Value]] =
     parameters match {
       case Seq() =>
         f().map(v => None)

@@ -33,14 +33,14 @@ import scala.language.higherKinds
 /** Generic class to implement a decompiler. It takes a module in binary format
   * and outputs a formatted [[swam.util.pretty.Doc Doc]] out of it.
   */
-abstract class Decompiler[F[_]] extends ModuleLoader[F] {
+abstract class Decompiler[F[_]](implicit F: Effect[F]) extends ModuleLoader[F] {
 
   /** Returns a pretty-printed [[swam.util.pretty.Doc Doc]] resulting from decompiling
     * the module at the given path.
     *
     * The module is not validated so invalid modules can also be decompiled.
     */
-  def decompile(path: Path)(implicit F: Effect[F]): F[Doc] =
+  def decompile(path: Path): F[Doc] =
     decompile(readPath(path))
 
   /** Returns a pretty-printed [[swam.util.pretty.Doc Doc]] resulting from decompiling
@@ -48,7 +48,7 @@ abstract class Decompiler[F[_]] extends ModuleLoader[F] {
     *
     * The module is not validated so invalid modules can also be decompiled.
     */
-  def decompile(bytes: BitVector)(implicit F: Effect[F]): F[Doc] =
+  def decompile(bytes: BitVector): F[Doc] =
     decompile(readBytes(bytes))
 
   /** Returns a pretty-printed [[swam.util.pretty.Doc Doc]] resulting from decompiling
@@ -56,6 +56,6 @@ abstract class Decompiler[F[_]] extends ModuleLoader[F] {
     *
     * The module is not validated so invalid modules can also be decompiled.
     */
-  def decompile(sections: Stream[F, Section])(implicit F: Effect[F]): F[Doc]
+  def decompile(sections: Stream[F, Section]): F[Doc]
 
 }

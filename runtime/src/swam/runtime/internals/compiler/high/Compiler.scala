@@ -23,6 +23,7 @@ package high
 import syntax._
 
 import cats._
+import cats.effect._
 
 import fs2._
 
@@ -38,11 +39,11 @@ import java.lang.{Float => JFloat, Double => JDouble}
 
 /** Validates and compiles a module.
   */
-class Compiler[F[_]](engine: Engine[F]) extends compiler.Compiler[F] {
+class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
 
   private val dataOnHeap = engine.conf.data.onHeap
 
-  def compile(sections: Stream[F, Section])(implicit F: MonadError[F, Throwable]): Stream[F, runtime.Module[F]] =
+  def compile(sections: Stream[F, Section]): Stream[F, runtime.Module[F]] =
     sections
       .fold(Context()) {
         case (ctx, Section.Imports(is)) =>

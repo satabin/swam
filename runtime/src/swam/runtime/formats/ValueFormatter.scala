@@ -18,8 +18,15 @@ package swam
 package runtime
 package formats
 
+import cats._
+
+import scala.language.higherKinds
+
 /** A formatter is both a [[ValueReader]] and a [[ValueWriter]].
   */
-trait ValueFormatter[T] extends ValueReader[T] with ValueWriter[T]
+trait ValueFormatter[F[_], T] extends ValueReader[F, T] with ValueWriter[F, T]
 
-trait SimpleValueFormatter[T] extends ValueFormatter[T] with SimpleValueReader[T] with SimpleValueWriter[T]
+abstract class SimpleValueFormatter[F[_], T](implicit F: MonadError[F, Throwable])
+    extends SimpleValueWriter[F, T]
+    with SimpleValueReader[F, T]
+    with ValueFormatter[F, T]

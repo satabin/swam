@@ -39,16 +39,16 @@ abstract class Validator[F[_]] {
     *  The sections are returned unchanged if validation succeeds, otherwise
     *  the stream fails.
     */
-  def validate(stream: Stream[F, Section])(implicit F: MonadError[F, Throwable]): Stream[F, Section]
+  def validate(stream: Stream[F, Section]): Stream[F, Section]
 
 }
 
 object Validator {
-  def apply[F[_]](conf: ValidationConfiguration): Validator[F] =
-if(conf.validate)
-        new SpecValidator[F](conf.hardMax.toBytes.toInt)
-      else
-        new NoopValidator[F]
+  def apply[F[_]: MonadError[?[_], Throwable]](conf: ValidationConfiguration): Validator[F] =
+    if (conf.validate)
+      new SpecValidator[F](conf.hardMax.toBytes.toInt)
+    else
+      new NoopValidator[F]
 
   def apply[F[_]: Sync]: F[Validator[F]] =
     for {

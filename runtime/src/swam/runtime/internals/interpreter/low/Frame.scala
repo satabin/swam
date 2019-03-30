@@ -41,7 +41,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
                                   code: ByteBuffer,
                                   private[interpreter] val locals: Array[Long],
                                   private[interpreter] val arity: Int,
-                                  private[interpreter] val instance: Instance[F])
+                                  private[interpreter] val instance: Instance[F])(implicit F: MonadError[F, Throwable])
     extends StackFrame {
   self =>
 
@@ -161,8 +161,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
     def pushValues(values: Seq[Long]): Unit =
       values.foreach(pushValue(_))
 
-    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Long], instance: Instance[F])(
-        implicit F: MonadError[F, Throwable]): F[Frame[F]] =
+    def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Long], instance: Instance[F]): F[Frame[F]] =
       if (depth < callDepth)
         F.pure(new Frame[F](self, stackSize, callDepth, depth + 1, code, locals, arity, instance))
       else
@@ -179,7 +178,8 @@ sealed class Frame[F[_]] private (parent: Frame[F],
 
 object Frame {
 
-  def makeToplevel[F[_]](instance: Instance[F], conf: EngineConfiguration): Frame[F] =
+  def makeToplevel[F[_]](instance: Instance[F], conf: EngineConfiguration)(
+      implicit F: MonadError[F, Throwable]): Frame[F] =
     new Frame[F](null, conf.stack.size.toBytes.toInt, conf.stack.callDepth, 0, null, null, 0, instance)
 
 }

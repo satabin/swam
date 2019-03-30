@@ -25,9 +25,9 @@ import scala.language.higherKinds
 /** A writer is used to transform a scala value into a
   *  web assembly value.
   */
-trait ValueWriter[T] {
+trait ValueWriter[F[_], T] {
 
-  def write[F[_]](v: T, m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[Value]
+  def write(v: T, m: Option[Memory[F]]): F[Value]
 
   val swamType: ValType
 
@@ -36,10 +36,10 @@ trait ValueWriter[T] {
 /** A writer is used to transform a scala value into a
   *  simple web assembly value. A simple value can be writter without memory instance.
   */
-trait SimpleValueWriter[T] extends ValueWriter[T] {
+abstract class SimpleValueWriter[F[_], T](implicit F: MonadError[F, Throwable]) extends ValueWriter[F, T] {
 
   @inline
-  final override def write[F[_]](v: T, m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[Value] =
+  final override def write(v: T, m: Option[Memory[F]]): F[Value] =
     F.pure(write(v))
 
   def write(v: T): Value

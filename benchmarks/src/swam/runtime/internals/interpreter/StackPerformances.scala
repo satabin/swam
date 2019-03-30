@@ -24,13 +24,14 @@ import org.openjdk.jmh.infra._
 import org.openjdk.jmh.annotations._
 
 import cats._
+import cats.implicits._
 
 import scala.util.Random
 
 @State(Scope.Thread)
 class StackPerformances_01_Push {
 
-  var frame: Frame[Id] = null
+  var frame: Frame[Either[Throwable, ?]] = null
   var intValue: Int = 0
   var longValue: Long = 0l
   var floatValue: Float = 0.0f
@@ -39,7 +40,7 @@ class StackPerformances_01_Push {
 
   @Setup(Level.Iteration)
   def setupFrame(): Unit = {
-    frame = Frame.makeToplevel[Id](null, Config)
+    frame = Frame.makeToplevel[Either[Throwable, ?]](null, Config)
   }
 
   @Setup(Level.Invocation)
@@ -70,11 +71,11 @@ class StackPerformances_01_Push {
 @State(Scope.Thread)
 class StackPerformances_02_Pop {
 
-  var frame: Frame[Id] = null
+  var frame: Frame[Either[Throwable, ?]] = null
 
   @Setup(Level.Iteration)
   def setupFrame(): Unit = {
-    frame = Frame.makeToplevel[Id](null, Config)
+    frame = Frame.makeToplevel[Either[Throwable, ?]](null, Config)
     frame.stack.pushInt(Random.nextInt())
     frame.stack.pushLong(Random.nextLong())
     frame.stack.pushFloat(Random.nextFloat())

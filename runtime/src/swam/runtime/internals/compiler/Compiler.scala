@@ -29,6 +29,6 @@ import scala.language.higherKinds
 
 trait Compiler[F[_]] {
 
-  def compile(sections: Stream[F, Section])(implicit F: MonadError[F, Throwable]): Stream[F, runtime.Module[F]]
+  def compile(sections: Stream[F, Section]): Stream[F, runtime.Module[F]]
 
 }

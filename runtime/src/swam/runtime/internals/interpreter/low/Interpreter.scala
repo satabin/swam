@@ -34,12 +34,12 @@ import cats.implicits._
 import scala.language.higherKinds
 
 /** Interpreter of low-level assembly. */
-private[runtime] class Interpreter[F[_]](engine: Engine[F]) extends interpreter.Interpreter[F](engine) {
+private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadError[F, Throwable])
+    extends interpreter.Interpreter[F](engine) {
 
   private val conf = engine.conf
 
-  def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F])(
-      implicit F: MonadError[F, Throwable]): F[Option[Long]] = {
+  def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // push the parameters in the stack
@@ -51,8 +51,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F]) extends interpreter.
     }
   }
 
-  def interpret(func: Function[F], parameters: Vector[Long], instance: Instance[F])(
-      implicit F: MonadError[F, Throwable]): F[Option[Long]] = {
+  def interpret(func: Function[F], parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // push the parameters in the stack
@@ -64,8 +63,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F]) extends interpreter.
     }
   }
 
-  def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F])(
-      implicit F: MonadError[F, Throwable]): F[Option[Long]] = {
+  def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level frame
     val frame = Frame.makeToplevel[F](instance, conf)
     // invoke the function
@@ -75,7 +73,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F]) extends interpreter.
     }
   }
 
-  private def run(frame: Frame[F])(implicit F: MonadError[F, Throwable]): F[Option[Long]] =
+  private def run(frame: Frame[F]): F[Option[Long]] =
     F.tailRecM(frame) { frame =>
       val opcode = frame.readByte() & 0xff
       (opcode: @switch) match {

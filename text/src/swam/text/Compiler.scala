@@ -34,7 +34,7 @@ import fs2._
 
 import fastparse._
 
-class Compiler[F[_]] private(validator: Validator[F])(implicit val F: Effect[F]) {
+class Compiler[F[_]] private (validator: Validator[F])(implicit val F: Effect[F]) {
 
   private val resolver = new Resolver[F]
 

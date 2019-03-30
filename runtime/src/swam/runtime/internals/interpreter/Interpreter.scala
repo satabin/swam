@@ -26,17 +26,14 @@ import java.nio.ByteBuffer
 
 import scala.language.higherKinds
 
-abstract class Interpreter[F[_]](engine: Engine[F]) {
+abstract class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadError[F, Throwable]) {
 
   private val conf = engine.conf
 
-  def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F])(
-      implicit F: MonadError[F, Throwable]): F[Option[Long]]
+  def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F]): F[Option[Long]]
 
-  def interpret(func: Function[F], parameters: Vector[Long], instance: Instance[F])(
-      implicit F: MonadError[F, Throwable]): F[Option[Long]]
+  def interpret(func: Function[F], parameters: Vector[Long], instance: Instance[F]): F[Option[Long]]
 
-  def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F])(
-      implicit F: MonadError[F, Throwable]): F[Option[Long]]
+  def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F]): F[Option[Long]]
 
 }

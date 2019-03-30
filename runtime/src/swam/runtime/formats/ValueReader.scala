@@ -25,9 +25,9 @@ import scala.language.higherKinds
 /** A reader is used to transform a web assembly value into a
   *  scala object.
   */
-trait ValueReader[T] {
+trait ValueReader[F[_], T] {
 
-  def read[F[_]](v: Value, m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[T]
+  def read(v: Value, m: Option[Memory[F]]): F[T]
 
   val swamType: ValType
 
@@ -36,12 +36,12 @@ trait ValueReader[T] {
 /** A reader is used to transform a simple web assembly value into a
   *  scala object. A simple value van be read without memory instance.
   */
-trait SimpleValueReader[T] extends ValueReader[T] {
+trait SimpleValueReader[F[_], T] extends ValueReader[F, T] {
 
   @inline
-  final override def read[F[_]](v: Value, m: Option[Memory[F]])(implicit F: MonadError[F, Throwable]): F[T] =
+  final override def read(v: Value, m: Option[Memory[F]]): F[T] =
     read(v)
 
-  def read[F[_]](v: Value)(implicit F: MonadError[F, Throwable]): F[T]
+  def read(v: Value): F[T]
 
 }

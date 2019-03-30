@@ -46,7 +46,7 @@ import scala.language.higherKinds
   * This decompiler also takes advantage of the custom name section if present
   * to add identifier to the output.
   */
-class TextDecompiler[F[_]] private(validator: Validator[F]) extends Decompiler[F] {
+class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Effect[F]) extends Decompiler[F] {
 
   private val Valid = "^([0-9a-zA-Z!#$%&'*+-./:<=>?@\\^_`|~]+)$".r
 
@@ -99,7 +99,7 @@ class TextDecompiler[F[_]] private(validator: Validator[F]) extends Decompiler[F
   }
 
   /** Decompiles to an [[swam.text.unresolved.Module unresolved text module]]. */
-  def decompileModule(sections: Stream[F, Section])(implicit F: Effect[F]): F[(u.Module, Map[u.Index, FuncType])] =
+  def decompileModule(sections: Stream[F, Section]): F[(u.Module, Map[u.Index, FuncType])] =
     sections
       .through(validator.validate(_))
       .evalScan(DecompilerEnv()) {
@@ -198,7 +198,7 @@ class TextDecompiler[F[_]] private(validator: Validator[F]) extends Decompiler[F
           (u.Module(u.NoId, Seq.empty)(-1), Map.empty)
       }
 
-  def decompile(sections: Stream[F, Section])(implicit F: Effect[F]): F[Doc] =
+  def decompile(sections: Stream[F, Section]): F[Doc] =
     decompileModule(sections).map((pretty _).tupled)
 
   @tailrec
@@ -535,12 +535,12 @@ class TextDecompiler[F[_]] private(validator: Validator[F]) extends Decompiler[F
 }
 
 object TextDecompiler {
-  def apply[F[_]: Sync]: F[TextDecompiler[F]] =
+  def apply[F[_]: Effect]: F[TextDecompiler[F]] =
     for {
       validator <- Validator[F]
     } yield TextDecompiler[F](validator)
 
-  def apply[F[_]](validator: Validator[F]): TextDecompiler[F] =
+  def apply[F[_]: Effect](validator: Validator[F]): TextDecompiler[F] =
     new TextDecompiler[F](validator)
 }
 
