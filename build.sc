@@ -17,7 +17,7 @@ import headers.Headers
 import $file.mdoc
 import mdoc.MdocModule
 
-val swamVersion = "0.1.0"
+val swamVersion = "0.2.0-SNAPSHOT"
 
 val swamLicense = License.`Apache-2.0`
 
