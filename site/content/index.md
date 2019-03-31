@@ -22,6 +22,14 @@ This project defines several modules:
 
 If you want more details, please refer to the examples or [API documentation][api].
 
+## Installation
+
+Artefacts are published on maven, use your favorite build tool to bring it into your project:
+
+ - The `core` module: [![Core module on Maven Central][core-image]][core-maven]
+ - The `runtime` module: [![Runtime module on Maven Central][runtime-image]][runtime-maven]
+ - The `text` module: [![Text module on Maven Central][text-image]][text-maven]
+
 [webassembly]: https://webassembly.org/
 [text-format]: https://webassembly.org/docs/text-format/
 [binary-encoding]: https://webassembly.org/docs/binary-encoding/
@@ -29,3 +37,9 @@ If you want more details, please refer to the examples or [API documentation][ap
 [api]: /api/
 [cats-friendly-logo]: https://typelevel.org/cats/img/cats-badge-tiny.png
 [cats]: https://typelevel.org/cats
+[core-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-core_2.12.svg
+[core-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-core_2.12
+[runtime-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-runtime_2.12.svg
+[runtime-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-runtime_2.12
+[text-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-text_2.12.svg
+[text-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-text_2.12
