@@ -26,11 +26,12 @@ private final class ImportsMacros(val c: blackbox.Context) {
 
   def moduleMacro(annottees: Tree*): Tree = annottees match {
     case List(clsDef: ClassDef) =>
+      val typed = c.typecheck(clsDef)
       q"""
        $clsDef
        object ${clsDef.name.toTermName} {
          import scala.language.higherKinds
-         ${module(c.typecheck(clsDef))}
+         ${module(typed)}
        }
        """
     case List(
@@ -150,7 +151,7 @@ private final class ImportsMacros(val c: blackbox.Context) {
             ..${readers.map(_._2)}
             ${if (hasResult) q"val $writerName = $writer" else q""}
             val tpe = _root_.swam.FuncType(Vector(..${readers
-            .map(p => q"${p._1}.swamType")}), Vector(..${if (hasResult) q"writerName.swamType" else q""}))
+            .map(p => q"${p._1}.swamType")}), Vector(..${if (hasResult) q"$writerName.swamType" else q""}))
             def invoke(parameters: Vector[_root_.swam.runtime.Value], m: _root_.scala.Option[_root_.swam.runtime.Memory[$f]]): $f[_root_.scala.Option[_root_.swam.runtime.Value]] = for(
               ..${values.map(_._2)};
               ..$res
@@ -197,7 +198,6 @@ private final class ImportsMacros(val c: blackbox.Context) {
 
       val cases = ts.map { case (ename, name, mk) => (cq"$ename => ${mk(name)}") }
 
-      val res =
         q"""implicit def $asInstanceName[..$efftpe, ..$tparams](implicit F: _root_.cats.MonadError[$f,Throwable]): _root_.swam.runtime.imports.AsInstance[$tpname[..$tpnames], $f] = new _root_.swam.runtime.imports.AsInstance[$tpname[..$tpnames], $f] {
       import _root_.cats.implicits._
       def find(t: $tpname[..$tpnames], field: _root_.java.lang.String): $f[_root_.swam.runtime.Interface[$f, _root_.swam.Type]] =
@@ -207,8 +207,6 @@ private final class ImportsMacros(val c: blackbox.Context) {
             F.raiseError(new Exception(s"Unknown field $$field"))
         }
     }"""
-      println(res)
-      res
     case _ =>
       c.abort(c.enclosingPosition, "This is a bug")
   }
