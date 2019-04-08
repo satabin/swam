@@ -19,6 +19,7 @@ package runtime
 package internals
 package instance
 
+import memory._
 import imports._
 import compiler._
 import interpreter._
@@ -31,7 +32,7 @@ import runtime._
 
 import scala.language.higherKinds
 
-private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F]) {
+private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F], A: Allocator[F]) {
 
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap

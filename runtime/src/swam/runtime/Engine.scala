@@ -17,6 +17,7 @@
 package swam
 package runtime
 
+import memory._
 import config._
 import syntax._
 import binary._
@@ -51,7 +52,7 @@ import java.nio.file.Path
   * You typically want to reuse the same instance for all your executions
   * over the same effectful type `F`.
   */
-class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F])
+class Engine[F[_]: Effect: Allocator] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F])
     extends ModuleLoader[F] {
 
   private[runtime] val compiler =
@@ -163,13 +164,13 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
 
 object Engine {
 
-  def apply[F[_]: Effect](): F[Engine[F]] =
+  def apply[F[_]: Effect: Allocator](): F[Engine[F]] =
     for {
       validator <- Validator[F]
       conf <- loadConfigF[F, EngineConfiguration]("swam.runtime")
     } yield new Engine[F](conf, validator)
 
-  def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F]): Engine[F] =
+  def apply[F[_]: Effect: Allocator](conf: EngineConfiguration, validator: Validator[F]): Engine[F] =
     new Engine[F](conf, validator)
 
 }

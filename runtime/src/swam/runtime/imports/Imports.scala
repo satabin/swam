@@ -18,6 +18,7 @@ package swam
 package runtime
 package imports
 
+import memory._
 import formats._
 
 import cats._
@@ -204,12 +205,13 @@ object AsInterface {
       }
     }
 
-  implicit def byteBufferAsInsterface[F[_]](implicit F: Async[F]): AsInterface[ByteBuffer, F] =
+  implicit def byteBufferAsInsterface[F[_]](implicit F: Async[F], A: Allocator[F]): AsInterface[ByteBuffer, F] =
     new AsInterface[ByteBuffer, F] {
       def view(_b: ByteBuffer) = new Memory[F] {
         val b = _b.duplicate()
         b.order(ByteOrder.LITTLE_ENDIAN)
         def tpe: swam.MemType = MemType(Limits(b.limit() / pageSize, Some(b.capacity / pageSize)))
+        def allocator: Allocator[F] = A
         def grow(by: Int) = F.delay {
           val newSize = size + by * pageSize
           if (newSize > b.capacity) {

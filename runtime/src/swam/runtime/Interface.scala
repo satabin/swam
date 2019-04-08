@@ -17,6 +17,8 @@
 package swam
 package runtime
 
+import memory.Allocator
+
 import java.nio.ByteBuffer
 
 import cats._
@@ -112,6 +114,11 @@ trait Table[F[_]] extends Interface[F, TableType] {
   *                    method since the Swam engine already checks it.
   */
 trait Memory[F[_]] extends Interface[F, MemType] {
+
+  /** The allocator associted to this memory.
+    * This is intended to be used to write complex objects into tha memory.
+    */
+  def allocator: Allocator[F]
 
   /** Returns the size in bytes of this memory instance. */
   def size: Int
