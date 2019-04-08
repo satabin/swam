@@ -280,3 +280,14 @@ object ScriptEngine {
   }
 
 }
+
+import swam.runtime.imports.annotations._
+import swam.runtime.formats.DefaultFormatters._
+
+@module
+class C[@effect F[_]](implicit F: MonadError[F, Throwable]) {
+
+  @effectful
+  def  print(i: Int) = F.pure(println(i))
+
+}
