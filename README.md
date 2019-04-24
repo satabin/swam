@@ -6,6 +6,22 @@
 
 [![Join the chat at https://gitter.im/satabin/swam](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/satabin/swam?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
+## Getting Started
+
+To build it, we use [mill](http://www.lihaoyi.com/mill/). I you want to run the specification tests, just type:
+
+    $ mill runtime.test
+
+It you want to test swam in a REPL session, just type tostart an ammonite shell with runtime project in classpath.:
+
+    $ mill -i runtime.repl
+
+If you want a REPL session with both runtime and text, the easiest way is to start a session for the runtime.test project:
+    
+    $ mill -i runtime.test.repl
+
+## Architecture
+
 This project defines several modules:
  - The [`core`](core/) module is a library that makes it possible to manipulate [binary][3] representation of WebAssembly modules. In particular it contains:
    - a streaming parser for the binary format;
