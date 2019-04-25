@@ -8,13 +8,9 @@
 
 ## Getting Started
 
-To build it, we use [mill](http://www.lihaoyi.com/mill/). Mill is not packaged all Linux distributions, but you can you use curl to install it (see Installation instructions in the [doc](http://www.lihaoyi.com/mill/)):
+To build it, we use [mill](http://www.lihaoyi.com/mill/). Mill is not packaged all Linux distributions, but you can use curl to install it (see Installation instructions in the [doc](http://www.lihaoyi.com/mill/)):
 
-```sh
-    sh -c '(echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.3.6/0.3.6) > $HOME/bin/mill && chmod +x $HOME/bin/mill'
-```
-
-I you want to run the specification tests, just type:
+If you want to run the specification tests, just type:
 
 ```sh
 mill runtime.test
