@@ -8,7 +8,11 @@
 
 ## Getting Started
 
-To build it, we use [mill](http://www.lihaoyi.com/mill/). I you want to run the specification tests, just type:
+To build it, we use [mill](http://www.lihaoyi.com/mill/). Mill is not available on on Unix boxes, but you can you use curl to install it (see Installation instructions in the [doc](http://www.lihaoyi.com/mill/)):
+
+    sh -c '(echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.3.6/0.3.6) > $HOME/bin/mill && chmod +x $HOME/bin/mill'
+
+I you want to run the specification tests, just type:
 
     $ mill runtime.test
 
