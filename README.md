@@ -8,13 +8,19 @@
 
 ## Getting Started
 
-To build it, we use [mill](http://www.lihaoyi.com/mill/). I you want to run the specification tests, just type:
+To build it, we use [mill](http://www.lihaoyi.com/mill/). Mill is not packaged all Linux distributions, but you can use curl to install it (see Installation instructions in the [doc](http://www.lihaoyi.com/mill/)):
 
-    $ mill runtime.test
+If you want to run the specification tests, just type:
+
+```sh
+mill runtime.test
+```
 
 It you want to test swam in a REPL session, just type tostart an ammonite shell with runtime project in classpath.:
 
-    $ mill -i runtime.repl
+```sh
+mill -i runtime.repl
+```
 
 If you want a REPL session with both runtime and text, the easiest way is to start a session for the runtime.test project:
     
