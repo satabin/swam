@@ -26,12 +26,11 @@ private final class ImportsMacros(val c: blackbox.Context) {
 
   def moduleMacro(annottees: Tree*): Tree = annottees match {
     case List(clsDef: ClassDef) =>
-      val typed = c.typecheck(clsDef)
       q"""
        $clsDef
        object ${clsDef.name.toTermName} {
          import scala.language.higherKinds
-         ${module(typed)}
+         ${module(clsDef)}
        }
        """
     case List(
@@ -43,50 +42,51 @@ private final class ImportsMacros(val c: blackbox.Context) {
        $mods object $objName extends { ..$objEarlyDefs } with ..$objParents { $objSelf =>
          ..$objDefs
          import scala.language.higherKinds
-         ${module(c.typecheck(clsDef))}
+         ${module(clsDef)}
        }
        """
     case _ => c.abort(c.enclosingPosition, "Invalid annotation target: must be a class")
   }
 
-  private val GlobalType = typeOf[swam.runtime.imports.annotations.global]
-  private val PureType = typeOf[swam.runtime.imports.annotations.pure]
-  private val EffectfulType = typeOf[swam.runtime.imports.annotations.effectful]
-  private val EffectType = typeOf[swam.runtime.imports.annotations.effect]
-
-  private def isGlobal(a: Annotation): Boolean = a.tree.tpe match {
-    case GlobalType => true
-    case t          => false
+  private def isAnnotation(ann: Tree, aname: String): Boolean = ann match {
+    case Apply(Select(New(Select(_, name)), _), args) if name.decodedName.toString == aname => true
+    case Apply(Select(New(Ident(name)), _), args) if name.decodedName.toString == aname     => true
+    case _                                                                                  => false
   }
 
-  private def isPure(a: Annotation): Boolean = a.tree.tpe match {
-    case PureType => true
-    case t        => false
-  }
+  private def isGlobal(ann: Tree): Boolean = isAnnotation(ann, "global")
 
-  private def isEffectful(a: Annotation): Boolean = a.tree.tpe match {
-    case EffectfulType => true
-    case t             => false
-  }
+  private def isPure(ann: Tree): Boolean = isAnnotation(ann, "pure")
 
-  private def isEffect(a: Annotation): Boolean = a.tree.tpe match {
-    case EffectType => true
-    case t          => false
-  }
+  private def isEffectful(ann: Tree): Boolean = isAnnotation(ann, "effectful")
+
+  private def isEffect(ann: Tree): Boolean = isAnnotation(ann, "effect")
 
   private object ExportedName {
-    def unapply(a: Annotation): Option[Tree] =
-      a.tree.children.tail.collectFirst {
-        case q"name = $name" => name
-        case q"$name"        => name
+    def unapply(ann: Tree): Option[Tree] = {
+      ann match {
+        case Apply(Select(New(Select(_, name)), _), args) if name.decodedName.toString == "global" =>
+          args.collectFirst {
+            case q"name = $name" => name
+            case q"$name"        => name
+          }
+        case Apply(Select(New(Ident(name)), _), args) if name.decodedName.toString == "global" =>
+          args.collectFirst {
+            case q"name = $name" => name
+            case q"$name"        => name
+          }
+        case _ =>
+          None
       }
+    }
   }
 
   private def module(cls: Tree): Tree = cls match {
     case q"$mods class $tpname[..$tparams] $ctorMods(...$paramss) extends { ..$earlydefns } with ..$parents { $self => ..$stats }" =>
       val (efftpe, f) = tparams
         .collectFirst {
-          case t if t.symbol.annotations.exists(isEffect(_)) => (Seq.empty[TypeDef], t.symbol.name.toTypeName)
+          case TypeDef(mods, name, _, _) if mods.annotations.exists(isEffect(_)) =>
+            (Seq.empty[TypeDef], name.toTypeName)
         }
         .getOrElse {
           val f = c.freshName(TypeName("F"))
@@ -94,43 +94,48 @@ private final class ImportsMacros(val c: blackbox.Context) {
         }
 
       object Export {
-        def makeGlobal(writable: Boolean)(sym: Symbol): Tree = {
+        def makeGlobal(writable: Boolean)(vdd: ValOrDefDef): Tree = atPos(vdd.pos) {
           q"""F.pure(new _root_.swam.runtime.Global[$f] {
-        private val formatter = implicitly[_root_.swam.runtime.formats.SimpleValueFormatter[$f, ${sym.typeSignature}]]
+        private val formatter = implicitly[_root_.swam.runtime.formats.SimpleValueFormatter[$f, ${vdd.tpt}]]
         val tpe = _root_.swam.GlobalType(formatter.swamType, ${if (writable) q"_root_.swam.Mut.Var"
           else q"_root_.swam.Mut.Const"})
-        def get: _root_.swam.runtime.Value = formatter.write(t.${TermName(sym.name.decodedName.toString.trim)})
+        def get: _root_.swam.runtime.Value = formatter.write(t.${TermName(vdd.name.decodedName.toString.trim)})
         def set(v: _root_.swam.runtime.Value) = ${if (writable)
-            q"formatter.read(v).map(t.${TermName(sym.name.decodedName.toString.trim)} = _)"
+            q"formatter.read(v).map(t.${TermName(vdd.name.decodedName.toString.trim)} = _)"
           else
             q"""F.raiseError(new RuntimeException("Unable to set immutable global"))"""}
       })"""
         }
 
-        def makeFunction(effectful: Boolean)(sym: Symbol): Tree = atPos(sym.pos) {
+        def makeFunction(effectful: Boolean)(vdd: ValOrDefDef): Tree = atPos(vdd.pos) {
+          val dd = vdd match {
+            case dd: DefDef => dd
+            case _          => c.abort(vdd.pos, "This is a bug")
+          }
           val readers =
-            sym.typeSignature.paramLists match {
+            dd.vparamss match {
               case List(params) =>
                 params.zipWithIndex.map {
                   case (param, idx) =>
                     val name = TermName(s"reader$idx")
-                    (name,
-                     q"""val $name = implicitly[_root_.swam.runtime.formats.ValueReader[$f, ${param.typeSignature}]]""")
+                    (name, q"""val $name = implicitly[_root_.swam.runtime.formats.ValueReader[$f, ${param.tpt}]]""")
                 }
-              case _ => c.abort(sym.pos, "Only functions with one parameter lists can be exported")
+              case _ => c.abort(dd.pos, "Only functions with one parameter lists can be exported")
             }
 
           val hasResult =
-            if (effectful)
-              !(sym.asMethod.returnType.typeArgs.exists(_ <:< typeOf[Unit]))
-            else
-              !(sym.asMethod.returnType <:< typeOf[Unit])
+            dd.tpt match {
+              case tq"$f[Unit]" if effectful => false
+              case tq"Unit"                  => false
+              case _                         => true
+            }
           val writerName = TermName("writer")
+          val writerType = dd.tpt match {
+            case tq"$f[$t]" if effectful => t
+            case t                       => t
+          }
           val writer =
-            if (effectful)
-              q"implicitly[_root_.swam.runtime.formats.ValueWriter[$f, ..${sym.asMethod.returnType.typeArgs}]]"
-            else
-              q"implicitly[_root_.swam.runtime.formats.ValueWriter[$f, ${sym.asMethod.returnType}]]"
+            q"implicitly[_root_.swam.runtime.formats.ValueWriter[$f, $writerType]]"
           val values = readers.zipWithIndex.map {
             case ((name, _), idx) =>
               val vname = TermName(s"value$idx")
@@ -139,13 +144,13 @@ private final class ImportsMacros(val c: blackbox.Context) {
           val res =
             if (effectful)
               if (hasResult)
-                Seq(fq"raw <- t.${sym.name.toTermName}(..${values.map(_._1)})", fq"res <- $writerName.write(raw, m)")
+                Seq(fq"raw <- t.${dd.name.toTermName}(..${values.map(_._1)})", fq"res <- $writerName.write(raw, m)")
               else
-                Seq(fq"_ <- t.${sym.name.toTermName}(..${values.map(_._1)})")
+                Seq(fq"_ <- t.${dd.name.toTermName}(..${values.map(_._1)})")
             else if (hasResult)
-              Seq(fq"res <- $writerName.write(t.${sym.name.toTermName}(..${values.map(_._1)}), m)")
+              Seq(fq"res <- $writerName.write(t.${dd.name.toTermName}(..${values.map(_._1)}), m)")
             else
-              Seq(fq"_ <- t.${sym.name.toTermName}(..${values.map(_._1)})")
+              Seq(fq"_ <- t.${dd.name.toTermName}(..${values.map(_._1)})")
 
           q"""F.pure(new _root_.swam.runtime.Function[$f] {
             ..${readers.map(_._2)}
@@ -159,26 +164,25 @@ private final class ImportsMacros(val c: blackbox.Context) {
           })"""
         }
 
-        private def makeExport(mods: Modifiers, sym: Symbol, maker: Symbol => Tree, pos: Position) = {
-          val ename = sym.annotations
+        private def makeExport(t: ValOrDefDef, maker: ValOrDefDef => Tree, pos: Position) = {
+          val ename = t.mods.annotations
             .collectFirst {
               case ExportedName(name) => name
             }
-            .getOrElse(atPos(pos)(q"""${sym.name.decodedName.toString.trim}"""))
-          Some((ename, sym, maker))
+            .getOrElse(atPos(pos)(q"""${t.name.decodedName.toString.trim}"""))
+          Some((ename, t, maker))
         }
 
-        def unapply(a: Tree): Option[(Tree, Symbol, Symbol => Tree)] = a match {
-          case t @ q"$mods val $tname: $tpt = $expr" if t.symbol.annotations.exists(isGlobal(_)) =>
-            makeExport(mods, t.symbol, makeGlobal(false), t.pos)
-          case t @ q"$mods var $tname: $tpt = $expr" if t.symbol.annotations.exists(isGlobal(_)) =>
-            makeExport(mods, t.symbol, makeGlobal(true), t.pos)
-          case t @ q"$mods def $tname[..$tparams](...$paramss): $tpt = $expr"
-              if t.symbol.annotations.exists(isPure(_)) =>
-            makeExport(mods, t.symbol, makeFunction(false), t.pos)
-          case t @ q"$mods def $tname[..$tparams](...$paramss): $tpt = $expr"
-              if t.symbol.annotations.exists(isEffectful(_)) =>
-            makeExport(mods, t.symbol, makeFunction(true), t.pos)
+        def unapply(a: Tree): Option[(Tree, ValOrDefDef, ValOrDefDef => Tree)] = a match {
+          case vd @ ValDef(mods, tname, tpt, expr) if mods.annotations.exists(isGlobal(_)) =>
+            checkReturnType(vd.pos, tpt)
+            makeExport(vd, makeGlobal(mods.hasFlag(Flag.MUTABLE)), vd.pos)
+          case dd @ DefDef(mods, tname, tparams, params, tpt, expr) if mods.annotations.exists(isPure(_)) =>
+            checkReturnType(dd.pos, tpt)
+            makeExport(dd, makeFunction(false), dd.pos)
+          case dd @ DefDef(mods, tname, tparams, params, tpt, expr) if mods.annotations.exists(isEffectful(_)) =>
+            checkReturnType(dd.pos, tpt)
+            makeExport(dd, makeFunction(true), dd.pos)
           case t =>
             None
         }
@@ -187,7 +191,7 @@ private final class ImportsMacros(val c: blackbox.Context) {
       // first start by collecting all fields marked as exported
       val ts =
         stats.collect {
-          case Export(ename, name, writable) => (ename, name, writable)
+          case Export(ename, vdd, writable) => (ename, vdd, writable)
         }
 
       val tpnames = tparams.map(_.name)
@@ -196,9 +200,9 @@ private final class ImportsMacros(val c: blackbox.Context) {
 
       val asInstanceName = c.freshName(TermName(s"${tpname}AsInstance"))
 
-      val cases = ts.map { case (ename, name, mk) => (cq"$ename => ${mk(name)}") }
+      val cases = ts.map { case (ename, vdd, mk) => (cq"$ename => ${mk(vdd)}") }
 
-        q"""implicit def $asInstanceName[..$efftpe, ..$tparams](implicit F: _root_.cats.MonadError[$f,Throwable]): _root_.swam.runtime.imports.AsInstance[$tpname[..$tpnames], $f] = new _root_.swam.runtime.imports.AsInstance[$tpname[..$tpnames], $f] {
+      q"""implicit def $asInstanceName[..$efftpe, ..$tparams](implicit F: _root_.cats.MonadError[$f,Throwable]): _root_.swam.runtime.imports.AsInstance[$tpname[..$tpnames], $f] = new _root_.swam.runtime.imports.AsInstance[$tpname[..$tpnames], $f] {
       import _root_.cats.implicits._
       def find(t: $tpname[..$tpnames], field: _root_.java.lang.String): $f[_root_.swam.runtime.Interface[$f, _root_.swam.Type]] =
         field match {
@@ -211,7 +215,15 @@ private final class ImportsMacros(val c: blackbox.Context) {
       c.abort(c.enclosingPosition, "This is a bug")
   }
 
-  private def checkNames(ts: List[(Tree, Symbol, Symbol => Tree)]): Unit = {
+  private def checkReturnType(pos: Position, tpt: Tree): Unit =
+    tpt match {
+      case tq"" =>
+        c.abort(pos, "Exported declarations must have a type annotation")
+      case _ =>
+      // ok
+    }
+
+  private def checkNames(ts: List[(Tree, ValOrDefDef, ValOrDefDef => Tree)]): Unit = {
     val byname =
       ts.map {
           case (l @ Literal(name), _, _) => l
