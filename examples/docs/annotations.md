@@ -23,13 +23,13 @@ import swam.runtime.formats.DefaultFormatters._
 class MyModule {
 
   @swam.runtime.imports.annotations.global
-  val v1 = 23
+  val v1: Int = 23
 
   @swam.runtime.imports.annotations.global(name = "test")
-  val v2 = 2.0d
+  val v2: Double = 2.0d
 
   @swam.runtime.imports.annotations.global
-  var v3 = 45
+  var v3: Int = 45
 
 }
 
@@ -80,7 +80,7 @@ Let's assume we have a simple `add42` function, written in scala:
 class PureModule {
 
   @swam.runtime.imports.annotations.pure
-  def add42(i: Int) = i + 42
+  def add42(i: Int): Int = i + 42
 
 }
 
@@ -111,15 +111,15 @@ This type must be unique, and all effectful functions must use it.
 
 We can define a logging function in scala as follows, that simply prints to stdout:
 
-```scala
+```scala mdoc:silent
 import cats._
 
 import scala.language.higherKinds
 
 @module
-class EffectfulModule[@effect F[_]](implicit F: Applicative[F]) {
+class EffectfulModule[@swam.runtime.imports.annotations.effect F[_]](implicit F: Applicative[F]) {
 
-  @effectful
+  @swam.runtime.imports.annotations.effectful
   def log(i: Int): F[Unit] = F.pure(println(s"got: $i"))
 
 }
@@ -129,7 +129,7 @@ val mIO = new EffectfulModule[IO]
 
 Now, WebAssembly modules can [import that module and use the effectful function](/examples/effectful-annotation.wat):
 
-```scala
+```scala mdoc:silent
 val logged = (for {
   engine <- engine
   tcompiler <- tcompiler
@@ -137,4 +137,9 @@ val logged = (for {
   inst <- mod.importing("console", mIO).instantiate
   f <- inst.exports.typed.function1[Int, Int]("add42")
 } yield f).unsafeRunSync()
+```
+
+We can now run the `logged` function and the parameter is logged to stdout as expected
+```scala mdoc
+logged(43).unsafeRunSync()
 ```
