@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>Swam API Documentation 0.1.0 - swam.runtime.imports.annotations</title>
-          <meta name="description" content="Swam API Documentation 0.1.0 - swam.runtime.imports.annotations" />
-          <meta name="keywords" content="Swam API Documentation 0.1.0 swam.runtime.imports.annotations" />
+          <title>Swam API Documentation 0.2.0-SNAPSHOT - swam.runtime.imports.annotations</title>
+          <meta name="description" content="Swam API Documentation 0.2.0 - SNAPSHOT - swam.runtime.imports.annotations" />
+          <meta name="keywords" content="Swam API Documentation 0.2.0 SNAPSHOT swam.runtime.imports.annotations" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">Swam API Documentation<span id="doc-version">0.1.0</span></span>
+        <span id="doc-title">Swam API Documentation<span id="doc-version">0.2.0-SNAPSHOT</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -160,12 +160,24 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam.runtime.imports">imports</a></dd></dl></div>
     </li><li class="current-entities indented4">
                         <span class="separator"></span>
+                        <a class="class" href="effect.html" title="If a type variable F[_] of a module class is annotated with this, then it is taken as the effect type for functions and module lookup."></a>
+                        <a href="effect.html" title="If a type variable F[_] of a module class is annotated with this, then it is taken as the effect type for functions and module lookup.">effect</a>
+                      </li><li class="current-entities indented4">
+                        <span class="separator"></span>
+                        <a class="class" href="effectful.html" title="def members marked with this annotation are exported as a function"></a>
+                        <a href="effectful.html" title="def members marked with this annotation are exported as a function">effectful</a>
+                      </li><li class="current-entities indented4">
+                        <span class="separator"></span>
                         <a class="class" href="global.html" title="val and var members marked with this annotation are exported as a global field."></a>
                         <a href="global.html" title="val and var members marked with this annotation are exported as a global field.">global</a>
                       </li><li class="current-entities indented4">
                         <span class="separator"></span>
                         <a class="class" href="module.html" title="Classes annotated with this annotation get an automatic AsInstance with exported members annotated with global"></a>
                         <a href="module.html" title="Classes annotated with this annotation get an automatic AsInstance with exported members annotated with global">module</a>
+                      </li><li class="current-entities indented4">
+                        <span class="separator"></span>
+                        <a class="class" href="pure.html" title="def members marked with this annotation are exported as pure functions."></a>
+                        <a href="pure.html" title="def members marked with this annotation are exported as pure functions.">pure</a>
                       </li>
               </ul>
             </div>
@@ -205,7 +217,43 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="swam.runtime.imports.annotations.global" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+              <ol><li name="swam.runtime.imports.annotations.effect" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="effectextendsAnnotationwithStaticAnnotation"></a><a id="effect:effect"></a>
+      <span class="permalink">
+      <a href="../../../../swam/runtime/imports/annotations/index.html#effectextendsAnnotationwithStaticAnnotation" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="If a type variable F[_] of a module class is annotated with this, then it is taken as the effect type for functions and module lookup." href="effect.html"><span class="name">effect</span></a><span class="result"> extends <span class="extype" name="scala.annotation.Annotation">Annotation</span> with <span class="extype" name="scala.annotation.StaticAnnotation">StaticAnnotation</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">If a type variable <code>F[_]</code> of a <a href="module.html" class="extype" name="swam.runtime.imports.annotations.module">module</a> class is annotated with this, then it is taken
+as the effect type for functions and module lookup.</p><div class="fullcomment"><div class="comment cmt"><p>If a type variable <code>F[_]</code> of a <a href="module.html" class="extype" name="swam.runtime.imports.annotations.module">module</a> class is annotated with this, then it is taken
+as the effect type for functions and module lookup.</p><p>It requires a <code>MonadError[F, Throwable]</code>..
+</p></div></div>
+    </li><li name="swam.runtime.imports.annotations.effectful" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="effectfulextendsAnnotationwithStaticAnnotation"></a><a id="effectful:effectful"></a>
+      <span class="permalink">
+      <a href="../../../../swam/runtime/imports/annotations/index.html#effectfulextendsAnnotationwithStaticAnnotation" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="def members marked with this annotation are exported as a function" href="effectful.html"><span class="name">effectful</span></a><span class="result"> extends <span class="extype" name="scala.annotation.Annotation">Annotation</span> with <span class="extype" name="scala.annotation.StaticAnnotation">StaticAnnotation</span></span>
+      </span>
+      
+      <p class="shortcomment cmt"><code>def</code> members marked with this annotation are exported as a function</p><div class="fullcomment"><div class="comment cmt"><p><code>def</code> members marked with this annotation are exported as a function</p><p>The parameter and return types must have a <a href="../../formats/SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>.</p><p>Providing the <code>name</code> parameter will override the export name. By default the member name is taken.
+</p></div></div>
+    </li><li name="swam.runtime.imports.annotations.global" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="globalextendsAnnotationwithStaticAnnotation"></a><a id="global:global"></a>
       <span class="permalink">
       <a href="../../../../swam/runtime/imports/annotations/index.html#globalextendsAnnotationwithStaticAnnotation" title="Permalink">
@@ -250,6 +298,24 @@ field. <code>val</code>s are exported as constant global, and <code>var</code>s 
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="swam.runtime.imports.annotations.pure" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="pureextendsAnnotationwithStaticAnnotation"></a><a id="pure:pure"></a>
+      <span class="permalink">
+      <a href="../../../../swam/runtime/imports/annotations/index.html#pureextendsAnnotationwithStaticAnnotation" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="def members marked with this annotation are exported as pure functions." href="pure.html"><span class="name">pure</span></a><span class="result"> extends <span class="extype" name="scala.annotation.Annotation">Annotation</span> with <span class="extype" name="scala.annotation.StaticAnnotation">StaticAnnotation</span></span>
+      </span>
+      
+      <p class="shortcomment cmt"><code>def</code> members marked with this annotation are exported as pure functions.</p><div class="fullcomment"><div class="comment cmt"><p><code>def</code> members marked with this annotation are exported as pure functions.
+If you want to make side-effects, throw exctpion, and so on, please use <a href="effectful.html" class="extype" name="swam.runtime.imports.annotations.effectful">effectful</a> instead.</p><p>The parameter and return types must have a <a href="../../formats/SimpleValueFormatter.html" class="extype" name="swam.runtime.formats.SimpleValueFormatter">SimpleValueFormatter</a>.</p><p>Providing the <code>name</code> parameter will override the export name. By default the member name is taken.
+</p></div></div>
     </li></ol>
             </div>
 
