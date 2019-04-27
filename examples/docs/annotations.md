@@ -22,13 +22,13 @@ import swam.runtime.formats.DefaultFormatters._
 @module
 class MyModule {
 
-  @swam.runtime.imports.annotations.global
+  @global
   val v1: Int = 23
 
-  @swam.runtime.imports.annotations.global(name = "test")
+  @global(name = "test")
   val v2: Double = 2.0d
 
-  @swam.runtime.imports.annotations.global
+  @global
   var v3: Int = 45
 
 }
@@ -79,7 +79,7 @@ Let's assume we have a simple `add42` function, written in scala:
 @module
 class PureModule {
 
-  @swam.runtime.imports.annotations.pure
+  @pure
   def add42(i: Int): Int = i + 42
 
 }
@@ -117,9 +117,9 @@ import cats._
 import scala.language.higherKinds
 
 @module
-class EffectfulModule[@swam.runtime.imports.annotations.effect F[_]](implicit F: Applicative[F]) {
+class EffectfulModule[@effect F[_]](implicit F: Applicative[F]) {
 
-  @swam.runtime.imports.annotations.effectful
+  @effectful
   def log(i: Int): F[Unit] = F.pure(println(s"got: $i"))
 
 }
