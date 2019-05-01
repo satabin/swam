@@ -193,7 +193,7 @@ This type must be unique, and all effectful functions must use it.</p>
 <span class="k">val</span> <span class="n">mIO</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">EffectfulModule</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
 </code></pre></div></div>
 
-<p>Now, WebAssembly modules can <a href="/examples/effectful-annotation.wat">import that module and use the effectful function</a>:</p>
+<p>Now, WebAssembly modules can <a href="/examples/effectful-annotations.wat">import that module and use the effectful function</a>:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="n">logged</span> <span class="k">=</span> <span class="o">(</span><span class="k">for</span> <span class="o">{</span>
   <span class="n">engine</span> <span class="k">&lt;-</span> <span class="n">engine</span>
