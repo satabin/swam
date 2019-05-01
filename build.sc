@@ -17,7 +17,7 @@ import headers.Headers
 import $file.mdoc
 import mdoc.MdocModule
 
-import $ivy.`com.lihaoyi::mill-contrib-bloop:0.3.6-82-b2d480`
+import $ivy.`com.lihaoyi::mill-contrib-bloop:0.3.6-85-38fce6`
 
 val swamVersion = "0.2.0-SNAPSHOT"
 
@@ -51,12 +51,12 @@ object core extends SwamModule with PublishModule {
 
   def ivyDeps = Agg(
     ivy"com.beachape::enumeratum:1.5.13",
-    ivy"co.fs2::fs2-core:1.0.0",
-    ivy"org.scodec::scodec-stream:1.2.0",
+    ivy"co.fs2::fs2-core:1.0.4",
+    ivy"org.scodec::scodec-stream:1.2.1",
     ivy"com.github.pureconfig::pureconfig-generic:$pureconfigVersion",
     ivy"com.github.pureconfig::pureconfig-squants:$pureconfigVersion",
     ivy"com.github.pureconfig::pureconfig-cats-effect:$pureconfigVersion",
-    ivy"org.scodec::core:1.10.4")
+    ivy"org.scodec::scodec-core:1.11.3")
 
   def publishVersion = swamVersion
 
@@ -72,7 +72,7 @@ object core extends SwamModule with PublishModule {
 
   object test extends Tests with ScalafmtModule {
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest:0.6.4")
+      ivy"com.lihaoyi::utest:0.6.7")
     def testFrameworks = Seq("swam.util.Framework")
     def moduleDeps = Seq(core, util.test)
   }
@@ -83,8 +83,8 @@ object text extends SwamModule with PublishModule {
   def moduleDeps = Seq(core)
 
   def ivyDeps = Agg(
-    ivy"com.lihaoyi::fastparse:2.1.0",
-    ivy"co.fs2::fs2-io:1.0.0")
+    ivy"com.lihaoyi::fastparse:2.1.2",
+    ivy"co.fs2::fs2-io:1.0.4")
 
   def publishVersion = swamVersion
 
@@ -118,9 +118,9 @@ object runtime extends SwamModule with PublishModule {
 
   object test extends Tests with ScalafmtModule {
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest:0.6.4",
-      ivy"com.github.pathikrit::better-files:3.5.0",
-      ivy"com.lihaoyi::pprint:0.5.3")
+      ivy"com.lihaoyi::utest:0.6.7",
+      ivy"com.github.pathikrit::better-files:3.7.1",
+      ivy"com.lihaoyi::pprint:0.5.4")
     def testFrameworks = Seq("swam.util.Framework")
     def moduleDeps = Seq(runtime, text, util.test)
   }
@@ -143,8 +143,8 @@ object util extends SwamModule {
 
   object test extends SwamModule {
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest:0.6.4",
-      ivy"com.github.pathikrit::better-files:3.5.0")
+      ivy"com.lihaoyi::utest:0.6.7",
+      ivy"com.github.pathikrit::better-files:3.7.1")
   }
 
 }
