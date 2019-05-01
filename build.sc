@@ -19,7 +19,7 @@ import mdoc.MdocModule
 
 import $ivy.`com.lihaoyi::mill-contrib-bloop:0.3.6-85-38fce6`
 
-val swamVersion = "0.2.0"
+val swamVersion = "0.3.0-SNAPSHOT"
 
 val swamLicense = License.`Apache-2.0`
 
