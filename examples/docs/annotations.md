@@ -127,7 +127,7 @@ class EffectfulModule[@effect F[_]](implicit F: Applicative[F]) {
 val mIO = new EffectfulModule[IO]
 ```
 
-Now, WebAssembly modules can [import that module and use the effectful function](/examples/effectful-annotation.wat):
+Now, WebAssembly modules can [import that module and use the effectful function](/examples/effectful-annotations.wat):
 
 ```scala mdoc:silent
 val logged = (for {
