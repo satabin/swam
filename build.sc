@@ -205,7 +205,7 @@ def unidoc(ev: Evaluator) = T.command {
 
   val urlString = s"${url(swamVersion)}/€{FILE_PATH}.scala#L1"
 
-  val options = Seq("-d", javadocDir.toNIO.toString, "-usejavacp", "-doc-title", "Swam API Documentation", "-doc-version", swamVersion, "-skip-packages", "fastparse", "-doc-source-url", urlString, "-sourcepath", base) ++ pluginOptions ++ scalacOptions
+  val options = Seq("-d", javadocDir.toNIO.toString, "-usejavacp", "-doc-title", "Swam API Documentation", "-doc-version", swamVersion, "-skip-packages", "fastparse", "-doc-source-url", urlString, "-groups", "-sourcepath", base) ++ pluginOptions ++ scalacOptions
 
   val scalaCompilerClasspath = ev.evaluate(mill.api.Strict.Agg[define.Task[_]](modules.map(_.scalaCompilerClasspath): _*)).values.collect {
     case a: Agg[_] => a.items.collect {

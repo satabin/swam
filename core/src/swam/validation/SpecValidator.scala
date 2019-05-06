@@ -106,7 +106,7 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
 
   def validate(inst: Inst, ctx: Ctx): F[Ctx] =
     inst match {
-      case Const(t) =>
+      case AConst(t) =>
         F.pure(ctx.push(t))
       case Unop(t) =>
         for {
@@ -499,7 +499,7 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
 
   def validateConst(instr: Inst, ctx: Ctx): F[Unit] =
     instr match {
-      case Const(_) => F.pure(())
+      case AConst(_) => F.pure(())
       case GlobalGet(x) =>
         ctx.globals.lift(x) match {
           case Some(_) =>
