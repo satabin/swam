@@ -33,7 +33,8 @@ package object validation {
       Vector.empty[ResultType],
       None,
       Nil,
-      false
+      false,
+      None
     )
 
 }

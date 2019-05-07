@@ -33,7 +33,8 @@ case class Context[F[_]](types: Vector[FuncType],
                          labels: Vector[ResultType],
                          ret: Option[ResultType],
                          operands: List[OperandType],
-                         unreachable: Boolean)(implicit F: MonadError[F, Throwable]) {
+                         unreachable: Boolean,
+                         parent: Option[Context[F]])(implicit F: MonadError[F, Throwable]) {
 
   def withTypes(tps: Vector[FuncType]): Context[F] =
     copy(types = tps ++ types)
@@ -116,6 +117,12 @@ case class Context[F[_]](types: Vector[FuncType],
 
   def markUnreachable: Context[F] =
     copy(operands = Nil, unreachable = true)
+
+  def enterContext(lbls: Vector[ResultType]): Context[F] =
+    copy(labels = lbls ++ labels, operands = Nil, unreachable = false, parent = Some(this))
+
+  def leaveContext: F[Context[F]] =
+    parent.liftTo[F](new ValidationException("no parent context"))
 
 }
 
