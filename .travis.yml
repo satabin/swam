@@ -14,6 +14,13 @@ jobs:
         - export PATH=~/bin/mill:$PATH
         - mill runtime.compile
         - mill examples.mdoc
+    - stage: formatting
+      if: type = pull_request
+      script:
+        - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.3.6/0.3.6 && chmod +x ~/bin/mill
+        - export PATH=~/bin/mill:$PATH
+        - mill __.reformat
+        - if [[ $(git diff --exit-code --name-status) ]]; then echo 'Your code is not formatted correctly, please format it, check it and push formatted code'; exit 1; fi
 
 cache:
   directories:
