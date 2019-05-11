@@ -20,6 +20,7 @@ package runtime
 import util._
 import text._
 import test._
+import config._
 import imports._
 import unresolved._
 import validation._
@@ -34,6 +35,11 @@ import scodec.bits._
 import scodec.stream.decode.DecodingError
 
 import java.lang.{Float => JFloat, Double => JDouble}
+
+import pureconfig._
+import pureconfig.generic.auto._
+import pureconfig.module.squants._
+import pureconfig.module.catseffect._
 
 object Constant {
   def unapply(i: Inst): Option[Value] =
@@ -65,13 +71,17 @@ case class ExecutionContext(imports: Imports[IO], modules: Map[String, Instance[
 
 }
 
-class ScriptEngine {
+class ScriptEngine(useLowLevel: Boolean) {
 
   import ScriptEngine._
 
   val IO = implicitly[Effect[IO]]
 
-  val engine = Engine[IO]
+  val engine =
+    for {
+      validator <- Validator[IO]
+      conf <- loadConfigF[IO, EngineConfiguration]("swam.runtime")
+    } yield Engine[IO](conf.copy(useLowLevelAsm = useLowLevel), validator)
 
   val tcompiler = Compiler[IO]
 

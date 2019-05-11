@@ -1,6 +1,10 @@
 language: scala
 dist: xenial
 
+env:
+  global:
+    - JAVA_OPTS: -Xss4m
+
 jobs:
   include:
     - stage: test
@@ -8,7 +12,8 @@ jobs:
         - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.3.6/0.3.6 && chmod +x ~/bin/mill
         - export PATH=~/bin/mill:$PATH
         - mill runtime.compile
-        - mill runtime.test
+        - mill runtime.test.low
+        - mill runtime.test.high
     - script:
         - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.3.6/0.3.6 && chmod +x ~/bin/mill
         - export PATH=~/bin/mill:$PATH
