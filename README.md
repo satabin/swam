@@ -13,7 +13,7 @@ To build it, we use [mill](http://www.lihaoyi.com/mill/). Mill is not packaged a
 If you want to run the specification tests, just type:
 
 ```sh
-mill runtime.test
+mill runtime.test.low
 ```
 
 It you want to test swam in a REPL session, just type tostart an ammonite shell with runtime project in classpath.:
