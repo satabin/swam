@@ -173,27 +173,32 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Effect[
                                env.localNames,
                                fidx)
           // build the map from index to type
-          val types = imports.zipWithIndex.collect {
-            case (u.Import(_, _, u.ImportDesc.Func(id, u.TypeUse(_, ps, rs))), idx) =>
-              val i = id match {
-                case u.SomeId(_) => Right(id)
-                case _           => Left(idx)
-              }
-              (i -> FuncType(ps.map(_._2), rs))
-          } ++ functions.zipWithIndex.map {
+          val types = imports
+            .foldLeft((0, List.empty[(u.Index, FuncType)])) {
+              case ((idx, acc), u.Import(_, _, u.ImportDesc.Func(id, u.TypeUse(_, ps, rs)))) =>
+                val f = FuncType(ps.map(_._2), rs)
+                val acc1 = id.toOption match {
+                  case Some(_) => (Right(id) -> f) :: (Left(idx) -> f) :: acc
+                  case None     => (Left(idx) -> f) :: acc
+                }
+                (idx + 1, acc1)
+              case (acc, _) => acc
+            }
+            ._2 ++ functions.zipWithIndex.flatMap {
             case (u.Function(id, u.TypeUse(_, ps, rs), _, _), idx) =>
-              val i = id match {
-                case u.SomeId(_) => Right(id)
-                case _           => Left(idx + fidx)
+              val f = FuncType(ps.map(_._2), rs)
+              id.toOption match {
+                case Some(_) => List(Right(id) -> f, Left(idx + fidx) -> f)
+                case None     => List(Left(idx + fidx) -> f)
               }
-              (i -> FuncType(ps.map(_._2), rs))
           }
           val id = env.moduleName match {
             case Some(Valid(n)) => u.SomeId(n)
             case _              => u.NoId
           }
+          val functypes = types.toMap
           (u.Module(id, imports ++ exports ++ memories ++ data ++ tables ++ elems ++ start ++ functions)(-1),
-           types.toMap)
+           functypes)
         case None =>
           (u.Module(u.NoId, Seq.empty)(-1), Map.empty)
       }
@@ -218,13 +223,13 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Effect[
         decompile(rest, types, functionNames, imp +: acc, fidx + 1)
       case Seq(Import.Table(mod, name, tpe), rest @ _*) =>
         val imp = u.Import(mod, name, u.ImportDesc.Table(u.NoId, tpe)(-1))(-1)
-        decompile(rest, types, functionNames, imp +: acc, fidx + 1)
+        decompile(rest, types, functionNames, imp +: acc, fidx)
       case Seq(Import.Memory(mod, name, tpe), rest @ _*) =>
         val imp = u.Import(mod, name, u.ImportDesc.Memory(u.NoId, tpe)(-1))(-1)
-        decompile(rest, types, functionNames, imp +: acc, fidx + 1)
+        decompile(rest, types, functionNames, imp +: acc, fidx)
       case Seq(Import.Global(mod, name, tpe), rest @ _*) =>
         val imp = u.Import(mod, name, u.ImportDesc.Global(u.NoId, tpe)(-1))(-1)
-        decompile(rest, types, functionNames, imp +: acc, fidx + 1)
+        decompile(rest, types, functionNames, imp +: acc, fidx)
     }
 
   private def decompile(exports: Seq[Export], functionNames: Map[Int, String]): Seq[u.Export] =
@@ -268,7 +273,7 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Effect[
           functionNames.get(idx) match {
             case Some(Valid(n)) => Right(u.SomeId(n))
             case _              => Left(idx)
-        })
+          })
         u.Elem(Left(idx), decompileExpr(offset, -1, functypes, functionNames, localNames), funs)(-1)
     }
 

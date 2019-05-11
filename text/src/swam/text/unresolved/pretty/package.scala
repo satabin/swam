@@ -386,10 +386,14 @@ package object pretty {
 
   def foldedif(i: If, cond: Doc)(implicit E: Pretty[Expr]): Doc = {
     val If(lbl, tpe, t, elselbl, e, endlbl) = i
+    val hasElse = e.nonEmpty
     group(
       nest(2, str("(if") ++ lbl.pretty ++ tpe.pretty ++ line ++ cond) ++ line ++ group(nest(
         2,
-        str("(then") ++ line ++ t.pretty) ++ str(")")) ++ line ++ nest(2, str("(else") ++ line ++ e.pretty) ++ str(")"))
+        str("(then") ++ line ++ t.pretty) ++ str(")")) ++ (if (hasElse)
+                                                             line ++ nest(2, str("(else") ++ line ++ e.pretty) ++ str(
+                                                               ")")
+                                                           else empty) ++ str(")"))
 
   }
 
