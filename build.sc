@@ -116,13 +116,23 @@ object runtime extends SwamModule with PublishModule {
     versionControl = VersionControl.github("satabin", "swam"),
     developers = Seq(swamDeveloper))
 
-  object test extends Tests with ScalafmtModule {
+  object test extends SwamModule with ScalafmtModule {
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest:0.6.7",
       ivy"com.github.pathikrit::better-files:3.7.1",
       ivy"com.lihaoyi::pprint:0.5.4")
-    def testFrameworks = Seq("swam.util.Framework")
     def moduleDeps = Seq(runtime, text, util.test)
+
+    object low extends Tests with ScalafmtModule {
+      def moduleDeps = Seq(runtime.test)
+      def testFrameworks = Seq("swam.util.Framework")
+    }
+
+    object high extends Tests with ScalafmtModule {
+      def moduleDeps = Seq(runtime.test)
+      def testFrameworks = Seq("swam.util.Framework")
+    }
+
   }
 
 }
