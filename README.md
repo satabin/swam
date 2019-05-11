@@ -8,7 +8,7 @@
 
 ## Getting Started
 
-To build it, we use [mill](http://www.lihaoyi.com/mill/). Mill is not packaged all Linux distributions, but you can use curl to install it (see Installation instructions in the [doc](http://www.lihaoyi.com/mill/)):
+To build it, we use [mill](http://www.lihaoyi.com/mill/). Mill is not packaged for all Linux distributions, but you can use curl to install it (see Installation instructions in the [doc](http://www.lihaoyi.com/mill/)):
 
 If you want to run the specification tests, just type:
 
