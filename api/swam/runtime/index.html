@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>Swam API Documentation 0.2.0 - swam.runtime</title>
-          <meta name="description" content="Swam API Documentation 0.2.0 - swam.runtime" />
-          <meta name="keywords" content="Swam API Documentation 0.2.0 swam.runtime" />
+          <title>Swam API Documentation 0.3.0-SNAPSHOT - swam.runtime</title>
+          <meta name="description" content="Swam API Documentation 0.3.0 - SNAPSHOT - swam.runtime" />
+          <meta name="keywords" content="Swam API Documentation 0.3.0 SNAPSHOT swam.runtime" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">Swam API Documentation<span id="doc-version">0.2.0</span></span>
+        <span id="doc-title">Swam API Documentation<span id="doc-version">0.3.0-SNAPSHOT</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -268,6 +268,10 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a href="CompiledElem.html" title="">CompiledElem</a>
                       </li><li class="current-entities indented2">
                         <span class="separator"></span>
+                        <a class="object" href="Constant$.html" title=""></a>
+                        <a href="Constant$.html" title="">Constant</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
                         <a class="class" href="ConversionException.html" title="Raised when trying to type interface elements with invalid types."></a>
                         <a href="ConversionException.html" title="Raised when trying to type interface elements with invalid types.">ConversionException</a>
                       </li><li class="current-entities indented2">
@@ -278,6 +282,10 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a class="object" href="Engine$.html" title=""></a>
                         <a class="class" href="Engine.html" title="This is the engine used to compile, instantiate and run modules."></a>
                         <a href="Engine.html" title="This is the engine used to compile, instantiate and run modules.">Engine</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="ExecutionContext.html" title=""></a>
+                        <a href="ExecutionContext.html" title="">ExecutionContext</a>
                       </li><li class="current-entities indented2">
                         <a class="object" href="Export$.html" title=""></a>
                         <a class="trait" href="Export.html" title=""></a>
@@ -335,6 +343,14 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
                         <a class="class" href="RuntimeException.html" title="Raised when something goes wrong during module execution."></a>
                         <a href="RuntimeException.html" title="Raised when something goes wrong during module execution.">RuntimeException</a>
                       </li><li class="current-entities indented2">
+                        <a class="object" href="ScriptEngine$.html" title=""></a>
+                        <a class="class" href="ScriptEngine.html" title=""></a>
+                        <a href="ScriptEngine.html" title="">ScriptEngine</a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="ScriptException.html" title=""></a>
+                        <a href="ScriptException.html" title="">ScriptException</a>
+                      </li><li class="current-entities indented2">
                         <span class="separator"></span>
                         <a class="trait" href="StackFrame.html" title="Interface of a stack frame, making it possible to create a call stack on trap for reporting purpose."></a>
                         <a href="StackFrame.html" title="Interface of a stack frame, making it possible to create a call stack on trap for reporting purpose.">StackFrame</a>
@@ -366,10 +382,11 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="" href="../syntax/index.html"><span class="name">syntax</span></a>
+        <a title="Instructions in this package are grouped by category as described in the specification." href="../syntax/index.html"><span class="name">syntax</span></a>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
+      <p class="shortcomment cmt">Instructions in this package are grouped by category as described <a href="https://webassembly.github.io/spec/core/syntax/instructions.html#numeric-instructions" target="_blank">in the specification</a>.</p><div class="fullcomment"><div class="comment cmt"><p>Instructions in this package are grouped by category as described <a href="https://webassembly.github.io/spec/core/syntax/instructions.html#numeric-instructions" target="_blank">in the specification</a>.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
     </li><li name="swam.text" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="text"></a><a id="text:text"></a>
       <span class="permalink">
@@ -383,6 +400,22 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       <span class="symbol">
         <a title="" href="../text/index.html"><span class="name">text</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
+    </li><li name="swam.traversal" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="traversal"></a><a id="traversal:traversal"></a>
+      <span class="permalink">
+      <a href="../swam/index.html#traversal" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../traversal/index.html"><span class="name">traversal</span></a>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
@@ -470,7 +503,7 @@ A typical use of the engine is:</p><pre><span class="kw">import</span> swam._
   res <span class="kw">&lt;-</span> f(<span class="num">43</span>)
 } <span class="kw">yield</span> res
 
-println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Source</dt><dd><a href="http://github.com/satabin/swam/tree/0.2.0//runtime/src/swam/runtime/package.scala#L1" target="_blank">package.scala</a></dd></dl><div class="toggleContainer block">
+println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Source</dt><dd><a href="http://github.com/satabin/swam/tree/master//runtime/src/swam/runtime/package.scala#L1" target="_blank">package.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -637,6 +670,22 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Source
 It exposes all the needed interface to interact with modules.</p><p>You typically want to reuse the same instance for all your executions
 over the same effectful type <code>F</code>.
 </p></div></div>
+    </li><li name="swam.runtime.ExecutionContext" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ExecutionContextextendsProductwithSerializable"></a><a id="ExecutionContext:ExecutionContext"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/index.html#ExecutionContextextendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="ExecutionContext.html"><span class="name">ExecutionContext</span></a><span class="params">(<span name="imports">imports: <a href="imports/Imports.html" class="extype" name="swam.runtime.imports.Imports">Imports</a>[<span class="extype" name="cats.effect.IO">IO</span>]</span>, <span name="modules">modules: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="cats.effect.IO">IO</span>]]</span>, <span name="last">last: <span class="extype" name="scala.Option">Option</span>[<a href="Instance.html" class="extype" name="swam.runtime.Instance">Instance</a>[<span class="extype" name="cats.effect.IO">IO</span>]]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
     </li><li name="swam.runtime.Export" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="ExportextendsAnyRef"></a><a id="Export:Export"></a>
       <span class="permalink">
@@ -806,6 +855,38 @@ instance may lead to undefined behaviors.</p></div></div>
       </span>
       
       <p class="shortcomment cmt">Raised when something goes wrong during module execution.</p>
+    </li><li name="swam.runtime.ScriptEngine" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ScriptEngineextendsAnyRef"></a><a id="ScriptEngine:ScriptEngine"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/index.html#ScriptEngineextendsAnyRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="ScriptEngine.html"><span class="name">ScriptEngine</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      
+      
+    </li><li name="swam.runtime.ScriptException" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ScriptExceptionextendsException"></a><a id="ScriptException:ScriptException"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/index.html#ScriptExceptionextendsException" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="ScriptException.html"><span class="name">ScriptException</span></a><span class="result"> extends <span class="extype" name="scala.Exception">Exception</span></span>
+      </span>
+      
+      
     </li><li name="swam.runtime.StackFrame" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="StackFrameextendsAnyRef"></a><a id="StackFrame:StackFrame"></a>
       <span class="permalink">
@@ -914,6 +995,22 @@ lead to undefined behaviors.</p></div></div>
       </span>
       
       <p class="shortcomment cmt">The size in bytes of a memory page.</p>
+    </li><li name="swam.runtime.Constant" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Constant"></a><a id="Constant:Constant"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/index.html#Constant" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="Constant$.html"><span class="name">Constant</span></a>
+      </span>
+      
+      
     </li><li name="swam.runtime.Engine" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Engine"></a><a id="Engine:Engine"></a>
       <span class="permalink">
@@ -1023,6 +1120,22 @@ lead to undefined behaviors.</p></div></div>
       </span>
       <span class="symbol">
         <a title="" href="Import$.html"><span class="name">Import</span></a>
+      </span>
+      
+      
+    </li><li name="swam.runtime.ScriptEngine" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ScriptEngine"></a><a id="ScriptEngine:ScriptEngine"></a>
+      <span class="permalink">
+      <a href="../../swam/runtime/index.html#ScriptEngine" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="ScriptEngine$.html"><span class="name">ScriptEngine</span></a>
       </span>
       
       

@@ -3,9 +3,9 @@
         <head>
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <title>Swam API Documentation 0.2.0 - swam.validation</title>
-          <meta name="description" content="Swam API Documentation 0.2.0 - swam.validation" />
-          <meta name="keywords" content="Swam API Documentation 0.2.0 swam.validation" />
+          <title>Swam API Documentation 0.3.0-SNAPSHOT - swam.validation</title>
+          <meta name="description" content="Swam API Documentation 0.3.0 - SNAPSHOT - swam.validation" />
+          <meta name="keywords" content="Swam API Documentation 0.3.0 SNAPSHOT swam.validation" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
@@ -28,7 +28,7 @@
         </head>
         <body>
       <div id="search">
-        <span id="doc-title">Swam API Documentation<span id="doc-version">0.2.0</span></span>
+        <span id="doc-title">Swam API Documentation<span id="doc-version">0.3.0-SNAPSHOT</span></span>
         <span class="close-results"><span class="left">&lt;</span> Back</span>
         <div id="textfilter">
           <span class="input">
@@ -170,10 +170,11 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="" href="../syntax/index.html"><span class="name">syntax</span></a>
+        <a title="Instructions in this package are grouped by category as described in the specification." href="../syntax/index.html"><span class="name">syntax</span></a>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
+      <p class="shortcomment cmt">Instructions in this package are grouped by category as described <a href="https://webassembly.github.io/spec/core/syntax/instructions.html#numeric-instructions" target="_blank">in the specification</a>.</p><div class="fullcomment"><div class="comment cmt"><p>Instructions in this package are grouped by category as described <a href="https://webassembly.github.io/spec/core/syntax/instructions.html#numeric-instructions" target="_blank">in the specification</a>.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
     </li><li name="swam.text" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="text"></a><a id="text:text"></a>
       <span class="permalink">
@@ -187,6 +188,22 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       <span class="symbol">
         <a title="" href="../text/index.html"><span class="name">text</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
+    </li><li name="swam.traversal" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="traversal"></a><a id="traversal:traversal"></a>
+      <span class="permalink">
+      <a href="../swam/index.html#traversal" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../traversal/index.html"><span class="name">traversal</span></a>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="swam">swam</a></dd></dl></div>
@@ -240,10 +257,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       
     </li><li class="current-entities indented2">
                         <span class="separator"></span>
-                        <a class="object" href="Const$.html" title=""></a>
-                        <a href="Const$.html" title="">Const</a>
-                      </li><li class="current-entities indented2">
-                        <span class="separator"></span>
                         <a class="class" href="Context.html" title="A validation context, used when performing module and instruction validation."></a>
                         <a href="Context.html" title="A validation context, used when performing module and instruction validation.">Context</a>
                       </li><li class="current-entities indented2">
@@ -294,7 +307,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="http://github.com/satabin/swam/tree/0.2.0//core/src/swam/validation/package.scala#L1" target="_blank">package.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="http://github.com/satabin/swam/tree/master//core/src/swam/validation/package.scala#L1" target="_blank">package.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -358,7 +371,7 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a title="A validation context, used when performing module and instruction validation." href="Context.html"><span class="name">Context</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span name="types">types: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="funcs">funcs: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="tables">tables: <span class="extype" name="scala.Vector">Vector</span>[<a href="../TableType.html" class="extype" name="swam.TableType">TableType</a>]</span>, <span name="mems">mems: <span class="extype" name="scala.Vector">Vector</span>[<a href="../MemType.html" class="extype" name="swam.MemType">MemType</a>]</span>, <span name="globals">globals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../GlobalType.html" class="extype" name="swam.GlobalType">GlobalType</a>]</span>, <span name="locals">locals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ValType.html" class="extype" name="swam.ValType">ValType</a>]</span>, <span name="labels">labels: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="ret">ret: <span class="extype" name="scala.Option">Option</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="operands">operands: <span class="extype" name="scala.List">List</span>[<a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a>]</span>, <span name="unreachable">unreachable: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.validation.Context.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a title="A validation context, used when performing module and instruction validation." href="Context.html"><span class="name">Context</span></a><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span name="types">types: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="funcs">funcs: <span class="extype" name="scala.Vector">Vector</span>[<a href="../FuncType.html" class="extype" name="swam.FuncType">FuncType</a>]</span>, <span name="tables">tables: <span class="extype" name="scala.Vector">Vector</span>[<a href="../TableType.html" class="extype" name="swam.TableType">TableType</a>]</span>, <span name="mems">mems: <span class="extype" name="scala.Vector">Vector</span>[<a href="../MemType.html" class="extype" name="swam.MemType">MemType</a>]</span>, <span name="globals">globals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../GlobalType.html" class="extype" name="swam.GlobalType">GlobalType</a>]</span>, <span name="locals">locals: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ValType.html" class="extype" name="swam.ValType">ValType</a>]</span>, <span name="labels">labels: <span class="extype" name="scala.Vector">Vector</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="ret">ret: <span class="extype" name="scala.Option">Option</span>[<a href="../ResultType.html" class="extype" name="swam.ResultType">ResultType</a>]</span>, <span name="operands">operands: <span class="extype" name="scala.List">List</span>[<a href="OperandType.html" class="extype" name="swam.validation.OperandType">OperandType</a>]</span>, <span name="unreachable">unreachable: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="parent">parent: <span class="extype" name="scala.Option">Option</span>[<a href="Context.html" class="extype" name="swam.validation.Context">Context</a>[<span class="extype" name="swam.validation.Context.F">F</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.validation.Context.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       
       <p class="shortcomment cmt">A validation context, used when performing module and instruction validation.</p>
@@ -447,22 +460,6 @@ println(res.unsafeRunSync())</pre></div><dl class="attributes block"> <dt>Defini
       </span>
       <span class="symbol">
         <span class="name">EmptyContext</span><span class="tparams">[<span name="F">F<span class="tparams">[<span name="_">_</span>]</span></span>]</span><span class="params">(<span class="implicit">implicit </span><span name="F">F: <span class="extype" name="cats.MonadError">MonadError</span>[<span class="extype" name="swam.validation.EmptyContext.F">F</span>, <span class="extype" name="scala.Throwable">Throwable</span>]</span>)</span><span class="result">: <a href="Context.html" class="extype" name="swam.validation.Context">Context</a>[<span class="extype" name="swam.validation.EmptyContext.F">F</span>]</span>
-      </span>
-      
-      
-    </li><li name="swam.validation.Const" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="Const"></a><a id="Const:Const"></a>
-      <span class="permalink">
-      <a href="../../swam/validation/index.html#Const" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a title="" href="Const$.html"><span class="name">Const</span></a>
       </span>
       
       
