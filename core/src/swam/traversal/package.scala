@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Lucas Satabin
+ * Copyright 2019 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,30 @@
 
 package swam
 
+import syntax._
+
 import cats._
+import cats.implicits._
+
+import fs2._
+
+import scala.collection.immutable.VectorBuilder
 
 import scala.language.higherKinds
 
-package object validation {
+package object traversal {
 
-  def EmptyContext[F[_]](implicit F: MonadError[F, Throwable]): Context[F] =
-    Context[F](
-      Vector.empty[FuncType],
-      Vector.empty[FuncType],
-      Vector.empty[TableType],
-      Vector.empty[MemType],
-      Vector.empty[GlobalType],
-      Vector.empty[ValType],
-      Vector.empty[ResultType],
-      None,
-      Nil,
-      false,
-      None
-    )
+  implicit class VectorOps[A](val v: Vector[A]) extends AnyVal {
+    def mapAccumulateM[F[_], Acc, B](z: Acc)(f: (Acc, A) => F[(Acc, B)])(implicit F: Monad[F]): F[(Acc, Vector[B])] =
+      v.foldM((z, new VectorBuilder[B])) {
+          case ((acc, builder), a) =>
+            f(acc, a).map {
+              case (acc, b) => (acc, builder += b)
+            }
+        }
+        .map {
+          case (acc, vb) => (acc, vb.result)
+        }
+  }
 
 }

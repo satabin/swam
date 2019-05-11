@@ -19,50 +19,112 @@ package syntax
 
 sealed abstract class Inst(val opcode: OpCode)
 
+/** A value-type constant.
+  *
+  * @group Category
+  */
+sealed abstract class AConst(val tpe: ValType, opcode: OpCode) extends Inst(opcode)
+object AConst {
+  def unapply(const: AConst): Option[ValType] =
+    Some(const.tpe)
+}
+
+/** A unary operator.
+  *
+  * @group Category
+  */
 sealed abstract class Unop(val tpe: ValType, opcode: OpCode) extends Inst(opcode)
 object Unop {
   def unapply(unop: Unop): Option[ValType] =
     Some(unop.tpe)
 }
 
+/** A binary operator.
+  *
+  * @group Category
+  */
 sealed abstract class Binop(val tpe: ValType, opcode: OpCode) extends Inst(opcode)
 object Binop {
   def unapply(binop: Binop): Option[ValType] =
     Some(binop.tpe)
 }
 
+/** A test operator.
+  *
+  * @group Category
+  */
 sealed abstract class Testop(val tpe: ValType, opcode: OpCode) extends Inst(opcode)
 object Testop {
   def unapply(testop: Testop): Option[ValType] =
     Some(testop.tpe)
 }
 
+/** A relation operator.
+  *
+  * @group Category
+  */
 sealed abstract class Relop(val tpe: ValType, opcode: OpCode) extends Inst(opcode)
 object Relop {
   def unapply(relop: Relop): Option[ValType] =
     Some(relop.tpe)
 }
 
+/** A conversion operator.
+  *
+  * @group Category
+  */
 sealed abstract class Convertop(val from: ValType, val to: ValType, opcode: OpCode) extends Inst(opcode)
 object Convertop {
   def unapply(op: Convertop): Option[(ValType, ValType)] =
     Some(op.from -> op.to)
 }
 
+/** A integer unary operator.
+  *
+  * @group Category
+  */
 sealed abstract class IUnop(tpe: ValType, opcode: OpCode) extends Unop(tpe, opcode)
 
+/** A integer binary operator.
+  *
+  * @group Category
+  */
 sealed abstract class IBinop(tpe: ValType, opcode: OpCode) extends Binop(tpe, opcode)
 
+/** A integer test operator.
+  *
+  * @group Category
+  */
 sealed abstract class ITestop(tpe: ValType, opcode: OpCode) extends Testop(tpe, opcode)
 
+/** A integer relation operator.
+  *
+  * @group Category
+  */
 sealed abstract class IRelop(tpe: ValType, opcode: OpCode) extends Relop(tpe, opcode)
 
+/** A floating-point unary operator.
+  *
+  * @group Category
+  */
 sealed abstract class FUnop(tpe: ValType, opcode: OpCode) extends Unop(tpe, opcode)
 
+/** A floating-point binary operator.
+  *
+  * @group Category
+  */
 sealed abstract class FBinop(tpe: ValType, opcode: OpCode) extends Binop(tpe, opcode)
 
+/** A floating-point relation operator.
+  *
+  * @group Category
+  */
 sealed abstract class FRelop(tpe: ValType, opcode: OpCode) extends Relop(tpe, opcode)
 
+/** A memory loading/storing instruction.
+  *
+  * @group Category
+  */
 sealed abstract class MemoryInst(opcode: OpCode) extends Inst(opcode) {
   val offset: Int
   val align: Int
@@ -73,30 +135,50 @@ object MemoryInst {
     Some(inst.align -> inst.offset)
 }
 
+/** A memory loading instruction.
+  *
+  * @group Category
+  */
 sealed abstract class LoadInst(val tpe: ValType, opcode: OpCode) extends MemoryInst(opcode)
 object Load {
   def unapply(op: LoadInst): Option[(ValType, Int, Int)] =
     Some((op.tpe, op.align, op.offset))
 }
 
+/** A sized memory loading instruction.
+  *
+  * @group Category
+  */
 sealed abstract class LoadNInst(val tpe: ValType, val n: Int, opcode: OpCode) extends MemoryInst(opcode)
 object LoadN {
   def unapply(op: LoadNInst): Option[(ValType, Int, Int, Int)] =
     Some((op.tpe, op.n, op.align, op.offset))
 }
 
+/** A memory storing instruction.
+  *
+  * @group Category
+  */
 sealed abstract class StoreInst(val tpe: ValType, opcode: OpCode) extends MemoryInst(opcode)
 object Store {
   def unapply(op: StoreInst): Option[(ValType, Int, Int)] =
     Some((op.tpe, op.align, op.offset))
 }
 
+/** A sized memory storing instruction.
+  *
+  * @group Category
+  */
 sealed abstract class StoreNInst(val tpe: ValType, val n: Int, opcode: OpCode) extends MemoryInst(opcode)
 object StoreN {
   def unapply(op: StoreNInst): Option[(ValType, Int, Int, Int)] =
     Some((op.tpe, op.n, op.align, op.offset))
 }
 
+/** A variable instruction.
+  *
+  * @group Category
+  */
 sealed abstract class VarInst(opcode: OpCode) extends Inst(opcode) {
   val idx: Int
 }
@@ -106,9 +188,13 @@ object VarInst {
     Some(op.idx)
 }
 
+/** [[ValType.I32]] related instruction.
+  *
+  * @group Category
+  */
 object i32 {
 
-  case class Const(v: Int) extends Inst(OpCode.I32Const)
+  case class Const(v: Int) extends AConst(ValType.I32, OpCode.I32Const)
 
   case object Clz extends IUnop(ValType.I32, OpCode.I32Clz)
   case object Ctz extends IUnop(ValType.I32, OpCode.I32Ctz)
@@ -165,9 +251,13 @@ object i32 {
 
 }
 
+/** [[ValType.I64]] related instruction.
+  *
+  * @group Category
+  */
 object i64 {
 
-  case class Const(v: Long) extends Inst(OpCode.I64Const)
+  case class Const(v: Long) extends AConst(ValType.I64, OpCode.I64Const)
 
   case object Clz extends IUnop(ValType.I64, OpCode.I64Clz)
   case object Ctz extends IUnop(ValType.I64, OpCode.I64Ctz)
@@ -228,9 +318,13 @@ object i64 {
 
 }
 
+/** [[ValType.F32]] related instruction.
+  *
+  * @group Category
+  */
 object f32 {
 
-  case class Const(v: Float) extends Inst(OpCode.F32Const)
+  case class Const(v: Float) extends AConst(ValType.F32, OpCode.F32Const)
 
   case object Abs extends FUnop(ValType.F32, OpCode.F32Abs)
   case object Neg extends FUnop(ValType.F32, OpCode.F32Neg)
@@ -269,9 +363,13 @@ object f32 {
 
 }
 
+/** [[ValType.F64]] related instruction.
+  *
+  * @group Category
+  */
 object f64 {
 
-  case class Const(v: Double) extends Inst(OpCode.F64Const)
+  case class Const(v: Double) extends AConst(ValType.F64, OpCode.F64Const)
 
   case object Abs extends FUnop(ValType.F64, OpCode.F64Abs)
   case object Neg extends FUnop(ValType.F64, OpCode.F64Neg)

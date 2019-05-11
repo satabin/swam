@@ -16,6 +16,11 @@
 
 package swam
 
+/** Instructions in this package are grouped by category as described [[https://webassembly.github.io/spec/core/syntax/instructions.html#numeric-instructions in the specification]].
+  *
+  * @groupdesc Category Groups instructions by category to be handled uniformly.
+  *
+  */
 package object syntax {
 
   val EmptyModule = Module(
