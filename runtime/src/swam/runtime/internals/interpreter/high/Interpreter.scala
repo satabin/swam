@@ -41,7 +41,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
 
   def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level frame
-    val frame = Frame.makeToplevel[F](instance, conf)
+    val frame = Frame.makeToplevel[F](instance, conf.stack.high)
     // push the parameters in the stack
     frame.stack.pushValues(parameters)
     // invoke the function
@@ -53,7 +53,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
 
   def interpret(func: Function[F], parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level frame
-    val frame = Frame.makeToplevel[F](instance, conf)
+    val frame = Frame.makeToplevel[F](instance, conf.stack.high)
     // push the parameters in the stack
     frame.stack.pushValues(parameters)
     // invoke the function
@@ -65,7 +65,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
 
   def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level frame
-    val frame = Frame.makeToplevel[F](instance, conf)
+    val frame = Frame.makeToplevel[F](instance, conf.stack.high)
     // invoke the function
     invoke(frame, new FunctionInstance(FuncType(Vector(), Vector(tpe)), Vector(), code, instance)).flatMap {
       case Left(frame) => run(frame)

@@ -144,6 +144,40 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
                                            writer2: ValueWriter[F, P2]): F[e.EFunction2[P1, P2, Unit, F]] =
         e.EFunction2[P1, P2, F](name, self)
 
+      /** Returns a function for given name and type. */
+      def function3[P1, P2, P3, Ret](name: String)(implicit F: MonadError[F, Throwable],
+                                                   writer1: ValueWriter[F, P1],
+                                                   writer2: ValueWriter[F, P2],
+                                                   writer3: ValueWriter[F, P3],
+                                                   reader: ValueReader[F, Ret]): F[e.EFunction3[P1, P2, P3, Ret, F]] =
+        e.EFunction3(name, self)
+
+      /** Returns a function for given name and type. */
+      def procedure3[P1, P2, P3](name: String)(implicit F: MonadError[F, Throwable],
+                                               writer1: ValueWriter[F, P1],
+                                               writer2: ValueWriter[F, P2],
+                                               writer3: ValueWriter[F, P3]): F[e.EFunction3[P1, P2, P3, Unit, F]] =
+        e.EFunction3[P1, P2, P3, F](name, self)
+
+      /** Returns a function for given name and type. */
+      def function4[P1, P2, P3, P4, Ret](name: String)(
+          implicit F: MonadError[F, Throwable],
+          writer1: ValueWriter[F, P1],
+          writer2: ValueWriter[F, P2],
+          writer3: ValueWriter[F, P3],
+          writer4: ValueWriter[F, P4],
+          reader: ValueReader[F, Ret]): F[e.EFunction4[P1, P2, P3, P4, Ret, F]] =
+        e.EFunction4(name, self)
+
+      /** Returns a function for given name and type. */
+      def procedure4[P1, P2, P3, P4](name: String)(
+          implicit F: MonadError[F, Throwable],
+          writer1: ValueWriter[F, P1],
+          writer2: ValueWriter[F, P2],
+          writer3: ValueWriter[F, P3],
+          writer4: ValueWriter[F, P4]): F[e.EFunction4[P1, P2, P3, P4, Unit, F]] =
+        e.EFunction4[P1, P2, P3, P4, F](name, self)
+
     }
 
   }
@@ -165,7 +199,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
           module.elems(idx) match {
             case CompiledElem(coffset, init) =>
               interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
-                val offset = (roffset.get & 0x00000000ffffffffl).toInt
+                val offset = (roffset.get & 0X00000000FFFFFFFFL).toInt
                 if (offset < 0 || init.size + offset > tables(0).size) {
                   F.raiseError(new LinkException("Overflow in table initialization"))
                 } else {
@@ -189,7 +223,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
           module.data(idx) match {
             case CompiledData(coffset, init) =>
               interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
-                val offset = (roffset.get & 0x00000000ffffffffl).toInt
+                val offset = (roffset.get & 0X00000000FFFFFFFFL).toInt
                 if (offset < 0 || init.capacity + offset > memories(0).size)
                   F.raiseError(new LinkException("Overflow in memory initialization"))
                 else

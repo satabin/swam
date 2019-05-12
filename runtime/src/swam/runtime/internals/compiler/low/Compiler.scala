@@ -155,7 +155,7 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
           val cglobals =
             globals.map {
               case Global(tpe, init) =>
-                val ccode = ByteBuffer.wrap(compile(init, FunctionContext(1), ctx.functions, ctx.types)._1)
+                val ccode = ByteBuffer.wrap(compile(0, init, FunctionContext(1), ctx.functions, ctx.types)._1)
                 Glob.Compiled(CompiledGlobal(tpe, ccode))
             }
           ctx.copy(globals = ctx.globals ++ cglobals)
@@ -171,7 +171,12 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
             codes.zipWithIndex.map {
               case ((FuncBody(locals, code)), idx) =>
                 val tpe = ctx.types(ctx.funcs(idx + shift))
-                val ccode = ByteBuffer.wrap(compile(code, FunctionContext(tpe.t.size), ctx.functions, ctx.types)._1)
+                val ccode = ByteBuffer.wrap(
+                  compile(tpe.params.size + locals.map(_.count).sum,
+                          code,
+                          FunctionContext(tpe.t.size),
+                          ctx.functions,
+                          ctx.types)._1)
                 val clocals = locals.flatMap(e => Vector.fill(e.count)(e.tpe))
                 compiler.Func.Compiled(CompiledFunction(tpe, clocals, ccode))
             }
@@ -180,7 +185,7 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
           val celems =
             elems.map {
               case Elem(_, offset, init) =>
-                val coffset = ByteBuffer.wrap(compile(offset, FunctionContext(1), ctx.functions, ctx.types)._1)
+                val coffset = ByteBuffer.wrap(compile(0, offset, FunctionContext(1), ctx.functions, ctx.types)._1)
                 CompiledElem(coffset, init)
             }
           ctx.copy(elems = celems)
@@ -188,7 +193,7 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
           val cdata =
             data.map {
               case Data(_, offset, bytes) =>
-                val compiled = compile(offset, FunctionContext(1), ctx.functions, ctx.types)._1
+                val compiled = compile(0, offset, FunctionContext(1), ctx.functions, ctx.types)._1
                 val coffset =
                   if (dataOnHeap) {
                     ByteBuffer.wrap(compiled)
@@ -229,7 +234,8 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
       }
       .handleErrorWith(t => Stream.raiseError[F](new CompileException("An error occurred during compilation", t)))
 
-  private def compile(insts: Vector[Inst],
+  private def compile(nbLocals: Int,
+                      insts: Vector[Inst],
                       ctx: FunctionContext,
                       functions: Vector[FuncType],
                       types: Vector[FuncType]): (Array[Byte], FunctionContext) = {
@@ -247,7 +253,7 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
             // arity as the block and a target on break pointing right
             // after the block body.
             val label = LabelStack(ctx.labels, ctx.nxt, tpe.arity, 0)
-            val (compiled, ctx1) = compile(is, ctx.copy(labels = label, nxt = ctx.nxt + 1), functions, types)
+            val (compiled, ctx1) = compile(nbLocals, is, ctx.copy(labels = label, nxt = ctx.nxt + 1), functions, types)
             builder ++= compiled
             // the label target is then the offset right after the body has been compiled
             loop(instIdx + 1,
@@ -257,7 +263,7 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
             // when entering a new loop, push a label with arity 0
             // and a target on break pointing at the loop body start
             val label = LabelStack(ctx.labels, ctx.nxt, 0, 0)
-            val (compiled, ctx1) = compile(is, ctx.copy(labels = label, nxt = ctx.nxt + 1), functions, types)
+            val (compiled, ctx1) = compile(nbLocals, is, ctx.copy(labels = label, nxt = ctx.nxt + 1), functions, types)
             builder ++= compiled
             loop(instIdx + 1,
                  ctx1.copy(labels = ctx.labels, offsets = ctx1.offsets.updated(ctx.nxt, ctx.offset)).push(tpe.arity),
@@ -273,7 +279,8 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
             builder += Asm.JumpIf.toByte
             storeInt(builder, -1 /* placeholder */ )
             val (ecompiled, ctx2) =
-              compile(eis,
+              compile(nbLocals,
+                      eis,
                       ctx1.copy(labels = label, nxt = ctx1.nxt + 2, offset = ctx1.offset + 5 /* jumpif + label */ ),
                       functions,
                       types)
@@ -281,7 +288,8 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
             // jump right after the then part in the end
             builder += Asm.Jump.toByte
             storeInt(builder, -1 /* placeholder */ )
-            val (tcompiled, ctx3) = compile(tis, ctx2.copy(offset = ctx2.offset + 5, labels = label), functions, types)
+            val (tcompiled, ctx3) =
+              compile(nbLocals, tis, ctx2.copy(offset = ctx2.offset + 5, labels = label), functions, types)
             builder ++= tcompiled
             loop(
               instIdx + 1,
@@ -393,15 +401,15 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
             loop(instIdx + 1, ctx.pop(2 /* pop 3 push 1 */ ).copy(offset = ctx.offset + 1), false)
           case LocalGet(idx) =>
             builder += Asm.LocalGet.toByte
-            storeInt(builder, idx)
+            storeInt(builder, nbLocals - idx)
             loop(instIdx + 1, ctx.push(1).copy(offset = ctx.offset + 5), false)
           case LocalSet(idx) =>
             builder += Asm.LocalSet.toByte
-            storeInt(builder, idx)
+            storeInt(builder, nbLocals - idx)
             loop(instIdx + 1, ctx.pop(1).copy(offset = ctx.offset + 5), false)
           case LocalTee(idx) =>
             builder += Asm.LocalTee.toByte
-            storeInt(builder, idx)
+            storeInt(builder, nbLocals - idx)
             loop(instIdx + 1, ctx.copy(offset = ctx.offset + 5), false)
           case GlobalGet(idx) =>
             builder += Asm.GlobalGet.toByte

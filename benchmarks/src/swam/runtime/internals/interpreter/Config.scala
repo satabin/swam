@@ -26,6 +26,8 @@ package object interpreter {
 
   type Label = Long
 
-  val Config = EngineConfiguration(false, StackConfiguration(5.bytes, 1), DataConfiguration(true, 0.bytes))
+  val HighConfig = HighLevelStackConfiguration(5.bytes, 1)
+
+  val LowConfig = LowLevelStackConfiguration(5.bytes)
 
 }
