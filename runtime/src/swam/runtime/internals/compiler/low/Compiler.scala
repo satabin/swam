@@ -264,7 +264,7 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
                  false)
           case If(tpe, tis, eis) =>
             // when entering a new if, push a label with the same
-            // arity as the if and a target on break pointeing right
+            // arity as the if and a target on break pointing right
             // after the end of the if body
             // add a conditional jump to the then part, the else part comes first
             val ctx1 = ctx.pop(1 /* the if condition */ )
@@ -377,7 +377,7 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
             builder += op.opcode.toByte
             storeInt(builder, align)
             storeInt(builder, offset)
-            loop(instIdx + 1, ctx.copy(offset = ctx.offset + 9), false)
+            loop(instIdx + 1, ctx.pop(2).copy(offset = ctx.offset + 9), false)
           case MemoryGrow =>
             builder += Asm.MemoryGrow.toByte
             loop(instIdx + 1, ctx.copy(offset = ctx.offset + 1), false)
