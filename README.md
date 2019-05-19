@@ -23,7 +23,7 @@ mill -i runtime.repl
 ```
 
 If you want a REPL session with both runtime and text, the easiest way is to start a session for the runtime.test project:
-    
+
     $ mill -i runtime.test.repl
 
 ## Architecture
