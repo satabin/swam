@@ -179,7 +179,7 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Effect[
                 val f = FuncType(ps.map(_._2), rs)
                 val acc1 = id.toOption match {
                   case Some(_) => (Right(id) -> f) :: (Left(idx) -> f) :: acc
-                  case None     => (Left(idx) -> f) :: acc
+                  case None    => (Left(idx) -> f) :: acc
                 }
                 (idx + 1, acc1)
               case (acc, _) => acc
@@ -189,7 +189,7 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Effect[
               val f = FuncType(ps.map(_._2), rs)
               id.toOption match {
                 case Some(_) => List(Right(id) -> f, Left(idx + fidx) -> f)
-                case None     => List(Left(idx + fidx) -> f)
+                case None    => List(Left(idx + fidx) -> f)
               }
           }
           val id = env.moduleName match {
@@ -197,8 +197,7 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Effect[
             case _              => u.NoId
           }
           val functypes = types.toMap
-          (u.Module(id, imports ++ exports ++ memories ++ data ++ tables ++ elems ++ start ++ functions)(-1),
-           functypes)
+          (u.Module(id, imports ++ exports ++ memories ++ data ++ tables ++ elems ++ start ++ functions)(-1), functypes)
         case None =>
           (u.Module(u.NoId, Seq.empty)(-1), Map.empty)
       }
@@ -273,7 +272,7 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Effect[
           functionNames.get(idx) match {
             case Some(Valid(n)) => Right(u.SomeId(n))
             case _              => Left(idx)
-          })
+        })
         u.Elem(Left(idx), decompileExpr(offset, -1, functypes, functionNames, localNames), funs)(-1)
     }
 

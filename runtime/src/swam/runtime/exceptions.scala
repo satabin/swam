@@ -34,7 +34,8 @@ sealed class RuntimeException(msg: String, inner: Throwable = null) extends Swam
 final class TrapException(frame: StackFrame, msg: String) extends RuntimeException(msg)
 
 /** Raised when call stack overflows. */
-final class StackOverflowException(frame: StackFrame) extends RuntimeException("call stack exhausted")
+final class StackOverflowException(frame: StackFrame, inner: Throwable = null)
+    extends RuntimeException("call stack exhausted", inner)
 
 /** Raised when trying to type interface elements with invalid types. */
 final class ConversionException(msg: String) extends RuntimeException(msg)

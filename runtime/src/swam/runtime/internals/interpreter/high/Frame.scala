@@ -235,8 +235,8 @@ object Frame {
   private final val VALUE = 0
   private final val LABEL = 1
 
-  def makeToplevel[F[_]](instance: Instance[F], conf: EngineConfiguration)(
+  def makeToplevel[F[_]](instance: Instance[F], conf: HighLevelStackConfiguration)(
       implicit F: MonadError[F, Throwable]): Frame[F] =
-    new Frame[F](null, conf.stack.size.toBytes.toInt, conf.stack.callDepth, 0, null, null, 0, instance)
+    new Frame[F](null, conf.size.toBytes.toInt, conf.callDepth, 0, null, null, 0, instance)
 
 }

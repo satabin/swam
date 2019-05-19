@@ -28,6 +28,10 @@ import squants.information._
   */
 case class EngineConfiguration(useLowLevelAsm: Boolean, stack: StackConfiguration, data: DataConfiguration)
 
-case class StackConfiguration(size: Information, callDepth: Int)
+case class StackConfiguration(high: HighLevelStackConfiguration, low: LowLevelStackConfiguration)
 
 case class DataConfiguration(onHeap: Boolean, hardMax: Information)
+
+case class LowLevelStackConfiguration(size: Information)
+
+case class HighLevelStackConfiguration(size: Information, callDepth: Int)

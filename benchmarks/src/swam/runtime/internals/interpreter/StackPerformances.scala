@@ -40,7 +40,7 @@ class StackPerformances_01_Push {
 
   @Setup(Level.Iteration)
   def setupFrame(): Unit = {
-    frame = Frame.makeToplevel[Either[Throwable, ?]](null, Config)
+    frame = Frame.makeToplevel[Either[Throwable, ?]](null, HighConfig)
   }
 
   @Setup(Level.Invocation)
@@ -75,7 +75,7 @@ class StackPerformances_02_Pop {
 
   @Setup(Level.Iteration)
   def setupFrame(): Unit = {
-    frame = Frame.makeToplevel[Either[Throwable, ?]](null, Config)
+    frame = Frame.makeToplevel[Either[Throwable, ?]](null, HighConfig)
     frame.stack.pushInt(Random.nextInt())
     frame.stack.pushLong(Random.nextLong())
     frame.stack.pushFloat(Random.nextFloat())
