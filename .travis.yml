@@ -4,7 +4,7 @@ dist: xenial
 env:
   global:
     - JAVA_OPTS: -Xss4m
-    - MILL_VERSION: 0.3.8
+    - MILL_VERSION: 0.4.0
 
 jobs:
   include:

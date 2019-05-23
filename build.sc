@@ -17,7 +17,7 @@ import headers.Headers
 import $file.mdoc
 import mdoc.MdocModule
 
-import $ivy.`com.lihaoyi::mill-contrib-bloop:0.3.8`
+import $ivy.`com.lihaoyi::mill-contrib-bloop:0.4.0`
 
 val swamVersion = "0.3.0-SNAPSHOT"
 
@@ -27,7 +27,7 @@ val swamUrl = "https://github.com/satabin/swam"
 
 val swamDeveloper = Developer("satabin", "Lucas Satabin", "https://github.com/satabin")
 
-  val pureconfigVersion = "0.10.2"
+val pureconfigVersion = "0.10.2"
 
 trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
