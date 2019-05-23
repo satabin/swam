@@ -95,24 +95,22 @@ class ScriptEngine(useLowLevel: Boolean) {
               tcompiler <- tcompiler
               compiled <- engine.compile(tcompiler.stream(mod, true))
               instance <- compiled.importing(ctx.imports).instantiate
-            } yield
-              compiled.name match {
-                case Some(name) =>
-                  Left((rest, ctx.copy(modules = ctx.modules.updated(name, instance), last = Some(instance))))
-                case None => Left((rest, ctx.copy(last = Some(instance))))
-              }
+            } yield compiled.name match {
+              case Some(name) =>
+                Left((rest, ctx.copy(modules = ctx.modules.updated(name, instance), last = Some(instance))))
+              case None => Left((rest, ctx.copy(last = Some(instance))))
+            }
           case BinaryModule(id, bs) =>
             for {
               engine <- engine
               tcompiler <- tcompiler
               compiled <- engine.compile(BitVector(bs))
               instance <- compiled.importing(ctx.imports).instantiate
-            } yield
-              id match {
-                case Some(name) =>
-                  Left((rest, ctx.copy(modules = ctx.modules.updated(name, instance), last = Some(instance))))
-                case None => Left((rest, ctx.copy(last = Some(instance))))
-              }
+            } yield id match {
+              case Some(name) =>
+                Left((rest, ctx.copy(modules = ctx.modules.updated(name, instance), last = Some(instance))))
+              case None => Left((rest, ctx.copy(last = Some(instance))))
+            }
           case Register(name, modid) =>
             // register the given instance with import name
             for (mod <- ctx.module(cmd.pos, modid))

@@ -70,23 +70,21 @@ object ModuleParsers {
       (Index ~ word("func") ~/ id.? ~ inlineexport.rep ~ (NoCut(typeuse ~ locals ~ instrs)
         .map {
           case (tu, locals, instrs) =>
-            (idx: Int, id: Option[String], exports: Seq[String]) =>
-              {
-                val id1 =
-                  if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
-                exports.map(Export(_, ExportDesc.Func(Right(id1))(idx))(idx)) :+ Function(id1, tu, locals, instrs)(idx)
-              }
+            (idx: Int, id: Option[String], exports: Seq[String]) => {
+              val id1 =
+                if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
+              exports.map(Export(_, ExportDesc.Func(Right(id1))(idx))(idx)) :+ Function(id1, tu, locals, instrs)(idx)
+            }
         }
         | ("(" ~ word("import") ~/ string ~ string ~ ")" ~ typeuse).map {
           case (name1, name2, tu) =>
-            (idx: Int, id: Option[String], exports: Seq[String]) =>
-              {
-                val id1 =
-                  if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
-                exports
-                  .map(Export(_, ExportDesc.Func(Right(id1))(idx))(idx)) ++ Seq(
-                  Import(name1, name2, ImportDesc.Func(id1, tu)(idx))(idx))
-              }
+            (idx: Int, id: Option[String], exports: Seq[String]) => {
+              val id1 =
+                if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
+              exports
+                .map(Export(_, ExportDesc.Func(Right(id1))(idx))(idx)) ++ Seq(
+                Import(name1, name2, ImportDesc.Func(id1, tu)(idx))(idx))
+            }
         }) ~ ")").map {
         case (idx, id, exports, f) => f(idx, id, exports)
       })
@@ -94,33 +92,30 @@ object ModuleParsers {
   private def table[_: P]: P[Seq[Field]] =
     P((Index ~ word("table") ~/ id.? ~ inlineexport.rep ~ (tabletype.map {
       case (tpe) =>
-        (idx: Int, id: Option[String], exports: Seq[String]) =>
-          {
-            val id1 = if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
-            exports
-              .map(Export(_, ExportDesc.Table(Right(id1))(idx))(idx)) :+ Table(id1, tpe)(idx)
-          }
+        (idx: Int, id: Option[String], exports: Seq[String]) => {
+          val id1 = if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
+          exports
+            .map(Export(_, ExportDesc.Table(Right(id1))(idx))(idx)) :+ Table(id1, tpe)(idx)
+        }
     }
       | (elemtype ~ "(" ~ word("elem") ~/ index.rep ~ ")").map {
         case (tpe, fs) =>
-          (idx: Int, id: Option[String], exports: Seq[String]) =>
-            {
-              val id1 = idOrFresh(id, idx)
-              exports
-                .map(Export(_, ExportDesc.Table(Right(id1))(idx))(idx)) ++ Seq(
-                Table(id1, TableType(tpe, Limits(fs.size, Some(fs.size))))(idx),
-                Elem(Right(id1), Seq(i32.Const(0)(idx)), fs)(idx)
-              )
-            }
+          (idx: Int, id: Option[String], exports: Seq[String]) => {
+            val id1 = idOrFresh(id, idx)
+            exports
+              .map(Export(_, ExportDesc.Table(Right(id1))(idx))(idx)) ++ Seq(
+              Table(id1, TableType(tpe, Limits(fs.size, Some(fs.size))))(idx),
+              Elem(Right(id1), Seq(i32.Const(0)(idx)), fs)(idx)
+            )
+          }
       }
       | ("(" ~ word("import") ~/ string ~ string ~ ")" ~ tabletype).map {
         case (name1, name2, tpe) =>
-          (idx: Int, id: Option[String], exports: Seq[String]) =>
-            {
-              val id1 = if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
-              exports.map(Export(_, ExportDesc.Table(Right(id1))(idx))(idx)) :+
-                Import(name1, name2, ImportDesc.Table(id1, tpe)(idx))(idx)
-            }
+          (idx: Int, id: Option[String], exports: Seq[String]) => {
+            val id1 = if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
+            exports.map(Export(_, ExportDesc.Table(Right(id1))(idx))(idx)) :+
+              Import(name1, name2, ImportDesc.Table(id1, tpe)(idx))(idx)
+          }
       }) ~ ")").map { case (idx, id, exports, f) => f(idx, id, exports) })
 
   private def memory[_: P]: P[Seq[Field]] =
@@ -146,24 +141,22 @@ object ModuleParsers {
       }
       | ("(" ~ word("import") ~/ string ~ string ~ ")" ~ memtype).map {
         case (name1, name2, tpe) =>
-          (idx: Int, id: Option[String], exports: Seq[String]) =>
-            {
-              val id1 = if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
-              val imp = Import(name1, name2, ImportDesc.Memory(id1, tpe)(idx))(idx)
-              exports.map(Export(_, ExportDesc.Memory(Right(id1))(idx))(idx)) :+ imp
-            }
+          (idx: Int, id: Option[String], exports: Seq[String]) => {
+            val id1 = if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
+            val imp = Import(name1, name2, ImportDesc.Memory(id1, tpe)(idx))(idx)
+            exports.map(Export(_, ExportDesc.Memory(Right(id1))(idx))(idx)) :+ imp
+          }
       }) ~ ")").map { case (idx, id, exports, f) => f(idx, id, exports) })
 
   private def global[_: P]: P[Seq[Field]] =
     P((Index ~ word("global") ~/ id.? ~ inlineexport.rep ~ ((globaltype ~ expr)
       .map {
         case (tpe, e) =>
-          (idx: Int, id: Option[String], exports: Seq[String]) =>
-            {
-              val id1 = if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
-              exports
-                .map(Export(_, ExportDesc.Global(Right(id1))(idx))(idx)) :+ Global(id1, tpe, e)(idx)
-            }
+          (idx: Int, id: Option[String], exports: Seq[String]) => {
+            val id1 = if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
+            exports
+              .map(Export(_, ExportDesc.Global(Right(id1))(idx))(idx)) :+ Global(id1, tpe, e)(idx)
+          }
       }
       | ("(" ~ word("import") ~/ string ~ string ~ ")" ~ globaltype).map {
         case (name1, name2, tpe) =>

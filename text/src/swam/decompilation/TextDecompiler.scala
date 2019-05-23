@@ -272,7 +272,7 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Effect[
           functionNames.get(idx) match {
             case Some(Valid(n)) => Right(u.SomeId(n))
             case _              => Left(idx)
-        })
+          })
         u.Elem(Left(idx), decompileExpr(offset, -1, functypes, functionNames, localNames), funs)(-1)
     }
 

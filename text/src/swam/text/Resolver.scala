@@ -463,12 +463,11 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                     for {
                       idxctx <- resolveTypeUse(tpe, params, results, ctx, fld.pos)
                       (idx, ctx1) = idxctx
-                    } yield
-                      Left(
-                        (ctx.copy(typedefs = ctx.typedefs ++ ctx1.typedefs).withLocalNames(Vector(), debug),
-                         fields,
-                         resolved.copy(imports = resolved.imports :+ r.Import
-                           .Function(n1, n2, idx))))
+                    } yield Left(
+                      (ctx.copy(typedefs = ctx.typedefs ++ ctx1.typedefs).withLocalNames(Vector(), debug),
+                       fields,
+                       resolved.copy(imports = resolved.imports :+ r.Import
+                         .Function(n1, n2, idx))))
                   case ImportDesc.Table(_, tt) =>
                     F.pure(
                       Left(
@@ -502,12 +501,11 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                                 locals = ctx1.locals ++ locals.map(l => Def(l.id, l.pos)).toVector)
                 isctx <- resolveAll(insts, ctx2)
                 (insts, ctx3) = isctx
-              } yield
-                Left(
-                  (ctx3.copy(locals = Vector.empty).noImport.withLocalNames(ctx2.locals, debug),
-                   fields,
-                   resolved.copy(funcs = resolved.funcs :+ r
-                     .Func(idx, locals.map(_.tpe).toVector, insts))))
+              } yield Left(
+                (ctx3.copy(locals = Vector.empty).noImport.withLocalNames(ctx2.locals, debug),
+                 fields,
+                 resolved.copy(funcs = resolved.funcs :+ r
+                   .Func(idx, locals.map(_.tpe).toVector, insts))))
             case Table(_, tt) =>
               F.pure(Left((ctx.noImport, fields, resolved.copy(tables = resolved.tables :+ tt))))
             case Memory(_, mt) =>
@@ -521,36 +519,32 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
               desc match {
                 case ExportDesc.Func(idx) =>
                   for (idx <- resolveIndex(idx, fld.pos, ctx.funcs, "function"))
-                    yield
-                      Left(
-                        (ctx,
-                         fields,
-                         resolved.copy(exports = resolved.exports :+ r
-                           .Export(n, r.ExternalKind.Function, idx))))
+                    yield Left(
+                      (ctx,
+                       fields,
+                       resolved.copy(exports = resolved.exports :+ r
+                         .Export(n, r.ExternalKind.Function, idx))))
                 case ExportDesc.Table(idx) =>
                   for (idx <- resolveIndex(idx, fld.pos, ctx.tables, "table"))
-                    yield
-                      Left(
-                        (ctx,
-                         fields,
-                         resolved.copy(exports = resolved.exports :+ r
-                           .Export(n, r.ExternalKind.Table, idx))))
+                    yield Left(
+                      (ctx,
+                       fields,
+                       resolved.copy(exports = resolved.exports :+ r
+                         .Export(n, r.ExternalKind.Table, idx))))
                 case ExportDesc.Memory(idx) =>
                   for (idx <- resolveIndex(idx, fld.pos, ctx.mems, "mem"))
-                    yield
-                      Left(
-                        (ctx,
-                         fields,
-                         resolved.copy(exports = resolved.exports :+ r
-                           .Export(n, r.ExternalKind.Memory, idx))))
+                    yield Left(
+                      (ctx,
+                       fields,
+                       resolved.copy(exports = resolved.exports :+ r
+                         .Export(n, r.ExternalKind.Memory, idx))))
                 case ExportDesc.Global(idx) =>
                   for (idx <- resolveIndex(idx, fld.pos, ctx.globals, "global"))
-                    yield
-                      Left(
-                        (ctx,
-                         fields,
-                         resolved.copy(exports = resolved.exports :+ r
-                           .Export(n, r.ExternalKind.Global, idx))))
+                    yield Left(
+                      (ctx,
+                       fields,
+                       resolved.copy(exports = resolved.exports :+ r
+                         .Export(n, r.ExternalKind.Global, idx))))
               }
             case StartFunc(idx) =>
               resolved.start match {
@@ -572,12 +566,11 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                 midx <- resolveIndex(midx, fld.pos, ctx.mems, "memory")
                 isctx <- resolveAll(offset, ctx)
                 (offset, ctx) = isctx
-              } yield
-                Left(
-                  (ctx,
-                   fields,
-                   resolved.copy(data = resolved.data :+ r
-                     .Data(midx, offset, BitVector(data)))))
+              } yield Left(
+                (ctx,
+                 fields,
+                 resolved.copy(data = resolved.data :+ r
+                   .Data(midx, offset, BitVector(data)))))
           }
       }
     }
