@@ -210,7 +210,7 @@ object AsInterface {
         val b = _b.duplicate()
         b.order(ByteOrder.LITTLE_ENDIAN)
         def tpe: swam.MemType = MemType(Limits(b.limit() / pageSize, Some(b.capacity / pageSize)))
-        def grow(by: Int) = F.delay {
+        def unsafeGrow(by: Int) = {
           val newSize = size + by * pageSize
           if (newSize > b.capacity) {
             false
@@ -219,23 +219,23 @@ object AsInterface {
             true
           }
         }
-        def readByte(idx: Int) = F.delay(b.get(idx))
-        def readDouble(idx: Int) = F.delay(b.getDouble(idx))
-        def readFloat(idx: Int) = F.delay(b.getFloat(idx))
-        def readInt(idx: Int) = F.delay(b.getInt(idx))
-        def readLong(idx: Int) = F.delay(b.getLong(idx))
-        def readShort(idx: Int) = F.delay(b.getShort(idx))
+        def unsafeReadByte(idx: Int) = b.get(idx)
+        def unsafeReadDouble(idx: Int) = b.getDouble(idx)
+        def unsafeReadFloat(idx: Int) = b.getFloat(idx)
+        def unsafeReadInt(idx: Int) = b.getInt(idx)
+        def unsafeReadLong(idx: Int) = b.getLong(idx)
+        def unsafeReadShort(idx: Int) = b.getShort(idx)
         def size = b.limit
-        def writeByte(idx: Int, v: Byte) = F.delay(b.put(idx, v))
-        def writeBytes(idx: Int, bytes: ByteBuffer) = F.delay {
+        def unsafeWriteByte(idx: Int, v: Byte) = b.put(idx, v)
+        def unsafeWriteBytes(idx: Int, bytes: ByteBuffer) = {
           b.position(idx)
           b.put(bytes)
         }
-        def writeDouble(idx: Int, v: Double) = F.delay(b.putDouble(idx, v))
-        def writeFloat(idx: Int, v: Float) = F.delay(b.putFloat(idx, v))
-        def writeInt(idx: Int, v: Int) = F.delay(b.putInt(idx, v))
-        def writeLong(idx: Int, v: Long) = F.delay(b.putLong(idx, v))
-        def writeShort(idx: Int, v: Short) = F.delay(b.putShort(idx, v))
+        def unsafeWriteDouble(idx: Int, v: Double) = b.putDouble(idx, v)
+        def unsafeWriteFloat(idx: Int, v: Float) = b.putFloat(idx, v)
+        def unsafeWriteInt(idx: Int, v: Int) = b.putInt(idx, v)
+        def unsafeWriteLong(idx: Int, v: Long) = b.putLong(idx, v)
+        def unsafeWriteShort(idx: Int, v: Short) = b.putShort(idx, v)
 
       }
     }

@@ -233,14 +233,14 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
     }
 
   private def setvalues(elems: Funs, data: Mems)(implicit F: MonadError[F, Throwable]): F[Unit] =
-    F.pure {
+    F.catchNonFatal {
       elems.foreach {
         case (idx, f) => tables(0)(idx) = f
       }
-    } >>
-      data.foldM(()) {
-        case (_, (idx, m)) => memories(0).writeBytes(idx, m)
+      data.foreach {
+        case (idx, m) => memories(0).unsafeWriteBytes(idx, m)
       }
+    }
 
   private def start(implicit F: MonadError[F, Throwable]): F[Unit] =
     module.start match {
