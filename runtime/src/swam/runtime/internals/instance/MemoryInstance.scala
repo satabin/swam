@@ -105,8 +105,10 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
     }
 
   def unsafeWriteBytes(idx: Int, bytes: ByteBuffer) = {
+    bytes.mark()
     buffer.position(idx)
     buffer.put(bytes)
+    bytes.reset()
   }
 
 }

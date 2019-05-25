@@ -228,8 +228,10 @@ object AsInterface {
         def size = b.limit
         def unsafeWriteByte(idx: Int, v: Byte) = b.put(idx, v)
         def unsafeWriteBytes(idx: Int, bytes: ByteBuffer) = {
+          bytes.mark()
           b.position(idx)
           b.put(bytes)
+          bytes.reset()
         }
         def unsafeWriteDouble(idx: Int, v: Double) = b.putDouble(idx, v)
         def unsafeWriteFloat(idx: Int, v: Float) = b.putFloat(idx, v)

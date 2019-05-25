@@ -38,8 +38,6 @@ import scala.util.control.NonFatal
 private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadError[F, Throwable])
     extends interpreter.Interpreter[F](engine) {
 
-  private type Res = Either[Unit, Option[Long]]
-
   private val conf = engine.conf
 
   def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {

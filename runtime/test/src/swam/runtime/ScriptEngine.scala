@@ -40,6 +40,7 @@ import pureconfig._
 import pureconfig.generic.auto._
 import pureconfig.module.squants._
 import pureconfig.module.catseffect._
+import pureconfig.module.enumeratum._
 
 object Constant {
   def unapply(i: Inst): Option[Value] =
