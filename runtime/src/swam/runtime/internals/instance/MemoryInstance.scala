@@ -46,47 +46,47 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
 
   def size = buffer.capacity
 
-  def writeByte(idx: Int, v: Byte) =
-    F.delay(buffer.put(idx, v))
+  def unsafeWriteByte(idx: Int, v: Byte) =
+    buffer.put(idx, v)
 
-  def readByte(idx: Int) =
-    F.delay(buffer.get(idx))
+  def unsafeReadByte(idx: Int) =
+    buffer.get(idx)
 
-  def writeShort(idx: Int, v: Short) =
-    F.delay(buffer.putShort(idx, v))
+  def unsafeWriteShort(idx: Int, v: Short) =
+    buffer.putShort(idx, v)
 
-  def readShort(idx: Int) =
-    F.delay(buffer.getShort(idx))
+  def unsafeReadShort(idx: Int) =
+    buffer.getShort(idx)
 
-  def writeInt(idx: Int, v: Int) =
-    F.delay(buffer.putInt(idx, v))
+  def unsafeWriteInt(idx: Int, v: Int) =
+    buffer.putInt(idx, v)
 
-  def readInt(idx: Int) =
-    F.delay(buffer.getInt(idx))
+  def unsafeReadInt(idx: Int) =
+    buffer.getInt(idx)
 
-  def writeLong(idx: Int, v: Long) =
-    F.delay(buffer.putLong(idx, v))
+  def unsafeWriteLong(idx: Int, v: Long) =
+    buffer.putLong(idx, v)
 
-  def readLong(idx: Int) =
-    F.delay(buffer.getLong(idx))
+  def unsafeReadLong(idx: Int) =
+    buffer.getLong(idx)
 
-  def writeFloat(idx: Int, v: Float) =
-    F.delay(buffer.putFloat(idx, v))
+  def unsafeWriteFloat(idx: Int, v: Float) =
+    buffer.putFloat(idx, v)
 
-  def readFloat(idx: Int) =
-    F.delay(buffer.getFloat(idx))
+  def unsafeReadFloat(idx: Int) =
+    buffer.getFloat(idx)
 
-  def writeDouble(idx: Int, v: Double) =
-    F.delay(buffer.putDouble(idx, v))
+  def unsafeWriteDouble(idx: Int, v: Double) =
+    buffer.putDouble(idx, v)
 
-  def readDouble(idx: Int) =
-    F.delay(buffer.getDouble(idx))
+  def unsafeReadDouble(idx: Int) =
+    buffer.getDouble(idx)
 
-  def grow(by: Int) =
-    F.delay {
+  def unsafeGrow(by: Int) =
+    try {
       val newSize = StrictMath.addExact(size, StrictMath.multiplyExact(by, pageSize))
       check(newSize) && doGrow(newSize)
-    } recover {
+    } catch {
       case _: ArithmeticException => false
     }
 
@@ -104,9 +104,11 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
       case None      => size <= hardMax * pageSize
     }
 
-  def writeBytes(idx: Int, bytes: ByteBuffer) = F.delay {
+  def unsafeWriteBytes(idx: Int, bytes: ByteBuffer) = {
+    bytes.mark()
     buffer.position(idx)
     buffer.put(bytes)
+    bytes.reset()
   }
 
 }

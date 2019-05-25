@@ -144,13 +144,13 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
     pushInt(if (b) 1 else 0)
 
   def pushInt(i: Int): Unit =
-    pushValue(i & 0X00000000FFFFFFFFL)
+    pushValue(i & 0x00000000ffffffffl)
 
   def pushLong(l: Long): Unit =
     pushValue(l)
 
   def pushFloat(f: Float): Unit =
-    pushValue(JFloat.floatToRawIntBits(f) & 0X00000000FFFFFFFFL)
+    pushValue(JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl)
 
   def pushDouble(d: Double): Unit =
     pushValue(JDouble.doubleToRawLongBits(d))
@@ -159,10 +159,10 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
     popInt() != 0
 
   def popInt(): Int =
-    (popValue() & 0X00000000FFFFFFFFL).toInt
+    (popValue() & 0x00000000ffffffffl).toInt
 
   def peekInt(): Int =
-    (peekValue() & 0X00000000FFFFFFFFL).toInt
+    (peekValue() & 0x00000000ffffffffl).toInt
 
   def popLong(): Long =
     popValue()

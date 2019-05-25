@@ -180,7 +180,7 @@ object Instructions {
         "i32.reinterpret_f32",
         "i64.reinterpret_f64",
         "f32.reinterpret_i32",
-        "f64.reinterpret_i64",
+        "f64.reinterpret_i64"
       ) ~~ !idchar).!.map(instrmap(_))
 
   private val instrmap = Map(
@@ -313,7 +313,7 @@ object Instructions {
     "i32.reinterpret_f32" -> i32.ReinterpretF32() _,
     "i64.reinterpret_f64" -> i64.ReinterpretF64() _,
     "f32.reinterpret_i32" -> f32.ReinterpretI32() _,
-    "f64.reinterpret_i64" -> f64.ReinterpretI64() _,
+    "f64.reinterpret_i64" -> f64.ReinterpretI64() _
   )
 
   private def plaininstr[_: P]: P[Int => Inst] = {

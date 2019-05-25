@@ -20,13 +20,32 @@ package config
 
 import squants.information._
 
+import enumeratum._
+import enumeratum.EnumEntry._
+
 /** Holds all the configurable values.
   *
   * @param useLowLevelAsm Whether engine compiles and run low-level bytecode.
   * @param stack Configures how the stack behaves.
   * @param data Configures how the data part behaves.
   */
-case class EngineConfiguration(useLowLevelAsm: Boolean, stack: StackConfiguration, data: DataConfiguration)
+case class EngineConfiguration(useLowLevelAsm: Boolean,
+                               compiler: CompilerConfiguration,
+                               stack: StackConfiguration,
+                               data: DataConfiguration)
+
+case class CompilerConfiguration(low: LowLevelCompilerConfiguration)
+
+case class LowLevelCompilerConfiguration(byteOrder: ConfiguredByteOrder)
+
+sealed trait ConfiguredByteOrder extends EnumEntry with Hyphencase
+
+object ConfiguredByteOrder extends Enum[ConfiguredByteOrder] {
+  case object LittleEndian extends ConfiguredByteOrder
+  case object BigEndian extends ConfiguredByteOrder
+  case object Native extends ConfiguredByteOrder
+  def values = findValues
+}
 
 case class StackConfiguration(high: HighLevelStackConfiguration, low: LowLevelStackConfiguration)
 

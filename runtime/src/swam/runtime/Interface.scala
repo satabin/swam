@@ -111,7 +111,7 @@ trait Table[F[_]] extends Interface[F, TableType] {
   * @define boundaries Implementations need not check for boundaries in this
   *                    method since the Swam engine already checks it.
   */
-trait Memory[F[_]] extends Interface[F, MemType] {
+abstract class Memory[F[_]](implicit F: MonadError[F, Throwable]) extends Interface[F, MemType] {
 
   /** Returns the size in bytes of this memory instance. */
   def size: Int
@@ -123,79 +123,92 @@ trait Memory[F[_]] extends Interface[F, MemType] {
     * This method should never throw an exception. If growing is not possible,
     * whatever the reason, it must simply return `false`.
     */
-  def grow(by: Int): F[Boolean]
+  def grow(by: Int): F[Boolean] = F.catchNonFatal(unsafeGrow(by))
+  def unsafeGrow(by: Int): Boolean
 
   /** Writes a byte at the given index in memory.
     *
     *  $boundaries
     */
-  def writeByte(idx: Int, v: Byte): F[Unit]
+  def writeByte(idx: Int, v: Byte): F[Unit] = F.catchNonFatal(unsafeWriteByte(idx, v))
+  def unsafeWriteByte(idx: Int, v: Byte): Unit
 
   /** Reads a byte at the given index in memory.
     *
     *  $boundaries
     */
-  def readByte(idx: Int): F[Byte]
+  def readByte(idx: Int): F[Byte] = F.catchNonFatal(unsafeReadByte(idx))
+  def unsafeReadByte(idx: Int): Byte
 
   /** Writes a short at the given index in memory.
     *
     *  $boundaries
     */
-  def writeShort(idx: Int, v: Short): F[Unit]
+  def writeShort(idx: Int, v: Short): F[Unit] = F.catchNonFatal(unsafeWriteShort(idx, v))
+  def unsafeWriteShort(idx: Int, v: Short): Unit
 
   /** Reads a short at the given index in memory.
     *
     *  $boundaries
     */
-  def readShort(idx: Int): F[Short]
+  def readShort(idx: Int): F[Short] = F.catchNonFatal(unsafeReadShort(idx))
+  def unsafeReadShort(idx: Int): Short
 
   /** Writes a integer at the given index in memory.
     *
     *  $boundaries
     */
-  def writeInt(idx: Int, v: Int): F[Unit]
+  def writeInt(idx: Int, v: Int): F[Unit] = F.catchNonFatal(unsafeWriteInt(idx, v))
+  def unsafeWriteInt(idx: Int, v: Int): Unit
 
   /** Reads a integer at the given index in memory.
     *
     *  $boundaries
     */
-  def readInt(idx: Int): F[Int]
+  def readInt(idx: Int): F[Int] = F.catchNonFatal(unsafeReadInt(idx))
+  def unsafeReadInt(idx: Int): Int
 
   /** Writes a long at the given index in memory.
     *
     *  $boundaries
     */
-  def writeLong(idx: Int, v: Long): F[Unit]
+  def writeLong(idx: Int, v: Long): F[Unit] = F.catchNonFatal(unsafeWriteLong(idx, v))
+  def unsafeWriteLong(idx: Int, v: Long): Unit
 
   /** Reads a long at the given index in memory.
     *
     *  $boundaries
     */
-  def readLong(idx: Int): F[Long]
+  def readLong(idx: Int): F[Long] = F.catchNonFatal(unsafeReadLong(idx))
+  def unsafeReadLong(idx: Int): Long
 
   /** Writes a float at the given index in memory.
     *
     *  $boundaries
     */
-  def writeFloat(idx: Int, v: Float): F[Unit]
+  def writeFloat(idx: Int, v: Float): F[Unit] = F.catchNonFatal(unsafeWriteFloat(idx, v))
+  def unsafeWriteFloat(idx: Int, v: Float): Unit
 
   /** Reads a float at the given index in memory.
     *
     *  $boundaries
     */
-  def readFloat(idx: Int): F[Float]
+  def readFloat(idx: Int): F[Float] = F.catchNonFatal(unsafeReadFloat(idx))
+  def unsafeReadFloat(idx: Int): Float
 
   /** Writes a double at the given index in memory.
     *
     *  $boundaries
     */
-  def writeDouble(idx: Int, v: Double): F[Unit]
+  def writeDouble(idx: Int, v: Double): F[Unit] = F.catchNonFatal(unsafeWriteDouble(idx, v))
+  def unsafeWriteDouble(idx: Int, v: Double): Unit
 
   /** Reads a double at the given index in memory.
     *
     *  $boundaries
     */
-  def readDouble(idx: Int): F[Double]
+  def readDouble(idx: Int): F[Double] = F.catchNonFatal(unsafeReadDouble(idx))
+  def unsafeReadDouble(idx: Int): Double
 
   /** Writes the bytes in the provided buffer at the given index in memory.
     *
@@ -204,5 +217,6 @@ trait Memory[F[_]] extends Interface[F, MemType] {
     *
     *  $boundaries
     */
-  def writeBytes(idx: Int, bytes: ByteBuffer): F[Unit]
+  def writeBytes(idx: Int, bytes: ByteBuffer): F[Unit] = F.catchNonFatal(unsafeWriteBytes(idx, bytes))
+  def unsafeWriteBytes(idx: Int, bytes: ByteBuffer): Unit
 }

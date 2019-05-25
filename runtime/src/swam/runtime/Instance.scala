@@ -199,7 +199,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
           module.elems(idx) match {
             case CompiledElem(coffset, init) =>
               interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
-                val offset = (roffset.get & 0X00000000FFFFFFFFL).toInt
+                val offset = (roffset.get & 0x00000000ffffffffl).toInt
                 if (offset < 0 || init.size + offset > tables(0).size) {
                   F.raiseError(new LinkException("Overflow in table initialization"))
                 } else {
@@ -223,7 +223,7 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
           module.data(idx) match {
             case CompiledData(coffset, init) =>
               interpreter.interpretInit(ValType.I32, coffset, self).flatMap { roffset =>
-                val offset = (roffset.get & 0X00000000FFFFFFFFL).toInt
+                val offset = (roffset.get & 0x00000000ffffffffl).toInt
                 if (offset < 0 || init.capacity + offset > memories(0).size)
                   F.raiseError(new LinkException("Overflow in memory initialization"))
                 else
@@ -233,14 +233,14 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
     }
 
   private def setvalues(elems: Funs, data: Mems)(implicit F: MonadError[F, Throwable]): F[Unit] =
-    F.pure {
+    F.catchNonFatal {
       elems.foreach {
         case (idx, f) => tables(0)(idx) = f
       }
-    } >>
-      data.foldM(()) {
-        case (_, (idx, m)) => memories(0).writeBytes(idx, m)
+      data.foreach {
+        case (idx, m) => memories(0).unsafeWriteBytes(idx, m)
       }
+    }
 
   private def start(implicit F: MonadError[F, Throwable]): F[Unit] =
     module.start match {

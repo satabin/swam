@@ -22,6 +22,7 @@ package low
 
 import syntax._
 import interpreter.low.Asm
+import config.ConfiguredByteOrder
 
 import cats._
 import cats.effect._
@@ -37,6 +38,7 @@ import scala.annotation.tailrec
 import scala.language.higherKinds
 
 import java.lang.{Float => JFloat, Double => JDouble}
+import java.nio.ByteOrder
 
 /** A stack of labels, each one tracking following information:
   *  - the parent label
@@ -129,6 +131,11 @@ object FunctionContext {
 class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
 
   private val dataOnHeap = engine.conf.data.onHeap
+  private val byteOrder = engine.conf.compiler.low.byteOrder match {
+    case ConfiguredByteOrder.BigEndian    => ByteOrder.BIG_ENDIAN
+    case ConfiguredByteOrder.LittleEndian => ByteOrder.LITTLE_ENDIAN
+    case ConfiguredByteOrder.Native       => ByteOrder.nativeOrder
+  }
 
   def compile(sections: Stream[F, Section]): Stream[F, runtime.Module[F]] =
     sections
@@ -155,7 +162,11 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
           val cglobals =
             globals.map {
               case Global(tpe, init) =>
-                val ccode = ByteBuffer.wrap(compile(0, init, FunctionContext(1), ctx.functions, ctx.types)._1)
+                val compiled = compile(0, init, FunctionContext(1), ctx.functions, ctx.types)._1
+                val ccode = ByteBuffer.allocate(compiled.length)
+                ccode.order(byteOrder)
+                ccode.put(compiled)
+                ccode.position(0)
                 Glob.Compiled(CompiledGlobal(tpe, ccode))
             }
           ctx.copy(globals = ctx.globals ++ cglobals)
@@ -171,12 +182,15 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
             codes.zipWithIndex.map {
               case ((FuncBody(locals, code)), idx) =>
                 val tpe = ctx.types(ctx.funcs(idx + shift))
-                val ccode = ByteBuffer.wrap(
-                  compile(tpe.params.size + locals.map(_.count).sum,
-                          code,
-                          FunctionContext(tpe.t.size),
-                          ctx.functions,
-                          ctx.types)._1)
+                val compiled = compile(tpe.params.size + locals.map(_.count).sum,
+                                       code,
+                                       FunctionContext(tpe.t.size),
+                                       ctx.functions,
+                                       ctx.types)._1
+                val ccode = ByteBuffer.allocate(compiled.length)
+                ccode.order(byteOrder)
+                ccode.put(compiled)
+                ccode.position(0)
                 val clocals = locals.flatMap(e => Vector.fill(e.count)(e.tpe))
                 compiler.Func.Compiled(CompiledFunction(tpe, clocals, ccode))
             }
@@ -185,7 +199,11 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
           val celems =
             elems.map {
               case Elem(_, offset, init) =>
-                val coffset = ByteBuffer.wrap(compile(0, offset, FunctionContext(1), ctx.functions, ctx.types)._1)
+                val compiled = compile(0, offset, FunctionContext(1), ctx.functions, ctx.types)._1
+                val coffset = ByteBuffer.allocate(compiled.length)
+                coffset.order(byteOrder)
+                coffset.put(compiled)
+                coffset.position(0)
                 CompiledElem(coffset, init)
             }
           ctx.copy(elems = celems)
@@ -194,15 +212,20 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
             data.map {
               case Data(_, offset, bytes) =>
                 val compiled = compile(0, offset, FunctionContext(1), ctx.functions, ctx.types)._1
-                val coffset =
-                  if (dataOnHeap) {
-                    ByteBuffer.wrap(compiled)
-                  } else {
-                    val buf = ByteBuffer.allocateDirect(compiled.length)
-                    buf.put(compiled)
-                    buf
-                  }
-                CompiledData(coffset, bytes.toByteBuffer)
+                val coffset = ByteBuffer.allocate(compiled.length)
+                coffset.order(byteOrder)
+                coffset.put(compiled)
+                coffset.position(0)
+                val dataArray = bytes.toByteArray
+                val data =
+                  if (dataOnHeap)
+                    ByteBuffer.allocate(dataArray.length)
+                  else
+                    ByteBuffer.allocateDirect(dataArray.length)
+                data.order(ByteOrder.LITTLE_ENDIAN)
+                data.put(dataArray)
+                data.position(0)
+                CompiledData(coffset, data)
             }
           ctx.copy(data = cdata)
         case (ctx, Section.Start(idx)) =>
@@ -488,31 +511,59 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
     }
 
   private def storeInt(builder: ArrayBuilder[Byte], i: Int): ArrayBuilder[Byte] = {
-    // store integers in big-endian
-    builder += ((i >> 24) & 0xff).toByte
-    builder += ((i >> 16) & 0xff).toByte
-    builder += ((i >> 8) & 0xff).toByte
-    builder += (i & 0xff).toByte
+    // store integers in configured endianness
+    byteOrder match {
+      case ByteOrder.BIG_ENDIAN =>
+        builder += ((i >> 24) & 0xff).toByte
+        builder += ((i >> 16) & 0xff).toByte
+        builder += ((i >> 8) & 0xff).toByte
+        builder += (i & 0xff).toByte
+      case ByteOrder.LITTLE_ENDIAN =>
+        builder += (i & 0xff).toByte
+        builder += ((i >> 8) & 0xff).toByte
+        builder += ((i >> 16) & 0xff).toByte
+        builder += ((i >> 24) & 0xff).toByte
+    }
   }
 
   private def storeInt(a: Array[Byte], idx: Int, i: Int): Unit = {
-    // store integers in big-endian
-    a(idx) = ((i >> 24) & 0xff).toByte
-    a(idx + 1) = ((i >> 16) & 0xff).toByte
-    a(idx + 2) = ((i >> 8) & 0xff).toByte
-    a(idx + 3) = (i & 0xff).toByte
+    // store integers in configured endianness
+    byteOrder match {
+      case ByteOrder.BIG_ENDIAN =>
+        a(idx) = ((i >> 24) & 0xff).toByte
+        a(idx + 1) = ((i >> 16) & 0xff).toByte
+        a(idx + 2) = ((i >> 8) & 0xff).toByte
+        a(idx + 3) = (i & 0xff).toByte
+      case ByteOrder.LITTLE_ENDIAN =>
+        a(idx) = (i & 0xff).toByte
+        a(idx + 1) = ((i >> 8) & 0xff).toByte
+        a(idx + 2) = ((i >> 16) & 0xff).toByte
+        a(idx + 3) = ((i >> 24) & 0xff).toByte
+    }
   }
 
   private def storeLong(builder: ArrayBuilder[Byte], l: Long): ArrayBuilder[Byte] = {
-    // store integers in big-endian
-    builder += ((l >> 56) & 0xff).toByte
-    builder += ((l >> 48) & 0xff).toByte
-    builder += ((l >> 40) & 0xff).toByte
-    builder += ((l >> 32) & 0xff).toByte
-    builder += ((l >> 24) & 0xff).toByte
-    builder += ((l >> 16) & 0xff).toByte
-    builder += ((l >> 8) & 0xff).toByte
-    builder += (l & 0xff).toByte
+    // store integers in configured endianness
+    byteOrder match {
+      case ByteOrder.BIG_ENDIAN =>
+        builder += ((l >> 56) & 0xff).toByte
+        builder += ((l >> 48) & 0xff).toByte
+        builder += ((l >> 40) & 0xff).toByte
+        builder += ((l >> 32) & 0xff).toByte
+        builder += ((l >> 24) & 0xff).toByte
+        builder += ((l >> 16) & 0xff).toByte
+        builder += ((l >> 8) & 0xff).toByte
+        builder += (l & 0xff).toByte
+      case ByteOrder.LITTLE_ENDIAN =>
+        builder += (l & 0xff).toByte
+        builder += ((l >> 8) & 0xff).toByte
+        builder += ((l >> 16) & 0xff).toByte
+        builder += ((l >> 24) & 0xff).toByte
+        builder += ((l >> 32) & 0xff).toByte
+        builder += ((l >> 40) & 0xff).toByte
+        builder += ((l >> 48) & 0xff).toByte
+        builder += ((l >> 56) & 0xff).toByte
+    }
   }
 
   private def toRuntime(types: Vector[FuncType])(i: Import): runtime.Import =
