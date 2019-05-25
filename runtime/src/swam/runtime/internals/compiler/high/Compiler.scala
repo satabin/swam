@@ -36,6 +36,7 @@ import scala.annotation.tailrec
 import scala.language.higherKinds
 
 import java.lang.{Float => JFloat, Double => JDouble}
+import java.nio.ByteOrder
 
 /** Validates and compiles a module.
   */
@@ -101,15 +102,17 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
             data.map {
               case Data(_, offset, bytes) =>
                 val compiled = compile(offset, true)
-                val coffset =
-                  if (dataOnHeap) {
-                    ByteBuffer.wrap(compiled)
-                  } else {
-                    val buf = ByteBuffer.allocateDirect(compiled.length)
-                    buf.put(compiled)
-                    buf
-                  }
-                CompiledData(coffset, bytes.toByteBuffer)
+                val coffset = ByteBuffer.wrap(compiled)
+                val dataArray = bytes.toByteArray
+                val data =
+                  if (dataOnHeap)
+                    ByteBuffer.allocate(dataArray.length)
+                  else
+                    ByteBuffer.allocateDirect(dataArray.length)
+                data.order(ByteOrder.LITTLE_ENDIAN)
+                data.put(dataArray)
+                data.position(0)
+                CompiledData(coffset, data)
             }
           ctx.copy(data = cdata)
         case (ctx, Section.Start(idx)) =>
