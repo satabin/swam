@@ -40,7 +40,7 @@ trait TypeCodec {
   val funcType: Codec[FuncType] =
     mappedEnum(byte, Map[Unit, Byte](() -> 0x60)) ~>
       (("parameters" | vectorOfN(varuint32, valType)) ::
-        ("return" | vectorOfN(varuint1, valType))).as[FuncType]
+        ("return" | vectorOfN(varuint32, valType))).as[FuncType]
 
   val globalType: Codec[GlobalType] =
     (("content_type" | valType) ::

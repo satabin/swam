@@ -79,8 +79,6 @@ package object binary {
 
     }
 
-  val varuint1: Codec[Int] = new Varuint(1)
-
   val varuint7: Codec[Int] = new Varuint(7)
 
   val varint7: Codec[Int] = new Varint(7).exmap(l => Attempt.successful(l.toInt), i => Attempt.successful(i.toLong))
