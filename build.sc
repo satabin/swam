@@ -32,16 +32,17 @@ val swamDeveloper = Developer("satabin", "Lucas Satabin", "https://github.com/sa
 
 val pureconfigVersion = "0.11.1"
 
+val utestVersion = "0.7.1"
+
 trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
-  def scalaVersion = "2.12.8"
+  def scalaVersion = "2.13.0"
 
   def scalacOptions =
-    Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification", "-Ypatmat-exhaust-depth", "off")
+    Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification", "-Ypatmat-exhaust-depth", "off", "-Ymacro-annotations")
 
   def scalacPluginIvyDeps =
-    Agg(ivy"org.scalamacros:::paradise:2.1.1",
-        ivy"org.typelevel::kind-projector:0.10.3",
+    Agg(ivy"org.typelevel::kind-projector:0.10.3",
         ivy"com.olegpy::better-monadic-for:0.3.0")
 
 }
@@ -80,7 +81,7 @@ object core extends SwamModule with PublishModule {
     )
 
   object test extends Tests with ScalafmtModule {
-    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.6.9")
+    def ivyDeps = Agg(ivy"com.lihaoyi::utest:$utestVersion")
     def testFrameworks = Seq("swam.util.Framework")
     def moduleDeps = Seq(core, util.test)
   }
@@ -130,7 +131,7 @@ object runtime extends ScoverageSwamModule with PublishModule {
 
   object test extends SwamModule with ScalafmtModule {
     def ivyDeps =
-      Agg(ivy"com.lihaoyi::utest:0.6.9", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
+      Agg(ivy"com.lihaoyi::utest:$utestVersion", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
     def moduleDeps = Seq(runtime, text, util.test)
 
     object low extends ScoverageTests with ScalafmtModule {
@@ -162,7 +163,7 @@ object examples extends SwamModule with MdocModule {
 object util extends SwamModule {
 
   object test extends SwamModule {
-    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.6.9", ivy"com.github.pathikrit::better-files:3.8.0")
+    def ivyDeps = Agg(ivy"com.lihaoyi::utest:$utestVersion", ivy"com.github.pathikrit::better-files:3.8.0")
   }
 
 }
