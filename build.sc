@@ -44,7 +44,8 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
     Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification", "-Ypatmat-exhaust-depth", "off")
 
   def scalacPluginIvyDeps =
-    Agg(ivy"org.typelevel::kind-projector:0.10.3",
+    Agg(ivy"org.scalamacros:::paradise:2.1.1",
+        ivy"org.typelevel::kind-projector:0.10.3",
         ivy"com.olegpy::better-monadic-for:0.3.0")
 
 }
