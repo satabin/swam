@@ -17,7 +17,7 @@ import headers.Headers
 import $file.mdoc
 import mdoc.MdocModule
 
-import $ivy.`com.lihaoyi::mill-contrib-bloop:0.4.0`
+import $ivy.`com.lihaoyi::mill-contrib-bloop:0.4.1`
 
 val swamVersion = "0.3.0-SNAPSHOT"
 
