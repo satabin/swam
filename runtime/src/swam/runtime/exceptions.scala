@@ -31,7 +31,7 @@ final class LinkException(msg: String, inner: Throwable = null) extends SwamExce
 sealed class RuntimeException(msg: String, inner: Throwable = null) extends SwamException(msg, inner)
 
 /** Raised when a trap is raised in a module. */
-final class TrapException(frame: StackFrame, msg: String) extends RuntimeException(msg)
+final class TrapException(frame: StackFrame, msg: String, inner: Throwable = null) extends RuntimeException(msg, inner)
 
 /** Raised when call stack overflows. */
 final class StackOverflowException(frame: StackFrame, inner: Throwable = null)

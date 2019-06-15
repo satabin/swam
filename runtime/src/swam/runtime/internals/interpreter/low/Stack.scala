@@ -108,8 +108,6 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
 
   def pushFrame(fun: FunctionInstance[F]): Unit = {
     val nbLocals = fun.locals.size
-    if (tp + nbLocals + 4 > stack.size)
-      throw new StackOverflowException(this)
     // push the current function instance on the instance stack
     instances = fun :: instances
     // set the current code to execute to the new function body

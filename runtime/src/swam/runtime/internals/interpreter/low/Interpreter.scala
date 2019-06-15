@@ -1217,7 +1217,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
       loop()
     } catch {
       case e: ArrayIndexOutOfBoundsException => F.raiseError(new StackOverflowException(thread, e))
-      case NonFatal(e)                       => F.raiseError(e)
+      case NonFatal(e)                       => F.raiseError(new TrapException(thread, "unexpected error during interpretation", e))
     }
   }
 
