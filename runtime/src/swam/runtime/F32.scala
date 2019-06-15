@@ -17,7 +17,7 @@
 package swam
 package runtime
 
-import java.lang.{Float => JFloat, Double => JDouble}
+import java.lang.{Float => JFloat, Double => JDouble, Long => JLong}
 
 object F32 {
 
@@ -52,16 +52,25 @@ object F32 {
     if (i >= 0)
       i.toFloat
     else
-      ((i >>> 1) | (i & 1)) * 2.0f
+      ((i >>> 1) | (i & 1)).toFloat * 2.0f
+
+  private val convC = JFloat.parseFloat("0x1p12")
 
   def convertSi64(l: Long): Float =
-    l.toFloat
+    if (math.abs(l) < 0x10000000000000l) {
+      l.toFloat
+    } else {
+      val r = if ((l & 0xfffl) == 0l) 0l else 1l
+      ((l >> 12) | r).toFloat * convC
+    }
 
   def convertUi64(l: Long): Float =
-    if (l >= 0)
+    if (JLong.compareUnsigned(l, 0x10000000000000l) < 0) {
       l.toFloat
-    else
-      (l >>> 1) * 2.0f
+    } else {
+      val r = if ((l & 0xfffl) == 0l) 0l else 1l
+      ((l >>> 12) | r).toFloat * convC
+    }
 
   def reinterpret(i: Int): Float =
     JFloat.intBitsToFloat(i)
