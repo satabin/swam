@@ -36,3 +36,7 @@ cache:
 
 jdk:
   - openjdk8
+
+branches:
+  only:
+  - master
