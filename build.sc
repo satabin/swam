@@ -18,6 +18,9 @@ import $file.mdoc
 import mdoc.MdocModule
 
 import $ivy.`com.lihaoyi::mill-contrib-bloop:0.4.1`
+import $ivy.`com.lihaoyi::mill-contrib-buildinfo:0.4.1`
+
+import mill.contrib.scoverage.ScoverageModule
 
 val swamVersion = "0.3.0-SNAPSHOT"
 
@@ -31,13 +34,6 @@ val pureconfigVersion = "0.11.1"
 
 trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
-  def repositories =
-    super.repositories ++ Seq(
-      MavenRepository("https://oss.sonatype.org/content/repositories/snapshots"),
-      MavenRepository("https://oss.sonatype.org/content/repositories/snapshots"),
-      MavenRepository("https:/dl.bintray.com/tpolecat/maven")
-    )
-
   def scalaVersion = "2.12.8"
 
   def scalacOptions =
@@ -47,6 +43,12 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
     Agg(ivy"org.scalamacros:::paradise:2.1.1",
         ivy"org.typelevel::kind-projector:0.10.3",
         ivy"com.olegpy::better-monadic-for:0.3.0")
+
+}
+
+trait ScoverageSwamModule extends SwamModule with ScoverageModule {
+
+  def scoverageVersion = "1.3.1"
 
 }
 
@@ -106,7 +108,7 @@ object text extends SwamModule with PublishModule {
 
 }
 
-object runtime extends SwamModule with PublishModule {
+object runtime extends ScoverageSwamModule with PublishModule {
 
   def moduleDeps = Seq(core)
 
@@ -126,19 +128,18 @@ object runtime extends SwamModule with PublishModule {
       developers = Seq(swamDeveloper)
     )
 
-  object test extends Tests with ScalafmtModule {
+  object test extends SwamModule with ScalafmtModule {
     def ivyDeps =
       Agg(ivy"com.lihaoyi::utest:0.6.9", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
     def moduleDeps = Seq(runtime, text, util.test)
-    def testFrameworks = Seq("swam.util.Framework")
 
-    object low extends Tests with ScalafmtModule {
-      def moduleDeps = Seq(runtime.test)
+    object low extends ScoverageTests with ScalafmtModule {
+      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
       def testFrameworks = Seq("swam.util.Framework")
     }
 
-    object high extends Tests with ScalafmtModule {
-      def moduleDeps = Seq(runtime.test)
+    object high extends ScoverageTests with ScalafmtModule {
+      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
       def testFrameworks = Seq("swam.util.Framework")
     }
 

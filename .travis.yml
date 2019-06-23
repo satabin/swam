@@ -13,8 +13,10 @@ jobs:
         - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/$MILL_VERSION/$MILL_VERSION && chmod +x ~/bin/mill
         - export PATH=~/bin/mill:$PATH
         - mill runtime.compile
-        - mill runtime.test.low
-        - mill runtime.test.high
+        - mill all runtime.test.{low,high}
+        - mill runtime.scoverage.xmlReport
+      after_success:
+        - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
     - script:
         - curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/$MILL_VERSION/$MILL_VERSION && chmod +x ~/bin/mill
         - export PATH=~/bin/mill:$PATH
