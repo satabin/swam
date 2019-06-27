@@ -17,8 +17,11 @@ import headers.Headers
 import $file.mdoc
 import mdoc.MdocModule
 
-import $ivy.`com.lihaoyi::mill-contrib-bloop:0.4.1`
-import $ivy.`com.lihaoyi::mill-contrib-buildinfo:0.4.1`
+val millVersion = System.getProperty("MILL_VERSION")
+interp.load.ivy("com.lihaoyi" %% "mill-contrib-bloop" % millVersion)
+interp.load.ivy("com.lihaoyi" %% "mill-contrib-buildinfo" % millVersion)
+
+@
 
 import mill.contrib.scoverage.ScoverageModule
 
@@ -37,7 +40,7 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
   def scalaVersion = "2.12.8"
 
   def scalacOptions =
-    Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification", "-Ypatmat-exhaust-depth", "off")
+    Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification", "-Ypatmat-exhaust-depth", "off", "-Ywarn-unused:locals,imports")
 
   def scalacPluginIvyDeps =
     Agg(ivy"org.scalamacros:::paradise:2.1.1",
