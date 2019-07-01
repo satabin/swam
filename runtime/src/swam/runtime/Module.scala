@@ -28,8 +28,6 @@ import cats.effect._
 
 import scala.language.higherKinds
 
-import java.nio.ByteBuffer
-
 /** The runtime representation of a validated and compiled module.
   *
   * @param exports Returns the ordered list of elements exported by this module.

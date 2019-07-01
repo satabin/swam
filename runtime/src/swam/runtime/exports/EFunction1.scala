@@ -18,9 +18,7 @@ package swam
 package runtime
 package exports
 
-import runtime.{imports => i}
 import formats._
-import internals.compiler._
 
 import cats._
 import cats.implicits._
@@ -41,7 +39,6 @@ abstract class EFunction1[P1, Ret, F[_]] private (f: Function[F], m: Option[Memo
 }
 
 object EFunction1 {
-  import EFunction._
 
   def apply[P1, F[_]](name: String, self: Instance[F])(implicit F: MonadError[F, Throwable],
                                                        writer1: ValueWriter[F, P1]): F[EFunction1[P1, Unit, F]] =

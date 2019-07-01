@@ -19,7 +19,6 @@ package runtime
 
 import config._
 import syntax._
-import binary._
 import imports._
 import validation._
 import internals.compiler.{low => cl}
@@ -28,7 +27,6 @@ import internals.instance._
 import internals.interpreter.{low => il}
 import internals.interpreter.{high => ih}
 
-import cats._
 import cats.implicits._
 import cats.effect._
 
@@ -36,7 +34,6 @@ import fs2._
 
 import scodec.bits._
 
-import pureconfig._
 import pureconfig.generic.auto._
 import pureconfig.module.squants._
 import pureconfig.module.catseffect._

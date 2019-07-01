@@ -24,7 +24,7 @@ import config._
 
 import cats._
 
-import scala.annotation.{tailrec, switch}
+import scala.annotation.tailrec
 
 import java.nio.ByteBuffer
 
@@ -106,10 +106,6 @@ sealed class Frame[F[_]] private (parent: Frame[F],
       ttop -= 1
       tstack(ttop)
     }
-
-    @inline
-    private def peekType(): Byte =
-      tstack(ttop - 1)
 
     def pushBool(b: Boolean): Unit =
       pushInt(if (b) 1 else 0)

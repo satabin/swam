@@ -18,10 +18,8 @@ package swam
 package runtime
 
 import formats._
-import runtime.{imports => i}
 import runtime.{exports => e}
 
-import internals.instance._
 import internals.interpreter._
 
 import cats._

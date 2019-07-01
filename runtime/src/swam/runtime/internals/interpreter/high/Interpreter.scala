@@ -24,7 +24,7 @@ import instance._
 
 import java.lang.{Integer => JInt, Long => JLong, Float => JFloat, Double => JDouble}
 
-import scala.annotation.{tailrec, switch}
+import scala.annotation.switch
 
 import java.nio.ByteBuffer
 
@@ -782,7 +782,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
           }
         // === memory instructions ===
         case OpCode.I32Load =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -795,7 +796,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.I32Load8U =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -808,7 +810,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.I32Load8S =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -821,7 +824,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.I32Load16U =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -834,7 +838,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.I32Load16S =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -847,7 +852,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.I64Load =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -860,7 +866,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.I64Load8U =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -873,7 +880,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.I64Load8S =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -886,7 +894,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.I64Load16U =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -899,7 +908,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.I64Load16S =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -912,7 +922,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.I64Load32U =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -925,7 +936,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.I64Load32S =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -938,7 +950,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.F32Load =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -951,7 +964,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.F64Load =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val i = frame.stack.popInt()
@@ -964,7 +978,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
               Left(frame)
             }
         case OpCode.I32Store =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popInt()
@@ -976,7 +991,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             mem.writeInt(ea, c).as(Left(frame))
           }
         case OpCode.I32Store8 =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popInt()
@@ -989,7 +1005,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             mem.writeByte(ea, c1).as(Left(frame))
           }
         case OpCode.I32Store16 =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popInt()
@@ -1002,7 +1019,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             mem.writeShort(ea, c1).as(Left(frame))
           }
         case OpCode.I64Store =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popLong()
@@ -1014,7 +1032,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             mem.writeLong(ea, c).as(Left(frame))
           }
         case OpCode.I64Store8 =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popLong()
@@ -1027,7 +1046,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             mem.writeByte(ea, c1).as(Left(frame))
           }
         case OpCode.I64Store16 =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popLong()
@@ -1040,7 +1060,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             mem.writeShort(ea, c1).as(Left(frame))
           }
         case OpCode.I64Store32 =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popLong()
@@ -1053,7 +1074,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             mem.writeInt(ea, c1).as(Left(frame))
           }
         case OpCode.F32Store =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popFloat()
@@ -1065,7 +1087,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             mem.writeFloat(ea, c).as(Left(frame))
           }
         case OpCode.F64Store =>
-          val align = frame.readInt()
+          // ignore alignment for now
+          frame.readInt()
           val offset = frame.readInt()
           val mem = frame.instance.memories(0)
           val c = frame.stack.popDouble()
@@ -1111,7 +1134,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
         case OpCode.End =>
           // pop the m values on top of the stack
           val values = frame.stack.popValues()
-          val lbl = frame.stack.popLabel()
+          // and the label
+          frame.stack.popLabel()
           // push values back
           frame.stack.pushValues(values)
           // frame.pc is now after the end of the block

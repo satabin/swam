@@ -20,8 +20,6 @@ package unresolved
 
 import util.pretty._
 
-import scodec.bits._
-
 import scala.annotation.tailrec
 
 package object pretty {
@@ -356,9 +354,6 @@ package object pretty {
       case (_, `default`) => line ++ str("offset=") ++ int(offset)
       case (_, _)         => group(line ++ str("offset=") ++ int(offset) ++ line ++ str("align=") ++ int(1 << align))
     }
-
-  @inline
-  private def inst(i: Inst)(implicit E: Pretty[Expr]): Doc = i.pretty
 
   def binop(op: Inst, d1: Doc, d2: Doc)(implicit E: Pretty[Expr]): Doc =
     group(nest(2, str("(") ++ op.pretty ++ line ++ fold(d1, empty) ++ line ++ fold(d2, empty) ++ str(")")))

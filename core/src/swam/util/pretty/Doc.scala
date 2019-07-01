@@ -30,8 +30,6 @@ sealed trait Doc {
       case _              => Append(this, that)
     }
 
-  private val nlsize = "\n".size
-
   private def spaces[State](outs: (State, String) => State, state: State, i: Int): State =
     outs(state, " " * i)
 

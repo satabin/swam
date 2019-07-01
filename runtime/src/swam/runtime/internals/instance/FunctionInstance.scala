@@ -19,8 +19,6 @@ package runtime
 package internals
 package instance
 
-import interpreter._
-
 import cats._
 import cats.implicits._
 

@@ -25,8 +25,6 @@ import NoWhitespace._
 
 import java.lang.{Float => JFloat, Double => JDouble, Long => JLong}
 
-import scala.annotation.tailrec
-
 object Lexical {
 
   def comment[_: P]: P0 =

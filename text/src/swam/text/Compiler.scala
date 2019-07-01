@@ -17,7 +17,6 @@
 package swam
 package text
 
-import util._
 import parser._
 import syntax._
 import binary._

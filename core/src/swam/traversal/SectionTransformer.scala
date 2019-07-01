@@ -22,8 +22,6 @@ import syntax._
 import cats._
 import cats.implicits._
 
-import scala.collection.immutable._
-
 import scala.language.higherKinds
 
 class SectionTransformer[F[_], Ctx](implicit F: Applicative[F]) {

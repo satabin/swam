@@ -18,7 +18,6 @@ package swam
 package runtime
 package exports
 
-import runtime.{imports => i}
 import formats._
 
 import cats._

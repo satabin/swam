@@ -21,9 +21,7 @@ package instance
 
 import imports._
 import compiler._
-import interpreter._
 
-import cats._
 import cats.effect._
 import cats.implicits._
 

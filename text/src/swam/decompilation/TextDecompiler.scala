@@ -25,7 +25,6 @@ import util.pretty._
 
 import binary.custom._
 
-import cats._
 import cats.effect._
 import cats.implicits._
 

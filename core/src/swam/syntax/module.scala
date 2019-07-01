@@ -17,8 +17,6 @@
 package swam
 package syntax
 
-import scodec.bits.ByteVector
-
 case class Module(types: Vector[FuncType],
                   funcs: Vector[Func],
                   tables: Vector[TableType],

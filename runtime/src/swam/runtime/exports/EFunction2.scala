@@ -18,9 +18,7 @@ package swam
 package runtime
 package exports
 
-import runtime.{imports => i}
 import formats._
-import internals.compiler._
 
 import cats._
 import cats.implicits._
@@ -43,7 +41,6 @@ abstract class EFunction2[P1, P2, Ret, F[_]] private (f: Function[F], m: Option[
 }
 
 object EFunction2 {
-  import EFunction._
 
   def apply[P1, P2, F[_]](name: String, self: Instance[F])(
       implicit F: MonadError[F, Throwable],

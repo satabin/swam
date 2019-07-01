@@ -23,9 +23,6 @@ package low
 import instance._
 import config._
 
-import cats._
-import cats.implicits._
-
 import scala.annotation.tailrec
 
 import java.lang.{Float => JFloat, Double => JDouble}
@@ -266,27 +263,5 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
       baseInstance.memories.lift(idx)
     else
       instance.instance.memories.lift(idx)
-
-}
-
-private object ThreadFrame {
-
-  implicit def ThreadFrameShow[F[_]]: Show[ThreadFrame[F]] = new Show[ThreadFrame[F]] {
-    def show(t: ThreadFrame[F]): String = {
-      t.stack
-        .take(t.tp + 1)
-        .zipWithIndex
-        .map {
-          case (v, idx) =>
-            if (idx == t.fp)
-              s"fp -> | $v"
-            else if (idx == t.tp)
-              "tp -> |"
-            else
-              s"      | $v"
-        }
-        .mkString("=== Stack ===\n      +---------\n", "\n      +---------\n", "")
-    }
-  }
 
 }

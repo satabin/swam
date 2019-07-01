@@ -17,10 +17,6 @@
 package swam
 package runtime
 
-import internals.interpreter._
-
-import scala.language.higherKinds
-
 /** Raised when module compilation is not possible. */
 final class CompileException(msg: String, inner: Throwable = null) extends SwamException(msg, inner)
 

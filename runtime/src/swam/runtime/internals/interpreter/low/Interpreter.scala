@@ -24,7 +24,7 @@ import instance._
 
 import java.lang.{Integer => JInt, Long => JLong, Float => JFloat, Double => JDouble}
 
-import scala.annotation.{tailrec, switch}
+import scala.annotation.switch
 
 import java.nio.ByteBuffer
 
@@ -785,7 +785,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
           }
         // === memory instructions ===
         case Asm.I32Load =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -798,7 +799,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I32Load8U =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -811,7 +813,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I32Load8S =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -824,7 +827,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I32Load16U =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -837,7 +841,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I32Load16S =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -850,7 +855,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I64Load =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -863,7 +869,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I64Load8U =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -876,7 +883,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I64Load8S =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -889,7 +897,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I64Load16U =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -902,7 +911,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I64Load16S =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -915,7 +925,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I64Load32U =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -928,7 +939,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I64Load32S =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -941,7 +953,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.F32Load =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -954,7 +967,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.F64Load =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -967,7 +981,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I32Store =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popInt()
@@ -980,7 +995,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I32Store8 =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popInt()
@@ -994,7 +1010,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I32Store16 =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popInt()
@@ -1008,7 +1025,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I64Store =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popLong()
@@ -1021,7 +1039,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I64Store8 =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popLong()
@@ -1035,7 +1054,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I64Store16 =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popLong()
@@ -1049,7 +1069,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.I64Store32 =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popLong()
@@ -1063,7 +1084,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.F32Store =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popFloat()
@@ -1076,7 +1098,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
             loop()
           }
         case Asm.F64Store =>
-          val align = thread.readInt()
+          // ignore alignment for now
+          thread.readInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popDouble()

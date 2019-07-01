@@ -21,7 +21,6 @@ import syntax._
 import traversal._
 
 import cats._
-import cats.effect._
 import cats.implicits._
 
 import scala.language.higherKinds

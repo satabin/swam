@@ -21,6 +21,4 @@ package compiler
 
 import java.nio.ByteBuffer
 
-import scala.language.higherKinds
-
 private[runtime] case class CompiledFunction(tpe: FuncType, locals: Vector[ValType], code: ByteBuffer)

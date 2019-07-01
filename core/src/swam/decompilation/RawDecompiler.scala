@@ -21,7 +21,6 @@ import syntax.Section
 import syntax.pretty._
 import util.pretty._
 
-import cats._
 import cats.implicits._
 import cats.effect._
 

@@ -21,8 +21,6 @@ package compiler
 
 import syntax.Section
 
-import cats._
-
 import fs2.Stream
 
 import scala.language.higherKinds

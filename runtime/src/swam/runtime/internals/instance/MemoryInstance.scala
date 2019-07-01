@@ -20,7 +20,6 @@ package internals
 package instance
 
 import cats.effect._
-import cats.implicits._
 
 import java.nio.{ByteBuffer, ByteOrder}
 

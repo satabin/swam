@@ -19,7 +19,6 @@ package swam
 import cats.effect._
 
 import java.nio.file.Path
-import java.util.concurrent.Executors
 
 import scala.io.Source
 

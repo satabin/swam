@@ -19,8 +19,6 @@ package validation
 
 import syntax._
 
-import cats._
-
 import fs2._
 
 import scala.language.higherKinds

@@ -24,7 +24,6 @@ import syntax._
 import interpreter.low.Asm
 import config.ConfiguredByteOrder
 
-import cats._
 import cats.effect._
 
 import fs2._
@@ -501,14 +500,6 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
     }
     (bytes, ctx2)
   }
-
-  private def type2byte(tpe: ValType): Byte =
-    tpe match {
-      case ValType.I32 => 0x7f
-      case ValType.I64 => 0x7e
-      case ValType.F32 => 0x7d
-      case ValType.F64 => 0x7c
-    }
 
   private def storeInt(builder: ArrayBuilder[Byte], i: Int): ArrayBuilder[Byte] = {
     // store integers in configured endianness

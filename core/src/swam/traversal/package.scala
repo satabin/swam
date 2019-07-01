@@ -16,12 +16,8 @@
 
 package swam
 
-import syntax._
-
 import cats._
 import cats.implicits._
-
-import fs2._
 
 import scala.collection.immutable.VectorBuilder
 

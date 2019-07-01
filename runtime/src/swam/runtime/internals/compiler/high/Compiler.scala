@@ -22,7 +22,6 @@ package high
 
 import syntax._
 
-import cats._
 import cats.effect._
 
 import fs2._
@@ -30,8 +29,6 @@ import fs2._
 import java.nio.ByteBuffer
 
 import scala.collection.mutable.ArrayBuilder
-
-import scala.annotation.tailrec
 
 import scala.language.higherKinds
 
@@ -246,14 +243,6 @@ class Compiler[F[_]: Effect](engine: Engine[F]) extends compiler.Compiler[F] {
       builder += OpCode.Return.toByte
     builder.result()
   }
-
-  private def type2byte(tpe: ValType): Byte =
-    tpe match {
-      case ValType.I32 => 0x7f
-      case ValType.I64 => 0x7e
-      case ValType.F32 => 0x7d
-      case ValType.F64 => 0x7c
-    }
 
   private def storeInt(builder: ArrayBuilder[Byte], i: Int): ArrayBuilder[Byte] = {
     // store integers in big-endian

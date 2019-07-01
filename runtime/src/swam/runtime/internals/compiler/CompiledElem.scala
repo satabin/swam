@@ -19,6 +19,4 @@ package runtime
 
 import java.nio.ByteBuffer
 
-import scala.language.higherKinds
-
 case class CompiledElem(offset: ByteBuffer, init: Vector[Int])

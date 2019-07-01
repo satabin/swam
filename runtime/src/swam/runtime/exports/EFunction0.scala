@@ -18,9 +18,7 @@ package swam
 package runtime
 package exports
 
-import runtime.{imports => i}
 import formats._
-import internals.compiler._
 
 import cats._
 import cats.implicits._

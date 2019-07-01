@@ -20,7 +20,6 @@ package traversal
 import syntax._
 
 import cats._
-import cats.implicits._
 
 import scala.language.higherKinds
 

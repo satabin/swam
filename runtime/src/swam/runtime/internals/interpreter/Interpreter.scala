@@ -20,15 +20,12 @@ package internals
 package interpreter
 
 import cats._
-import cats.implicits._
 
 import java.nio.ByteBuffer
 
 import scala.language.higherKinds
 
 abstract class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadError[F, Throwable]) {
-
-  private val conf = engine.conf
 
   def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F]): F[Option[Long]]
 
