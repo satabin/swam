@@ -25,18 +25,15 @@ import imports._
 import unresolved._
 import validation._
 
-import internals.interpreter._
 
 import cats._
 import cats.implicits._
 import cats.effect._
 
 import scodec.bits._
-import scodec.stream.decode.DecodingError
 
 import java.lang.{Float => JFloat, Double => JDouble}
 
-import pureconfig._
 import pureconfig.generic.auto._
 import pureconfig.module.squants._
 import pureconfig.module.catseffect._
@@ -76,8 +73,6 @@ class ScriptEngine(useLowLevel: Boolean) {
 
   import ScriptEngine._
 
-  val IO = implicitly[Effect[IO]]
-
   val engine =
     for {
       validator <- Validator[IO]
@@ -87,7 +82,7 @@ class ScriptEngine(useLowLevel: Boolean) {
   val tcompiler = Compiler[IO]
 
   def run(commands: Seq[Command], positioner: Positioner[TextFilePosition]): IO[Unit] =
-    IO.tailRecM((commands, ExecutionContext(spectestlib, Map.empty, None))) {
+    Effect[IO].tailRecM((commands, ExecutionContext(spectestlib, Map.empty, None))) {
       case (Seq(cmd, rest @ _*), ctx) =>
         val res = cmd match {
           case ValidModule(mod) =>
@@ -234,7 +229,7 @@ class ScriptEngine(useLowLevel: Boolean) {
              export: String,
              params: Expr): IO[Option[Value]] = {
     val values =
-      IO.tailRecM((params, Seq.empty[Value])) {
+      Effect[IO].tailRecM((params, Seq.empty[Value])) {
         case (Seq(), acc)             => IO.pure(Right(acc))
         case (Seq(p, rest @ _*), acc) => value(pos, p).map(v => Left((rest, acc :+ v)))
       }
