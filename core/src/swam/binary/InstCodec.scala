@@ -53,14 +53,17 @@ trait InstCodec extends TypeCodec {
     varuint32 ~ varuint32
 
   val opcode: Codec[OpCode] = new Codec[OpCode] {
-    def decode(bits: BitVector): Attempt[DecodeResult[OpCode]] = {
-      val (head, tail) = bits.splitAt(8)
-      val byte = head.toByte()
-      OpCode.withValueOpt(byte & 0xff) match {
-        case Some(opcode) => Attempt.successful(DecodeResult(opcode, tail))
-        case None         => Attempt.failure(Err(f"Unknown opcode 0x$byte%02x"))
+    def decode(bits: BitVector): Attempt[DecodeResult[OpCode]] =
+      if (bits.size < 8) {
+        Attempt.failure(Err("at least 8 bits are expected"))
+      } else {
+        val (head, tail) = bits.splitAt(8)
+        val byte = head.toByte()
+        OpCode.withValueOpt(byte & 0xff) match {
+          case Some(opcode) => Attempt.successful(DecodeResult(opcode, tail))
+          case None         => Attempt.failure(Err(f"Unknown opcode 0x$byte%02x"))
+        }
       }
-    }
     def encode(opcode: OpCode): Attempt[BitVector] =
       Attempt.successful(BitVector.fromByte(opcode.toByte))
     def sizeBound: SizeBound = SizeBound.exact(8l)
