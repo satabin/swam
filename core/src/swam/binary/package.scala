@@ -18,6 +18,7 @@ package swam
 
 import scodec.bits._
 import scodec._
+import scodec.codecs._
 
 import scala.annotation.tailrec
 
@@ -31,6 +32,23 @@ package object binary {
     def encode(value: Unit): Attempt[BitVector] =
       Attempt.successful(BitVector.empty)
     def sizeBound: SizeBound = SizeBound.exact(0l)
+  }
+
+  def vectorWithN[T](size: Codec[Int], value: Codec[T]): Codec[Vector[T]] =
+    vectorOfN(size, value) <~ eoi
+
+  object eoi extends Codec[Unit] {
+    private val success =
+      Attempt.successful(DecodeResult((), BitVector.empty))
+    def decode(bits: BitVector): Attempt[DecodeResult[Unit]] =
+      if (bits.isEmpty)
+        success
+      else
+        Attempt.failure(Err("end of input expected"))
+    def encode(value: Unit): Attempt[BitVector] =
+      Attempt.successful(BitVector.empty)
+    def sizeBound: SizeBound =
+      SizeBound.exact(0l)
   }
 
   def vectorLookahead[T](cond: Decoder[Boolean], element: Codec[T]): Codec[Vector[T]] =

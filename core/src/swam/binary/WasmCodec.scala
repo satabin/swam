@@ -34,7 +34,7 @@ object WasmCodec extends InstCodec {
                                        ExternalKind.Global -> 3))
 
   protected val types: Codec[Vector[FuncType]] =
-    variableSizeBytes(varuint32, vectorOfN(varuint32, funcType))
+    variableSizeBytes(varuint32, vectorWithN(varuint32, funcType))
 
   protected val importEntry: Codec[String ~ String ~ Import] =
     (("module" | variableSizeBytes(varuint32, utf8)) ~
@@ -51,24 +51,24 @@ object WasmCodec extends InstCodec {
     }
 
   protected val imports: Codec[Vector[Import]] =
-    variableSizeBytes(varuint32, vectorOfN(varuint32, importEntry.xmap({
+    variableSizeBytes(varuint32, vectorWithN(varuint32, importEntry.xmap({
       case (_, e)                  => e
     }, { case e @ Import(mod, fld) => ((mod, fld), e) })))
 
   protected val functions: Codec[Vector[Int]] =
-    variableSizeBytes(varuint32, vectorOfN(varuint32, varuint32))
+    variableSizeBytes(varuint32, vectorWithN(varuint32, varuint32))
 
   protected val tables: Codec[Vector[TableType]] =
-    variableSizeBytes(varuint32, vectorOfN(varuint32, tableType))
+    variableSizeBytes(varuint32, vectorWithN(varuint32, tableType))
 
   protected val mems: Codec[Vector[MemType]] =
-    variableSizeBytes(varuint32, vectorOfN(varuint32, memoryType))
+    variableSizeBytes(varuint32, vectorWithN(varuint32, memoryType))
 
   protected val globalVariable: Codec[Global] =
     (globalType :: expr).as[Global]
 
   protected val globals: Codec[Vector[Global]] =
-    variableSizeBytes(varuint32, vectorOfN(varuint32, globalVariable))
+    variableSizeBytes(varuint32, vectorWithN(varuint32, globalVariable))
 
   protected val elemSegment: Codec[Elem] =
     (("index" | varuint32) ::
@@ -76,7 +76,7 @@ object WasmCodec extends InstCodec {
       ("elems" | vectorOfN(varuint32, varuint32))).as[Elem]
 
   protected val elem: Codec[Vector[Elem]] =
-    variableSizeBytes(varuint32, vectorOfN(varuint32, elemSegment))
+    variableSizeBytes(varuint32, vectorWithN(varuint32, elemSegment))
 
   protected val dataSegment: Codec[Data] =
     (("index" | varuint32) ::
@@ -84,7 +84,7 @@ object WasmCodec extends InstCodec {
       ("data" | variableSizeBytes(varuint32, scodec.codecs.bits))).as[Data]
 
   protected val data: Codec[Vector[Data]] =
-    variableSizeBytes(varuint32, vectorOfN(varuint32, dataSegment))
+    variableSizeBytes(varuint32, vectorWithN(varuint32, dataSegment))
 
   protected val start: Codec[FuncIdx] =
     variableSizeBytes(varuint32, varuint32)
@@ -98,7 +98,7 @@ object WasmCodec extends InstCodec {
                         ("code" | expr)).as[FuncBody])
 
   protected val code: Codec[Vector[FuncBody]] =
-    variableSizeBytes(varuint32, vectorOfN(varuint32, funcBody))
+    variableSizeBytes(varuint32, vectorWithN(varuint32, funcBody))
 
   protected val exportEntry: Codec[Export] =
     (("field" | variableSizeBytes(varuint32, utf8)) ::
@@ -106,7 +106,7 @@ object WasmCodec extends InstCodec {
       ("index" | varuint32)).as[Export]
 
   protected val exports: Codec[Vector[Export]] =
-    variableSizeBytes(varuint32, vectorOfN(varuint32, exportEntry))
+    variableSizeBytes(varuint32, vectorWithN(varuint32, exportEntry))
 
   protected val custom: Codec[(String, BitVector)] =
     variableSizeBytes(varuint32,
