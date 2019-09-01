@@ -213,17 +213,26 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
     b
   }
 
+  def skipByte(): Unit =
+    pc += 1
+
   def readInt(): Int = {
     val i = code.getInt(pc)
     pc += 4
     i
   }
 
+  def skipInt(): Unit =
+    pc += 4
+
   def readLong(): Long = {
     val l = code.getLong(pc)
     pc += 8
     l
   }
+
+  def skipLong(): Unit =
+    pc += 8
 
   def readFloat(): Float = {
     val f = code.getFloat(pc)
