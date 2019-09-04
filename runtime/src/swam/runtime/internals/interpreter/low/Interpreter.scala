@@ -35,7 +35,7 @@ import scala.language.higherKinds
 import scala.util.control.NonFatal
 
 /** Interpreter of low-level assembly. */
-private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadError[F, Throwable])
+private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadError[F, Throwable], tracer: Tracer)
     extends interpreter.Interpreter[F](engine) {
 
   private val conf = engine.conf
