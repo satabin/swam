@@ -16,10 +16,10 @@ class InFileTracer(val conf: EngineConfiguration) extends Tracer{
 
     def innerTrace(eventName: String, time: Long, args: Any*) = () => {
         val path = conf.tracer.path
-        val pw = new FileWriter(s"${conf.tracer.path}", true)
+        val pw = new FileWriter(s"${path}", true)
 
         pw.write(s"${eventName},${time},${group(args: _*)}\n")
-        pw.flush()
+        pw.close()
     }
 
 }
