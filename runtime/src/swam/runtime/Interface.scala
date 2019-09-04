@@ -22,6 +22,8 @@ import java.nio.ByteBuffer
 import cats._
 
 import scala.language.higherKinds
+import scala.concurrent._
+import java.util.concurrent.locks._
 
 /** All elements that are part of the interface of an instance must implement
   * this interface.
@@ -219,4 +221,30 @@ abstract class Memory[F[_]](implicit F: MonadError[F, Throwable]) extends Interf
     */
   def writeBytes(idx: Int, bytes: ByteBuffer): F[Unit] = F.catchNonFatal(unsafeWriteBytes(idx, bytes))
   def unsafeWriteBytes(idx: Int, bytes: ByteBuffer): Unit
+}
+
+
+trait Tracer{
+
+  //  Events must be written in order
+  val locker = new ReentrantLock
+
+  def traceEvent(args: Any*): Unit
+
+  def executeOnBack(f: () => Unit) = {
+     implicit val ec: ExecutionContext = ExecutionContext.global
+     
+    Future {
+      blocking{
+        try{
+          locker.lock()
+          f()
+        }
+        finally{
+          locker.unlock()
+        }
+      }
+    }
+
+  }
 }

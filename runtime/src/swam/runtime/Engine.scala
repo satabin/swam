@@ -24,6 +24,7 @@ import validation._
 import internals.compiler.{low => cl}
 import internals.compiler.{high => ch}
 import internals.instance._
+import internals.tracer._
 import internals.interpreter.{low => il}
 import internals.interpreter.{high => ih}
 
@@ -64,6 +65,8 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     else
       new ih.Interpreter[F](this)
 
+  implicit val tracer: Tracer = new StdTracer
+      
   private[runtime] val instantiator = new Instantiator[F](this)
 
   /** Reads the `.wasm` file at the given path and validates it.
@@ -166,6 +169,7 @@ object Engine {
       validator <- Validator[F]
       conf <- loadConfigF[F, EngineConfiguration]("swam.runtime")
     } yield new Engine[F](conf, validator)
+  
 
   def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F]): Engine[F] =
     new Engine[F](conf, validator)

@@ -55,5 +55,6 @@ site/content/api
 site/content/examples
 site/output
 
-.metals/
-.bloop/
+# metals vsCode
+.bloop
+.metals
