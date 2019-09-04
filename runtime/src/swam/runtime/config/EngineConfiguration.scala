@@ -32,7 +32,7 @@ import enumeratum.EnumEntry._
 case class EngineConfiguration(useLowLevelAsm: Boolean,
                                compiler: CompilerConfiguration,
                                stack: StackConfiguration,
-                               data: DataConfiguration)
+                               data: DataConfiguration, tracer: TraceConfiguration)
 
 case class CompilerConfiguration(low: LowLevelCompilerConfiguration)
 
@@ -54,3 +54,5 @@ case class DataConfiguration(onHeap: Boolean, hardMax: Information)
 case class LowLevelStackConfiguration(size: Information)
 
 case class HighLevelStackConfiguration(size: Information, callDepth: Int)
+
+case class TraceConfiguration(tracerName: String, filter: String)

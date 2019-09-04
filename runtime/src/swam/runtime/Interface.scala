@@ -22,8 +22,6 @@ import java.nio.ByteBuffer
 import cats._
 
 import scala.language.higherKinds
-import scala.concurrent._
-import java.util.concurrent.locks._
 
 /** All elements that are part of the interface of an instance must implement
   * this interface.
@@ -224,28 +222,45 @@ abstract class Memory[F[_]](implicit F: MonadError[F, Throwable]) extends Interf
 }
 
 
+import scala.concurrent._
+import java.util.concurrent.locks._
+
+import config._
+
 trait Tracer{
 
-  //  Events must be written in order
-  val locker = new ReentrantLock
-
+    //  Events must be written in order
+    val locker = new ReentrantLock
+    val conf: EngineConfiguration
+    val regex = conf.tracer.filter.r
   
-  def traceEvent(args: Any*):Unit
-
-  def executeOnBack(f: () => Unit) = {
-     implicit val ec: ExecutionContext = ExecutionContext.global
-     
-    Future {
-      blocking{
-        try{
-          locker.lock()
-          f()
-        }
-        finally{
-          locker.unlock()
+    
+    def innerTrace(eventName: String, args: Any*): () => Unit
+  
+    def traceEvent(eventName: String, args: Any*){
+        // Filtering usong trace options
+      executeOnBack(() => {
+          eventName match {
+            case regex(_*) => innerTrace(eventName, args:_*)()
+          }
+      })
+    }
+  
+  
+    private def executeOnBack(f: () => Unit) = {
+       implicit val ec: ExecutionContext = ExecutionContext.global
+       
+      Future {
+        blocking{
+          try{
+            locker.lock()
+            f()
+          }
+          finally{
+            locker.unlock()
+          }
         }
       }
+  
     }
-
   }
-}
