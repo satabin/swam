@@ -12,6 +12,7 @@ import java.util.UUID.randomUUID
 class InFileTracer(val conf: EngineConfiguration) extends Tracer{
 
     
+    // TODO improve this
     def group(args: Any*) = args.mkString(",")
 
     def innerTrace(eventName: String, time: Long, args: Any*) = () => {
