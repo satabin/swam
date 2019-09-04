@@ -55,6 +55,11 @@ import java.nio.file.Path
 class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F])
     extends ModuleLoader[F] {
 
+    {
+      // New isolated log file on every Engine initialization
+      conf.tracer.path = s"log-${this.hashCode().toString()}.txt"
+    }
+
   implicit val tracer: Tracer = 
   conf.tracer.tracerName match {
     case "None" => null
@@ -179,7 +184,8 @@ object Engine {
     } yield new Engine[F](conf, validator)
   
 
-  def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F]): Engine[F] =
+  def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F]): Engine[F] = {
     new Engine[F](conf, validator)
+  }
 
 }
