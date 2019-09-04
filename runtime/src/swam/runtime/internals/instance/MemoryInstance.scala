@@ -26,7 +26,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 import scala.language.higherKinds
 
 private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int)(
-    implicit F: Async[F], tracer: Tracer)
+    implicit F: Async[F], tracer: Tracer = null)
     extends Memory[F] {
 
   val tpe = MemType(Limits(min, max))
@@ -40,7 +40,7 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
       else
         ByteBuffer.allocateDirect(size)
 
-    //tracer.traceMemoryDeclaration(size)
+    if (tracer != null)tracer.traceEvent("msize", size)
     buffer.order(ByteOrder.LITTLE_ENDIAN)
     buffer
   }
@@ -92,6 +92,8 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
     }
 
   def doGrow(size: Int): Boolean = {
+
+    if (tracer != null)tracer.traceEvent("mgrow", size)
     val old = buffer
     buffer = allocate(size)
     old.position(0)
