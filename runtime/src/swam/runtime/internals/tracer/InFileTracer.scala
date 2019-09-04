@@ -9,6 +9,9 @@ import java.text.SimpleDateFormat
 import java.util._
 import java.util.UUID.randomUUID
 
+/** Write events log file
+ * Every log file is grouped by the engine execution scope
+  */
 class InFileTracer(val conf: EngineConfiguration) extends Tracer{
 
     
