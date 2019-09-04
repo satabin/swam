@@ -229,7 +229,8 @@ trait Tracer{
   //  Events must be written in order
   val locker = new ReentrantLock
 
-  def traceEvent(args: Any*): Unit
+  
+  def traceEvent(args: Any*):Unit
 
   def executeOnBack(f: () => Unit) = {
      implicit val ec: ExecutionContext = ExecutionContext.global
