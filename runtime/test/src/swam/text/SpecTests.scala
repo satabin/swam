@@ -34,6 +34,7 @@ import cats.effect._
 
 import scala.concurrent.ExecutionContext
 
+
 object SpecTests extends TestSuite {
 
   implicit val cs = IO.contextShift(ExecutionContext.Implicits.global)

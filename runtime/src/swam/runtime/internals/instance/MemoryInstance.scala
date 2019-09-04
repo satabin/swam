@@ -27,7 +27,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 import scala.language.higherKinds
 
 private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int)(
-    implicit F: Async[F])
+    implicit F: Async[F], tracer: Tracer)
     extends Memory[F] {
 
   val tpe = MemType(Limits(min, max))
@@ -40,14 +40,18 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
         ByteBuffer.allocate(size)
       else
         ByteBuffer.allocateDirect(size)
+
+    //tracer.traceMemoryDeclaration(size)
     buffer.order(ByteOrder.LITTLE_ENDIAN)
     buffer
   }
 
   def size = buffer.capacity
 
-  def writeByte(idx: Int, v: Byte) =
+  def writeByte(idx: Int, v: Byte) = {
+    //tracer.traceMemWrite(123l, idx, v)
     F.delay(buffer.put(idx, v))
+  }
 
   def readByte(idx: Int) =
     F.delay(buffer.get(idx))

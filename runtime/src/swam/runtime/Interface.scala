@@ -22,6 +22,8 @@ import java.nio.ByteBuffer
 import cats._
 
 import scala.language.higherKinds
+import scala.concurrent._
+import java.util.concurrent.locks._
 
 /** All elements that are part of the interface of an instance must implement
   * this interface.
@@ -205,4 +207,30 @@ trait Memory[F[_]] extends Interface[F, MemType] {
     *  $boundaries
     */
   def writeBytes(idx: Int, bytes: ByteBuffer): F[Unit]
+}
+
+
+trait Tracer{
+
+  //  Events must be written in order
+  val locker = new ReentrantLock
+
+  def traceEvent(args: Any*): Unit
+
+  def executeOnBack(f: () => Unit) = {
+     implicit val ec: ExecutionContext = ExecutionContext.global
+     
+    Future {
+      blocking{
+        try{
+          locker.lock()
+          f()
+        }
+        finally{
+          locker.unlock()
+        }
+      }
+    }
+
+  }
 }

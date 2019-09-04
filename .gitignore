@@ -54,3 +54,7 @@ ensime.sbt
 site/content/api
 site/content/examples
 site/output
+
+# metals vsCode
+.bloop
+.metals
