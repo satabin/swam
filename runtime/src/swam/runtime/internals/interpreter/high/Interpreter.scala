@@ -34,7 +34,7 @@ import cats.implicits._
 import scala.language.higherKinds
 
 /** An interpreter is spwan each time the execution of a method is required. */
-private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadError[F, Throwable])
+private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadError[F, Throwable], tracer: Tracer)
     extends interpreter.Interpreter[F](engine) {
 
   private val conf = engine.conf
