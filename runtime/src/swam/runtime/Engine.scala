@@ -67,7 +67,11 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     else
       new ih.Interpreter[F](this)
 
-  implicit val tracer: Tracer = new StdTracer
+  implicit val tracer: Tracer = 
+      if (conf.tracer == "StdTracer")
+        new StdTracer
+      else
+        null
       
   private[runtime] val instantiator = new Instantiator[F](this)
 

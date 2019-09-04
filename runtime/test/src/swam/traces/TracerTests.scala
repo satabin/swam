@@ -14,12 +14,6 @@ object TracerTests extends TestSuite {
 
     val tests = Tests{
 
-        tracer.traceEvent("spush", 123l, 23)
-        tracer.traceEvent("spush", 123l, 23)
-        tracer.traceEvent("spush", 123l, 24)
-        tracer.traceEvent("spush", 123l, 25)
-        tracer.traceEvent("spush", 123l, 26)
-        tracer.traceEvent("spush", 123l, 27)
     }
   
 }

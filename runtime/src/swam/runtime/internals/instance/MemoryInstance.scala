@@ -27,7 +27,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 import scala.language.higherKinds
 
 private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int)(
-    implicit F: Async[F], tracer: Tracer)
+    implicit F: Async[F], tracer: Tracer = null)
     extends Memory[F] {
 
   val tpe = MemType(Limits(min, max))
@@ -41,7 +41,7 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
       else
         ByteBuffer.allocateDirect(size)
 
-    //tracer.traceMemoryDeclaration(size)
+    if (tracer != null)tracer.traceEvent("msize", size)
     buffer.order(ByteOrder.LITTLE_ENDIAN)
     buffer
   }
@@ -49,42 +49,67 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
   def size = buffer.capacity
 
   def writeByte(idx: Int, v: Byte) = {
-    //tracer.traceMemWrite(123l, idx, v)
+    if (tracer != null)tracer.traceEvent("msize", size)
     F.delay(buffer.put(idx, v))
   }
 
-  def readByte(idx: Int) =
-    F.delay(buffer.get(idx))
+  def readByte(idx: Int) = {
+    val result = F.delay(buffer.get(idx))
+    // mread, address, size (1 byte)
+    if (tracer != null)tracer.traceEvent("mread", idx, 1)
+    result
+  }
 
-  def writeShort(idx: Int, v: Short) =
+  def writeShort(idx: Int, v: Short) = {
+
+    if (tracer != null)tracer.traceEvent("mwrite", idx, 2, v)
     F.delay(buffer.putShort(idx, v))
+  }
 
-  def readShort(idx: Int) =
+  def readShort(idx: Int) = {
+    if (tracer != null)tracer.traceEvent("mread", idx, 2)
     F.delay(buffer.getShort(idx))
+  }
 
-  def writeInt(idx: Int, v: Int) =
+  def writeInt(idx: Int, v: Int) = {
+    if (tracer != null)tracer.traceEvent("mwrite", idx, 4)
     F.delay(buffer.putInt(idx, v))
+  }
 
-  def readInt(idx: Int) =
+  def readInt(idx: Int) = {
+    if (tracer != null)tracer.traceEvent("mread", idx, 4)
     F.delay(buffer.getInt(idx))
+  }
 
-  def writeLong(idx: Int, v: Long) =
+  def writeLong(idx: Int, v: Long) = {
+    if (tracer != null)tracer.traceEvent("mwrite", idx, 8)
     F.delay(buffer.putLong(idx, v))
+  }
 
-  def readLong(idx: Int) =
+  def readLong(idx: Int) = {
+    if (tracer != null)tracer.traceEvent("mread", idx, 8)
     F.delay(buffer.getLong(idx))
+  }
 
-  def writeFloat(idx: Int, v: Float) =
+  def writeFloat(idx: Int, v: Float) = {
+    if (tracer != null)tracer.traceEvent("mwriteF", idx, 4)
     F.delay(buffer.putFloat(idx, v))
+  }
 
-  def readFloat(idx: Int) =
+  def readFloat(idx: Int) = {
+    if (tracer != null)tracer.traceEvent("mreadF", idx, 4)
     F.delay(buffer.getFloat(idx))
+  }
 
-  def writeDouble(idx: Int, v: Double) =
+  def writeDouble(idx: Int, v: Double) = {
+    if (tracer != null)tracer.traceEvent("mwriteF", idx, 8)
     F.delay(buffer.putDouble(idx, v))
+  }
 
-  def readDouble(idx: Int) =
+  def readDouble(idx: Int) = {
+    if (tracer != null)tracer.traceEvent("mreadF", idx, 8)
     F.delay(buffer.getDouble(idx))
+  }
 
   def grow(by: Int) =
     F.delay {
@@ -95,6 +120,8 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
     }
 
   def doGrow(size: Int): Boolean = {
+
+    if (tracer != null)tracer.traceEvent("mgrow", size)
     val old = buffer
     buffer = allocate(size)
     old.position(0)
@@ -109,6 +136,8 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
     }
 
   def writeBytes(idx: Int, bytes: ByteBuffer) = F.delay {
+
+    if (tracer != null)tracer.traceEvent("mwriteBuffer", idx)
     buffer.position(idx)
     buffer.put(bytes)
   }

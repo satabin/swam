@@ -26,7 +26,7 @@ import squants.information._
   * @param stack Configures how the stack behaves.
   * @param data Configures how the data part behaves.
   */
-case class EngineConfiguration(useLowLevelAsm: Boolean, stack: StackConfiguration, data: DataConfiguration, tracer: String)
+case class EngineConfiguration(useLowLevelAsm: Boolean, stack: StackConfiguration, data: DataConfiguration, tracer: String = "None")
 
 case class StackConfiguration(size: Information, callDepth: Int)
 
