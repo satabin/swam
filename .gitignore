@@ -58,3 +58,6 @@ site/output
 # metals vsCode
 .bloop
 .metals
+
+# log filess
+log*

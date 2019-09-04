@@ -55,4 +55,4 @@ case class LowLevelStackConfiguration(size: Information)
 
 case class HighLevelStackConfiguration(size: Information, callDepth: Int)
 
-case class TraceConfiguration(tracerName: String, filter: String, path: String)
+case class TraceConfiguration(tracerName: String, filter: String, var path: String)
