@@ -9,6 +9,11 @@ class StdTracer(val conf: EngineConfiguration) extends Tracer{
 
     def group(args: Any*) = args.mkString(",")
 
-    def innerTrace(eventName: String, args: Any*) = ()=> println(s"${Console.MAGENTA} ${eventName},${group(args: _*)},${System.currentTimeMillis()} ${Console.WHITE}")
+    def innerTrace(eventName: String, time: Long, args: Any*) = ()=> println(s"${Console.MAGENTA} ${eventName},${time},${group(args: _*)} ${Console.WHITE}")
+    
+}
+
+
+object StdTracer{
     
 }

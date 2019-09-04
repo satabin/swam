@@ -54,10 +54,11 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     extends ModuleLoader[F] {
 
   implicit val tracer: Tracer = 
-  if (conf.tracer.tracerName == "StdTracer")
-    new StdTracer(conf)
-  else
-    null
+  conf.tracer.tracerName match {
+    case "None" => null
+    case _ => Class.forName(conf.tracer.tracerName).getConstructors()(0).newInstance(conf).asInstanceOf[Tracer]
+  }
+    
 
   private[runtime] val compiler =
     if (conf.useLowLevelAsm)
