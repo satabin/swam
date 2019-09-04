@@ -3,15 +3,12 @@ package runtime
 package internals
 package tracer
 
-class StdTracer extends Tracer{
+import config._
+
+class StdTracer(val conf: EngineConfiguration) extends Tracer{
 
     def group(args: Any*) = args.mkString(",")
 
-    def traceEvent(args: Any*) = {
-        super.executeOnBack(()=> println(s"${Console.MAGENTA} ${group(args: _*)},${System.currentTimeMillis()} ${Console.WHITE}"))
-    }
-}
-
-object StdTracer {
-
+    def innerTrace(eventName: String, args: Any*) = ()=> println(s"${Console.MAGENTA} ${eventName},${group(args: _*)},${System.currentTimeMillis()} ${Console.WHITE}")
+    
 }

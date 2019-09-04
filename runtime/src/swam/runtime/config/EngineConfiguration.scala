@@ -26,8 +26,11 @@ import squants.information._
   * @param stack Configures how the stack behaves.
   * @param data Configures how the data part behaves.
   */
-case class EngineConfiguration(useLowLevelAsm: Boolean, stack: StackConfiguration, data: DataConfiguration, tracer: String = "None")
+case class EngineConfiguration(useLowLevelAsm: Boolean, stack: StackConfiguration, data: DataConfiguration, tracer: TraceConfiguration)
 
 case class StackConfiguration(size: Information, callDepth: Int)
 
 case class DataConfiguration(onHeap: Boolean, hardMax: Information)
+
+// Tracer class name and event filter in regular expression format
+case class TraceConfiguration(tracerName: String, filter: String)
