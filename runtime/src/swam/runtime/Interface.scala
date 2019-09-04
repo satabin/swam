@@ -228,31 +228,18 @@ trait Tracer{
     // Relative time
     val now = System.nanoTime()
   
-    
-   /** Perform an action based on eventName, relative time in nano seconds and event arguments
-    *  $boundaries
-    */
-    def innerTrace(eventName: String, time: Long, args: Any*): () => Unit
-  
    /** Public method to record an event
    
     *  $boundaries
     */
-    def traceEvent(eventName: String, args: Any*){
-        // Filtering usong trace options
-      executeOnBack(() => {
-          eventName match {
-            case regex(_*) => innerTrace(eventName, System.nanoTime() - now , args:_*)()
-          }
-      })
-    }
+    def traceEvent(eventName: String, args: Any*): Unit
   
   
     /** Make a background request on the event record call
    
     *  $boundaries
     */
-    private def executeOnBack(f: () => Unit) = {
+    protected def executeOnBack(f: () => Unit) = {
        implicit val ec: ExecutionContext = ExecutionContext.global
        
       Future {
