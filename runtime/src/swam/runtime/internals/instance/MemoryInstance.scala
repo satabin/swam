@@ -54,61 +54,76 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
   }
 
   def readByte(idx: Int) = {
-    val result = F.delay(buffer.get(idx))
-    // mread, address, size (1 byte)
-    if (tracer != null)tracer.traceEvent("mread", idx, 1)
-    result
+    F.delay({
+      val r = buffer.get(idx)
+      if (tracer != null)tracer.traceEvent("mread", "i8", idx, r)
+      r
+    })
   }
 
   def writeShort(idx: Int, v: Short) = {
-
-    if (tracer != null)tracer.traceEvent("mwrite", idx, 2, v)
+    if (tracer != null)tracer.traceEvent("mwrite", "i16", idx, v)
     F.delay(buffer.putShort(idx, v))
   }
 
   def readShort(idx: Int) = {
-    if (tracer != null)tracer.traceEvent("mread", idx, 2)
-    F.delay(buffer.getShort(idx))
+    F.delay({
+      val r=  buffer.getShort(idx)
+      if (tracer != null)tracer.traceEvent("mread", "i16", idx, r)
+      r
+    })
   }
 
   def writeInt(idx: Int, v: Int) = {
-    if (tracer != null)tracer.traceEvent("mwrite", idx, 4)
+    if (tracer != null)tracer.traceEvent("mwrite", "i32", idx, v)
     F.delay(buffer.putInt(idx, v))
   }
 
   def readInt(idx: Int) = {
-    if (tracer != null)tracer.traceEvent("mread", idx, 4)
-    F.delay(buffer.getInt(idx))
+    F.delay({
+      val r = buffer.getInt(idx)
+      if (tracer != null)tracer.traceEvent("mread", "i32", idx, r)
+      r
+    })
   }
 
   def writeLong(idx: Int, v: Long) = {
-    if (tracer != null)tracer.traceEvent("mwrite", idx, 8)
+    if (tracer != null)tracer.traceEvent("mwrite", "i64",  idx, v)
     F.delay(buffer.putLong(idx, v))
   }
 
   def readLong(idx: Int) = {
-    if (tracer != null)tracer.traceEvent("mread", idx, 8)
-    F.delay(buffer.getLong(idx))
+    F.delay({
+      val r  = buffer.getLong(idx)
+      if (tracer != null)tracer.traceEvent("mread", "i64", idx, r)
+      r
+    })
   }
 
   def writeFloat(idx: Int, v: Float) = {
-    if (tracer != null)tracer.traceEvent("mwriteF", idx, 4)
+    if (tracer != null)tracer.traceEvent("mwrite", "f32", idx, v)
     F.delay(buffer.putFloat(idx, v))
   }
 
   def readFloat(idx: Int) = {
-    if (tracer != null)tracer.traceEvent("mreadF", idx, 4)
-    F.delay(buffer.getFloat(idx))
+    F.delay({
+      val r = buffer.getFloat(idx)
+      if (tracer != null)tracer.traceEvent("mread", "f32", idx, r)
+      r
+    })
   }
 
   def writeDouble(idx: Int, v: Double) = {
-    if (tracer != null)tracer.traceEvent("mwriteF", idx, 8)
+    if (tracer != null)tracer.traceEvent("mwrite", "f64", idx, v)
     F.delay(buffer.putDouble(idx, v))
   }
 
   def readDouble(idx: Int) = {
-    if (tracer != null)tracer.traceEvent("mreadF", idx, 8)
-    F.delay(buffer.getDouble(idx))
+    F.delay({
+      val r  = buffer.getDouble(idx)
+      if (tracer != null)tracer.traceEvent("mread", "f64", idx, r)
+      r
+    })
   }
 
   def grow(by: Int) =
@@ -137,7 +152,7 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
 
   def writeBytes(idx: Int, bytes: ByteBuffer) = F.delay {
 
-    if (tracer != null)tracer.traceEvent("mwriteBuffer", idx)
+    if (tracer != null)tracer.traceEvent("mwrite", "bytes", bytes.remaining(), idx)
     buffer.position(idx)
     buffer.put(bytes)
   }
