@@ -33,4 +33,4 @@ case class StackConfiguration(size: Information, callDepth: Int)
 case class DataConfiguration(onHeap: Boolean, hardMax: Information)
 
 // Tracer class name and event filter in regular expression format
-case class TraceConfiguration(tracerName: String, filter: String)
+case class TraceConfiguration(tracerName: String, filter: String, path: String)

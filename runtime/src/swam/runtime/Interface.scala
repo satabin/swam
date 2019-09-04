@@ -217,17 +217,18 @@ trait Tracer{
 
     //  Events must be written in order
     val locker = new ReentrantLock
-    val conf: EngineConfiguration
+    protected val conf: EngineConfiguration
     val regex = conf.tracer.filter.r
+    val now = System.nanoTime()
   
     
-    def innerTrace(eventName: String, args: Any*): () => Unit
+    def innerTrace(eventName: String, time: Long, args: Any*): () => Unit
   
     def traceEvent(eventName: String, args: Any*){
         // Filtering usong trace options
       executeOnBack(() => {
           eventName match {
-            case regex(_*) => innerTrace(eventName, args:_*)()
+            case regex(_*) => innerTrace(eventName, System.nanoTime() - now , args:_*)()
           }
       })
     }
