@@ -172,7 +172,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
       r
     }
 
-    def peekFloat(): Float =
+    def peekFloat(): Float = 
       JFloat.intBitsToFloat(peekInt())
 
     def popDouble(): Double = {

@@ -268,3 +268,53 @@ trait Tracer {
 
   }
 }
+
+
+import scala.concurrent._
+import java.util.concurrent.locks._
+
+import config._
+
+/** Tracers must implement this interface.
+  * Also, tracers must provide and implementation of innerTrace method
+  * Every trace event will be recorded in background, with the correct invocation order 
+  */
+
+trait Tracer{
+
+    //  Events must be written in order
+    val locker = new ReentrantLock
+    protected val conf: EngineConfiguration
+    val regex = conf.tracer.filter.r
+
+    // Relative time
+    val now = System.nanoTime()
+  
+   /** Public method to record an event
+   
+    *  $boundaries
+    */
+    def traceEvent(eventName: String, args: Any*): Unit
+  
+  
+    /** Make a background request on the event record call
+   
+    *  $boundaries
+    */
+    protected def executeOnBack(f: () => Unit) = {
+       implicit val ec: ExecutionContext = ExecutionContext.global
+       
+      Future {
+        blocking{
+          try{
+            locker.lock()
+            f()
+          }
+          finally{
+            locker.unlock()
+          }
+        }
+      }
+  
+    }
+  }
