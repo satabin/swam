@@ -40,14 +40,17 @@ case class CompilerConfiguration(low: LowLevelCompilerConfiguration)
 
 case class LowLevelCompilerConfiguration(byteOrder: ConfiguredByteOrder)
 
-sealed trait ConfiguredByteOrder extends EnumEntry with Hyphencase
+sealed abstract class ConfiguredByteOrder extends EnumEntry with Hyphencase
 
 object ConfiguredByteOrder extends Enum[ConfiguredByteOrder] {
+
+  def values = findValues
+  
   case object LittleEndian extends ConfiguredByteOrder
   case object BigEndian extends ConfiguredByteOrder
   case object Native extends ConfiguredByteOrder
-  def values = findValues
 }
+
 
 case class StackConfiguration(high: HighLevelStackConfiguration, low: LowLevelStackConfiguration)
 
