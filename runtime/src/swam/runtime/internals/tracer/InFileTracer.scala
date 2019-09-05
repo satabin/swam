@@ -9,31 +9,27 @@ import java.text.SimpleDateFormat
 import java.util._
 import java.util.UUID.randomUUID
 import scala.collection.mutable.ListBuffer
+
 /** Write events log file
- * Every log file is grouped by the engine execution scope
+  * Every log file is grouped by the engine execution scope
   */
-class InFileTracer(val conf: EngineConfiguration) extends Tracer{
+class InFileTracer(val conf: EngineConfiguration) extends Tracer {
 
-    
-    // TODO improve this
-    def group(args: Any*) = args.mkString(",")
+  // TODO improve this
+  def group(args: Any*) = args.mkString(",")
 
+  def traceEvent(eventName: String, args: Any*) = {
+    val eventTime = System.nanoTime()
+    super.executeOnBack(() => {
+      eventName match {
+        case regex() => {
+          InFileTracerSingleton.write(s"$eventName,${eventTime - now},${group(args: _*)}")
+        }
+      }
+    })
+  }
 
-    def traceEvent(eventName: String, args: Any*) = 
-    {
-         val eventTime = System.nanoTime()
-         super.executeOnBack(() => {
-          eventName match {
-            case regex() => 
-            {   
-              InFileTracerSingleton.write(s"$eventName,${eventTime - now},${group(args:_*)}")
-            }
-          }
-      })
-    }
-
-
-  object InFileTracerSingleton{
+  object InFileTracerSingleton {
     val pw = new FileWriter(s"${conf.tracer.folder}/${conf.tracer.path}", false)
 
     val buffered: ListBuffer[String] = new ListBuffer()
@@ -45,10 +41,10 @@ class InFileTracer(val conf: EngineConfiguration) extends Tracer{
       })
     }
 
-    def flushBuffer(){
-      for(l <- buffered)
-          pw.write(s"${l}\n")
-        
+    def flushBuffer() {
+      for (l <- buffered)
+        pw.write(s"${l}\n")
+
       buffered.clear()
       pw.flush()
     }
@@ -56,10 +52,9 @@ class InFileTracer(val conf: EngineConfiguration) extends Tracer{
 
       buffered += line
 
-      if(buffered.size >= maximum){
+      if (buffered.size >= maximum) {
         flushBuffer()
       }
     }
   }
 }
-

@@ -23,7 +23,8 @@ import squants.information._
 import enumeratum._
 import enumeratum.EnumEntry._
 
-/** Holds all the configurable values.
+/** Holds all the
+  * configurable values.
   *
   * @param useLowLevelAsm Whether engine compiles and run low-level bytecode.
   * @param stack Configures how the stack behaves.
@@ -32,7 +33,8 @@ import enumeratum.EnumEntry._
 case class EngineConfiguration(useLowLevelAsm: Boolean,
                                compiler: CompilerConfiguration,
                                stack: StackConfiguration,
-                               data: DataConfiguration, tracer: TraceConfiguration)
+                               data: DataConfiguration,
+                               tracer: TraceConfiguration)
 
 case class CompilerConfiguration(low: LowLevelCompilerConfiguration)
 

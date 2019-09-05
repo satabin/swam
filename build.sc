@@ -21,7 +21,6 @@ val millVersion = System.getProperty("MILL_VERSION")
 interp.load.ivy("com.lihaoyi" %% "mill-contrib-bloop" % millVersion)
 interp.load.ivy("com.lihaoyi" %% "mill-contrib-buildinfo" % millVersion)
 
-@
 
 import mill.contrib.scoverage.ScoverageModule
 
