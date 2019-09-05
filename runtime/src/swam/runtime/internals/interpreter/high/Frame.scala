@@ -42,7 +42,8 @@ sealed class Frame[F[_]] private (
     code: ByteBuffer,
     private[interpreter] val locals: Array[Long],
     private[interpreter] val arity: Int,
-    private[interpreter] val instance: Instance[F])(implicit F: MonadError[F, Throwable], tracer: Tracer)
+    private[interpreter] val instance: Instance[F],
+    tracer: Tracer)(implicit F: MonadError[F, Throwable])
     extends StackFrame {
   self =>
 
@@ -251,7 +252,7 @@ sealed class Frame[F[_]] private (
 
     def pushFrame(arity: Int, code: ByteBuffer, locals: Array[Long], instance: Instance[F]): F[Frame[F]] =
       if (depth < callDepth)
-        F.pure(new Frame[F](self, stackSize, callDepth, depth + 1, code, locals, arity, instance))
+        F.pure(new Frame[F](self, stackSize, callDepth, depth + 1, code, locals, arity, instance, tracer))
       else
         F.raiseError(new StackOverflowException(self))
 
@@ -269,8 +270,7 @@ object Frame {
   private final val VALUE = 0
   private final val LABEL = 1
 
-  def makeToplevel[F[_]](instance: Instance[F], conf: HighLevelStackConfiguration)(implicit F: MonadError[F, Throwable],
-                                                                                   tracer: Tracer): Frame[F] =
-    new Frame[F](null, conf.size.toBytes.toInt, conf.callDepth, 0, null, null, 0, instance)
+  def makeToplevel[F[_]](instance: Instance[F], conf: HighLevelStackConfiguration, tracer: Tracer)(implicit F: MonadError[F, Throwable]): Frame[F] =
+    new Frame[F](null, conf.size.toBytes.toInt, conf.callDepth, 0, null, null, 0, instance, tracer)
 
 }

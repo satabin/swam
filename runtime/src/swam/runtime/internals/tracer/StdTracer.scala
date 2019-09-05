@@ -10,8 +10,6 @@ import config._
   */
 class StdTracer(val conf: EngineConfiguration) extends Tracer {
 
-  def group(args: Any*) = args.mkString(",")
-
   def traceEvent(eventName: String, args: Any*) = {
     val eventTime = System.nanoTime()
     // Filtering usong trace options

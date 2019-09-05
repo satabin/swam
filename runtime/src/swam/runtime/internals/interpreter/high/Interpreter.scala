@@ -34,14 +34,14 @@ import cats.implicits._
 import scala.language.higherKinds
 
 /** An interpreter is spwan each time the execution of a method is required. */
-private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadError[F, Throwable], tracer: Tracer)
+private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(implicit F: MonadError[F, Throwable])
     extends interpreter.Interpreter[F](engine) {
 
   private val conf = engine.conf
 
   def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level frame
-    val frame = Frame.makeToplevel[F](instance, conf.stack.high)
+    val frame = Frame.makeToplevel[F](instance, conf.stack.high, tracer)
     // push the parameters in the stack
     frame.stack.pushValues(parameters)
     // invoke the function
@@ -53,7 +53,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
 
   def interpret(func: Function[F], parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level frame
-    val frame = Frame.makeToplevel[F](instance, conf.stack.high)
+    val frame = Frame.makeToplevel[F](instance, conf.stack.high, tracer)
     // push the parameters in the stack
     frame.stack.pushValues(parameters)
     // invoke the function
@@ -65,7 +65,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
 
   def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level frame
-    val frame = Frame.makeToplevel[F](instance, conf.stack.high)
+    val frame = Frame.makeToplevel[F](instance, conf.stack.high, tracer)
     // invoke the function
     invoke(frame, new FunctionInstance(FuncType(Vector(), Vector(tpe)), Vector(), code, instance)).flatMap {
       case Left(frame) => run(frame)

@@ -246,6 +246,9 @@ trait Tracer {
     */
   def traceEvent(eventName: String, args: Any*): Unit
 
+
+  def group(args: Any*) = args.mkString(",")
+
   /** Make a background request on the event record call
 
     *  $boundaries

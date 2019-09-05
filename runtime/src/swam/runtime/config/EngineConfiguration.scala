@@ -40,7 +40,7 @@ case class CompilerConfiguration(low: LowLevelCompilerConfiguration)
 
 case class LowLevelCompilerConfiguration(byteOrder: ConfiguredByteOrder)
 
-sealed abstract class ConfiguredByteOrder extends EnumEntry with Hyphencase
+sealed trait ConfiguredByteOrder extends EnumEntry with Hyphencase
 
 object ConfiguredByteOrder extends Enum[ConfiguredByteOrder] {
 

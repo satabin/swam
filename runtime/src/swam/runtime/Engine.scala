@@ -66,9 +66,9 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
 
   private[runtime] val interpreter =
     if (conf.useLowLevelAsm)
-      new il.Interpreter[F](this)
+      new il.Interpreter[F](this, tracer)
     else
-      new ih.Interpreter[F](this)
+      new ih.Interpreter[F](this, tracer)
 
   private[runtime] val instantiator = new Instantiator[F](this)
 

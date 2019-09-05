@@ -15,8 +15,6 @@ import scala.collection.mutable.ListBuffer
   */
 class InFileTracer(val conf: EngineConfiguration) extends Tracer {
 
-  // TODO improve this
-  def group(args: Any*) = args.mkString(",")
 
   def traceEvent(eventName: String, args: Any*) = {
     val eventTime = System.nanoTime()

@@ -78,7 +78,7 @@ import scala.language.higherKinds
   * }}}
   *
   */
-private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: Instance[F]) extends StackFrame {
+private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: Instance[F], tracer: Tracer) extends StackFrame {
 
   private val stack = Array.ofDim[Long](conf.size.toBytes.toInt / 8)
 
@@ -135,55 +135,83 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
     }
   }
 
-  def pushBool(b: Boolean): Unit =
+  def pushBool(b: Boolean): Unit = {
     pushInt(if (b) 1 else 0)
+    tracer.traceEvent("spush", "i32", if (b) 1 else 0)
+  }
 
-  def pushInt(i: Int): Unit =
+  def pushInt(i: Int): Unit = {
     pushValue(i & 0x00000000ffffffffl)
+    tracer.traceEvent("spush", "i32", i & 0x00000000ffffffffl)
+  }
 
-  def pushLong(l: Long): Unit =
+  def pushLong(l: Long): Unit ={
     pushValue(l)
+    tracer.traceEvent("spush", "i64", l)
+  }
 
-  def pushFloat(f: Float): Unit =
+  def pushFloat(f: Float): Unit = {
     pushValue(JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl)
+    tracer.traceEvent("spush", "f32", JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl)
+  }
 
-  def pushDouble(d: Double): Unit =
+  def pushDouble(d: Double): Unit = {
     pushValue(JDouble.doubleToRawLongBits(d))
+    tracer.traceEvent("spush", "f64", JDouble.doubleToRawLongBits(d))
+  }
 
-  def popBool(): Boolean =
-    popInt() != 0
+  def popBool(): Boolean = {
+    val r = popInt()
+    tracer.traceEvent("spop", "i32", r)
+    r != 0
+  }
 
-  def popInt(): Int =
-    (popValue() & 0x00000000ffffffffl).toInt
+  def popInt(): Int ={
+    val r = (popValue() & 0x00000000ffffffffl).toInt
+    tracer.traceEvent("spop", "i32", r)
+    r
+  }
 
-  def peekInt(): Int =
+  def peekInt(): Int = 
     (peekValue() & 0x00000000ffffffffl).toInt
 
-  def popLong(): Long =
-    popValue()
+  def popLong(): Long = {
+    val r = popValue()
+    tracer.traceEvent("spop", "i32", r)
+    r
+  }
 
   def peekLong(): Long =
     peekValue()
 
-  def popFloat(): Float =
-    JFloat.intBitsToFloat(popInt())
+  def popFloat(): Float = {
+    val r = JFloat.intBitsToFloat(popInt())
+    tracer.traceEvent("spop", "f32", r)
+    r
+  }
 
   def peekFloat(): Float =
     JFloat.intBitsToFloat(peekInt())
 
-  def popDouble(): Double =
-    JDouble.longBitsToDouble(popLong())
+  def popDouble(): Double = {
+    val r = JDouble.longBitsToDouble(popLong())
+    tracer.traceEvent("spop", "f64", r)
+    r
+  }
 
   def peekDouble(): Double =
     JDouble.longBitsToDouble(peekLong())
 
   def drop(n: Int): Unit = {
     tp -= n
+    tracer.traceEvent("sdrop", n)
   }
 
   def popValue(): Long = {
     tp -= 1
-    stack(tp)
+    var r = stack(tp)
+    tracer.traceEvent("spop", "i64", r)
+    r
   }
 
   def peekValue(): Long =
@@ -202,6 +230,7 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
   def pushValue(l: Long): Unit = {
     stack(tp) = l
     tp += 1
+    tracer.traceEvent("spop", "i64", l)
   }
 
   def pushValues(values: Seq[Long]): Unit =

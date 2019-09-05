@@ -35,14 +35,14 @@ import scala.language.higherKinds
 import scala.util.control.NonFatal
 
 /** Interpreter of low-level assembly. */
-private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadError[F, Throwable], tracer: Tracer)
+private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(implicit F: MonadError[F, Throwable])
     extends interpreter.Interpreter[F](engine) {
 
   private val conf = engine.conf
 
   def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level thread
-    val thread = new ThreadFrame[F](conf.stack.low, instance)
+    val thread = new ThreadFrame[F](conf.stack.low, instance, tracer)
     // push the parameters in the stack
     thread.pushValues(parameters)
     // invoke the function
@@ -54,7 +54,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
 
   def interpret(func: Function[F], parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level thread
-    val thread = new ThreadFrame[F](conf.stack.low, instance)
+    val thread = new ThreadFrame[F](conf.stack.low, instance, tracer)
     // push the parameters in the stack
     thread.pushValues(parameters)
     // invoke the function
@@ -66,7 +66,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
 
   def interpretInit(tpe: ValType, code: ByteBuffer, instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level thread
-    val thread = new ThreadFrame[F](conf.stack.low, instance)
+    val thread = new ThreadFrame[F](conf.stack.low, instance, tracer)
     // invoke the function
     invoke(thread, new FunctionInstance(FuncType(Vector(), Vector(tpe)), Vector(), code, instance)) match {
       case Left(_)    => run(thread)

@@ -25,9 +25,8 @@ import java.nio.{ByteBuffer, ByteOrder}
 
 import scala.language.higherKinds
 
-private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int)(
-    implicit F: Async[F],
-    tracer: Tracer)
+private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int, tracer: Tracer)(
+    implicit F: Async[F])
     extends Memory[F] {
 
   val tpe = MemType(Limits(min, max))
@@ -48,41 +47,72 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
 
   def size = buffer.capacity
 
-  def unsafeWriteByte(idx: Int, v: Byte) =
+
+  def unsafeWriteByte(idx: Int, v: Byte) = {
+    if (tracer != null) tracer.traceEvent("mwrite", "i8", idx, v)
     buffer.put(idx, v)
+  }
 
-  def unsafeReadByte(idx: Int) =
-    buffer.get(idx)
+  def unsafeReadByte(idx: Int) ={
+    val r  = buffer.get(idx)
+    if (tracer != null) tracer.traceEvent("mread", "i8", idx, r)
+    r
+  }
 
-  def unsafeWriteShort(idx: Int, v: Short) =
+  def unsafeWriteShort(idx: Int, v: Short) ={
     buffer.putShort(idx, v)
+    if (tracer != null) tracer.traceEvent("mwrite", "i16", idx, v)
+  }
 
-  def unsafeReadShort(idx: Int) =
-    buffer.getShort(idx)
+  def unsafeReadShort(idx: Int) = {
+    val r = buffer.getShort(idx)
+    if (tracer != null) tracer.traceEvent("mread", "i16", idx, r)
+    r
+  }
 
-  def unsafeWriteInt(idx: Int, v: Int) =
+  def unsafeWriteInt(idx: Int, v: Int) = {
     buffer.putInt(idx, v)
+    if (tracer != null) tracer.traceEvent("mwrite", "i32", idx, v)
+  }
 
-  def unsafeReadInt(idx: Int) =
-    buffer.getInt(idx)
+  def unsafeReadInt(idx: Int) = {
+    val r = buffer.getInt(idx)
+    if (tracer != null) tracer.traceEvent("mwrite", "i32", idx, r)
+    r
+  }
 
-  def unsafeWriteLong(idx: Int, v: Long) =
+  def unsafeWriteLong(idx: Int, v: Long) = {
     buffer.putLong(idx, v)
+    if (tracer != null) tracer.traceEvent("mwrite", "i64", idx, v)
+  }
 
-  def unsafeReadLong(idx: Int) =
-    buffer.getLong(idx)
+  def unsafeReadLong(idx: Int) = {
+     val r = buffer.getLong(idx)
+     if (tracer != null) tracer.traceEvent("mread", "i32", idx, r)
+     r
+  }
 
-  def unsafeWriteFloat(idx: Int, v: Float) =
+  def unsafeWriteFloat(idx: Int, v: Float) = {
     buffer.putFloat(idx, v)
+    if (tracer != null) tracer.traceEvent("mwrite", "f32", idx, v)
+  }
 
-  def unsafeReadFloat(idx: Int) =
-    buffer.getFloat(idx)
+  def unsafeReadFloat(idx: Int) ={
+     val r= buffer.getFloat(idx)
+     if (tracer != null) tracer.traceEvent("mread", "f32", idx, r)
+     r
+  }
 
-  def unsafeWriteDouble(idx: Int, v: Double) =
+  def unsafeWriteDouble(idx: Int, v: Double) = {
     buffer.putDouble(idx, v)
+    if (tracer != null) tracer.traceEvent("mwrite", "f64", idx, v)
+  }
 
-  def unsafeReadDouble(idx: Int) =
-    buffer.getDouble(idx)
+  def unsafeReadDouble(idx: Int) ={
+    val r = buffer.getDouble(idx)
+    if (tracer != null) tracer.traceEvent("mread", "f64", idx, r)
+    r
+  }
 
   def unsafeGrow(by: Int) =
     try {
