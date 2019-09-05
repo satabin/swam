@@ -15,7 +15,7 @@ class StdTracer(val conf: EngineConfiguration) extends Tracer {
     // Filtering usong trace options
     super.executeOnBack(() => {
       eventName match {
-        case regex(_*) => println(s"$eventName, ${eventTime - now} , ${group(args: _*)}")
+        case regex(_*) => println(s"${Console.MAGENTA} $eventName, ${eventTime - now} , ${group(args: _*)} ${Console.WHITE} ")
       }
     })
   }
