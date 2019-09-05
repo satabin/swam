@@ -18,6 +18,6 @@ package swam
 package validation
 package config
 
-import squants.information._
+import util._
 
-case class ValidationConfiguration(hardMax: Information, validate: Boolean)
+case class ValidationConfiguration(hardMax: MemorySize, validate: Boolean)

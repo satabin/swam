@@ -17,6 +17,6 @@
 package swam
 package runtime
 
-import java.nio.ByteBuffer
+import internals.interpreter.AsmInst
 
-private[runtime] case class CompiledGlobal(tpe: GlobalType, init: ByteBuffer)
+private[runtime] case class CompiledGlobal[F[_]](tpe: GlobalType, init: Array[AsmInst[F]])

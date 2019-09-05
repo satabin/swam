@@ -25,10 +25,6 @@ import compiler._
 import cats.effect._
 import cats.implicits._
 
-import runtime._
-
-import scala.language.higherKinds
-
 private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F]) {
 
   private val interpreter = engine.interpreter
@@ -64,7 +60,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
         }
     }
 
-  private def initialize(globals: Vector[CompiledGlobal],
+  private def initialize(globals: Vector[CompiledGlobal[F]],
                          imports: Vector[Interface[F, Type]]): F[Vector[GlobalInstance[F]]] = {
     val impglobals = imports.collect {
       case g: Global[F] => g
@@ -113,7 +109,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
       case TableType(_, limits) => new TableInstance[F](limits.min, limits.max)
     }
     instance.memories = imemories ++ module.memories.map {
-      case MemType(limits) => new MemoryInstance[F](limits.min, limits.max, dataOnHeap, dataHardMax.toBytes.toInt)
+      case MemType(limits) => new MemoryInstance[F](limits.min, limits.max, dataOnHeap, dataHardMax.bytes.toInt)
     }
     instance.exps = module.exports.map {
       case Export.Function(name, tpe, idx) => (name, instance.funcs(idx))

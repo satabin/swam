@@ -20,8 +20,6 @@ package formats
 
 import cats._
 
-import scala.language.higherKinds
-
 /** A collection of default formatters for primitive Scala types.
   */
 trait DefaultFormatters {

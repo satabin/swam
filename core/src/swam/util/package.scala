@@ -15,8 +15,24 @@
  */
 
 package swam
-package text
 
-object HighLevelSpecTests extends SpecTests {
-  val useLowLevel: Boolean = false
+import io.estatico.newtype.macros.newtype
+import io.estatico.newtype.ops._
+
+import pureconfig._
+
+import scala.language.implicitConversions
+
+package object util {
+
+  @newtype class MemorySize(val bytes: Long)
+
+  object MemorySize {
+    def fromBytes(bytes: Long): MemorySize =
+      bytes.coerce
+    implicit object reader extends ConfigReader[MemorySize] {
+      def from(cur: ConfigCursor) = Right(fromBytes(cur.value.atKey("a").getBytes("a")))
+    }
+  }
+
 }

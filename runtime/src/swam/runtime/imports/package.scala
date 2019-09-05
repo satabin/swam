@@ -19,8 +19,6 @@ package runtime
 
 import cats._
 
-import scala.language.higherKinds
-
 package object imports {
 
   def NoImports[F[_]: MonadError[?[_], Throwable]]: Imports[F] =

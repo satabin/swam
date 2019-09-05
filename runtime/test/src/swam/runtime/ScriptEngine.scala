@@ -35,7 +35,6 @@ import java.lang.{Float => JFloat, Double => JDouble}
 
 import pureconfig._
 import pureconfig.generic.auto._
-import pureconfig.module.squants._
 import pureconfig.module.catseffect._
 import pureconfig.module.enumeratum._
 
@@ -69,7 +68,7 @@ case class ExecutionContext(imports: Imports[IO], modules: Map[String, Instance[
 
 }
 
-class ScriptEngine(useLowLevel: Boolean) {
+class ScriptEngine {
 
   import ScriptEngine._
 
@@ -77,7 +76,7 @@ class ScriptEngine(useLowLevel: Boolean) {
     for {
       validator <- Validator[IO]
       conf <- ConfigSource.default.at("swam.runtime").loadF[IO, EngineConfiguration]
-    } yield Engine[IO](conf.copy(useLowLevelAsm = useLowLevel), validator)
+    } yield Engine[IO](conf, validator)
 
   val tcompiler = Compiler[IO]
 

@@ -24,7 +24,6 @@ import formats.DefaultFormatters._
 import cats.effect.IO
 
 import pureconfig.generic.auto._
-import pureconfig.module.squants._
 import pureconfig.module.catseffect._
 
 import org.openjdk.jmh.annotations._
@@ -42,9 +41,6 @@ import pureconfig.ConfigSource
 @State(Scope.Benchmark)
 @Fork(value = 2, jvmArgs = Array("-Xms2G", "-Xmx2G"))
 class MandelbrotPerformances {
-
-  @Param(Array("true", "false"))
-  private var useLowLevelAsm: Boolean = _
 
   @Param(Array("-0.7436447860"))
   private var x: Double = _
@@ -70,7 +66,7 @@ class MandelbrotPerformances {
     mandelbrot = (for {
       v <- Validator[IO]
       conf <- ConfigSource.default.at("swam.runtime").loadF[IO, EngineConfiguration]
-      e = Engine[IO](conf.copy(useLowLevelAsm = useLowLevelAsm), v)
+      e = Engine[IO](conf, v)
       m <- e.compile(Paths.get("../../../../benchmarks/resources/mandelbrot.wasm"), blocker)
       i <- m.instantiate
       f <- i.exports.typed.procedure4[Int, Double, Double, Double]("mandelbrot")

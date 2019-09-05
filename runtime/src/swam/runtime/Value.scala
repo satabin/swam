@@ -41,24 +41,24 @@ object Value {
 
   def zero(tpe: ValType): Value = tpe match {
     case ValType.I32 => Int32(0)
-    case ValType.I64 => Int64(0l)
+    case ValType.I64 => Int64(0L)
     case ValType.F32 => Float32(0.0f)
     case ValType.F64 => Float64(0.0d)
   }
 
   private[runtime] def toRaw(v: Value): Long =
     v match {
-      case Value.Int32(v)   => v & 0x00000000ffffffffl
+      case Value.Int32(v)   => v & 0X00000000FFFFFFFFL
       case Value.Int64(v)   => v
-      case Value.Float32(v) => JFloat.floatToRawIntBits(v) & 0x00000000ffffffffl
+      case Value.Float32(v) => JFloat.floatToRawIntBits(v) & 0X00000000FFFFFFFFL
       case Value.Float64(v) => JDouble.doubleToRawLongBits(v)
     }
 
   private[runtime] def fromRaw(tpe: ValType, l: Long): Value =
     tpe match {
-      case ValType.I32 => Value.Int32((l & 0x00000000ffffffffl).toInt)
+      case ValType.I32 => Value.Int32((l & 0X00000000FFFFFFFFL).toInt)
       case ValType.I64 => Value.Int64(l)
-      case ValType.F32 => Value.Float32(JFloat.intBitsToFloat((l & 0x00000000ffffffffl).toInt))
+      case ValType.F32 => Value.Float32(JFloat.intBitsToFloat((l & 0X00000000FFFFFFFFL).toInt))
       case ValType.F64 => Value.Float64(JDouble.longBitsToDouble(l))
     }
 

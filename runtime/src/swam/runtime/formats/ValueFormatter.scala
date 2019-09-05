@@ -20,8 +20,6 @@ package formats
 
 import cats._
 
-import scala.language.higherKinds
-
 /** A formatter is both a [[ValueReader]] and a [[ValueWriter]].
   */
 trait ValueFormatter[F[_], T] extends ValueReader[F, T] with ValueWriter[F, T]

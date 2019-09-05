@@ -18,7 +18,7 @@ package swam
 package runtime
 package imports
 
-import scala.language.{higherKinds, implicitConversions}
+import scala.language.implicitConversions
 
 trait Elem[TC[_]] {
   type T

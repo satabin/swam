@@ -32,16 +32,14 @@ import cats.effect._
 
 import scala.concurrent.ExecutionContext
 
-abstract class SpecTests extends TestSuite {
+object SpecTests extends TestSuite {
 
   implicit val cs = IO.contextShift(ExecutionContext.Implicits.global)
-
-  val useLowLevel: Boolean
 
   def run(wast: File) = {
     val positioner = new WastPositioner(wast.path)
     val script = parse(wast.contentAsString, TestScriptParser.script(_)).get.value
-    val engine = new ScriptEngine(useLowLevel)
+    val engine = new ScriptEngine
     engine.run(script, positioner).unsafeRunSync()
   }
 

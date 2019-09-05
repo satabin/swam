@@ -66,7 +66,7 @@ trait InstCodec extends TypeCodec {
       }
     def encode(opcode: OpCode): Attempt[BitVector] =
       Attempt.successful(BitVector.fromByte(opcode.toByte))
-    def sizeBound: SizeBound = SizeBound.exact(8l)
+    def sizeBound: SizeBound = SizeBound.exact(8L)
 
   }
 
@@ -461,11 +461,11 @@ trait InstCodec extends TypeCodec {
             .map(BitVector.fromByte(inst.opcode.toByte) ++ _)
         case MemorySize =>
           constant(hex"00")
-            .encode(Unit)
+            .encode(())
             .map(_ => BitVector.fromByte(OpCode.MemorySize.toByte))
         case MemoryGrow =>
           constant(hex"00")
-            .encode(Unit)
+            .encode(())
             .map(_ => BitVector.fromByte(OpCode.MemoryGrow.toByte))
         case i32.Const(v) =>
           varint32
@@ -729,7 +729,7 @@ trait InstCodec extends TypeCodec {
       }
 
     def sizeBound: SizeBound =
-      SizeBound.atLeast(8l)
+      SizeBound.atLeast(8L)
 
   }
 

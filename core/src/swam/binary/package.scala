@@ -26,8 +26,6 @@ import scala.annotation.tailrec
 
 import scala.collection.immutable.VectorBuilder
 
-import scala.language.higherKinds
-
 package object binary {
 
   type VarResut[F[_]] = (Long, Option[(ByteVector, Int, Stream[F, Byte])])
@@ -37,7 +35,7 @@ package object binary {
       Attempt.successful(DecodeResult((), bits))
     def encode(value: Unit): Attempt[BitVector] =
       Attempt.successful(BitVector.empty)
-    def sizeBound: SizeBound = SizeBound.exact(0l)
+    def sizeBound: SizeBound = SizeBound.exact(0L)
   }
 
   def vectorWithN[T](size: Codec[Int], value: Codec[T]): Codec[Vector[T]] =
@@ -54,7 +52,7 @@ package object binary {
     def encode(value: Unit): Attempt[BitVector] =
       Attempt.successful(BitVector.empty)
     def sizeBound: SizeBound =
-      SizeBound.exact(0l)
+      SizeBound.exact(0L)
   }
 
   def vectorLookahead[T](cond: Decoder[Boolean], element: Codec[T]): Codec[Vector[T]] =
