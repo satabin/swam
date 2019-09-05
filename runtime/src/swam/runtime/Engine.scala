@@ -52,12 +52,11 @@ import java.nio.file.Path
 class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F])
     extends ModuleLoader[F] {
 
-  implicit val tracer: Tracer = 
-  conf.tracer.tracerName match {
-    case "None" => null
-    case _ => Class.forName(conf.tracer.tracerName).getConstructors()(0).newInstance(conf).asInstanceOf[Tracer]
-  }
-    
+  implicit val tracer: Tracer =
+    conf.tracer.tracerName match {
+      case "None" => null
+      case _      => Class.forName(conf.tracer.tracerName).getConstructors()(0).newInstance(conf).asInstanceOf[Tracer]
+    }
 
   private[runtime] val compiler =
     if (conf.useLowLevelAsm)
@@ -71,7 +70,6 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     else
       new ih.Interpreter[F](this, tracer)
 
-      
   private[runtime] val instantiator = new Instantiator[F](this)
 
   /** Reads the `.wasm` file at the given path and validates it.
@@ -174,7 +172,6 @@ object Engine {
       validator <- Validator[F]
       conf <- loadConfigF[F, EngineConfiguration]("swam.runtime")
     } yield new Engine[F](conf, validator)
-  
 
   def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F]): Engine[F] = {
     new Engine[F](conf, validator)

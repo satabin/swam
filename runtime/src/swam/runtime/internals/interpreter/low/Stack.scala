@@ -138,38 +138,38 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
 
   def pushBool(b: Boolean): Unit = {
     pushInt(if (b) 1 else 0)
-    if (tracer != null)tracer.traceEvent("spush", "i32", if (b) 1 else 0)
+    if (tracer != null) tracer.traceEvent("spush", "i32", if (b) 1 else 0)
   }
 
   def pushInt(i: Int): Unit = {
     pushValue(i & 0x00000000ffffffffl)
-    if (tracer != null)tracer.traceEvent("spush", "i32", i & 0x00000000ffffffffl)
+    if (tracer != null) tracer.traceEvent("spush", "i32", i & 0x00000000ffffffffl)
   }
 
   def pushLong(l: Long): Unit = {
     pushValue(l)
-    if (tracer != null)tracer.traceEvent("spush", "i64", l)
+    if (tracer != null) tracer.traceEvent("spush", "i64", l)
   }
 
   def pushFloat(f: Float): Unit = {
     pushValue(JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl)
-    if (tracer != null)tracer.traceEvent("spush", "f32", JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl)
+    if (tracer != null) tracer.traceEvent("spush", "f32", JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl)
   }
 
   def pushDouble(d: Double): Unit = {
     pushValue(JDouble.doubleToRawLongBits(d))
-    if (tracer != null)tracer.traceEvent("spush", "f64", JDouble.doubleToRawLongBits(d))
+    if (tracer != null) tracer.traceEvent("spush", "f64", JDouble.doubleToRawLongBits(d))
   }
 
   def popBool(): Boolean = {
     val r = popInt()
-    if (tracer != null)tracer.traceEvent("spop", "i32", r)
+    if (tracer != null) tracer.traceEvent("spop", "i32", r)
     r != 0
   }
 
   def popInt(): Int = {
     val r = (popValue() & 0x00000000ffffffffl).toInt
-    if (tracer != null)tracer.traceEvent("spop", "i32", r)
+    if (tracer != null) tracer.traceEvent("spop", "i32", r)
     r
   }
 
@@ -178,7 +178,7 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
 
   def popLong(): Long = {
     val r = popValue()
-    if (tracer != null)tracer.traceEvent("spop", "i32", r)
+    if (tracer != null) tracer.traceEvent("spop", "i32", r)
     r
   }
 
@@ -187,7 +187,7 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
 
   def popFloat(): Float = {
     val r = JFloat.intBitsToFloat(popInt())
-    if (tracer != null)tracer.traceEvent("spop", "f32", r)
+    if (tracer != null) tracer.traceEvent("spop", "f32", r)
     r
   }
 
@@ -196,7 +196,7 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
 
   def popDouble(): Double = {
     val r = JDouble.longBitsToDouble(popLong())
-    if (tracer != null)tracer.traceEvent("spop", "f64", r)
+    if (tracer != null) tracer.traceEvent("spop", "f64", r)
     r
   }
 
@@ -205,13 +205,13 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
 
   def drop(n: Int): Unit = {
     tp -= n
-    if (tracer != null)tracer.traceEvent("sdrop", n)
+    if (tracer != null) tracer.traceEvent("sdrop", n)
   }
 
   def popValue(): Long = {
     tp -= 1
     var r = stack(tp)
-    if (tracer != null)tracer.traceEvent("spop", "i64", r)
+    if (tracer != null) tracer.traceEvent("spop", "i64", r)
     r
   }
 
@@ -231,7 +231,7 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
   def pushValue(l: Long): Unit = {
     stack(tp) = l
     tp += 1
-    if (tracer != null)tracer.traceEvent("spop", "i64", l)
+    if (tracer != null) tracer.traceEvent("spop", "i64", l)
   }
 
   def pushValues(values: Seq[Long]): Unit =
