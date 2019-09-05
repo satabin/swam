@@ -34,16 +34,15 @@ import scala.language.higherKinds
 
 /** A call frame containing the local stack of operands.
   */
-sealed class Frame[F[_]] private (
-    parent: Frame[F],
-    stackSize: Int,
-    callDepth: Int,
-    depth: Int,
-    code: ByteBuffer,
-    private[interpreter] val locals: Array[Long],
-    private[interpreter] val arity: Int,
-    private[interpreter] val instance: Instance[F],
-    tracer: Tracer)(implicit F: MonadError[F, Throwable])
+sealed class Frame[F[_]] private (parent: Frame[F],
+                                  stackSize: Int,
+                                  callDepth: Int,
+                                  depth: Int,
+                                  code: ByteBuffer,
+                                  private[interpreter] val locals: Array[Long],
+                                  private[interpreter] val arity: Int,
+                                  private[interpreter] val instance: Instance[F],
+                                  tracer: Tracer)(implicit F: MonadError[F, Throwable])
     extends StackFrame {
   self =>
 
@@ -270,7 +269,8 @@ object Frame {
   private final val VALUE = 0
   private final val LABEL = 1
 
-  def makeToplevel[F[_]](instance: Instance[F], conf: HighLevelStackConfiguration, tracer: Tracer)(implicit F: MonadError[F, Throwable]): Frame[F] =
+  def makeToplevel[F[_]](instance: Instance[F], conf: HighLevelStackConfiguration, tracer: Tracer)(
+      implicit F: MonadError[F, Throwable]): Frame[F] =
     new Frame[F](null, conf.size.toBytes.toInt, conf.callDepth, 0, null, null, 0, instance, tracer)
 
 }

@@ -113,7 +113,8 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
       case TableType(_, limits) => new TableInstance[F](limits.min, limits.max)
     }
     instance.memories = imemories ++ module.memories.map {
-      case MemType(limits) => new MemoryInstance[F](limits.min, limits.max, dataOnHeap, dataHardMax.toBytes.toInt, tracer)
+      case MemType(limits) =>
+        new MemoryInstance[F](limits.min, limits.max, dataOnHeap, dataHardMax.toBytes.toInt, tracer)
     }
     instance.exps = module.exports.map {
       case Export.Function(name, tpe, idx) => (name, instance.funcs(idx))

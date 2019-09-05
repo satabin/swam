@@ -78,7 +78,8 @@ import scala.language.higherKinds
   * }}}
   *
   */
-private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: Instance[F], tracer: Tracer) extends StackFrame {
+private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: Instance[F], tracer: Tracer)
+    extends StackFrame {
 
   private val stack = Array.ofDim[Long](conf.size.toBytes.toInt / 8)
 
@@ -145,7 +146,7 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
     tracer.traceEvent("spush", "i32", i & 0x00000000ffffffffl)
   }
 
-  def pushLong(l: Long): Unit ={
+  def pushLong(l: Long): Unit = {
     pushValue(l)
     tracer.traceEvent("spush", "i64", l)
   }
@@ -166,13 +167,13 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
     r != 0
   }
 
-  def popInt(): Int ={
+  def popInt(): Int = {
     val r = (popValue() & 0x00000000ffffffffl).toInt
     tracer.traceEvent("spop", "i32", r)
     r
   }
 
-  def peekInt(): Int = 
+  def peekInt(): Int =
     (peekValue() & 0x00000000ffffffffl).toInt
 
   def popLong(): Long = {

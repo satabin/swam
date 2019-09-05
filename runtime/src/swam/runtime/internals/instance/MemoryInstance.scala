@@ -47,19 +47,18 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
 
   def size = buffer.capacity
 
-
   def unsafeWriteByte(idx: Int, v: Byte) = {
     if (tracer != null) tracer.traceEvent("mwrite", "i8", idx, v)
     buffer.put(idx, v)
   }
 
-  def unsafeReadByte(idx: Int) ={
-    val r  = buffer.get(idx)
+  def unsafeReadByte(idx: Int) = {
+    val r = buffer.get(idx)
     if (tracer != null) tracer.traceEvent("mread", "i8", idx, r)
     r
   }
 
-  def unsafeWriteShort(idx: Int, v: Short) ={
+  def unsafeWriteShort(idx: Int, v: Short) = {
     buffer.putShort(idx, v)
     if (tracer != null) tracer.traceEvent("mwrite", "i16", idx, v)
   }
@@ -87,9 +86,9 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
   }
 
   def unsafeReadLong(idx: Int) = {
-     val r = buffer.getLong(idx)
-     if (tracer != null) tracer.traceEvent("mread", "i32", idx, r)
-     r
+    val r = buffer.getLong(idx)
+    if (tracer != null) tracer.traceEvent("mread", "i32", idx, r)
+    r
   }
 
   def unsafeWriteFloat(idx: Int, v: Float) = {
@@ -97,10 +96,10 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
     if (tracer != null) tracer.traceEvent("mwrite", "f32", idx, v)
   }
 
-  def unsafeReadFloat(idx: Int) ={
-     val r= buffer.getFloat(idx)
-     if (tracer != null) tracer.traceEvent("mread", "f32", idx, r)
-     r
+  def unsafeReadFloat(idx: Int) = {
+    val r = buffer.getFloat(idx)
+    if (tracer != null) tracer.traceEvent("mread", "f32", idx, r)
+    r
   }
 
   def unsafeWriteDouble(idx: Int, v: Double) = {
@@ -108,7 +107,7 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
     if (tracer != null) tracer.traceEvent("mwrite", "f64", idx, v)
   }
 
-  def unsafeReadDouble(idx: Int) ={
+  def unsafeReadDouble(idx: Int) = {
     val r = buffer.getDouble(idx)
     if (tracer != null) tracer.traceEvent("mread", "f64", idx, r)
     r
