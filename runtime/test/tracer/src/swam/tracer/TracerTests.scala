@@ -41,7 +41,7 @@ class CustomHandler extends java.util.logging.Handler{
 
   }
   def publish(log: java.util.logging.LogRecord): Unit = {
-    println(s"From custom handler ${log.getMessage()}")
+    println(s"From custom handler :)  ${log.getMessage()}")
   }
 }
 object TracerTests extends TestSuite {
