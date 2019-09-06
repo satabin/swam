@@ -29,7 +29,7 @@ import runtime._
 
 import scala.language.higherKinds
 
-private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F], tracer: Tracer) {
+private[runtime] class Instantiator[F[_]](engine: Engine[F], tracer: Tracer)(implicit F: Async[F]) {
 
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap

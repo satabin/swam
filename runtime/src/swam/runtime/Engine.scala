@@ -24,7 +24,6 @@ import validation._
 import internals.compiler.{low => cl}
 import internals.compiler.{high => ch}
 import internals.instance._
-import internals.tracer._
 import internals.interpreter.{low => il}
 import internals.interpreter.{high => ih}
 
@@ -52,11 +51,7 @@ import java.nio.file.Path
 class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F])
     extends ModuleLoader[F] {
 
-  implicit val tracer: Tracer =
-    conf.tracer.tracerName match {
-      case "None" => null
-      case _      => Class.forName(conf.tracer.tracerName).getConstructors()(0).newInstance(conf).asInstanceOf[Tracer]
-    }
+  implicit val tracer = new Tracer(conf)
 
   private[runtime] val compiler =
     if (conf.useLowLevelAsm)
@@ -70,7 +65,7 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     else
       new ih.Interpreter[F](this, tracer)
 
-  private[runtime] val instantiator = new Instantiator[F](this)
+  private[runtime] val instantiator = new Instantiator[F](this, tracer)
 
   /** Reads the `.wasm` file at the given path and validates it.
     *

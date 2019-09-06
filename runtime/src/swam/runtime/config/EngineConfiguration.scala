@@ -59,4 +59,25 @@ case class LowLevelStackConfiguration(size: Information)
 
 case class HighLevelStackConfiguration(size: Information, callDepth: Int)
 
-case class TraceConfiguration(tracerName: String, filter: String, var path: String, folder: String)
+case class TraceConfiguration(handler: HandlerType,
+                              filter: String,
+                              level: String,
+                              fileHandler: TracerFileHandlerCondiguration,
+                              socketHandler: SocketHanndlerCondiguration,
+                              custom: CustomTracerConfiguration)
+
+case class TracerFileHandlerCondiguration(pattern: String, append: Boolean, folder: String);
+case class SocketHanndlerCondiguration(host: String, port: Int);
+case class CustomTracerConfiguration(className: String)
+
+sealed trait HandlerType extends EnumEntry with Hyphencase
+
+object HandlerType extends Enum[HandlerType] {
+
+  def values = findValues
+
+  case object Console extends HandlerType
+  case object File extends HandlerType
+  case object None extends HandlerType
+  case object Custom extends HandlerType
+}

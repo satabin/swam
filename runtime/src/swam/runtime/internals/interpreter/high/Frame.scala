@@ -100,7 +100,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
     private def pushType(tpe: Byte): Unit = {
       tstack(ttop) = tpe
 
-      if (tracer != null) tracer.traceEvent("spush", "Type", tpe)
+      tracer.traceEvent("spush", "Type", tpe)
 
       ttop += 1
     }
@@ -109,7 +109,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
     private def popType(): Byte = {
       ttop -= 1
       val r = tstack(ttop)
-      if (tracer != null) tracer.traceEvent("spop", "Type", r)
+      tracer.traceEvent("spop", "Type", r)
       r
     }
 
@@ -118,39 +118,39 @@ sealed class Frame[F[_]] private (parent: Frame[F],
       tstack(ttop - 1)
 
     def pushBool(b: Boolean): Unit = {
-      if (tracer != null) tracer.traceEvent("spush", "i32", if (b) 1 else 0)
+      tracer.traceEvent("spush", "i32", if (b) 1 else 0)
       pushInt(if (b) 1 else 0)
     }
 
     def pushInt(i: Int): Unit = {
-      if (tracer != null) tracer.traceEvent("spush", "i32", i & 0x00000000ffffffffl)
+      tracer.traceEvent("spush", "i32", i & 0x00000000ffffffffl)
       pushValue(i & 0x00000000ffffffffl)
     }
 
     def pushLong(l: Long): Unit = {
-      if (tracer != null) tracer.traceEvent("spush", "i64", l)
+      tracer.traceEvent("spush", "i64", l)
       pushValue(l)
     }
 
     def pushFloat(f: Float): Unit = {
-      if (tracer != null) tracer.traceEvent("spush", "f32", JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl)
+      tracer.traceEvent("spush", "f32", JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl)
       pushValue(JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl)
     }
 
     def pushDouble(d: Double): Unit = {
-      if (tracer != null) tracer.traceEvent("spush", "f64", JDouble.doubleToRawLongBits(d))
+      tracer.traceEvent("spush", "f64", JDouble.doubleToRawLongBits(d))
       pushValue(JDouble.doubleToRawLongBits(d))
     }
 
     def popBool(): Boolean = {
       val r = popInt()
-      if (tracer != null) tracer.traceEvent("spop", "i32", r)
+      tracer.traceEvent("spop", "i32", r)
       r != 0
     }
 
     def popInt(): Int = {
       val r = (popValue() & 0x00000000ffffffffl).toInt
-      if (tracer != null) tracer.traceEvent("spop", "i32", r)
+      tracer.traceEvent("spop", "i32", r)
       r
     }
 
@@ -159,7 +159,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
 
     def popLong(): Long = {
       val r = popValue()
-      if (tracer != null) tracer.traceEvent("spop", "i64", r)
+      tracer.traceEvent("spop", "i64", r)
       r
     }
 
@@ -168,7 +168,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
 
     def popFloat(): Float = {
       val r = JFloat.intBitsToFloat(popInt())
-      if (tracer != null) tracer.traceEvent("spop", "f32", r)
+      tracer.traceEvent("spop", "f32", r)
       r
     }
 
@@ -177,7 +177,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
 
     def popDouble(): Double = {
       val r = JDouble.longBitsToDouble(popLong())
-      if (tracer != null) tracer.traceEvent("spop", "f64", r)
+      tracer.traceEvent("spop", "f64", r)
       r
     }
 
@@ -186,7 +186,7 @@ sealed class Frame[F[_]] private (parent: Frame[F],
 
     def drop(): Unit = {
       val r = popLong()
-      if (tracer != null) tracer.traceEvent("spop", "i64", "drop", r)
+      tracer.traceEvent("spop", "i64", "drop", r)
     }
 
     def popValue(): Long = {

@@ -132,7 +132,9 @@ object runtime extends ScoverageSwamModule with PublishModule {
 
   object test extends SwamModule with ScalafmtModule {
     def ivyDeps =
-      Agg(ivy"com.lihaoyi::utest:0.6.9", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
+      Agg(ivy"com.lihaoyi::utest:0.6.9", 
+          ivy"com.github.pathikrit::better-files:3.8.0", 
+          ivy"com.lihaoyi::pprint:0.5.5")
     def moduleDeps = Seq(runtime, text, util.test)
 
     object low extends ScoverageTests with ScalafmtModule {
