@@ -33,45 +33,39 @@ import cats.effect._
 
 import scala.concurrent.ExecutionContext
 
-class CustomHandler extends java.util.logging.Handler{
-  def close(): Unit = {
-
-  }
-  def flush(): Unit = {
-
-  }
+class CustomHandler extends java.util.logging.Handler {
+  def close(): Unit = {}
+  def flush(): Unit = {}
   def publish(log: java.util.logging.LogRecord): Unit = {
     println(s"From custom handler :)  ${log.getMessage()}")
   }
 }
 object TracerTests extends TestSuite {
 
-
   def runLog(handler: HandlerType) = {
     val conf: TraceConfiguration = new TraceConfiguration(
-        handler,
-        "",
-        "ALL",
-        new TracerFileHandlerCondiguration(
-          "test-log.txt",
-          true,
-          "."
-        ),
-        new SocketHanndlerCondiguration("localhost", 8080),
-        new CustomTracerConfiguration("swam.text.CustomHandler")
-      )
-      
-      val tracer = new Tracer(conf)
+      handler,
+      "",
+      "ALL",
+      new TracerFileHandlerCondiguration(
+        "test-log.txt",
+        true,
+        "."
+      ),
+      new SocketHanndlerCondiguration("localhost", 8080),
+      new CustomTracerConfiguration("swam.text.CustomHandler")
+    )
 
-      tracer.traceEvent("testEvent", 123, 4, 123)
+    val tracer = new Tracer(conf)
+
+    tracer.traceEvent("testEvent", 123, 4, 123)
   }
 
-  
-  val tests = Tests{
+  val tests = Tests {
     "console_tracer" - runLog(HandlerType.Console)
     "file_tracer" - runLog(HandlerType.File)
     "socket_tracer" - runLog(HandlerType.Socket)
     "custom_tracer" - runLog(HandlerType.Custom)
   }
-  
+
 }
