@@ -17,11 +17,8 @@ import headers.Headers
 import $file.mdoc
 import mdoc.MdocModule
 
-val millVersion = System.getProperty("MILL_VERSION")
-interp.load.ivy("com.lihaoyi" %% "mill-contrib-bloop" % millVersion)
-interp.load.ivy("com.lihaoyi" %% "mill-contrib-buildinfo" % millVersion)
-
-@
+import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
+import $ivy.`com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION`
 
 import mill.contrib.scoverage.ScoverageModule
 
@@ -45,7 +42,7 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
   def scalacPluginIvyDeps =
     Agg(ivy"org.scalamacros:::paradise:2.1.1",
         ivy"org.typelevel::kind-projector:0.10.3",
-        ivy"com.olegpy::better-monadic-for:0.3.0")
+        ivy"com.olegpy::better-monadic-for:0.3.1")
 
 }
 
@@ -60,7 +57,7 @@ object core extends SwamModule with PublishModule {
   def ivyDeps =
     Agg(
       ivy"com.beachape::enumeratum:1.5.13",
-      ivy"co.fs2::fs2-core:1.1.0-M1",
+      ivy"co.fs2::fs2-core:1.1.0-M2",
       ivy"org.scodec::scodec-stream:1.2.1",
       ivy"com.github.pureconfig::pureconfig-generic:$pureconfigVersion",
       ivy"com.github.pureconfig::pureconfig-squants:$pureconfigVersion",
@@ -83,7 +80,7 @@ object core extends SwamModule with PublishModule {
     )
 
   object test extends Tests with ScalafmtModule {
-    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.6.9")
+    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.1")
     def testFrameworks = Seq("swam.util.Framework")
     def moduleDeps = Seq(core, util.test)
   }
@@ -93,7 +90,7 @@ object core extends SwamModule with PublishModule {
 object text extends SwamModule with PublishModule {
   def moduleDeps = Seq(core)
 
-  def ivyDeps = Agg(ivy"com.lihaoyi::fastparse:2.1.3", ivy"co.fs2::fs2-io:1.1.0-M1")
+  def ivyDeps = Agg(ivy"com.lihaoyi::fastparse:2.1.3", ivy"co.fs2::fs2-io:1.1.0-M2")
 
   def publishVersion = swamVersion
 
@@ -133,7 +130,7 @@ object runtime extends ScoverageSwamModule with PublishModule {
 
   object test extends SwamModule with ScalafmtModule {
     def ivyDeps =
-      Agg(ivy"com.lihaoyi::utest:0.6.9", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
+      Agg(ivy"com.lihaoyi::utest:0.7.1", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
     def moduleDeps = Seq(runtime, text, util.test)
 
     object low extends ScoverageTests with ScalafmtModule {
@@ -165,7 +162,7 @@ object examples extends SwamModule with MdocModule {
 object util extends SwamModule {
 
   object test extends SwamModule {
-    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.6.9", ivy"com.github.pathikrit::better-files:3.8.0")
+    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.1", ivy"com.github.pathikrit::better-files:3.8.0")
   }
 
 }
