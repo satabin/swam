@@ -9,7 +9,7 @@ jobs:
   include:
     - stage: test
       script:
-        - python -m SimpleHTTPServer 8080
+        - python -m SimpleHTTPServer 8080 &
         - ./millw runtime.compile
         - ./millw all runtime.test.{low,high,tracer}
         - ./millw runtime.scoverage.xmlReport
