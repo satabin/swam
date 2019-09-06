@@ -59,14 +59,14 @@ case class LowLevelStackConfiguration(size: Information)
 
 case class HighLevelStackConfiguration(size: Information, callDepth: Int)
 
-case class TraceConfiguration(handler: HandlerType,
+case class TraceConfiguration(var handler: HandlerType,
                               filter: String,
                               level: String,
                               fileHandler: TracerFileHandlerCondiguration,
                               socketHandler: SocketHanndlerCondiguration,
                               custom: CustomTracerConfiguration)
 
-case class TracerFileHandlerCondiguration(pattern: String, append: Boolean, folder: String);
+case class TracerFileHandlerCondiguration(var pattern: String, append: Boolean, folder: String);
 case class SocketHanndlerCondiguration(host: String, port: Int);
 case class CustomTracerConfiguration(className: String)
 
@@ -80,4 +80,5 @@ object HandlerType extends Enum[HandlerType] {
   case object File extends HandlerType
   case object None extends HandlerType
   case object Custom extends HandlerType
+  case object Socket extends HandlerType
 }

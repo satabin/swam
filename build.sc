@@ -130,6 +130,7 @@ object runtime extends ScoverageSwamModule with PublishModule {
       developers = Seq(swamDeveloper)
     )
 
+
   object test extends SwamModule with ScalafmtModule {
     def ivyDeps =
       Agg(ivy"com.lihaoyi::utest:0.6.9", 
@@ -137,6 +138,10 @@ object runtime extends ScoverageSwamModule with PublishModule {
           ivy"com.lihaoyi::pprint:0.5.5")
     def moduleDeps = Seq(runtime, text, util.test)
 
+    object tracer extends ScoverageTests with ScalafmtModule {
+      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
+      def testFrameworks = Seq("swam.util.Framework")
+    }
     object low extends ScoverageTests with ScalafmtModule {
       def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
       def testFrameworks = Seq("swam.util.Framework")

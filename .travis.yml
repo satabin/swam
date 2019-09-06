@@ -9,8 +9,9 @@ jobs:
   include:
     - stage: test
       script:
+        - python -m SimpleHTTPServer 8080
         - ./millw runtime.compile
-        - ./millw all runtime.test.{low,high}
+        - ./millw all runtime.test.{low,high,tracer}
         - ./millw runtime.scoverage.xmlReport
       after_success:
         - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"

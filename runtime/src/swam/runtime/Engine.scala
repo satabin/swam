@@ -51,7 +51,7 @@ import java.nio.file.Path
 class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F])
     extends ModuleLoader[F] {
 
-  implicit val tracer = new Tracer(conf)
+  implicit val tracer = new Tracer(conf.tracer)
 
   private[runtime] val compiler =
     if (conf.useLowLevelAsm)
