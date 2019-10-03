@@ -22,7 +22,7 @@ import $ivy.`com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION`
 
 import mill.contrib.scoverage.ScoverageModule
 
-val swamVersion = "0.3.0-SNAPSHOT"
+val swamVersion = "0.3.0"
 
 val swamLicense = License.`Apache-2.0`
 
