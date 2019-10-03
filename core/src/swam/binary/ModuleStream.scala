@@ -19,12 +19,7 @@ package binary
 
 import syntax._
 
-import scodec.bits._
 import scodec.stream._
-
-import scodec._
-import scodec.codecs._
-import scodec.codecs.literals._
 
 /** The module streams expose way to encode and decode WebAssembly modules in
   *  binary format.
@@ -34,22 +29,10 @@ import scodec.codecs.literals._
   */
 object ModuleStream {
 
-  private val header: Codec[Unit] =
-    ("magic" | hex"0061736d") ~>
-      ("version" | hex"01000000")
-
-  val sections: StreamCodec[Section] =
-    StreamCodec
-      .instance(encode.once(WasmCodec.section), decode.once(WasmCodec.section))
-      .many
-
   val decoder: StreamDecoder[Section] =
-    for {
-      () <- decode.once(header)
-      section <- sections
-    } yield section
+    StreamDecoder.many(WasmCodec.section)
 
   def encoder: StreamEncoder[Section] =
-    encode.emit(hex"0061736d01000000".bits) ++ sections
+    StreamEncoder.many(WasmCodec.section)
 
 }

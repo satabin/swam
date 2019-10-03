@@ -17,10 +17,8 @@
 package swam
 package text
 
-import util._
 import parser._
 import runtime._
-import validation._
 
 import swam.test.util._
 

@@ -24,6 +24,7 @@ import cats._
 import cats.effect._
 import cats.implicits._
 
+import pureconfig._
 import pureconfig.generic.auto._
 import pureconfig.module.squants._
 import pureconfig.module.catseffect._
@@ -52,6 +53,6 @@ object Validator {
 
   def apply[F[_]: Sync]: F[Validator[F]] =
     for {
-      conf <- loadConfigF[F, ValidationConfiguration]("swam.validation")
+      conf <- ConfigSource.default.at("swam.validation").loadF[F, ValidationConfiguration]
     } yield apply[F](conf)
 }
