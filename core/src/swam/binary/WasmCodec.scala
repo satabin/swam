@@ -26,17 +26,17 @@ import scodec.codecs._
 
 object WasmCodec extends InstCodec {
 
-  protected val externalKind: Codec[ExternalKind] =
+  val externalKind: Codec[ExternalKind] =
     mappedEnum(byte,
                Map[ExternalKind, Byte](ExternalKind.Function -> 0,
                                        ExternalKind.Table -> 1,
                                        ExternalKind.Memory -> 2,
                                        ExternalKind.Global -> 3))
 
-  protected val types: Codec[Vector[FuncType]] =
+  val types: Codec[Vector[FuncType]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, funcType))
 
-  protected val importEntry: Codec[String ~ String ~ Import] =
+  val importEntry: Codec[String ~ String ~ Import] =
     (("module" | variableSizeBytes(varuint32, utf8)) ~
       ("field" | variableSizeBytes(varuint32, utf8))).flatZip {
       case (module, field) =>
@@ -50,65 +50,65 @@ object WasmCodec extends InstCodec {
           .|(ExternalKind.Global) { case Import.Global(_, _, tpe) => tpe }(Import.Global(module, field, _))(globalType)
     }
 
-  protected val imports: Codec[Vector[Import]] =
+  val imports: Codec[Vector[Import]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, importEntry.xmap({
       case (_, e)                  => e
     }, { case e @ Import(mod, fld) => ((mod, fld), e) })))
 
-  protected val functions: Codec[Vector[Int]] =
+  val functions: Codec[Vector[Int]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, varuint32))
 
-  protected val tables: Codec[Vector[TableType]] =
+  val tables: Codec[Vector[TableType]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, tableType))
 
-  protected val mems: Codec[Vector[MemType]] =
+  val mems: Codec[Vector[MemType]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, memoryType))
 
-  protected val globalVariable: Codec[Global] =
+  val globalVariable: Codec[Global] =
     (globalType :: expr).as[Global]
 
-  protected val globals: Codec[Vector[Global]] =
+  val globals: Codec[Vector[Global]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, globalVariable))
 
-  protected val elemSegment: Codec[Elem] =
+  val elemSegment: Codec[Elem] =
     (("index" | varuint32) ::
       ("offset" | expr) ::
       ("elems" | vectorOfN(varuint32, varuint32))).as[Elem]
 
-  protected val elem: Codec[Vector[Elem]] =
+  val elem: Codec[Vector[Elem]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, elemSegment))
 
-  protected val dataSegment: Codec[Data] =
+  val dataSegment: Codec[Data] =
     (("index" | varuint32) ::
       ("offset" | expr) ::
       ("data" | variableSizeBytes(varuint32, scodec.codecs.bits))).as[Data]
 
-  protected val data: Codec[Vector[Data]] =
+  val data: Codec[Vector[Data]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, dataSegment))
 
-  protected val start: Codec[FuncIdx] =
+  val start: Codec[FuncIdx] =
     variableSizeBytes(varuint32, varuint32)
 
-  protected val localEntry: Codec[LocalEntry] =
+  val localEntry: Codec[LocalEntry] =
     (varuint32 :: valType).as[LocalEntry]
 
-  protected val funcBody: Codec[FuncBody] =
+  val funcBody: Codec[FuncBody] =
     variableSizeBytes(varuint32,
                       (("locals" | vectorOfN(varuint32, localEntry)) ::
                         ("code" | expr)).as[FuncBody])
 
-  protected val code: Codec[Vector[FuncBody]] =
+  val code: Codec[Vector[FuncBody]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, funcBody))
 
-  protected val exportEntry: Codec[Export] =
+  val exportEntry: Codec[Export] =
     (("field" | variableSizeBytes(varuint32, utf8)) ::
       ("kind" | externalKind) ::
       ("index" | varuint32)).as[Export]
 
-  protected val exports: Codec[Vector[Export]] =
+  val exports: Codec[Vector[Export]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, exportEntry))
 
-  protected val custom: Codec[(String, BitVector)] =
+  val custom: Codec[(String, BitVector)] =
     variableSizeBytes(varuint32,
                       (("name" | variableSizeBytes(varuint32, utf8)) ~
                         ("payload" | scodec.codecs.bits)))

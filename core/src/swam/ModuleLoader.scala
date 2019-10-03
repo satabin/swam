@@ -33,12 +33,32 @@ import scala.language.higherKinds
   */
 class ModuleLoader[F[_]](implicit F: Effect[F]) {
 
-  def readPath(path: Path): Stream[F, Section] =
-    readBytes(BitVector.fromChannel(new java.io.FileInputStream(path.toFile).getChannel))
+  def readPath(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): Stream[F, Section] =
+    readBytes(io.file.readAll(path, blocker, chunkSize = chunkSize))
+
+  private val header = hex"0061736d01000000"
 
   /** Reads a binary module from the given bytes. */
-  def readBytes(bytes: BitVector): Stream[F, Section] =
-    ModuleStream.decoder
-      .decode(bytes)
+  def readBytes(bytes: Stream[F, Byte]): Stream[F, Section] = {
+    def go(s: Stream[F, Byte]): Pull[F, Section, Unit] =
+      ModuleStream.decoder(s.chunks.map(_.toBitVector)).flatMap {
+        case Some(_) => Pull.raiseError(new BinaryException("unexpected end of input"))
+        case None    => Pull.done
+      }
+
+    bytes.pull
+      .unconsN(8, allowFewer = false)
+      .flatMap {
+        case Some((headerBytes, tl)) =>
+          val bv = ByteVector(headerBytes.toArray)
+          if (bv == header)
+            Pull.pure(tl)
+          else
+            Pull.raiseError(new BinaryException(s"unexpected header ${bv.toHex(Bases.Alphabets.HexUppercase)}"))
+        case None => Pull.raiseError(new BinaryException("unexpected end of input"))
+      }
+      .flatMap(go(_))
+      .stream
+  }
 
 }
