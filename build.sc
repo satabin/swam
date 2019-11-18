@@ -36,7 +36,7 @@ val pureconfigVersion = "0.12.1"
 
 trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
-  def scalaVersion = "2.12.10"
+  def scalaVersion = "2.12.8"
 
   def scalacOptions =
     Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification", "-Ypatmat-exhaust-depth", "off", "-Ywarn-unused:locals,imports")
