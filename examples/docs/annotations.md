@@ -36,7 +36,7 @@ class MyModule {
 val m = new MyModule
 ```
 
-Instance `m` can be used as an [import](/examples/annotations.wat) and `v3` can be mutated from a WebAssembly module.
+Instance `m` can be used as an [import](https://github.com/shrin18/swam/blob/master/examples/docs/annotations.wat) and `v3` can be mutated from a WebAssembly module.
 
 ```scala mdoc:silent
 import swam._
