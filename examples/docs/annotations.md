@@ -87,7 +87,7 @@ class PureModule {
 val pm = new PureModule
 ```
 
-WebAssembly modules can now [import it, and call it](/examples/pure-annotations.wat):
+WebAssembly modules can now [import it, and call it](https://github.com/satabin/swam/blob/master/examples/docs/pure-annotations.wat):
 
 ```scala mdoc:silent
 val add42 = (for {
@@ -127,7 +127,7 @@ class EffectfulModule[@effect F[_]](implicit F: Applicative[F]) {
 val mIO = new EffectfulModule[IO]
 ```
 
-Now, WebAssembly modules can [import that module and use the effectful function](/examples/effectful-annotations.wat):
+Now, WebAssembly modules can [import that module and use the effectful function](https://github.com/satabin/swam/blob/master/examples/docs/effectful-annotations.wat):
 
 ```scala mdoc:silent
 val logged = (for {
