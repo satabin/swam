@@ -2,7 +2,7 @@
 title: Strings
 ---
 
-WebAssembly only has value integer types. However, providing a correct reader, one can interpret an integer as the address of a complex object in memory and convert it back to scala when exported. By default, Swam provides such readers for strings, either C-like or UTF-8 encoded strings. Let’s assume we have [a WebAssembly module that exports two strings](/examples/string.wat)
+WebAssembly only has value integer types. However, providing a correct reader, one can interpret an integer as the address of a complex object in memory and convert it back to scala when exported. By default, Swam provides such readers for strings, either C-like or UTF-8 encoded strings. Let’s assume we have [a WebAssembly module that exports two strings](https://github.com/satabin/swam/blob/master/examples/docs/string.wat)
 
 ```scala mdoc:silent
 import swam._
