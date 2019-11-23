@@ -2,7 +2,7 @@
 title: Imports
 ---
 
-When a module is instantiated, it is possible to import functions or values from Scala into the module. For instance, let’s assume we defined a function that prints its parameter on the console, and a [simple WebAssembly module that imports and calls it](/examples/logged.wat).
+When a module is instantiated, it is possible to import functions or values from Scala into the module. For instance, let’s assume we defined a function that prints its parameter on the console, and a [simple WebAssembly module that imports and calls it](https://github.com/satabin/swam/blob/master/examples/docs/logged.wat).
 
 ```scala mdoc:silent
 import swam._
