@@ -2,7 +2,7 @@
 title: Recursion
 ---
 
-Recursive functions are allowed. For instance, having defined [functions to compute fibonacci numbers](/examples/fibo.wat).
+Recursive functions are allowed. For instance, having defined [functions to compute fibonacci numbers](https://github.com/satabin/swam/blob/master/examples/docs/fibo.wat).
 
 ```scala mdoc:silent
 import swam._
