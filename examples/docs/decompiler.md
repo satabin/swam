@@ -2,7 +2,7 @@
 title: Decompilers
 ---
 
-Decompilers make it possible to have human readyble representations of a compiled WebAssembly module. For instance, having defined [functions to compute fibonacci numbers](/examples/fibo.wat).
+Decompilers make it possible to have human readyble representations of a compiled WebAssembly module. For instance, having defined [functions to compute fibonacci numbers](https://github.com/satabin/swam/blob/master/examples/docs/fibo.wat).
 
 ```scala mdoc:silent
 import swam._
