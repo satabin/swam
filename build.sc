@@ -122,7 +122,7 @@ object slumps extends ScoverageSwamModule with PublishModule {
 
   def publishVersion = swamVersion
 
-  def artifactName = "slumps"
+  def artifactName = "swam-slumps"
 
   def ivyDeps = Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion")
 
@@ -143,7 +143,7 @@ object slumps extends ScoverageSwamModule with PublishModule {
           ivy"com.github.pathikrit::better-files:3.8.0", 
           ivy"com.lihaoyi::pprint:0.5.5")
 
-    def moduleDeps = Seq(slumps, text, util.test)
+    def moduleDeps = Seq(slumps, runtime, text, util.test, core)
 
     object to_souper extends ScoverageTests with ScalafmtModule {
       def moduleDeps = super.moduleDeps ++ Seq(slumps.test)

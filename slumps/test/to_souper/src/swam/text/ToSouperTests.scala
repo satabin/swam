@@ -15,11 +15,14 @@
  */
 
 package swam
-package slumps
+package text
 
-import parser._
-import runtime._
+import slumps._
 import config._
+import runtime._
+import binary._
+import validation._
+
 
 import swam.test.util._
 
@@ -29,15 +32,42 @@ import better.files._
 
 import fastparse._
 
+import cats._
 import cats.effect._
+import cats.implicits._
 
 import scala.concurrent.ExecutionContext
+import java.nio.file.Paths
+import fs2._
+import scala.language.higherKinds
+
+
+
+object ModuleParser {
+  def apply[F[_]](implicit F: Effect[F]): F[ModuleParser[F]] =
+    for {
+      validator <- Validator[F]
+    } yield ModuleParser[F](validator)
+
+  def apply[F[_]](validator: Validator[F])(implicit F: Effect[F]): ModuleParser[F] =
+    new ModuleParser[F](validator)
+}
+
 
 object ToSouperTests extends TestSuite {
 
   
+  implicit val cs = IO.contextShift(ExecutionContext.Implicits.global)
+
+
+  def run(wast: String) = {
+
+    val parser = ModuleParser[IO]
+      
+  }
+
   val tests = Tests{
-    
+    "console_tracer" - "slumps/tests/resources/slumpt/primes-nockeck.wat"
   }
   
 }
