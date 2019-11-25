@@ -23,7 +23,6 @@ package high
 import org.openjdk.jmh.infra._
 import org.openjdk.jmh.annotations._
 
-import cats._
 import cats.implicits._
 
 import scala.util.Random

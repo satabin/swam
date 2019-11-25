@@ -22,8 +22,6 @@ import util.pretty.Doc
 
 import cats.effect._
 
-import scodec.bits._
-
 import fs2._
 
 import java.nio.file.Path
@@ -40,15 +38,15 @@ abstract class Decompiler[F[_]](implicit F: Effect[F]) extends ModuleLoader[F] {
     *
     * The module is not validated so invalid modules can also be decompiled.
     */
-  def decompile(path: Path): F[Doc] =
-    decompile(readPath(path))
+  def decompilePath(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): F[Doc] =
+    decompile(readPath(path, blocker, chunkSize))
 
   /** Returns a pretty-printed [[swam.util.pretty.Doc Doc]] resulting from decompiling
     * the module at the given bytes.
     *
     * The module is not validated so invalid modules can also be decompiled.
     */
-  def decompile(bytes: BitVector): F[Doc] =
+  def decompileBytes(bytes: Stream[F, Byte]): F[Doc] =
     decompile(readBytes(bytes))
 
   /** Returns a pretty-printed [[swam.util.pretty.Doc Doc]] resulting from decompiling

@@ -21,10 +21,8 @@ import config._
 import validation._
 import formats.DefaultFormatters._
 
-import cats.implicits._
 import cats.effect.IO
 
-import pureconfig._
 import pureconfig.generic.auto._
 import pureconfig.module.squants._
 import pureconfig.module.catseffect._
@@ -34,6 +32,10 @@ import org.openjdk.jmh.infra.Blackhole
 
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
+import cats.effect.Blocker
+import scala.concurrent.ExecutionContext
+import java.util.concurrent.Executors
+import pureconfig.ConfigSource
 
 @BenchmarkMode(Array(Mode.AverageTime))
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
@@ -58,16 +60,26 @@ class MandelbrotPerformances {
 
   private var mandelbrot: exports.EFunction4[Int, Double, Double, Double, Unit, IO] = _
 
+  private val executor = Executors.newCachedThreadPool()
+  private val blocker = Blocker.liftExecutionContext(ExecutionContext.fromExecutor(executor))
+
+  implicit val cs = IO.contextShift(ExecutionContext.global)
+
   @Setup
   def setup(): Unit = {
     mandelbrot = (for {
       v <- Validator[IO]
-      conf <- loadConfigF[IO, EngineConfiguration]("swam.runtime")
+      conf <- ConfigSource.default.at("swam.runtime").loadF[IO, EngineConfiguration]
       e = Engine[IO](conf.copy(useLowLevelAsm = useLowLevelAsm), v)
-      m <- e.compile(Paths.get("../../../../benchmarks/resources/mandelbrot.wasm"))
+      m <- e.compile(Paths.get("../../../../benchmarks/resources/mandelbrot.wasm"), blocker)
       i <- m.instantiate
       f <- i.exports.typed.procedure4[Int, Double, Double, Double]("mandelbrot")
     } yield f).unsafeRunSync()
+  }
+
+  @TearDown
+  def teardown(): Unit = {
+    executor.shutdown()
   }
 
   @Benchmark

@@ -16,6 +16,8 @@
 
 package swam
 
+import fs2._
+
 import scodec.bits._
 import scodec._
 import scodec.codecs._
@@ -24,7 +26,11 @@ import scala.annotation.tailrec
 
 import scala.collection.immutable.VectorBuilder
 
+import scala.language.higherKinds
+
 package object binary {
+
+  type VarResut[F[_]] = (Long, Option[(ByteVector, Int, Stream[F, Byte])])
 
   val noop: Codec[Unit] = new Codec[Unit] {
     def decode(bits: BitVector): Attempt[DecodeResult[Unit]] =

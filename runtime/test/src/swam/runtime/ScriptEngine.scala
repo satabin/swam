@@ -25,15 +25,15 @@ import imports._
 import unresolved._
 import validation._
 
-
 import cats._
 import cats.implicits._
 import cats.effect._
 
-import scodec.bits._
+import fs2._
 
 import java.lang.{Float => JFloat, Double => JDouble}
 
+import pureconfig._
 import pureconfig.generic.auto._
 import pureconfig.module.squants._
 import pureconfig.module.catseffect._
@@ -75,7 +75,7 @@ class ScriptEngine(useLowLevel: Boolean) {
   val engine =
     for {
       validator <- Validator[IO]
-      conf <- loadConfigF[IO, EngineConfiguration]("swam.runtime")
+      conf <- ConfigSource.default.at("swam.runtime").loadF[IO, EngineConfiguration]
     } yield Engine[IO](conf.copy(useLowLevelAsm = useLowLevel), validator)
 
   val tcompiler = Compiler[IO]
@@ -99,7 +99,7 @@ class ScriptEngine(useLowLevel: Boolean) {
             for {
               engine <- engine
               tcompiler <- tcompiler
-              compiled <- engine.compile(BitVector(bs))
+              compiled <- engine.compileBytes(Stream.emits(bs.toArray))
               instance <- compiled.importing(ctx.imports).instantiate
             } yield id match {
               case Some(name) =>
@@ -253,7 +253,7 @@ class ScriptEngine(useLowLevel: Boolean) {
           for {
             engine <- engine
             tcompiler <- tcompiler
-            res <- engine.compile(BitVector(bs))
+            res <- engine.compileBytes(Stream.emits(bs.toArray))
           } yield res
         case QuotedModule(_, src) =>
           for {

@@ -786,7 +786,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
         // === memory instructions ===
         case Asm.I32Load =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -800,7 +800,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I32Load8U =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -814,7 +814,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I32Load8S =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -828,7 +828,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I32Load16U =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -842,7 +842,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I32Load16S =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -856,7 +856,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I64Load =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -870,7 +870,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I64Load8U =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -884,7 +884,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I64Load8S =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -898,7 +898,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I64Load16U =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -912,7 +912,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I64Load16S =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -926,7 +926,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I64Load32U =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -940,7 +940,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I64Load32S =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -954,7 +954,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.F32Load =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -968,7 +968,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.F64Load =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val i = thread.popInt()
@@ -982,7 +982,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I32Store =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popInt()
@@ -996,7 +996,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I32Store8 =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popInt()
@@ -1011,7 +1011,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I32Store16 =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popInt()
@@ -1026,7 +1026,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I64Store =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popLong()
@@ -1040,7 +1040,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I64Store8 =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popLong()
@@ -1055,7 +1055,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I64Store16 =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popLong()
@@ -1070,7 +1070,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.I64Store32 =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popLong()
@@ -1085,7 +1085,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.F32Store =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popFloat()
@@ -1099,7 +1099,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F], tracer: Tracer)(impl
           }
         case Asm.F64Store =>
           // ignore alignment for now
-          thread.readInt()
+          thread.skipInt()
           val offset = thread.readInt()
           val mem = thread.memory(0)
           val c = thread.popDouble()

@@ -32,8 +32,7 @@ import cats.effect._
 
 import fs2._
 
-import scodec.bits._
-
+import pureconfig._
 import pureconfig.generic.auto._
 import pureconfig.module.squants._
 import pureconfig.module.catseffect._
@@ -71,14 +70,14 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     *
     * If validation fails, returns an error with the validation message wrapped in it.
     */
-  def validate(path: Path): F[Unit] =
-    validate(readPath(path))
+  def validate(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): F[Unit] =
+    validate(readPath(path, blocker, chunkSize))
 
   /** Reads the given binary encoded module and validates it.
     *
     * If validation fails, returns an error with the validation message wrapped in it.
     */
-  def validate(bytes: BitVector): F[Unit] =
+  def validateBytes(bytes: Stream[F, Byte]): F[Unit] =
     validate(readBytes(bytes))
 
   /** Reads the given stream of binary module sections and validates it.
@@ -97,8 +96,8 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     * If validation or compilation fails, returns an error with the
     * message wrapped in it.
     */
-  def compile(path: Path): F[Module[F]] =
-    compile(readPath(path))
+  def compile(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): F[Module[F]] =
+    compile(readPath(path, blocker, chunkSize))
 
   /** Reads the given binary encoded module, validates, and compiles it.
     * The returned compiled [[Module]] can then be instantiated to be run.
@@ -106,7 +105,7 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     * If validation or compilation fails, returns an error with the
     * message wrapped in it.
     */
-  def compile(bytes: BitVector): F[Module[F]] =
+  def compileBytes(bytes: Stream[F, Byte]): F[Module[F]] =
     compile(readBytes(bytes))
 
   /** Reads the given stream of binary module sections, validates, and compiles it.
@@ -129,8 +128,9 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     * If validation, compilation, or instantiation fails, returns an error with the
     * message wrapped in it.
     */
-  def instantiate(path: Path, imports: Imports[F]): F[Instance[F]] =
-    instantiate(readPath(path), imports)
+  def instantiate(path: Path, imports: Imports[F], blocker: Blocker, chunkSize: Int = 1024)(
+      implicit cs: ContextShift[F]): F[Instance[F]] =
+    instantiate(readPath(path, blocker, chunkSize), imports)
 
   /** Reads the given binary encoded module, validates, compiles, and instantiates it.
     * The returned [[Instance]] can then be used to access exported elements.
@@ -138,8 +138,8 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     * If validation, compilation, or instantiation fails, returns an error with the
     * message wrapped in it.
     */
-  def instantiate(bytes: BitVector, imports: Imports[F]): F[Instance[F]] =
-    compile(bytes).flatMap(instantiate(_, imports))
+  def instantiateBytes(bytes: Stream[F, Byte], imports: Imports[F]): F[Instance[F]] =
+    compileBytes(bytes).flatMap(instantiate(_, imports))
 
   /** Reads the given stream of binary module sections, validates, compiles, and instantiates it.
     * The returned [[Instance]] can then be used to access exported elements.
@@ -165,7 +165,7 @@ object Engine {
   def apply[F[_]: Effect](): F[Engine[F]] =
     for {
       validator <- Validator[F]
-      conf <- loadConfigF[F, EngineConfiguration]("swam.runtime")
+      conf <- ConfigSource.default.at("swam.runtime").loadF[F, EngineConfiguration]
     } yield new Engine[F](conf, validator)
 
   def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F]): Engine[F] = {
