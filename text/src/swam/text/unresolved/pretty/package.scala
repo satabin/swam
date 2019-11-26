@@ -495,7 +495,7 @@ package object pretty {
           group(
             nest(2,
                  str("(data") ++ mem.pretty ++ line ++ group(nest(2, str("(offset") ++ line ++ offset.pretty) ++ str(
-                   ")")) ++ line ++ str("\"\\") ++ seq(str("\\"), init)) ++ str("\"") ++ str(")"))
+                   ")")) ++ line ++ str("\"\\") ++ seq(str("\\"), init.toIndexedSeq)) ++ str("\"") ++ str(")"))
       }
   }
 

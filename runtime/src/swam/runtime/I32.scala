@@ -22,7 +22,7 @@ import java.lang.{Float => JFloat}
 object I32 {
 
   def wrap(l: Long): Int =
-    (l % (1l << 32)).toInt
+    (l % (1L << 32)).toInt
 
   def truncSf32(f: Float): CanFail[Int] =
     if (f.isNaN)

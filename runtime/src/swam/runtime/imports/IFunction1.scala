@@ -23,8 +23,6 @@ import formats._
 import cats._
 import cats.implicits._
 
-import scala.language.higherKinds
-
 class IFunction1Unit[F[_], P1](f: (P1) => F[Unit])(implicit reader1: ValueReader[F, P1], F: MonadError[F, Throwable])
     extends Function[F] {
   val tpe = FuncType(Vector(reader1.swamType), Vector())

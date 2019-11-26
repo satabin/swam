@@ -21,8 +21,6 @@ import syntax._
 
 import cats._
 
-import scala.language.higherKinds
-
 class SectionTraverser[F[_], Res](implicit F: Applicative[F]) {
 
   protected[this] val fst = (outer: Res, i: Section) => F.pure(outer)

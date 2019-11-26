@@ -24,8 +24,6 @@ import cats.effect._
 
 import fs2._
 
-import scala.language.higherKinds
-
 /** A binary section stream parser.
   * The parser uses the validator to validate the stream.
   */

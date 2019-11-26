@@ -22,8 +22,6 @@ import syntax._
 import cats._
 import cats.implicits._
 
-import scala.language.higherKinds
-
 class SectionTransformer[F[_], Ctx](implicit F: Applicative[F]) {
 
   protected[this] val id: (Ctx, Section) => F[(Ctx, Option[Section])] = (ctx: Ctx, s: Section) => F.pure(ctx -> s.some)

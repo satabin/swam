@@ -27,8 +27,6 @@ import fs2._
 
 import java.nio.file.Path
 
-import scala.language.higherKinds
-
 /** Base class for anything that requires reading a module from stream or file.
   */
 class ModuleLoader[F[_]](implicit F: Effect[F]) {

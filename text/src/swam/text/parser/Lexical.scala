@@ -90,7 +90,7 @@ object Lexical {
     P(
       sign.! ~ ("0x" ~ hexnum.!.map(_.replaceAll("_", "")).map(JLong.parseUnsignedLong(_, 16)) | num.!.map(
         _.replaceAll("_", "")).map(JLong.parseUnsignedLong(_)))).map {
-      case (s, n) => if (s == "-") -1l * n else n
+      case (s, n) => if (s == "-") -1L * n else n
     }
 
   private def rfloat[_: P] =
@@ -123,11 +123,11 @@ object Lexical {
       | (sign.! ~ "inf").map(s => if (s == "-") Double.NegativeInfinity else Double.PositiveInfinity)
       | (sign.! ~ "nan:0x" ~ hexnum).map {
         case (s, payload) =>
-          if (s == "-") JDouble.longBitsToDouble(0xfff0000000000000l | payload.longValue)
-          else JDouble.longBitsToDouble(0x7ff0000000000000l | payload.longValue)
+          if (s == "-") JDouble.longBitsToDouble(0XFFF0000000000000L | payload.longValue)
+          else JDouble.longBitsToDouble(0X7FF0000000000000L | payload.longValue)
       }
       | (sign.! ~ "nan").map(s =>
-        if (s == "-") JDouble.longBitsToDouble(0xfff8000000000000l) else JDouble.longBitsToDouble(0x7ff8000000000000l)))
+        if (s == "-") JDouble.longBitsToDouble(0XFFF8000000000000L) else JDouble.longBitsToDouble(0X7FF8000000000000L)))
 
   def string[_: P] =
     P(

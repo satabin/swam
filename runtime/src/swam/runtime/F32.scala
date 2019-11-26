@@ -57,18 +57,18 @@ object F32 {
   private val convC = JFloat.parseFloat("0x1p12")
 
   def convertSi64(l: Long): Float =
-    if (math.abs(l) < 0x10000000000000l) {
+    if (math.abs(l) < 0X10000000000000L) {
       l.toFloat
     } else {
-      val r = if ((l & 0xfffl) == 0l) 0l else 1l
+      val r = if ((l & 0XFFFL) == 0L) 0L else 1L
       ((l >> 12) | r).toFloat * convC
     }
 
   def convertUi64(l: Long): Float =
-    if (JLong.compareUnsigned(l, 0x10000000000000l) < 0) {
+    if (JLong.compareUnsigned(l, 0X10000000000000L) < 0) {
       l.toFloat
     } else {
-      val r = if ((l & 0xfffl) == 0l) 0l else 1l
+      val r = if ((l & 0XFFFL) == 0L) 0L else 1L
       ((l >>> 12) | r).toFloat * convC
     }
 

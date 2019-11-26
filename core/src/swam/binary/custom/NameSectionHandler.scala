@@ -21,6 +21,8 @@ package custom
 import scodec.Codec
 import scodec.codecs._
 
+import scala.collection.compat._
+
 case class Names(subsections: Vector[NameSubsection])
 
 sealed trait NameSubsection
@@ -46,8 +48,8 @@ object NameSectionHandler extends CustomSectionHandler[Names] {
       .by(byte)
       .|(0) { case ModuleName(n) => n }(ModuleName(_))(name)
       .|(1) { case FunctionNames(ns) => ns.toVector }(v => FunctionNames(v.toMap))(namemap)
-      .|(2) { case LocalNames(ns) => ns.mapValues(_.toVector).toVector }(v => LocalNames(v.toMap.mapValues(_.toMap)))(
-        indirectnamemap)
+      .|(2) { case LocalNames(ns) => ns.view.mapValues(_.toVector).toVector }(v =>
+        LocalNames(v.map { case (k, v) => (k, v.toMap) }.toMap))(indirectnamemap)
 
   val codec: Codec[Names] = vector(subsection).as[Names]
 

@@ -18,14 +18,12 @@ package swam
 package runtime
 
 import config._
-import syntax._
+import syntax.Section
 import imports._
 import validation._
-import internals.compiler.{low => cl}
-import internals.compiler.{high => ch}
+import internals.compiler._
 import internals.instance._
-import internals.interpreter.{low => il}
-import internals.interpreter.{high => ih}
+import internals.interpreter._
 
 import cats.implicits._
 import cats.effect._
@@ -34,11 +32,8 @@ import fs2._
 
 import pureconfig._
 import pureconfig.generic.auto._
-import pureconfig.module.squants._
 import pureconfig.module.catseffect._
 import pureconfig.module.enumeratum._
-
-import scala.language.higherKinds
 
 import java.nio.file.Path
 
@@ -51,17 +46,13 @@ import java.nio.file.Path
 class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F])
     extends ModuleLoader[F] {
 
+  private[runtime] val asm = new Asm[F]
+
   private[runtime] val compiler =
-    if (conf.useLowLevelAsm)
-      new cl.Compiler[F](this)
-    else
-      new ch.Compiler[F](this)
+    new Compiler[F](this, asm)
 
   private[runtime] val interpreter =
-    if (conf.useLowLevelAsm)
-      new il.Interpreter[F](this)
-    else
-      new ih.Interpreter[F](this)
+    new Interpreter[F](this)
 
   private[runtime] val instantiator = new Instantiator[F](this)
 

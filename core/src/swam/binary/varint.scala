@@ -25,8 +25,8 @@ private class Varuint(bits: Int) extends Codec[Int] {
 
   private val bitsL = bits.toLong
 
-  val MaxValue = (1l << bits) - 1l
-  val MinValue = 0l
+  val MaxValue = (1L << bits) - 1L
+  val MinValue = 0L
 
   private def description = s"$bits-bit unsigned leb128 integer"
 
@@ -50,7 +50,7 @@ private class Varuint(bits: Int) extends Codec[Int] {
     } else {
       val byte = buffer.head
       if (n >= 7 || (byte & 0x7f) < (1 << n)) {
-        val x = byte & 0x7fl
+        val x = byte & 0X7FL
         if ((byte & 0x80) == 0)
           Attempt.successful(DecodeResult(x, buffer.tail.bits))
         else
@@ -87,7 +87,7 @@ private class Varuint(bits: Int) extends Codec[Int] {
   private val maxBits = (bitsL / 7) + (if (bitsL % 7 == 0) 0 else 1)
 
   def sizeBound: SizeBound =
-    SizeBound.bounded(8l, maxBits)
+    SizeBound.bounded(8L, maxBits)
 
 }
 
@@ -115,12 +115,12 @@ private class Varint(bits: Int) extends Codec[Long] {
       val byte = buffer.head
       val mask = (-1 << (n - 1)) & 0x7f
       if (n >= 7 || (byte & mask) == 0 || (byte & mask) == mask) {
-        val x = byte & 0x7fl
+        val x = byte & 0X7FL
         if ((byte & 0x80) == 0)
           if ((byte & 0x40) == 0)
             Attempt.successful(DecodeResult(x, buffer.tail.bits))
           else
-            Attempt.successful(DecodeResult(x ^ ((-1l) ^ 0x7fl), buffer.tail.bits))
+            Attempt.successful(DecodeResult(x ^ ((-1L) ^ 0X7FL), buffer.tail.bits))
         else
           decode(n - 7, buffer.tail).map(s => s.map(s => x | (s << 7)))
       } else {
@@ -139,7 +139,7 @@ private class Varint(bits: Int) extends Codec[Long] {
   @tailrec
   private def encode(value: Long, more: Boolean, buffer: ByteVector): BitVector =
     if (more) {
-      val byte = (value & 0x7fl).toByte
+      val byte = (value & 0X7FL).toByte
       val value1 = value >> 7
 
       val (byte1, more1) =
@@ -156,6 +156,6 @@ private class Varint(bits: Int) extends Codec[Long] {
   private val maxBits = (bitsL / 7) + (if (bitsL % 7 == 0) 0 else 1)
 
   def sizeBound: SizeBound =
-    SizeBound.bounded(8l, maxBits)
+    SizeBound.bounded(8L, maxBits)
 
 }

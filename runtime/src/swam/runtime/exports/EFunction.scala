@@ -22,8 +22,6 @@ import formats._
 
 import cats._
 
-import scala.language.higherKinds
-
 trait EFunction[Ret, F[_]] {
 
   protected def wrap(res: Option[Value]): F[Ret]

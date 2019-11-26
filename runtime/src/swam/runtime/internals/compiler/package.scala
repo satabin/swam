@@ -17,10 +17,10 @@
 package swam
 package runtime
 package internals
-package interpreter
 
-package object low {
+package object compiler {
 
-  type Asm = Int
+  /** A target label for a break */
+  type Target = Int
 
 }

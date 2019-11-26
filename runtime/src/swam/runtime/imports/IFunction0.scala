@@ -23,8 +23,6 @@ import formats._
 import cats._
 import cats.implicits._
 
-import scala.language.higherKinds
-
 class IFunction0[F[_], Ret](f: () => F[Ret])(implicit writer: ValueWriter[F, Ret], F: MonadError[F, Throwable])
     extends Function[F] {
   val tpe = FuncType(Vector(), Vector(writer.swamType))

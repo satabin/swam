@@ -26,8 +26,6 @@ import fs2._
 
 import java.nio.file.Path
 
-import scala.language.higherKinds
-
 /** Generic class to implement a decompiler. It takes a module in binary format
   * and outputs a formatted [[swam.util.pretty.Doc Doc]] out of it.
   */

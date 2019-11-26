@@ -37,11 +37,11 @@ object F64 {
     if (!f.isNaN) {
       f.toDouble
     } else {
-      val nan32bits = JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl
+      val nan32bits = JFloat.floatToRawIntBits(f) & 0X00000000FFFFFFFFL
       val signField = (nan32bits >>> 31) << 63
       val significandField = (nan32bits << 41) >>> 12
       val fields = signField | significandField
-      val nan64bits = 0x7ff8000000000000l | fields
+      val nan64bits = 0X7FF8000000000000L | fields
       JDouble.longBitsToDouble(nan64bits)
     }
 
@@ -49,16 +49,16 @@ object F64 {
     i.toDouble
 
   def convertUi32(i: Int): Double =
-    (i & 0x00000000ffffffffl).toDouble
+    (i & 0X00000000FFFFFFFFL).toDouble
 
   def convertSi64(l: Long): Double =
     l.toDouble
 
   def convertUi64(l: Long): Double =
-    if (l >= 0l)
+    if (l >= 0L)
       l.toDouble
     else
-      ((l >>> 1) | (l & 1l)) * 2.0d
+      ((l >>> 1) | (l & 1L)) * 2.0d
 
   def reinterpret(l: Long): Double =
     JDouble.longBitsToDouble(l)

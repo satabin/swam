@@ -17,6 +17,6 @@
 package swam
 package runtime
 
-import java.nio.ByteBuffer
+import swam.runtime.internals.interpreter.AsmInst
 
-case class CompiledElem(offset: ByteBuffer, init: Vector[Int])
+case class CompiledElem[F[_]](offset: Array[AsmInst[F]], init: Vector[Int])

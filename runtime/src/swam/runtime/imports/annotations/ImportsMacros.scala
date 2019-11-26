@@ -29,8 +29,7 @@ private final class ImportsMacros(val c: blackbox.Context) {
       q"""
        $clsDef
        object ${clsDef.name.toTermName} {
-         import scala.language.higherKinds
-         ${module(clsDef)}
+                  ${module(clsDef)}
        }
        """
     case List(
@@ -41,8 +40,7 @@ private final class ImportsMacros(val c: blackbox.Context) {
        $clsDef
        $mods object $objName extends { ..$objEarlyDefs } with ..$objParents { $objSelf =>
          ..$objDefs
-         import scala.language.higherKinds
-         ${module(clsDef)}
+                  ${module(clsDef)}
        }
        """
     case _ => c.abort(c.enclosingPosition, "Invalid annotation target: must be a class")

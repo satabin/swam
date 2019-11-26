@@ -23,8 +23,6 @@ import cats.implicits._
 
 import scala.collection.mutable.ArrayBuilder
 
-import scala.language.higherKinds
-
 package object string {
 
   /** Decodes a null-terminated ASCII string. */
