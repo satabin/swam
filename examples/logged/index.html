@@ -9,7 +9,7 @@
     <link type="text/css" rel="stylesheet" href="/css/materialize.min.css" media="screen,projection"/>
     <style>body{font-family: overpass, sans-serif; }</style>
 
-    <meta name="generator" content="Nanoc 4.11.2">
+    <meta name="generator" content="Nanoc 4.11.11">
   </head>
   <body>
     <header>
@@ -77,24 +77,24 @@
 <span class="k">import</span> <span class="nn">cats.effect._</span>
 <span class="k">import</span> <span class="nn">java.nio.file.Paths</span>
 
-<span class="k">val</span> <span class="n">tcompiler</span> <span class="k">=</span> <span class="nc">Compiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+<span class="k">val</span> <span class="nv">tcompiler</span> <span class="k">=</span> <span class="nc">Compiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
 
-<span class="k">val</span> <span class="n">engine</span> <span class="k">=</span> <span class="nc">Engine</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+<span class="k">val</span> <span class="nv">engine</span> <span class="k">=</span> <span class="nc">Engine</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
 
-<span class="k">def</span> <span class="n">log</span><span class="o">(</span><span class="n">i</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span> <span class="nc">IO</span><span class="o">(</span><span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"got $i"</span><span class="o">))</span>
+<span class="k">def</span> <span class="nf">log</span><span class="o">(</span><span class="n">i</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span> <span class="nc">IO</span><span class="o">(</span><span class="nf">println</span><span class="o">(</span><span class="n">s</span><span class="s">"got $i"</span><span class="o">))</span>
 
-<span class="k">val</span> <span class="n">f</span> <span class="k">=</span> <span class="o">(</span><span class="k">for</span> <span class="o">{</span>
+<span class="k">val</span> <span class="nv">f</span> <span class="k">=</span> <span class="o">(</span><span class="k">for</span> <span class="o">{</span>
   <span class="n">engine</span> <span class="k">&lt;-</span> <span class="n">engine</span>
   <span class="n">tcompiler</span> <span class="k">&lt;-</span> <span class="n">tcompiler</span>
-  <span class="n">mod</span> <span class="k">&lt;-</span> <span class="n">engine</span><span class="o">.</span><span class="n">compile</span><span class="o">(</span><span class="n">tcompiler</span><span class="o">.</span><span class="n">stream</span><span class="o">(</span><span class="nc">Paths</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="s">"logged.wat"</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
-  <span class="n">inst</span> <span class="k">&lt;-</span> <span class="n">mod</span><span class="o">.</span><span class="n">importing</span><span class="o">(</span><span class="s">"console"</span><span class="o">,</span> <span class="s">"log"</span> <span class="o">-&gt;</span> <span class="n">log</span> <span class="k">_</span><span class="o">).</span><span class="n">instantiate</span>
-  <span class="n">f</span> <span class="k">&lt;-</span> <span class="n">inst</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">typed</span><span class="o">.</span><span class="n">function1</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">Int</span><span class="o">](</span><span class="s">"add42"</span><span class="o">)</span>
-<span class="o">}</span> <span class="k">yield</span> <span class="n">f</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">()</span>
+  <span class="n">mod</span> <span class="k">&lt;-</span> <span class="nv">engine</span><span class="o">.</span><span class="py">compile</span><span class="o">(</span><span class="nv">tcompiler</span><span class="o">.</span><span class="py">stream</span><span class="o">(</span><span class="nv">Paths</span><span class="o">.</span><span class="py">get</span><span class="o">(</span><span class="s">"logged.wat"</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
+  <span class="n">inst</span> <span class="k">&lt;-</span> <span class="nv">mod</span><span class="o">.</span><span class="py">importing</span><span class="o">(</span><span class="s">"console"</span><span class="o">,</span> <span class="s">"log"</span> <span class="o">-&gt;</span> <span class="n">log</span> <span class="k">_</span><span class="o">).</span><span class="py">instantiate</span>
+  <span class="n">f</span> <span class="k">&lt;-</span> <span class="nv">inst</span><span class="o">.</span><span class="py">exports</span><span class="o">.</span><span class="py">typed</span><span class="o">.</span><span class="py">function1</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">Int</span><span class="o">](</span><span class="s">"add42"</span><span class="o">)</span>
+<span class="o">}</span> <span class="k">yield</span> <span class="n">f</span><span class="o">).</span><span class="py">unsafeRunSync</span><span class="o">()</span>
 </code></pre></div></div>
 
 <p>running function <code>f</code> logs the parameter.</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">f</span><span class="o">(</span><span class="mi">4</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">()</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">f</span><span class="o">(</span><span class="mi">4</span><span class="o">).</span><span class="py">unsafeRunSync</span><span class="o">()</span>
 <span class="c1">// got 4
 // res0: Int = 46
 </span></code></pre></div></div>
@@ -106,9 +106,9 @@
 <span class="k">for</span> <span class="o">{</span>
   <span class="n">engine</span> <span class="k">&lt;-</span> <span class="n">engine</span>
   <span class="n">tcompiler</span> <span class="k">&lt;-</span> <span class="n">tcompiler</span>
-  <span class="n">mod</span> <span class="k">&lt;-</span> <span class="n">engine</span><span class="o">.</span><span class="n">compile</span><span class="o">(</span><span class="n">tcompiler</span><span class="o">.</span><span class="n">stream</span><span class="o">(</span><span class="nc">Paths</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="s">"logged.wat"</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
-  <span class="n">inst</span> <span class="k">&lt;-</span> <span class="n">mod</span><span class="o">.</span><span class="n">importing</span><span class="o">(</span><span class="s">"console"</span><span class="o">,</span> <span class="s">"log"</span> <span class="o">-&gt;</span> <span class="n">log</span> <span class="k">_</span> <span class="o">::</span> <span class="s">"colors"</span> <span class="o">-&gt;</span> <span class="mi">256</span> <span class="o">::</span> <span class="nc">HNil</span><span class="o">).</span><span class="n">instantiate</span>
-  <span class="n">f</span> <span class="k">&lt;-</span> <span class="n">inst</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">typed</span><span class="o">.</span><span class="n">function1</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">Int</span><span class="o">](</span><span class="s">"add42"</span><span class="o">)</span>
+  <span class="n">mod</span> <span class="k">&lt;-</span> <span class="nv">engine</span><span class="o">.</span><span class="py">compile</span><span class="o">(</span><span class="nv">tcompiler</span><span class="o">.</span><span class="py">stream</span><span class="o">(</span><span class="nv">Paths</span><span class="o">.</span><span class="py">get</span><span class="o">(</span><span class="s">"logged.wat"</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
+  <span class="n">inst</span> <span class="k">&lt;-</span> <span class="nv">mod</span><span class="o">.</span><span class="py">importing</span><span class="o">(</span><span class="s">"console"</span><span class="o">,</span> <span class="s">"log"</span> <span class="o">-&gt;</span> <span class="n">log</span> <span class="k">_</span> <span class="o">::</span> <span class="s">"colors"</span> <span class="o">-&gt;</span> <span class="mi">256</span> <span class="o">::</span> <span class="nc">HNil</span><span class="o">).</span><span class="py">instantiate</span>
+  <span class="n">f</span> <span class="k">&lt;-</span> <span class="nv">inst</span><span class="o">.</span><span class="py">exports</span><span class="o">.</span><span class="py">typed</span><span class="o">.</span><span class="py">function1</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">Int</span><span class="o">](</span><span class="s">"add42"</span><span class="o">)</span>
 <span class="o">}</span> <span class="k">yield</span> <span class="n">f</span>
 
 </code></pre></div></div>

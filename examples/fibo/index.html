@@ -9,7 +9,7 @@
     <link type="text/css" rel="stylesheet" href="/css/materialize.min.css" media="screen,projection"/>
     <style>body{font-family: overpass, sans-serif; }</style>
 
-    <meta name="generator" content="Nanoc 4.11.2">
+    <meta name="generator" content="Nanoc 4.11.11">
   </head>
   <body>
     <header>
@@ -76,39 +76,39 @@
 <span class="k">import</span> <span class="nn">cats.effect._</span>
 <span class="k">import</span> <span class="nn">java.nio.file.Paths</span>
 
-<span class="k">val</span> <span class="n">tcompiler</span> <span class="k">=</span> <span class="nc">Compiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+<span class="k">val</span> <span class="nv">tcompiler</span> <span class="k">=</span> <span class="nc">Compiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
 
-<span class="k">val</span> <span class="n">engine</span> <span class="k">=</span> <span class="nc">Engine</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+<span class="k">val</span> <span class="nv">engine</span> <span class="k">=</span> <span class="nc">Engine</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
 
-<span class="k">def</span> <span class="n">instantiate</span><span class="o">(</span><span class="n">p</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="kt">Instance</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span> <span class="k">=</span>
+<span class="k">def</span> <span class="nf">instantiate</span><span class="o">(</span><span class="n">p</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="kt">Instance</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span> <span class="k">=</span>
   <span class="o">(</span><span class="k">for</span> <span class="o">{</span>
     <span class="n">engine</span> <span class="k">&lt;-</span> <span class="n">engine</span>
     <span class="n">tcompiler</span> <span class="k">&lt;-</span> <span class="n">tcompiler</span>
-    <span class="n">m</span> <span class="k">&lt;-</span> <span class="n">engine</span><span class="o">.</span><span class="n">compile</span><span class="o">(</span><span class="n">tcompiler</span><span class="o">.</span><span class="n">stream</span><span class="o">(</span><span class="nc">Paths</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">p</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
-    <span class="n">i</span> <span class="k">&lt;-</span> <span class="n">m</span><span class="o">.</span><span class="n">instantiate</span>
-  <span class="o">}</span> <span class="k">yield</span> <span class="n">i</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">()</span>
+    <span class="n">m</span> <span class="k">&lt;-</span> <span class="nv">engine</span><span class="o">.</span><span class="py">compile</span><span class="o">(</span><span class="nv">tcompiler</span><span class="o">.</span><span class="py">stream</span><span class="o">(</span><span class="nv">Paths</span><span class="o">.</span><span class="py">get</span><span class="o">(</span><span class="n">p</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
+    <span class="n">i</span> <span class="k">&lt;-</span> <span class="nv">m</span><span class="o">.</span><span class="py">instantiate</span>
+  <span class="o">}</span> <span class="k">yield</span> <span class="n">i</span><span class="o">).</span><span class="py">unsafeRunSync</span><span class="o">()</span>
 
-<span class="k">def</span> <span class="n">time</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="n">t</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">T</span><span class="o">)</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=</span> <span class="o">{</span>
-  <span class="k">val</span> <span class="n">start</span> <span class="k">=</span> <span class="nc">System</span><span class="o">.</span><span class="n">currentTimeMillis</span>
-  <span class="k">val</span> <span class="n">res</span> <span class="k">=</span> <span class="n">t</span>
-  <span class="k">val</span> <span class="n">end</span> <span class="k">=</span> <span class="nc">System</span><span class="o">.</span><span class="n">currentTimeMillis</span>
-  <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"Time: ${end - start}ms"</span><span class="o">)</span>
+<span class="k">def</span> <span class="nf">time</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="n">t</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">T</span><span class="o">)</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="nv">start</span> <span class="k">=</span> <span class="nv">System</span><span class="o">.</span><span class="py">currentTimeMillis</span>
+  <span class="k">val</span> <span class="nv">res</span> <span class="k">=</span> <span class="n">t</span>
+  <span class="k">val</span> <span class="nv">end</span> <span class="k">=</span> <span class="nv">System</span><span class="o">.</span><span class="py">currentTimeMillis</span>
+  <span class="nf">println</span><span class="o">(</span><span class="n">s</span><span class="s">"Time: ${end - start}ms"</span><span class="o">)</span>
   <span class="n">res</span>
 <span class="o">}</span>
 
-<span class="k">val</span> <span class="n">i</span> <span class="k">=</span> <span class="n">instantiate</span><span class="o">(</span><span class="s">"fibo.wat"</span><span class="o">)</span>
+<span class="k">val</span> <span class="nv">i</span> <span class="k">=</span> <span class="nf">instantiate</span><span class="o">(</span><span class="s">"fibo.wat"</span><span class="o">)</span>
 
-<span class="k">val</span> <span class="n">naive</span> <span class="k">=</span> <span class="n">i</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">typed</span><span class="o">.</span><span class="n">function1</span><span class="o">[</span><span class="kt">Long</span>, <span class="kt">Long</span><span class="o">](</span><span class="s">"naive"</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">()</span>
-<span class="k">val</span> <span class="n">clever</span> <span class="k">=</span> <span class="n">i</span><span class="o">.</span><span class="n">exports</span><span class="o">.</span><span class="n">typed</span><span class="o">.</span><span class="n">function1</span><span class="o">[</span><span class="kt">Long</span>, <span class="kt">Long</span><span class="o">](</span><span class="s">"clever"</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">()</span>
+<span class="k">val</span> <span class="nv">naive</span> <span class="k">=</span> <span class="nv">i</span><span class="o">.</span><span class="py">exports</span><span class="o">.</span><span class="py">typed</span><span class="o">.</span><span class="py">function1</span><span class="o">[</span><span class="kt">Long</span>, <span class="kt">Long</span><span class="o">](</span><span class="s">"naive"</span><span class="o">).</span><span class="py">unsafeRunSync</span><span class="o">()</span>
+<span class="k">val</span> <span class="nv">clever</span> <span class="k">=</span> <span class="nv">i</span><span class="o">.</span><span class="py">exports</span><span class="o">.</span><span class="py">typed</span><span class="o">.</span><span class="py">function1</span><span class="o">[</span><span class="kt">Long</span>, <span class="kt">Long</span><span class="o">](</span><span class="s">"clever"</span><span class="o">).</span><span class="py">unsafeRunSync</span><span class="o">()</span>
 </code></pre></div></div>
 
 <p>This would result in:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">time</span><span class="o">(</span><span class="n">naive</span><span class="o">(</span><span class="mi">30</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">())</span>
-<span class="c1">// Time: 12781ms
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">time</span><span class="o">(</span><span class="nf">naive</span><span class="o">(</span><span class="mi">30</span><span class="o">).</span><span class="py">unsafeRunSync</span><span class="o">())</span>
+<span class="c1">// Time: 346ms
 // res0: Long = 1346269L
-</span><span class="n">time</span><span class="o">(</span><span class="n">clever</span><span class="o">(</span><span class="mi">30</span><span class="o">).</span><span class="n">unsafeRunSync</span><span class="o">())</span>
-<span class="c1">// Time: 2ms
+</span><span class="nf">time</span><span class="o">(</span><span class="nf">clever</span><span class="o">(</span><span class="mi">30</span><span class="o">).</span><span class="py">unsafeRunSync</span><span class="o">())</span>
+<span class="c1">// Time: 0ms
 // res1: Long = 1346269L
 </span></code></pre></div></div>
 

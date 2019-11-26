@@ -9,7 +9,7 @@
     <link type="text/css" rel="stylesheet" href="/css/materialize.min.css" media="screen,projection"/>
     <style>body{font-family: overpass, sans-serif; }</style>
 
-    <meta name="generator" content="Nanoc 4.11.2">
+    <meta name="generator" content="Nanoc 4.11.11">
   </head>
   <body>
     <header>
@@ -76,27 +76,27 @@
 <span class="k">import</span> <span class="nn">cats.effect._</span>
 <span class="k">import</span> <span class="nn">java.nio.file.Paths</span>
 
-<span class="k">val</span> <span class="n">tcompiler</span> <span class="k">=</span> <span class="nc">Compiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+<span class="k">val</span> <span class="nv">tcompiler</span> <span class="k">=</span> <span class="nc">Compiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
 
-<span class="k">val</span> <span class="n">rdecompiler</span> <span class="k">=</span> <span class="nc">RawDecompiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+<span class="k">val</span> <span class="nv">rdecompiler</span> <span class="k">=</span> <span class="nc">RawDecompiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
 
-<span class="k">val</span> <span class="n">tdecompiler</span> <span class="k">=</span> <span class="nc">TextDecompiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
+<span class="k">val</span> <span class="nv">tdecompiler</span> <span class="k">=</span> <span class="nc">TextDecompiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">]</span>
 
-<span class="k">def</span> <span class="n">compdec</span><span class="o">(</span><span class="n">p</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="o">(</span><span class="kt">Doc</span><span class="o">,</span> <span class="kt">Doc</span><span class="o">)</span> <span class="k">=</span>
+<span class="k">def</span> <span class="nf">compdec</span><span class="o">(</span><span class="n">p</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="o">(</span><span class="kt">Doc</span><span class="o">,</span> <span class="kt">Doc</span><span class="o">)</span> <span class="k">=</span>
   <span class="o">(</span><span class="k">for</span> <span class="o">{</span>
     <span class="n">tcompiler</span> <span class="k">&lt;-</span> <span class="n">tcompiler</span>
     <span class="n">rdecompiler</span> <span class="k">&lt;-</span> <span class="n">rdecompiler</span>
     <span class="n">tdecompiler</span> <span class="k">&lt;-</span> <span class="n">tdecompiler</span>
-    <span class="n">rd</span> <span class="k">&lt;-</span> <span class="n">rdecompiler</span><span class="o">.</span><span class="n">decompile</span><span class="o">(</span><span class="n">tcompiler</span><span class="o">.</span><span class="n">stream</span><span class="o">(</span><span class="nc">Paths</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">p</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
-    <span class="n">td</span> <span class="k">&lt;-</span> <span class="n">tdecompiler</span><span class="o">.</span><span class="n">decompile</span><span class="o">(</span><span class="n">tcompiler</span><span class="o">.</span><span class="n">stream</span><span class="o">(</span><span class="nc">Paths</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">p</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
-  <span class="o">}</span> <span class="k">yield</span> <span class="o">(</span><span class="n">rd</span><span class="o">,</span> <span class="n">td</span><span class="o">)).</span><span class="n">unsafeRunSync</span><span class="o">()</span>
+    <span class="n">rd</span> <span class="k">&lt;-</span> <span class="nv">rdecompiler</span><span class="o">.</span><span class="py">decompile</span><span class="o">(</span><span class="nv">tcompiler</span><span class="o">.</span><span class="py">stream</span><span class="o">(</span><span class="nv">Paths</span><span class="o">.</span><span class="py">get</span><span class="o">(</span><span class="n">p</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
+    <span class="n">td</span> <span class="k">&lt;-</span> <span class="nv">tdecompiler</span><span class="o">.</span><span class="py">decompile</span><span class="o">(</span><span class="nv">tcompiler</span><span class="o">.</span><span class="py">stream</span><span class="o">(</span><span class="nv">Paths</span><span class="o">.</span><span class="py">get</span><span class="o">(</span><span class="n">p</span><span class="o">),</span> <span class="kc">true</span><span class="o">))</span>
+  <span class="o">}</span> <span class="nf">yield</span> <span class="o">(</span><span class="n">rd</span><span class="o">,</span> <span class="n">td</span><span class="o">)).</span><span class="py">unsafeRunSync</span><span class="o">()</span>
 
-<span class="k">val</span> <span class="o">(</span><span class="n">rd</span><span class="o">,</span> <span class="n">td</span><span class="o">)</span> <span class="k">=</span> <span class="n">compdec</span><span class="o">(</span><span class="s">"fibo.wat"</span><span class="o">)</span>
+<span class="nf">val</span> <span class="o">(</span><span class="n">rd</span><span class="o">,</span> <span class="n">td</span><span class="o">)</span> <span class="k">=</span> <span class="nf">compdec</span><span class="o">(</span><span class="s">"fibo.wat"</span><span class="o">)</span>
 </code></pre></div></div>
 
 <p>The simple raw decompiler simply prints a text version of the module sections. It can render modules that are not valid.</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">println</span><span class="o">(</span><span class="n">rd</span><span class="o">.</span><span class="n">render</span><span class="o">(</span><span class="mi">0</span><span class="o">))</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">println</span><span class="o">(</span><span class="nv">rd</span><span class="o">.</span><span class="py">render</span><span class="o">(</span><span class="mi">0</span><span class="o">))</span>
 <span class="c1">// ; section "Types"
 // ; type 0
 // [i64] → [i64]
@@ -169,7 +169,7 @@
 
 <p>The smart text decompiler renders a formatted text version of the module. The module must be valid to be rendered.</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">println</span><span class="o">(</span><span class="n">td</span><span class="o">.</span><span class="n">render</span><span class="o">(</span><span class="mi">0</span><span class="o">))</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">println</span><span class="o">(</span><span class="nv">td</span><span class="o">.</span><span class="py">render</span><span class="o">(</span><span class="mi">0</span><span class="o">))</span>
 <span class="c1">// (module $fibo
 //   (export
 //     "naive"
@@ -195,7 +195,7 @@
 //         ((call $naive
 //           ((i64.sub
 //             (local.get $i)
-//             (i64.const 1))))))))
+//             (i64.const 1)))))))))
 //   (func $inner
 //     (param $n2 i64)
 //     (param $n1 i64)
@@ -215,7 +215,7 @@
 //           (local.get $n2)))
 //         (local.get $n1)))
 //     (else
-//       local.get $n2))
+//       local.get $n2)))
 //   (func $clever
 //     (param $i i64)
 //     (result i64)
