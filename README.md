@@ -15,18 +15,18 @@ You cann also use the [mill wrapper](https://github.com/lefou/millw) provided in
 If you want to run the specification tests, just type:
 
 ```sh
-mill runtime.test.low
+mill runtime.test
 ```
 
 It you want to test swam in a REPL session, just type tostart an ammonite shell with runtime project in classpath.:
 
 ```sh
-mill -i runtime.repl
+mill -i runtime.console
 ```
 
 If you want a REPL session with both runtime and text, the easiest way is to start a session for the runtime.test project:
 
-    $ mill -i runtime.test.repl
+    $ mill -i runtime.test.console
 
 ## Architecture
 
