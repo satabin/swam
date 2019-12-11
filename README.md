@@ -1,6 +1,6 @@
 # Swam [![Build Status](https://travis-ci.org/satabin/swam.svg?branch=master)](https://travis-ci.org/satabin/swam) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6cadb836067c4e4696c3c15ab9510a3a)](https://www.codacy.com/app/satabin/swam?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=satabin/swam&amp;utm_campaign=Badge_Grade)
 
-[WebAssembly][1] implementation in Scala with [cats][7].
+Swam is [WebAssembly][1] interpreter written in Scala with the [cats][7] library. It passes all the official specification tests. It is under an Apache 2 license.
 
 [![Cats Friendly Badge][6]][7]
 
