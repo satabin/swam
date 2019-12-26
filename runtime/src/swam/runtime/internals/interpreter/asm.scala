@@ -44,7 +44,7 @@ import java.lang.{Integer => JInt, Long => JLong, Float => JFloat, Double => JDo
   * of elements to discard from the stack before pushing return values back.
   */
 sealed trait AsmInst[F[_]] {
-  def execute(t: ThreadFrame[F]): Continuation[F]
+  def execute(t: Frame[F]): Continuation[F]
 }
 
 sealed trait Continuation[+F[_]]
@@ -255,112 +255,112 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I32Const(v: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushInt(v)
       Continue
     }
   }
 
   class I64Const(v: Long) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushLong(v)
       Continue
     }
   }
 
   class F32Const(v: Float) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushFloat(v)
       Continue
     }
   }
 
   class F64Const(v: Double) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushDouble(v)
       Continue
     }
   }
 
   case object I32Clz extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushInt(JInt.numberOfLeadingZeros(thread.popInt()))
       Continue
     }
   }
 
   case object I32Ctz extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushInt(JInt.numberOfTrailingZeros(thread.popInt()))
       Continue
     }
   }
 
   case object I32Popcnt extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushInt(JInt.bitCount(thread.popInt()))
       Continue
     }
   }
 
   case object I64Clz extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushLong(JLong.numberOfLeadingZeros(thread.popLong()))
       Continue
     }
   }
 
   case object I64Ctz extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushLong(JLong.numberOfTrailingZeros(thread.popLong()))
       Continue
     }
   }
 
   case object I64Popcnt extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushLong(JLong.bitCount(thread.popLong()))
       Continue
     }
   }
 
   case object F32Abs extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushFloat(JFloat.intBitsToFloat(JFloat.floatToRawIntBits(thread.popFloat()) & 0x7fffffff))
       Continue
     }
   }
 
   case object F32Neg extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushFloat(-thread.popFloat())
       Continue
     }
   }
 
   case object F32Sqrt extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushFloat(StrictMath.sqrt(thread.popFloat()).toFloat)
       Continue
     }
   }
 
   case object F32Ceil extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushFloat(thread.popFloat().ceil)
       Continue
     }
   }
 
   case object F32Floor extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushFloat(thread.popFloat().floor)
       Continue
     }
   }
 
   case object F32Trunc extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popFloat()
       thread.pushFloat(F32.trunc(f))
       Continue
@@ -368,7 +368,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Nearest extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popFloat()
       thread.pushFloat(F32.nearest(f))
       Continue
@@ -376,42 +376,42 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Abs extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushDouble(JDouble.longBitsToDouble(JDouble.doubleToRawLongBits(thread.popDouble()) & 0X7FFFFFFFFFFFFFFFL))
       Continue
     }
   }
 
   case object F64Neg extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushDouble(-thread.popDouble())
       Continue
     }
   }
 
   case object F64Sqrt extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushDouble(StrictMath.sqrt(thread.popDouble()))
       Continue
     }
   }
 
   case object F64Ceil extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushDouble(thread.popDouble().ceil)
       Continue
     }
   }
 
   case object F64Floor extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushDouble(thread.popDouble().floor)
       Continue
     }
   }
 
   case object F64Trunc extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popDouble()
       thread.pushDouble(F64.trunc(f))
       Continue
@@ -419,7 +419,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Nearest extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val d = thread.popDouble()
       thread.pushDouble(F64.nearest(d))
       Continue
@@ -427,7 +427,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32Add extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushInt(i1 + i2)
@@ -436,7 +436,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32Sub extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushInt(i1 - i2)
@@ -445,7 +445,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32Mul extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushInt(i1 * i2)
@@ -454,7 +454,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32DivU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       if (i2 == 0) {
@@ -466,7 +466,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
   case object I32DivS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       if (i2 == 0) {
@@ -485,7 +485,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
   case object I32RemU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       if (i2 == 0) {
@@ -497,7 +497,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
   case object I32RemS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       if (i2 == 0) {
@@ -509,7 +509,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
   case object I32And extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushInt(i1 & i2)
@@ -518,7 +518,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32Or extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushInt(i1 | i2)
@@ -527,7 +527,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32Xor extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushInt(i1 ^ i2)
@@ -536,7 +536,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32Shl extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt() % 32
       val i1 = thread.popInt()
       thread.pushInt(i1 << i2)
@@ -545,7 +545,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32ShrU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt() % 32
       val i1 = thread.popInt()
       thread.pushInt(i1 >>> i2)
@@ -554,7 +554,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32ShrS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt() % 32
       val i1 = thread.popInt()
       thread.pushInt(i1 >> i2)
@@ -563,7 +563,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32Rotl extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt() % 32
       val i1 = thread.popInt()
       thread.pushInt(JInt.rotateLeft(i1, i2))
@@ -572,7 +572,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32Rotr extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt() % 32
       val i1 = thread.popInt()
       thread.pushInt(JInt.rotateRight(i1, i2))
@@ -581,7 +581,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64Add extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushLong(i1 + i2)
@@ -590,7 +590,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64Sub extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushLong(i1 - i2)
@@ -599,7 +599,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64Mul extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushLong(i1 * i2)
@@ -608,7 +608,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64DivU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       if (i2 == 0) {
@@ -621,7 +621,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64DivS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       if (i2 == 0) {
@@ -642,7 +642,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64RemU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       if (i2 == 0) {
@@ -655,7 +655,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64RemS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       if (i2 == 0) {
@@ -668,7 +668,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64And extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushLong(i1 & i2)
@@ -677,7 +677,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64Or extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushLong(i1 | i2)
@@ -686,7 +686,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64Xor extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushLong(i1 ^ i2)
@@ -695,7 +695,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64Shl extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong() % 64
       val i1 = thread.popLong()
       thread.pushLong(i1 << i2)
@@ -704,7 +704,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64ShrU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong() % 64
       val i1 = thread.popLong()
       thread.pushLong(i1 >>> i2)
@@ -713,7 +713,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64ShrS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong() % 64
       val i1 = thread.popLong()
       thread.pushLong(i1 >> i2)
@@ -722,7 +722,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64Rotl extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = (thread.popLong() % 64).toInt
       val i1 = thread.popLong()
       thread.pushLong(JLong.rotateLeft(i1, i2))
@@ -731,7 +731,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64Rotr extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = (thread.popLong() % 64).toInt
       val i1 = thread.popLong()
       thread.pushLong(JLong.rotateRight(i1, i2))
@@ -740,7 +740,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Add extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushFloat(f1 + f2)
@@ -749,7 +749,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Sub extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushFloat(f1 - f2)
@@ -758,7 +758,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Mul extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushFloat(f1 * f2)
@@ -767,7 +767,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Div extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushFloat(f1 / f2)
@@ -776,7 +776,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Min extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushFloat(StrictMath.min(f1, f2))
@@ -785,7 +785,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Max extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushFloat(StrictMath.max(f1, f2))
@@ -794,7 +794,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Copysign extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushFloat(Math.copySign(f1, f2))
@@ -803,7 +803,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Add extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushDouble(f1 + f2)
@@ -812,7 +812,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Sub extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushDouble(f1 - f2)
@@ -821,7 +821,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Mul extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushDouble(f1 * f2)
@@ -830,7 +830,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Div extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushDouble(f1 / f2)
@@ -839,7 +839,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Min extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushDouble(StrictMath.min(f1, f2))
@@ -848,7 +848,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Max extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushDouble(StrictMath.max(f1, f2))
@@ -857,7 +857,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Copysign extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushDouble(Math.copySign(f1, f2))
@@ -866,7 +866,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32Eqz extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i = thread.popInt()
       thread.pushBool(i == 0)
       Continue
@@ -874,7 +874,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64Eqz extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i = thread.popLong()
       thread.pushBool(i == 0)
       Continue
@@ -882,7 +882,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32Eq extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushBool(i1 == i2)
@@ -891,7 +891,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32Ne extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushBool(i1 != i2)
@@ -900,7 +900,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32LtU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushBool(JInt.compareUnsigned(i1, i2) < 0)
@@ -909,7 +909,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32LtS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushBool(i1 < i2)
@@ -918,7 +918,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32GtU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushBool(JInt.compareUnsigned(i1, i2) > 0)
@@ -927,7 +927,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32GtS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushBool(i1 > i2)
@@ -936,7 +936,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32LeU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushBool(JInt.compareUnsigned(i1, i2) <= 0)
@@ -945,7 +945,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32LeS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushBool(i1 <= i2)
@@ -954,7 +954,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32GeU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushBool(JInt.compareUnsigned(i1, i2) >= 0)
@@ -963,7 +963,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32GeS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popInt()
       val i1 = thread.popInt()
       thread.pushBool(i1 >= i2)
@@ -972,7 +972,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64Eq extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushBool(i1 == i2)
@@ -981,7 +981,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64Ne extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushBool(i1 != i2)
@@ -990,7 +990,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64LtU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushBool(JLong.compareUnsigned(i1, i2) < 0)
@@ -999,7 +999,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64LtS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushBool(i1 < i2)
@@ -1008,7 +1008,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64GtU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushBool(JLong.compareUnsigned(i1, i2) > 0)
@@ -1017,7 +1017,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64GtS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushBool(i1 > i2)
@@ -1026,7 +1026,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64LeU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushBool(JLong.compareUnsigned(i1, i2) <= 0)
@@ -1035,7 +1035,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64LeS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushBool(i1 <= i2)
@@ -1044,7 +1044,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64GeU extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushBool(JLong.compareUnsigned(i1, i2) >= 0)
@@ -1053,7 +1053,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64GeS extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i2 = thread.popLong()
       val i1 = thread.popLong()
       thread.pushBool(i1 >= i2)
@@ -1062,7 +1062,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Eq extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushBool(f1 == f2)
@@ -1071,7 +1071,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Ne extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushBool(f1 != f2)
@@ -1080,7 +1080,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Lt extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushBool(f1 < f2)
@@ -1089,7 +1089,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Gt extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushBool(f1 > f2)
@@ -1098,7 +1098,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Le extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushBool(f1 <= f2)
@@ -1107,7 +1107,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32Ge extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popFloat()
       val f1 = thread.popFloat()
       thread.pushBool(f1 >= f2)
@@ -1116,7 +1116,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Eq extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushBool(f1 == f2)
@@ -1125,7 +1125,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Ne extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushBool(f1 != f2)
@@ -1134,7 +1134,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Lt extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushBool(f1 < f2)
@@ -1143,7 +1143,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Gt extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushBool(f1 > f2)
@@ -1152,7 +1152,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Le extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushBool(f1 <= f2)
@@ -1161,7 +1161,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64Ge extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f2 = thread.popDouble()
       val f1 = thread.popDouble()
       thread.pushBool(f1 >= f2)
@@ -1170,7 +1170,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32WrapI64 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val l = thread.popLong()
       thread.pushInt(I32.wrap(l))
       Continue
@@ -1178,7 +1178,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64ExtendUI32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i = thread.popInt()
       thread.pushLong(I64.extendUi32(i))
       Continue
@@ -1186,7 +1186,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64ExtendSI32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i = thread.popInt()
       thread.pushLong(I64.extendSi32(i))
       Continue
@@ -1194,7 +1194,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32TruncUF32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popFloat()
       I32.truncUf32(f) match {
         case Right(i) =>
@@ -1207,7 +1207,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32TruncSF32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popFloat()
       I32.truncSf32(f) match {
         case Right(i) =>
@@ -1220,7 +1220,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32TruncUF64 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popDouble()
       I32.truncUf64(f) match {
         case Right(i) =>
@@ -1233,7 +1233,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32TruncSF64 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popDouble()
       I32.truncSf64(f) match {
         case Right(i) =>
@@ -1246,7 +1246,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64TruncUF32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popFloat()
       I64.truncUf32(f) match {
         case Right(l) =>
@@ -1259,7 +1259,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64TruncSF32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popFloat()
       I64.truncSf32(f) match {
         case Right(l) =>
@@ -1272,7 +1272,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64TruncUF64 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popDouble()
       I64.truncUf64(f) match {
         case Right(l) =>
@@ -1285,7 +1285,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64TruncSF64 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popDouble()
       I64.truncSf64(f) match {
         case Right(l) =>
@@ -1298,7 +1298,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32DemoteF64 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popDouble()
       thread.pushFloat(F32.demote(f))
       Continue
@@ -1306,7 +1306,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64PromoteF32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popFloat()
       thread.pushDouble(F64.promote(f))
       Continue
@@ -1314,7 +1314,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32ConvertUI32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i = thread.popInt()
       thread.pushFloat(F32.convertUi32(i))
       Continue
@@ -1322,7 +1322,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32ConvertSI32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i = thread.popInt()
       thread.pushFloat(F32.convertSi32(i))
       Continue
@@ -1330,7 +1330,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32ConvertUI64 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val l = thread.popLong()
       thread.pushFloat(F32.convertUi64(l))
       Continue
@@ -1338,7 +1338,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32ConvertSI64 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val l = thread.popLong()
       thread.pushFloat(F32.convertSi64(l))
       Continue
@@ -1346,7 +1346,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64ConvertUI32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i = thread.popInt()
       thread.pushDouble(F64.convertUi32(i))
       Continue
@@ -1354,7 +1354,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64ConvertSI32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i = thread.popInt()
       thread.pushDouble(F64.convertSi32(i))
       Continue
@@ -1362,7 +1362,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64ConvertUI64 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val l = thread.popLong()
       thread.pushDouble(F64.convertUi64(l))
       Continue
@@ -1370,7 +1370,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64ConvertSI64 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val l = thread.popLong()
       thread.pushDouble(F64.convertSi64(l))
       Continue
@@ -1378,7 +1378,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I32ReinterpretF32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popFloat()
       thread.pushInt(I32.reinterpret(f))
       Continue
@@ -1386,7 +1386,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object I64ReinterpretF64 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popDouble()
       thread.pushLong(I64.reinterpret(f))
       Continue
@@ -1394,7 +1394,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F32ReinterpretI32 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i = thread.popInt()
       thread.pushFloat(F32.reinterpret(i))
       Continue
@@ -1402,7 +1402,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object F64ReinterpretI64 extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val i = thread.popLong()
       thread.pushDouble(F64.reinterpret(i))
       Continue
@@ -1410,14 +1410,14 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class Drop(n: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.drop(n)
       Continue
     }
   }
 
   case object Select extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val b = thread.popBool()
       val v2 = thread.popValue()
       val v1 = thread.popValue()
@@ -1430,14 +1430,14 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class LocalGet(idx: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushValue(thread.local(idx))
       Continue
     }
   }
 
   class LocalSet(idx: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val v = thread.popValue()
       thread.setLocal(idx, v)
       Continue
@@ -1445,7 +1445,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class LocalTee(idx: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val v = thread.peekValue()
       thread.setLocal(idx, v)
       Continue
@@ -1453,7 +1453,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class GlobalGet(idx: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.global(idx) match {
         case i: GlobalInstance[F] =>
           thread.pushValue(i.rawget)
@@ -1465,7 +1465,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class GlobalSet(idx: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val v = thread.popValue()
       thread.global(idx) match {
         case i: GlobalInstance[F] =>
@@ -1478,7 +1478,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I32Load(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1495,7 +1495,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I32Load8U(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1511,7 +1511,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I32Load8S(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1527,7 +1527,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I32Load16U(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1543,7 +1543,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I32Load16S(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1559,7 +1559,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I64Load(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1575,7 +1575,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I64Load8U(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1591,7 +1591,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I64Load8S(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1607,7 +1607,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I64Load16U(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1623,7 +1623,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I64Load16S(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1639,7 +1639,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I64Load32U(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1655,7 +1655,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I64Load32S(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1671,7 +1671,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class F32Load(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1687,7 +1687,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class F64Load(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val i = thread.popInt()
@@ -1703,7 +1703,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I32Store(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val c = thread.popInt()
@@ -1719,7 +1719,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I32Store8(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val c = thread.popInt()
@@ -1736,7 +1736,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I32Store16(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val c = thread.popInt()
@@ -1753,7 +1753,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I64Store(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val c = thread.popLong()
@@ -1769,7 +1769,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I64Store8(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val c = thread.popLong()
@@ -1786,7 +1786,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I64Store16(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val c = thread.popLong()
@@ -1803,7 +1803,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class I64Store32(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val c = thread.popLong()
@@ -1820,7 +1820,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class F32Store(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val c = thread.popFloat()
@@ -1836,7 +1836,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class F64Store(alignment: Int, offset: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // ignore alignment for now
       val mem = thread.memory(0)
       val c = thread.popDouble()
@@ -1852,7 +1852,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object MemorySize extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val mem = thread.memory(0)
       val sz = mem.size / pageSize
       thread.pushInt(sz)
@@ -1861,7 +1861,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object MemoryGrow extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val mem = thread.memory(0)
       val sz = mem.size / pageSize
       val n = thread.popInt()
@@ -1874,25 +1874,25 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object Nop extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       Continue
     }
   }
 
   case object Unreachable extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] =
+    def execute(thread: Frame[F]): Continuation[F] =
       throw new TrapException(thread, "unreachable executed")
   }
 
   class Jump(var addr: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       thread.jumpTo(addr)
       Continue
     }
   }
 
   class JumpIf(var addr: Int) extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // read the condition from the stack
       val c = thread.popBool()
       if (c) {
@@ -1905,7 +1905,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
 
   sealed abstract class Breaking extends AsmInst[F] {
 
-    protected def br(thread: ThreadFrame[F], arity: Int, drop: Int, addr: Int): Continuation[F] = {
+    protected def br(thread: Frame[F], arity: Int, drop: Int, addr: Int): Continuation[F] = {
       val res = thread.popValues(arity)
       thread.drop(drop)
       thread.pushValues(res)
@@ -1916,12 +1916,12 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class Br(arity: Int, drop: Int, var addr: Int) extends Breaking {
-    def execute(thread: ThreadFrame[F]): Continuation[F] =
+    def execute(thread: Frame[F]): Continuation[F] =
       br(thread, arity, drop, addr)
   }
 
   class BrIf(arity: Int, drop: Int, var addr: Int) extends Breaking {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val c = thread.popBool()
       if (c) {
         // only break if condition is true
@@ -1936,7 +1936,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   class BrLabel(val arity: Int, val drop: Int, var addr: Int)
 
   class BrTable(lbls: Array[BrLabel], dflt: BrLabel) extends Breaking {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       // get the label index from stack
       val i = thread.popInt()
       // fix the index to default to the default label
@@ -1950,7 +1950,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   case object Return extends AsmInst[F] {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val values = thread.popValues(thread.arity)
       // pop the thread to get the parent
       thread.popFrame()
@@ -1959,7 +1959,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   sealed abstract class Invoking extends AsmInst[F] {
-    protected def invoke(thread: ThreadFrame[F], f: Function[F]): Continuation[F] =
+    protected def invoke(thread: Frame[F], f: Function[F]): Continuation[F] =
       f match {
         case inst @ FunctionInstance(_, _, _, _) =>
           // parameters are on top of the stack
@@ -1978,14 +1978,14 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   }
 
   class Call(fidx: Int) extends Invoking {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.func(fidx)
       invoke(thread, f)
     }
   }
 
   class CallIndirect(tidx: Int) extends Invoking {
-    def execute(thread: ThreadFrame[F]): Continuation[F] = {
+    def execute(thread: Frame[F]): Continuation[F] = {
       val tab = thread.table(0)
       val expectedt = thread.module.types(tidx)
       val i = thread.popInt()

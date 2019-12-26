@@ -76,7 +76,7 @@ class ScriptEngine {
     for {
       validator <- Validator[IO]
       conf <- ConfigSource.default.at("swam.runtime").loadF[IO, EngineConfiguration]
-    } yield Engine[IO](conf, validator)
+    } yield Engine[IO](conf, validator, None)
 
   val tcompiler = Compiler[IO]
 

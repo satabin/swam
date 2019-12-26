@@ -20,6 +20,7 @@ package internals
 package interpreter
 
 import instance._
+import trace._
 
 import cats._
 import cats.implicits._
@@ -31,9 +32,17 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
 
   private val conf = engine.conf
 
+  private def makeFrame(instance: Instance[F]): Frame[F] = {
+    val inner = new ThreadFrame[F](conf.stack, instance)
+    engine.tracer match {
+      case Some(tracer) => new TracingFrame[F](inner, tracer)
+      case None         => inner
+    }
+  }
+
   def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level thread
-    val thread = new ThreadFrame[F](conf.stack, instance)
+    val thread = makeFrame(instance)
     // push the parameters in the stack
     thread.pushValues(parameters)
     // invoke the function
@@ -46,7 +55,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
 
   def interpret(func: Function[F], parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level thread
-    val thread = new ThreadFrame[F](conf.stack, instance)
+    val thread = makeFrame(instance)
     // push the parameters in the stack
     thread.pushValues(parameters)
     // invoke the function
@@ -59,7 +68,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
 
   def interpretInit(tpe: ValType, code: Array[AsmInst[F]], instance: Instance[F]): F[Option[Long]] = {
     // instantiate the top-level thread
-    val thread = new ThreadFrame[F](conf.stack, instance)
+    val thread = makeFrame(instance)
     // invoke the function
     invoke(thread, new FunctionInstance(FuncType(Vector(), Vector(tpe)), Vector(), code, instance)) match {
       case Continue     => run(thread)
@@ -68,7 +77,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
     }
   }
 
-  private def run(thread: ThreadFrame[F]): F[Option[Long]] = {
+  private def run(thread: Frame[F]): F[Option[Long]] = {
     def loop(): F[Option[Long]] = {
       val inst = thread.fetch()
       inst.execute(thread) match {
@@ -101,7 +110,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
     }
   }
 
-  private def invoke(thread: ThreadFrame[F], f: Function[F]): Continuation[F] =
+  private def invoke(thread: Frame[F], f: Function[F]): Continuation[F] =
     f match {
       case inst @ FunctionInstance(_, _, _, _) =>
         // parameters are on top of the stack

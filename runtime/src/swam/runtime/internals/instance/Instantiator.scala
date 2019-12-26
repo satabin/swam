@@ -21,6 +21,7 @@ package instance
 
 import imports._
 import compiler._
+import trace._
 
 import cats.effect._
 import cats.implicits._
@@ -110,6 +111,10 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
     }
     instance.memories = imemories ++ module.memories.map {
       case MemType(limits) => new MemoryInstance[F](limits.min, limits.max, dataOnHeap, dataHardMax.bytes.toInt)
+    }
+    // trace memory acceses if tracer exists
+    engine.tracer.foreach { tracer =>
+      instance.memories = instance.memories.map(TracingMemory(_, tracer))
     }
     instance.exps = module.exports.map {
       case Export.Function(name, tpe, idx) => (name, instance.funcs(idx))
