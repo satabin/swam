@@ -21,6 +21,7 @@ import config._
 import syntax.Section
 import imports._
 import validation._
+import trace._
 import internals.compiler._
 import internals.instance._
 import internals.interpreter._
@@ -43,10 +44,13 @@ import java.nio.file.Path
   * You typically want to reuse the same instance for all your executions
   * over the same effectful type `F`.
   */
-class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F])
+class Engine[F[_]: Effect] private (val conf: EngineConfiguration,
+                                    private[runtime] val validator: Validator[F],
+                                    private[runtime] val tracer: Option[Tracer])
     extends ModuleLoader[F] {
 
-  private[runtime] val asm = new Asm[F]
+  private[runtime] val asm =
+    new Asm[F]
 
   private[runtime] val compiler =
     new Compiler[F](this, asm)
@@ -54,7 +58,8 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
   private[runtime] val interpreter =
     new Interpreter[F](this)
 
-  private[runtime] val instantiator = new Instantiator[F](this)
+  private[runtime] val instantiator =
+    new Instantiator[F](this)
 
   /** Reads the `.wasm` file at the given path and validates it.
     *
@@ -156,9 +161,9 @@ object Engine {
     for {
       validator <- Validator[F]
       conf <- ConfigSource.default.at("swam.runtime").loadF[F, EngineConfiguration]
-    } yield new Engine[F](conf, validator)
+    } yield new Engine[F](conf, validator, None)
 
-  def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F]): Engine[F] =
-    new Engine[F](conf, validator)
+  def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F], tracer: Option[Tracer]): Engine[F] =
+    new Engine[F](conf, validator, tracer)
 
 }

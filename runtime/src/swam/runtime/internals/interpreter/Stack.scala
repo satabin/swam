@@ -73,7 +73,7 @@ import java.lang.{Float => JFloat, Double => JDouble}
   * }}}
   *
   */
-private class ThreadFrame[F[_]](conf: StackConfiguration, baseInstance: Instance[F]) extends StackFrame {
+private[runtime] class ThreadFrame[F[_]](conf: StackConfiguration, baseInstance: Instance[F]) extends Frame[F] {
 
   private val stack = Array.ofDim[Long](conf.size.bytes.toInt / 8)
 
