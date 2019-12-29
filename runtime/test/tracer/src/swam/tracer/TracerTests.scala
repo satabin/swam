@@ -17,21 +17,10 @@
 package swam
 package text
 
-import parser._
 import runtime._
 import config._
 
-import swam.test.util._
-
 import utest._
-
-import better.files._
-
-import fastparse._
-
-import cats.effect._
-
-import scala.concurrent.ExecutionContext
 
 object TracerTests extends TestSuite {
 

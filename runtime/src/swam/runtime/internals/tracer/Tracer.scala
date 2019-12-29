@@ -1,16 +1,12 @@
 package swam
 package runtime
 
-import scala.concurrent._
 import java.util.concurrent.locks._
 
 import config._
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter
-import swam.runtime.config.HandlerType.Custom
-import swam.runtime.config.HandlerType.File
 import java.util.logging.Handler
 import java.util.logging.FileHandler
 import java.util.logging.SocketHandler

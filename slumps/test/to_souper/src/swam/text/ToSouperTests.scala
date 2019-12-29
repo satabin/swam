@@ -18,29 +18,21 @@ package swam
 package text
 
 import slumps._
-import config._
-import runtime._
 import binary._
 import validation._
 
 
-import swam.test.util._
 
 import utest._
 
-import better.files._
+//import fastparse._
 
-import fastparse._
-
-import cats._
 import cats.effect._
 import cats.implicits._
 
 import scala.concurrent.ExecutionContext
-import java.nio.file.Paths
-import fs2._
 import scala.language.higherKinds
-
+import slumps.config._
 
 
 object ModuleParser {
@@ -60,10 +52,13 @@ object ToSouperTests extends TestSuite {
   implicit val cs = IO.contextShift(ExecutionContext.Implicits.global)
 
 
+  val conf: SlumpsConfiguration = new SlumpsConfiguration("")
+  val validator = Validator[IO].unsafeRunSync();
+  val slumps = Slumps[IO](conf, validator);
+
   def run(wast: String) = {
 
-    val parser = ModuleParser[IO]
-      
+
   }
 
   val tests = Tests{

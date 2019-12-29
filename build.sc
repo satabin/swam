@@ -18,8 +18,13 @@ import $file.mdoc
 import mdoc.MdocModule
 
 val millVersion = System.getProperty("MILL_VERSION")
+
+
 interp.load.ivy("com.lihaoyi" %% "mill-contrib-bloop" % millVersion)
 interp.load.ivy("com.lihaoyi" %% "mill-contrib-buildinfo" % millVersion)
+
+import $ivy.`com.lihaoyi::mill-contrib-bloop:0.5.2`
+
 
 
 import mill.contrib.scoverage.ScoverageModule

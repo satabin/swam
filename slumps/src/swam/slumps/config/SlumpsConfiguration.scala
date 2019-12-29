@@ -6,11 +6,6 @@ package swam
 package slumps
 package config
 
-import squants.information._
-
-import enumeratum._
-import enumeratum.EnumEntry._
-
 /** Holds all the
   * configurable values.
   *
