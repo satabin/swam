@@ -37,7 +37,7 @@ abstract class Decompiler[F[_]](implicit F: Effect[F]) extends ModuleLoader[F] {
     * The module is not validated so invalid modules can also be decompiled.
     */
   def decompilePath(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): F[Doc] =
-    decompile(readPath(path, blocker, chunkSize))
+    decompile(sections(path, blocker, chunkSize))
 
   /** Returns a pretty-printed [[swam.util.pretty.Doc Doc]] resulting from decompiling
     * the module at the given bytes.
@@ -45,7 +45,7 @@ abstract class Decompiler[F[_]](implicit F: Effect[F]) extends ModuleLoader[F] {
     * The module is not validated so invalid modules can also be decompiled.
     */
   def decompileBytes(bytes: Stream[F, Byte]): F[Doc] =
-    decompile(readBytes(bytes))
+    decompile(sections(bytes))
 
   /** Returns a pretty-printed [[swam.util.pretty.Doc Doc]] resulting from decompiling
     * the module at the given section stream.

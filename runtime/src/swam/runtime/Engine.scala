@@ -66,14 +66,14 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration,
     * If validation fails, returns an error with the validation message wrapped in it.
     */
   def validate(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): F[Unit] =
-    validate(readPath(path, blocker, chunkSize))
+    validate(sections(path, blocker, chunkSize))
 
   /** Reads the given binary encoded module and validates it.
     *
     * If validation fails, returns an error with the validation message wrapped in it.
     */
   def validateBytes(bytes: Stream[F, Byte]): F[Unit] =
-    validate(readBytes(bytes))
+    validate(sections(bytes))
 
   /** Reads the given stream of binary module sections and validates it.
     *
@@ -92,7 +92,7 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration,
     * message wrapped in it.
     */
   def compile(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): F[Module[F]] =
-    compile(readPath(path, blocker, chunkSize))
+    compile(sections(path, blocker, chunkSize))
 
   /** Reads the given binary encoded module, validates, and compiles it.
     * The returned compiled [[Module]] can then be instantiated to be run.
@@ -101,7 +101,7 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration,
     * message wrapped in it.
     */
   def compileBytes(bytes: Stream[F, Byte]): F[Module[F]] =
-    compile(readBytes(bytes))
+    compile(sections(bytes))
 
   /** Reads the given stream of binary module sections, validates, and compiles it.
     * The returned compiled [[Module]] can then be instantiated to be run.
@@ -125,7 +125,7 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration,
     */
   def instantiate(path: Path, imports: Imports[F], blocker: Blocker, chunkSize: Int = 1024)(
       implicit cs: ContextShift[F]): F[Instance[F]] =
-    instantiate(readPath(path, blocker, chunkSize), imports)
+    instantiate(sections(path, blocker, chunkSize), imports)
 
   /** Reads the given binary encoded module, validates, compiles, and instantiates it.
     * The returned [[Instance]] can then be used to access exported elements.
