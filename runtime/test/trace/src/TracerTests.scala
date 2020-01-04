@@ -27,10 +27,10 @@ object TracerTests extends TestSuite {
   def runLog(handler: HandlerType) = {
     val conf: TraceConfiguration = new TraceConfiguration(
         handler,
-        "",
+        "*",
         "ALL",
         new TracerFileHandlerCondiguration(
-          "test-log.txt",
+          "log.txt",
           true,
           "."
         ),
