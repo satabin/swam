@@ -11,13 +11,19 @@ package object dot {
 
   implicit object CfgDotShow extends Show[CFG] {
     private def transitions(bbs: List[BasicBlock]): List[String] = {
-      def loop(toVisit: List[(BasicBlock, Int)], acc: List[String]): List[String] = toVisit match {
-        case (BasicBlock(name, insts, jump), id) :: rest =>
+      def loop(toVisit: List[BasicBlock], acc: List[String]): List[String] = toVisit match {
+        case BasicBlock(id, name, insts, jump) :: rest =>
           val node =
             if (insts.isEmpty)
-              s"""bb$id[label="$name"]"""
+              s"""bb$id[label="$name: $id"]"""
             else
-              s"""bb$id[label="{$name|${insts.map(_.pretty.render(80)).mkString("\\n")}}"]"""
+              s"""bb$id[label="{$name: $id|${insts
+                .map(
+                  _.pretty
+                    .render(80)
+                    .replaceAllLiterally("{", "\\{")
+                    .replaceAllLiterally("}", "\\}"))
+                .mkString("\\n")}}"]"""
           val edges = jump match {
             case Some(Jump.To(lbl)) => List(s"bb$id->bb$lbl")
             case Some(Jump.If(tlbl, elbl)) =>
@@ -30,7 +36,7 @@ package object dot {
           loop(rest, edges reverse_::: node :: acc)
         case Nil => acc.reverse
       }
-      loop(bbs.zipWithIndex, Nil)
+      loop(bbs, Nil)
     }
     def show(cfg: CFG): String = {
       s"""digraph {

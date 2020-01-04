@@ -23,7 +23,7 @@ import scala.collection.mutable.{ArrayBuilder, ListBuffer}
 
 class CFGBuilder private {
 
-  class BasicBlockBuilder private[CFGBuilder] (name: String) {
+  class BasicBlockBuilder private[CFGBuilder] (val name: String) {
 
     private val lbl: Int = states.length
 
@@ -56,7 +56,7 @@ class CFGBuilder private {
     }
 
     def conditionallyJumpBackOrElseNew(thenTgt: BasicBlockBuilder): BasicBlockBuilder = {
-      val elseTgt = new BasicBlockBuilder("else")
+      val elseTgt = new BasicBlockBuilder("br_else")
       conditionallyJumpTo(thenTgt, elseTgt)
       elseTgt
     }
@@ -68,7 +68,7 @@ class CFGBuilder private {
       jumpTo(end)
 
     private[CFGBuilder] def result(): BasicBlock =
-      BasicBlock(name, stmts.result(), jump)
+      BasicBlock(lbl, name, stmts.result(), jump)
   }
 
   private val states = ArrayBuilder.make[BasicBlockBuilder]
