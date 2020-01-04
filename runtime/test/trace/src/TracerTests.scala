@@ -27,6 +27,7 @@ object TracerTests extends TestSuite {
   def runLog(handler: HandlerType) = {
     val conf: TraceConfiguration = new TraceConfiguration(
         handler,
+        "\ns",
         "*",
         "ALL",
         new TracerFileHandlerCondiguration(
