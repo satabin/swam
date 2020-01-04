@@ -15,7 +15,8 @@
  */
 
 package swam
-package text
+package slumps
+package tests
 
 import slumps._
 import binary._

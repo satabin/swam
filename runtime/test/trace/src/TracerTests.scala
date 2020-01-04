@@ -15,10 +15,9 @@
  */
 
 package swam
-package text
+package runtime
+package trace
 
-import runtime._
-import config._
 
 import utest._
 
@@ -39,16 +38,16 @@ object TracerTests extends TestSuite {
         new CustomTracerConfiguration("unknown")
       )
       
-      val tracer = new Tracer(conf)
+      val tracer = new JULTracer(conf)
 
-      tracer.traceEvent("testEvent", 123, 4, 123)
+      tracer.traceEvent(EventType.SPush, List("123", "4", "123"))
   }
 
   
   val tests = Tests{
     "console_tracer" - runLog(HandlerType.Console)
     "file_tracer" - runLog(HandlerType.File)
-    "socket_tracer" - runLog(HandlerType.Socket)
+    // "socket_tracer" - runLog(HandlerType.Socket)
   }
   
 }

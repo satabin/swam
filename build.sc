@@ -35,6 +35,7 @@ val swamLicense = License.`Apache-2.0`
 val swamUrl = "https://github.com/satabin/swam"
 
 val swamDeveloper = Developer("satabin", "Lucas Satabin", "https://github.com/satabin")
+
 var slumpsDeveloper1 = Developer("Jacarte", "Javier Cabrera Arteaga", "https://github.com/Jacarte")
 var slumpsDeveloper2 = Developer("jianguda", "Jian Gu", "https://github.com/jianguda")
 
@@ -88,6 +89,12 @@ object core extends SwamModule with PublishModule {
     def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.1")
     def testFrameworks = Seq("swam.util.Framework")
     def moduleDeps = Seq(core, util.test)
+
+
+    object trace extends Tests with ScalafmtModule {
+      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
+      def testFrameworks = Seq("swam.util.Framework")
+    }
   }
 
 }
@@ -180,6 +187,10 @@ object runtime extends SwamModule with PublishModule {
 
     def testFrameworks = Seq("swam.util.Framework")
 
+    object trace extends Tests with ScalafmtModule {
+      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
+      def testFrameworks = Seq("swam.util.Framework")
+    }
   }
 
 }
