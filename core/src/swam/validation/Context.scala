@@ -20,8 +20,6 @@ package validation
 import cats._
 import cats.implicits._
 
-import scala.language.higherKinds
-
 /** A validation context, used when performing module and instruction validation.
   */
 case class Context[F[_]](types: Vector[FuncType],

@@ -26,8 +26,6 @@ import scodec.bits._
 
 import cats.effect._
 
-import scala.language.higherKinds
-
 /** The runtime representation of a validated and compiled module.
   *
   * @param exports Returns the ordered list of elements exported by this module.
@@ -42,13 +40,13 @@ class Module[F[_]] private[runtime] (val exports: Vector[Export],
                                      val customs: Vector[Custom],
                                      private[runtime] val types: Vector[FuncType],
                                      private[runtime] val engine: Engine[F],
-                                     private[runtime] val globals: Vector[CompiledGlobal],
+                                     private[runtime] val globals: Vector[CompiledGlobal[F]],
                                      private[runtime] val tables: Vector[TableType],
                                      private[runtime] val memories: Vector[MemType],
                                      private[runtime] val start: Option[Int],
-                                     private[runtime] val functions: Vector[CompiledFunction],
-                                     private[runtime] val elems: Vector[CompiledElem],
-                                     private[runtime] val data: Vector[CompiledData])(implicit F: Effect[F]) {
+                                     private[runtime] val functions: Vector[CompiledFunction[F]],
+                                     private[runtime] val elems: Vector[CompiledElem[F]],
+                                     private[runtime] val data: Vector[CompiledData[F]])(implicit F: Effect[F]) {
   self =>
 
   private lazy val names = {

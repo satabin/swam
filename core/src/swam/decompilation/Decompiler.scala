@@ -26,8 +26,6 @@ import fs2._
 
 import java.nio.file.Path
 
-import scala.language.higherKinds
-
 /** Generic class to implement a decompiler. It takes a module in binary format
   * and outputs a formatted [[swam.util.pretty.Doc Doc]] out of it.
   */
@@ -39,7 +37,7 @@ abstract class Decompiler[F[_]](implicit F: Effect[F]) extends ModuleLoader[F] {
     * The module is not validated so invalid modules can also be decompiled.
     */
   def decompilePath(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): F[Doc] =
-    decompile(readPath(path, blocker, chunkSize))
+    decompile(sections(path, blocker, chunkSize))
 
   /** Returns a pretty-printed [[swam.util.pretty.Doc Doc]] resulting from decompiling
     * the module at the given bytes.
@@ -47,7 +45,7 @@ abstract class Decompiler[F[_]](implicit F: Effect[F]) extends ModuleLoader[F] {
     * The module is not validated so invalid modules can also be decompiled.
     */
   def decompileBytes(bytes: Stream[F, Byte]): F[Doc] =
-    decompile(readBytes(bytes))
+    decompile(sections(bytes))
 
   /** Returns a pretty-printed [[swam.util.pretty.Doc Doc]] resulting from decompiling
     * the module at the given section stream.

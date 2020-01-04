@@ -34,8 +34,6 @@ import scodec._
 
 import scala.annotation.tailrec
 
-import scala.language.higherKinds
-
 /** A decompiler from binary format, that formats into the text representation.
   *
   * This decompiler requires a valid module (validation is performed by the decompiler)

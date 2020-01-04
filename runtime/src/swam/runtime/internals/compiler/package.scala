@@ -15,8 +15,12 @@
  */
 
 package swam
-package text
+package runtime
+package internals
 
-object LowLevelSpecTests extends SpecTests {
-  val useLowLevel: Boolean = true
+package object compiler {
+
+  /** A target label for a break */
+  type Target = Int
+
 }

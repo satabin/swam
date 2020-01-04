@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Lucas Satabin
+ * Copyright 2019 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,11 @@
 
 package swam
 package runtime
-package internals
+package trace
 
-package object interpreter {
+/** Tracers must implement this interface. */
+trait Tracer {
 
-  type Label = Long
-
-  implicit class LabelOps(val l: Label) extends AnyVal {
-    def arity: Int = ((l >> 32) & 0xffffffff).toInt
-    def cont: Int = (l & 0xffffffff).toInt
-    def show: String = s"arity: $arity, cont: $cont"
-  }
-
-  object Label {
-    def apply(arity: Int, cont: Int): Label =
-      (arity.toLong << 32) | (cont.toLong & 0xffffffffl)
-  }
+  def traceEvent(tpe: EventType, args: List[String]): Unit
 
 }

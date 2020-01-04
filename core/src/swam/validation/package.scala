@@ -18,8 +18,6 @@ package swam
 
 import cats._
 
-import scala.language.higherKinds
-
 package object validation {
 
   def EmptyContext[F[_]](implicit F: MonadError[F, Throwable]): Context[F] =

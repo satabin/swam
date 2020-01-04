@@ -19,6 +19,6 @@ package runtime
 package internals
 package compiler
 
-import java.nio.ByteBuffer
+import swam.runtime.internals.interpreter.AsmInst
 
-private[runtime] case class CompiledFunction(tpe: FuncType, locals: Vector[ValType], code: ByteBuffer)
+private[runtime] case class CompiledFunction[F[_]](tpe: FuncType, locals: Vector[ValType], code: Array[AsmInst[F]])

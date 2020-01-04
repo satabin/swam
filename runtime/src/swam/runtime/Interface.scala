@@ -21,8 +21,6 @@ import java.nio.ByteBuffer
 
 import cats._
 
-import scala.language.higherKinds
-
 /** All elements that are part of the interface of an instance must implement
   * this interface.
   *

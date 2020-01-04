@@ -21,8 +21,6 @@ import cats.implicits._
 
 import scala.collection.immutable.VectorBuilder
 
-import scala.language.higherKinds
-
 package object traversal {
 
   implicit class VectorOps[A](val v: Vector[A]) extends AnyVal {

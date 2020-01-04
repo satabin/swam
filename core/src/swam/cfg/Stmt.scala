@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Lucas Satabin
+ * Copyright 2019 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,17 @@
  */
 
 package swam
-package runtime
-package internals
-package compiler
+package cfg
 
-package object low {
+/** A jump represents the last elemet of a basic block. */
+sealed trait Jump
 
-  /** A target label for a break */
-  type Target = Int
+object Jump {
+
+  case class To(lbl: Int) extends Jump
+
+  case class If(trueLbl: Int, falseLbl: Int) extends Jump
+
+  case class Table(cases: Vector[Int], default: Int) extends Jump
 
 }

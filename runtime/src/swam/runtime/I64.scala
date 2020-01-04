@@ -25,7 +25,7 @@ object I64 {
     i.toLong
 
   def extendUi32(i: Int): Long =
-    i & 0x00000000ffffffffl
+    i & 0X00000000FFFFFFFFL
 
   def truncSf32(f: Float): CanFail[Long] =
     if (f.isNaN)
