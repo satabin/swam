@@ -27,19 +27,18 @@ import fs2._
 
 import java.nio.file.Path
 
-import scala.language.higherKinds
-
 /** Base class for anything that requires reading a module from stream or file.
   */
 class ModuleLoader[F[_]](implicit F: Effect[F]) {
 
-  def readPath(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): Stream[F, Section] =
-    readBytes(io.file.readAll(path, blocker, chunkSize = chunkSize))
+  /** Reads a binary module from the given path. */
+  def sections(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): Stream[F, Section] =
+    sections(io.file.readAll(path, blocker, chunkSize = chunkSize))
 
   private val header = hex"0061736d01000000"
 
   /** Reads a binary module from the given bytes. */
-  def readBytes(bytes: Stream[F, Byte]): Stream[F, Section] = {
+  def sections(bytes: Stream[F, Byte]): Stream[F, Section] = {
     def go(s: Stream[F, Byte]): Pull[F, Section, Unit] =
       ModuleStream.decoder(s.chunks.map(_.toBitVector)).flatMap {
         case Some(_) => Pull.raiseError(new BinaryException("unexpected end of input"))

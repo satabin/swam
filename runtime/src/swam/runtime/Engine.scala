@@ -18,14 +18,13 @@ package swam
 package runtime
 
 import config._
-import syntax._
+import syntax.Section
 import imports._
 import validation._
-import internals.compiler.{low => cl}
-import internals.compiler.{high => ch}
+import trace._
+import internals.compiler._
 import internals.instance._
-import internals.interpreter.{low => il}
-import internals.interpreter.{high => ih}
+import internals.interpreter._
 
 import cats.implicits._
 import cats.effect._
@@ -34,10 +33,7 @@ import fs2._
 
 import pureconfig._
 import pureconfig.generic.auto._
-import pureconfig.module.squants._
 import pureconfig.module.catseffect._
-
-import scala.language.higherKinds
 
 import java.nio.file.Path
 
@@ -47,38 +43,36 @@ import java.nio.file.Path
   * You typically want to reuse the same instance for all your executions
   * over the same effectful type `F`.
   */
-class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runtime] val validator: Validator[F])
+class Engine[F[_]: Effect] private (val conf: EngineConfiguration,
+                                    private[runtime] val validator: Validator[F],
+                                    private[runtime] val tracer: Option[Tracer])
     extends ModuleLoader[F] {
 
-  implicit val tracer = new Tracer(conf.tracer)
+  private[runtime] val asm =
+    new Asm[F]
 
   private[runtime] val compiler =
-    if (conf.useLowLevelAsm)
-      new cl.Compiler[F](this)
-    else
-      new ch.Compiler[F](this)
+    new Compiler[F](this, asm)
 
   private[runtime] val interpreter =
-    if (conf.useLowLevelAsm)
-      new il.Interpreter[F](this, tracer)
-    else
-      new ih.Interpreter[F](this, tracer)
+    new Interpreter[F](this)
 
-  private[runtime] val instantiator = new Instantiator[F](this, tracer)
+  private[runtime] val instantiator =
+    new Instantiator[F](this)
 
   /** Reads the `.wasm` file at the given path and validates it.
     *
     * If validation fails, returns an error with the validation message wrapped in it.
     */
   def validate(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): F[Unit] =
-    validate(readPath(path, blocker, chunkSize))
+    validate(sections(path, blocker, chunkSize))
 
   /** Reads the given binary encoded module and validates it.
     *
     * If validation fails, returns an error with the validation message wrapped in it.
     */
   def validateBytes(bytes: Stream[F, Byte]): F[Unit] =
-    validate(readBytes(bytes))
+    validate(sections(bytes))
 
   /** Reads the given stream of binary module sections and validates it.
     *
@@ -97,7 +91,7 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     * message wrapped in it.
     */
   def compile(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): F[Module[F]] =
-    compile(readPath(path, blocker, chunkSize))
+    compile(sections(path, blocker, chunkSize))
 
   /** Reads the given binary encoded module, validates, and compiles it.
     * The returned compiled [[Module]] can then be instantiated to be run.
@@ -106,7 +100,7 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     * message wrapped in it.
     */
   def compileBytes(bytes: Stream[F, Byte]): F[Module[F]] =
-    compile(readBytes(bytes))
+    compile(sections(bytes))
 
   /** Reads the given stream of binary module sections, validates, and compiles it.
     * The returned compiled [[Module]] can then be instantiated to be run.
@@ -130,7 +124,7 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration, private[runti
     */
   def instantiate(path: Path, imports: Imports[F], blocker: Blocker, chunkSize: Int = 1024)(
       implicit cs: ContextShift[F]): F[Instance[F]] =
-    instantiate(readPath(path, blocker, chunkSize), imports)
+    instantiate(sections(path, blocker, chunkSize), imports)
 
   /** Reads the given binary encoded module, validates, compiles, and instantiates it.
     * The returned [[Instance]] can then be used to access exported elements.
@@ -166,10 +160,9 @@ object Engine {
     for {
       validator <- Validator[F]
       conf <- ConfigSource.default.at("swam.runtime").loadF[F, EngineConfiguration]
-    } yield new Engine[F](conf, validator)
+    } yield new Engine[F](conf, validator, None)
 
-  def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F]): Engine[F] = {
-    new Engine[F](conf, validator)
-  }
+  def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F], tracer: Option[Tracer]): Engine[F] =
+    new Engine[F](conf, validator, tracer)
 
 }

@@ -31,8 +31,6 @@ import scodec.bits._
 
 import scala.annotation.tailrec
 
-import scala.language.higherKinds
-
 import scala.collection.immutable.VectorBuilder
 
 /** Implements text module resolution as per the specification.

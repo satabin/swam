@@ -23,8 +23,6 @@ import formats._
 import cats._
 import cats.implicits._
 
-import scala.language.higherKinds
-
 abstract class EFunction2[P1, P2, Ret, F[_]] private (f: Function[F], m: Option[Memory[F]])(
     implicit F: MonadError[F, Throwable],
     writer1: ValueWriter[F, P1],

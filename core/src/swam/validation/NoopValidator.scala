@@ -21,8 +21,6 @@ import syntax._
 
 import fs2._
 
-import scala.language.higherKinds
-
 private class NoopValidator[F[_]] extends Validator[F] {
   def validate(stream: Stream[F, Section]): Stream[F, Section] = stream
 }

@@ -37,9 +37,9 @@ Artefacts are published on maven, use your favorite build tool to bring it into 
 [api]: /api/
 [cats-friendly-logo]: https://typelevel.org/cats/img/cats-badge-tiny.png
 [cats]: https://typelevel.org/cats
-[core-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-core_2.12.svg
-[core-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-core_2.12
-[runtime-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-runtime_2.12.svg
-[runtime-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-runtime_2.12
-[text-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-text_2.12.svg
-[text-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-text_2.12
+[core-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-core_2.13.svg
+[core-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-core_2.13
+[runtime-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-runtime_2.13.svg
+[runtime-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-runtime_2.13
+[text-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-text_2.13.svg
+[text-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-text_2.13

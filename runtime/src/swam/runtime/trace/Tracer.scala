@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Lucas Satabin
+ * Copyright 2019 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@
 
 package swam
 package runtime
-package internals
-package compiler
+package trace
 
-package object low {
+/** Tracers must implement this interface. */
+trait Tracer {
 
-  /** A target label for a break */
-  type Target = Int
+  def traceEvent(tpe: EventType, args: List[String]): Unit
 
 }

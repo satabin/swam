@@ -19,35 +19,35 @@ package runtime
 package internals
 package compiler
 
-case class Context(types: Vector[FuncType] = Vector.empty,
-                   funcs: Vector[Int] = Vector.empty,
-                   code: Vector[Func] = Vector.empty,
-                   tables: Vector[Tab] = Vector.empty,
-                   mems: Vector[Mem] = Vector.empty,
-                   globals: Vector[Glob] = Vector.empty,
-                   elems: Vector[CompiledElem] = Vector.empty,
-                   data: Vector[CompiledData] = Vector.empty,
-                   start: Option[Int] = None,
-                   exports: Vector[runtime.Export] = Vector.empty,
-                   imports: Vector[runtime.Import] = Vector.empty,
-                   customs: Vector[runtime.Custom] = Vector.empty) {
+case class Context[F[_]](types: Vector[FuncType] = Vector.empty,
+                         funcs: Vector[Int] = Vector.empty,
+                         code: Vector[Func[F]] = Vector.empty,
+                         tables: Vector[Tab] = Vector.empty,
+                         mems: Vector[Mem] = Vector.empty,
+                         globals: Vector[Glob[F]] = Vector.empty,
+                         elems: Vector[CompiledElem[F]] = Vector.empty,
+                         data: Vector[CompiledData[F]] = Vector.empty,
+                         start: Option[Int] = None,
+                         exports: Vector[runtime.Export] = Vector.empty,
+                         imports: Vector[runtime.Import] = Vector.empty,
+                         customs: Vector[runtime.Custom] = Vector.empty) {
   lazy val functions: Vector[FuncType] = funcs.map(types(_))
 }
 
-sealed trait Func
+sealed trait Func[+F[_]]
 object Func {
-  case class Compiled(f: CompiledFunction) extends Func
-  case class Imported(tpe: FuncType) extends Func
+  case class Compiled[F[_]](f: CompiledFunction[F]) extends Func[F]
+  case class Imported(tpe: FuncType) extends Func[Nothing]
 }
 
-sealed trait Glob {
+sealed trait Glob[+F[_]] {
   val tpe: GlobalType
 }
 object Glob {
-  case class Compiled(f: CompiledGlobal) extends Glob {
+  case class Compiled[F[_]](f: CompiledGlobal[F]) extends Glob[F] {
     val tpe = f.tpe
   }
-  case class Imported(tpe: GlobalType) extends Glob
+  case class Imported(tpe: GlobalType) extends Glob[Nothing]
 }
 
 sealed trait Tab {

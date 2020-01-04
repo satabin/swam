@@ -20,8 +20,6 @@ package formats
 
 import cats._
 
-import scala.language.higherKinds
-
 /** A writer is used to transform a scala value into a
   *  web assembly value.
   */

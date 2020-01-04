@@ -25,8 +25,6 @@ import validation._
 import cats.effect._
 import cats.implicits._
 
-import scala.language.higherKinds
-
 import java.nio.file.Path
 
 import fs2._

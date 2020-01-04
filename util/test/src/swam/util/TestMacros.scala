@@ -34,7 +34,7 @@ object TestMacros {
 
     name match {
       case Literal(Constant(name: String)) =>
-        val files = ("runtime" / "test" / "resources" / "spec-test").glob("*.wast").toVector
+        val files = ("runtime" / "test" / "resources" / "spec-test").glob("*.wast").toList
         val calls = for {
           file <- files
           //if !(file.name.contains("float") ||file.name.contains("f32") || file.name.contains("f64"))

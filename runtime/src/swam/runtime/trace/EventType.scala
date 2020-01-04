@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Lucas Satabin
+ * Copyright 2019 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,20 @@
 
 package swam
 package runtime
-package internals
-package interpreter
+package trace
 
-package object low {
+import enumeratum._
 
-  type Asm = Int
+sealed trait EventType extends EnumEntry with EnumEntry.Lowercase
 
+object EventType extends Enum[EventType] {
+  case object MSize extends EventType
+  case object MRead extends EventType
+  case object MWrite extends EventType
+  case object MGrow extends EventType
+  case object SPush extends EventType
+  case object SPop extends EventType
+  case object SPeek extends EventType
+
+  def values = findValues
 }

@@ -18,7 +18,6 @@ package swam
 package runtime
 package internals
 package interpreter
-package low
 
 import instance._
 import config._
@@ -26,10 +25,6 @@ import config._
 import scala.annotation.tailrec
 
 import java.lang.{Float => JFloat, Double => JDouble}
-
-import java.nio.ByteBuffer
-
-import scala.language.higherKinds
 
 /** Low-level structures that represents the stack and registers of
   * a thread in the interpreter.
@@ -78,22 +73,26 @@ import scala.language.higherKinds
   * }}}
   *
   */
-private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: Instance[F], tracer: Tracer)
-    extends StackFrame {
+private[runtime] class ThreadFrame[F[_]](conf: StackConfiguration, baseInstance: Instance[F]) extends Frame[F] {
 
-  private val stack = Array.ofDim[Long](conf.size.toBytes.toInt / 8)
+  private val stack = Array.ofDim[Long](conf.size.bytes.toInt / 8)
 
   private var fp = 0
 
   private var tp = 0
 
-  var pc = 0
+  private var pc = 0
 
-  private var code: ByteBuffer = _
+  private var code: Array[AsmInst[F]] = _
 
   private var instances: List[FunctionInstance[F]] = Nil
 
   def instance: FunctionInstance[F] = instances.head
+
+  def clearStack(): Unit = {
+    fp = 0
+    tp = 0
+  }
 
   def arity: Int =
     (stack(fp + 1) & 0xffffffff).toInt
@@ -141,20 +140,16 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
     tracer.traceEvent("spush", "i32", if (b) 1 else 0)
   }
 
-  def pushInt(i: Int): Unit = {
-    pushValue(i & 0x00000000ffffffffl)
-    tracer.traceEvent("spush", "i32", i & 0x00000000ffffffffl)
-  }
+  def pushInt(i: Int): Unit =
+    pushValue(i & 0X00000000FFFFFFFFL)
 
   def pushLong(l: Long): Unit = {
     pushValue(l)
     tracer.traceEvent("spush", "i64", l)
   }
 
-  def pushFloat(f: Float): Unit = {
-    pushValue(JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl)
-    tracer.traceEvent("spush", "f32", JFloat.floatToRawIntBits(f) & 0x00000000ffffffffl)
-  }
+  def pushFloat(f: Float): Unit =
+    pushValue(JFloat.floatToRawIntBits(f) & 0X00000000FFFFFFFFL)
 
   def pushDouble(d: Double): Unit = {
     pushValue(JDouble.doubleToRawLongBits(d))
@@ -167,14 +162,11 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
     r != 0
   }
 
-  def popInt(): Int = {
-    val r = (popValue() & 0x00000000ffffffffl).toInt
-    tracer.traceEvent("spop", "i32", r)
-    r
-  }
+  def popInt(): Int =
+    (popValue() & 0X00000000FFFFFFFFL).toInt
 
   def peekInt(): Int =
-    (peekValue() & 0x00000000ffffffffl).toInt
+    (peekValue() & 0X00000000FFFFFFFFL).toInt
 
   def popLong(): Long = {
     val r = popValue()
@@ -237,44 +229,14 @@ private class ThreadFrame[F[_]](conf: LowLevelStackConfiguration, baseInstance: 
   def pushValues(values: Seq[Long]): Unit =
     values.foreach(pushValue(_))
 
-  def readByte(): Byte = {
-    val b = code.get(pc)
+  def fetch(): AsmInst[F] = {
+    val inst = code(pc)
     pc += 1
-    b
+    inst
   }
 
-  def skipByte(): Unit =
-    pc += 1
-
-  def readInt(): Int = {
-    val i = code.getInt(pc)
-    pc += 4
-    i
-  }
-
-  def skipInt(): Unit =
-    pc += 4
-
-  def readLong(): Long = {
-    val l = code.getLong(pc)
-    pc += 8
-    l
-  }
-
-  def skipLong(): Unit =
-    pc += 8
-
-  def readFloat(): Float = {
-    val f = code.getFloat(pc)
-    pc += 4
-    f
-  }
-
-  def readDouble(): Double = {
-    val d = code.getDouble(pc)
-    pc += 8
-    d
-  }
+  def jumpTo(idx: Int): Unit =
+    pc = idx
 
   def local(idx: Int): Long =
     stack(fp - idx)

@@ -26,12 +26,9 @@ import cats.implicits._
 
 import pureconfig._
 import pureconfig.generic.auto._
-import pureconfig.module.squants._
 import pureconfig.module.catseffect._
 
 import fs2._
-
-import scala.language.higherKinds
 
 /** A validator makes it possible to validate sections in a stream. */
 abstract class Validator[F[_]] {
@@ -47,7 +44,7 @@ abstract class Validator[F[_]] {
 object Validator {
   def apply[F[_]: MonadError[?[_], Throwable]](conf: ValidationConfiguration): Validator[F] =
     if (conf.validate)
-      new SpecValidator[F](conf.hardMax.toBytes.toInt)
+      new SpecValidator[F](conf.hardMax.bytes.toInt)
     else
       new NoopValidator[F]
 

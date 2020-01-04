@@ -196,11 +196,8 @@ object OpCode {
   final val F64ReinterpretI64 = 0xbf
 
   def withValueOpt(i: Int): Option[OpCode] =
-    unapply(i.toByte)
-
-  def unapply(b: Byte): Option[OpCode] =
-    if (all.contains(b))
-      Some(b)
+    if (all.contains(i))
+      Some(i)
     else
       None
 
