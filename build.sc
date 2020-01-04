@@ -17,7 +17,7 @@ import headers.Headers
 import $file.mdoc
 import mdoc.MdocModule
 
-val millVersion = System.getProperty("MILL_VERSION")
+// val millVersion = System.getProperty("MILL_VERSION")
 
 
 // interp.load.ivy("com.lihaoyi" %% "mill-contrib-bloop" % millVersion)

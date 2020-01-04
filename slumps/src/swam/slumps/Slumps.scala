@@ -32,9 +32,9 @@ class Slumps[F[_]: Effect] private (val conf: SlumpsConfiguration, val validator
     def processPath(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]):Int
     = processModule(
         binaryParser.parse(
-            super.readPath(path, blocker, chunkSize)
+            super.sections(path, blocker, chunkSize)
         ))
-
+        
     def processModule(module: F[Module]):Int = 0
 
 }
