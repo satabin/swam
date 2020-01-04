@@ -60,7 +60,7 @@ class ModuleParser[F[_]](validator: Validator[F])(implicit F: Sync[F]) {
           case Section.Elements(elem) =>
             mod.copy(elem = elem)
           case Section.Code(code) =>
-            val funcs = code.zip(mod.funcs.indices).map {
+            val funcs = code.zipWithIndex.map {
               case (FuncBody(locals, code), typeIdx) =>
                 val locs = locals.flatMap {
                   case LocalEntry(count, tpe) =>
