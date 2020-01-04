@@ -47,5 +47,4 @@ object TracerTests extends TestSuite {
     "file_tracer" - runLog(HandlerType.File)
     // "socket_tracer" - runLog(HandlerType.Socket)
   }
-
 }
