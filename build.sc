@@ -17,14 +17,18 @@ import headers.Headers
 import $file.mdoc
 import mdoc.MdocModule
 
-val millVersion = System.getProperty("MILL_VERSION")
-interp.load.ivy("com.lihaoyi" %% "mill-contrib-bloop" % millVersion)
-interp.load.ivy("com.lihaoyi" %% "mill-contrib-buildinfo" % millVersion)
+// val millVersion = System.getProperty("MILL_VERSION")
 
 
-import mill.contrib.scoverage.ScoverageModule
+// interp.load.ivy("com.lihaoyi" %% "mill-contrib-bloop" % millVersion)
+// interp.load.ivy("com.lihaoyi" %% "mill-contrib-buildinfo" % millVersion)
 
-val swamVersion = "0.3.0"
+// import $ivy.`com.lihaoyi::mill-contrib-bloop:0.5.2`
+
+
+import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
+
+val swamVersion = "0.4.0"
 
 val swamLicense = License.`Apache-2.0`
 
@@ -32,27 +36,23 @@ val swamUrl = "https://github.com/satabin/swam"
 
 val swamDeveloper = Developer("satabin", "Lucas Satabin", "https://github.com/satabin")
 
+var slumpsDeveloper1 = Developer("Jacarte", "Javier Cabrera Arteaga", "https://github.com/Jacarte")
+var slumpsDeveloper2 = Developer("jianguda", "Jian Gu", "https://github.com/jianguda")
+
 val fs2Version = "2.0.1"
 
 val pureconfigVersion = "0.12.1"
 
 trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
-  def scalaVersion = "2.12.8"
+  def scalaVersion = "2.13.1"
 
   def scalacOptions =
-    Seq("-feature", "-deprecation", "-unchecked", "-Ypartial-unification", "-Ypatmat-exhaust-depth", "off", "-Ywarn-unused:locals,imports")
+    Seq("-feature", "-deprecation", "-unchecked", "-Ypatmat-exhaust-depth", "off", "-Ywarn-unused:locals,imports", "-Ymacro-annotations")
 
   def scalacPluginIvyDeps =
-    Agg(ivy"org.scalamacros:::paradise:2.1.1",
-        ivy"org.typelevel::kind-projector:0.10.3",
+    Agg(ivy"org.typelevel:::kind-projector:0.11.0",
         ivy"com.olegpy::better-monadic-for:0.3.1")
-
-}
-
-trait ScoverageSwamModule extends SwamModule with ScoverageModule {
-
-  def scoverageVersion = "1.4.0"
 
 }
 
@@ -65,9 +65,10 @@ object core extends SwamModule with PublishModule {
       ivy"co.fs2::fs2-io:$fs2Version",
       ivy"org.scodec::scodec-stream:2.0.0",
       ivy"com.github.pureconfig::pureconfig-generic:$pureconfigVersion",
-      ivy"com.github.pureconfig::pureconfig-squants:$pureconfigVersion",
       ivy"com.github.pureconfig::pureconfig-cats-effect:$pureconfigVersion",
-      ivy"org.scodec::scodec-core:1.11.4"
+      ivy"org.scodec::scodec-core:1.11.4",
+      ivy"io.estatico::newtype:0.4.3",
+      ivy"org.scala-lang.modules::scala-collection-compat:2.1.2"
     )
 
   def publishVersion = swamVersion
@@ -88,6 +89,12 @@ object core extends SwamModule with PublishModule {
     def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.1")
     def testFrameworks = Seq("swam.util.Framework")
     def moduleDeps = Seq(core, util.test)
+
+
+    object trace extends Tests with ScalafmtModule {
+      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
+      def testFrameworks = Seq("swam.util.Framework")
+    }
   }
 
 }
@@ -113,7 +120,46 @@ object text extends SwamModule with PublishModule {
 
 }
 
-object runtime extends ScoverageSwamModule with PublishModule {
+
+object slumps extends SwamModule with PublishModule {
+
+  def moduleDeps = Seq(core)
+
+  def publishVersion = swamVersion
+
+  def artifactName = "swam-slumps"
+
+  def ivyDeps = Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion")
+
+  def pomSettings =
+    PomSettings(
+      description = "Slumps project integrated as a SWAM package",
+      organization = "assert-team.eu",
+      url = swamUrl,
+      licenses = Seq(swamLicense),
+      versionControl = VersionControl.github("Jacarte", "swam"),
+      developers = Seq(slumpsDeveloper1, slumpsDeveloper2)
+    )
+
+
+  object test extends SwamModule with ScalafmtModule {
+    def ivyDeps =
+      Agg(ivy"com.lihaoyi::utest:0.6.9", 
+          ivy"com.github.pathikrit::better-files:3.8.0", 
+          ivy"com.lihaoyi::pprint:0.5.5")
+
+    def moduleDeps = Seq(slumps, runtime, text, util.test, core)
+
+    object to_souper extends Tests with ScalafmtModule {
+      def moduleDeps = super.moduleDeps ++ Seq(slumps.test)
+      def testFrameworks = Seq("swam.util.Framework")
+    }
+
+  }
+
+}
+
+object runtime extends SwamModule with PublishModule {
 
   def moduleDeps = Seq(core)
 
@@ -133,28 +179,18 @@ object runtime extends ScoverageSwamModule with PublishModule {
       developers = Seq(swamDeveloper)
     )
 
-
-  object test extends SwamModule with ScalafmtModule {
+  object test extends Tests with ScalafmtModule {
     def ivyDeps =
-      Agg(ivy"com.lihaoyi::utest:0.6.9", 
-          ivy"com.github.pathikrit::better-files:3.8.0", 
-          ivy"com.lihaoyi::pprint:0.5.5")
+      Agg(ivy"com.lihaoyi::utest:0.7.1", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
+
     def moduleDeps = Seq(runtime, text, util.test)
 
-    object tracer extends ScoverageTests with ScalafmtModule {
-      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
-      def testFrameworks = Seq("swam.util.Framework")
-    }
-    object low extends ScoverageTests with ScalafmtModule {
-      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
-      def testFrameworks = Seq("swam.util.Framework")
-    }
+    def testFrameworks = Seq("swam.util.Framework")
 
-    object high extends ScoverageTests with ScalafmtModule {
+    object trace extends Tests with ScalafmtModule {
       def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
       def testFrameworks = Seq("swam.util.Framework")
     }
-
   }
 
 }
@@ -163,7 +199,7 @@ object examples extends SwamModule with MdocModule {
 
   def moduleDeps = Seq(runtime, text)
 
-  def mdocVersion = "1.2.10"
+  def mdocVersion = "1.3.6"
 
   def mdocSite = Map("VERSION" -> swamVersion)
 

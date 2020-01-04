@@ -23,8 +23,6 @@ import traversal._
 import cats._
 import cats.implicits._
 
-import scala.language.higherKinds
-
 import fs2._
 
 private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]) extends Validator[F] {
@@ -681,6 +679,7 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
       case ((idx, tpes, imports, codes, ctx), sec @ Section.Exports(exports)) =>
         val duplicate = exports
           .groupBy(_.fieldName)
+          .view
           .mapValues(_.size)
           .find(_._2 > 1)
         duplicate match {

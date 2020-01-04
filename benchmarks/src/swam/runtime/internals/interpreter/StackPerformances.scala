@@ -18,28 +18,25 @@ package swam
 package runtime
 package internals
 package interpreter
-package high
 
 import org.openjdk.jmh.infra._
 import org.openjdk.jmh.annotations._
-
-import cats.implicits._
 
 import scala.util.Random
 
 @State(Scope.Thread)
 class StackPerformances_01_Push {
 
-  var frame: Frame[Either[Throwable, ?]] = null
+  private var frame: ThreadFrame[Either[Throwable, ?]] = null
   var intValue: Int = 0
-  var longValue: Long = 0l
+  var longValue: Long = 0L
   var floatValue: Float = 0.0f
   var doubleValue: Double = 0.0d
-  var labelValue: Label = 0l
+  var labelValue: Label = 0L
 
   @Setup(Level.Iteration)
   def setupFrame(): Unit = {
-    frame = Frame.makeToplevel[Either[Throwable, ?]](null, HighConfig)
+    frame = new ThreadFrame[Either[Throwable, ?]](LowConfig, null)
   }
 
   @Setup(Level.Invocation)
@@ -53,16 +50,15 @@ class StackPerformances_01_Push {
 
   @TearDown(Level.Invocation)
   def tearDown(): Unit = {
-    frame.stack.clear()
+    frame.clearStack()
   }
 
   @Benchmark @BenchmarkMode(Array(Mode.Throughput, Mode.AverageTime))
   def push(bh: Blackhole): Unit = {
-    bh.consume(frame.stack.pushLabel(labelValue))
-    bh.consume(frame.stack.pushInt(intValue))
-    bh.consume(frame.stack.pushLong(longValue))
-    bh.consume(frame.stack.pushFloat(floatValue))
-    bh.consume(frame.stack.pushDouble(doubleValue))
+    bh.consume(frame.pushInt(intValue))
+    bh.consume(frame.pushLong(longValue))
+    bh.consume(frame.pushFloat(floatValue))
+    bh.consume(frame.pushDouble(doubleValue))
   }
 
 }
@@ -70,34 +66,31 @@ class StackPerformances_01_Push {
 @State(Scope.Thread)
 class StackPerformances_02_Pop {
 
-  var frame: Frame[Either[Throwable, ?]] = null
+  private var frame: ThreadFrame[Either[Throwable, ?]] = null
 
   @Setup(Level.Iteration)
   def setupFrame(): Unit = {
-    frame = Frame.makeToplevel[Either[Throwable, ?]](null, HighConfig)
-    frame.stack.pushInt(Random.nextInt())
-    frame.stack.pushLong(Random.nextLong())
-    frame.stack.pushFloat(Random.nextFloat())
-    frame.stack.pushDouble(Random.nextDouble())
-    frame.stack.pushLabel(Random.nextLong())
+    frame = new ThreadFrame[Either[Throwable, ?]](LowConfig, null)
+    frame.pushInt(Random.nextInt())
+    frame.pushLong(Random.nextLong())
+    frame.pushFloat(Random.nextFloat())
+    frame.pushDouble(Random.nextDouble())
   }
 
   @TearDown(Level.Invocation)
   def tearDown(): Unit = {
-    frame.stack.pushInt(Random.nextInt())
-    frame.stack.pushLong(Random.nextLong())
-    frame.stack.pushFloat(Random.nextFloat())
-    frame.stack.pushDouble(Random.nextDouble())
-    frame.stack.pushLabel(Random.nextLong())
+    frame.pushInt(Random.nextInt())
+    frame.pushLong(Random.nextLong())
+    frame.pushFloat(Random.nextFloat())
+    frame.pushDouble(Random.nextDouble())
   }
 
   @Benchmark @BenchmarkMode(Array(Mode.Throughput))
   def pop(bh: Blackhole): Unit = {
-    bh.consume(frame.stack.popLabel())
-    bh.consume(frame.stack.popValue())
-    bh.consume(frame.stack.popValue())
-    bh.consume(frame.stack.popValue())
-    bh.consume(frame.stack.popValue())
+    bh.consume(frame.popValue())
+    bh.consume(frame.popValue())
+    bh.consume(frame.popValue())
+    bh.consume(frame.popValue())
   }
 
 }

@@ -19,8 +19,6 @@ package runtime
 package internals
 package instance
 
-import scala.language.higherKinds
-
 private[runtime] class TableInstance[F[_]](min: Int, max: Option[Int]) extends Table[F] {
 
   private val elems = Array.ofDim[Function[F]](min)

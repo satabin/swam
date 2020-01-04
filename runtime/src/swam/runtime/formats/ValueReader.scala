@@ -18,8 +18,6 @@ package swam
 package runtime
 package formats
 
-import scala.language.higherKinds
-
 /** A reader is used to transform a web assembly value into a
   *  scala object.
   */

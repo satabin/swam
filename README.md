@@ -1,6 +1,6 @@
-# Swam [![Build Status](https://travis-ci.org/satabin/swam.svg?branch=master)](https://travis-ci.org/satabin/swam) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6cadb836067c4e4696c3c15ab9510a3a)](https://www.codacy.com/app/satabin/swam?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=satabin/swam&amp;utm_campaign=Badge_Grade) [![codecov](https://codecov.io/gh/satabin/swam/branch/master/graph/badge.svg)](https://codecov.io/gh/satabin/swam)
+# Swam [![Build Status](https://travis-ci.org/satabin/swam.svg?branch=master)](https://travis-ci.org/satabin/swam) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6cadb836067c4e4696c3c15ab9510a3a)](https://www.codacy.com/app/satabin/swam?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=satabin/swam&amp;utm_campaign=Badge_Grade)
 
-[WebAssembly][1] implementation in Scala with [cats][7].
+Swam is a [WebAssembly][1] interpreter written in Scala with the [cats][7] library. It passes all the official specification tests. It is under an Apache 2 license.
 
 [![Cats Friendly Badge][6]][7]
 
@@ -15,18 +15,18 @@ You cann also use the [mill wrapper](https://github.com/lefou/millw) provided in
 If you want to run the specification tests, just type:
 
 ```sh
-mill runtime.test.low
+mill runtime.test
 ```
 
 It you want to test swam in a REPL session, just type tostart an ammonite shell with runtime project in classpath.:
 
 ```sh
-mill -i runtime.repl
+mill -i runtime.console
 ```
 
 If you want a REPL session with both runtime and text, the easiest way is to start a session for the runtime.test project:
 
-    $ mill -i runtime.test.repl
+    $ mill -i runtime.test.console
 
 ## Architecture
 

@@ -18,6 +18,8 @@ package swam
 package text
 package parser
 
+import unresolved._
+
 import fastparse._
 import WastWhitespace._
 
@@ -50,13 +52,11 @@ object TestScriptParser {
 
   def assertion[_: P]: P[Assertion] =
     P(
-      "(" ~ Index ~ ((word("assert_return") ~/ action ~ expr.filter(_.size <= 1)).map {
-        case (action, result) => AssertReturn(action, result) _
+      "(" ~ Index ~ ((word("assert_return") ~/ action ~ result).map {
+        case (action, Left(result)) => AssertReturn(action, result) _
+        case (action, Right(true))  => AssertReturnCanonicalNaN(action) _
+        case (action, Right(false)) => AssertReturnArithmeticNaN(action) _
       }
-        | (word("assert_return_canonical_nan") ~/ action)
-          .map(action => AssertReturnCanonicalNaN(action) _)
-        | (word("assert_return_arithmetic_nan") ~/ action)
-          .map(action => AssertReturnArithmeticNaN(action) _)
         | (word("assert_trap") ~/ ((action ~ string)
           .map {
             case (action, msg) => AssertTrap(action, msg) _
@@ -79,6 +79,12 @@ object TestScriptParser {
           .map {
             case (action, msg) => AssertExhaustion(action, msg) _
           }) ~ ")").map { case (idx, f) => f(idx) }
+
+  def result[_: P]: P[Either[Expr, Boolean]] =
+    P(
+      ("(" ~ (word("f32.const") | word("f64.const")) ~ (word("nan:canonical").map(_ => Right(true)) | word(
+        "nan:arithmetic")
+        .map(_ => Right(false))) ~ ")") | expr.filter(_.size <= 1).map(Left(_)))
 
   def meta[_: P]: P[Meta] =
     P("(" ~ Index ~ ((word("script") ~/ id.? ~ script).map {

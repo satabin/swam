@@ -21,15 +21,12 @@ package instance
 
 import imports._
 import compiler._
+import trace._
 
 import cats.effect._
 import cats.implicits._
 
-import runtime._
-
-import scala.language.higherKinds
-
-private[runtime] class Instantiator[F[_]](engine: Engine[F], tracer: Tracer)(implicit F: Async[F]) {
+private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F]) {
 
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
@@ -64,7 +61,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F], tracer: Tracer)(imp
         }
     }
 
-  private def initialize(globals: Vector[CompiledGlobal],
+  private def initialize(globals: Vector[CompiledGlobal[F]],
                          imports: Vector[Interface[F, Type]]): F[Vector[GlobalInstance[F]]] = {
     val impglobals = imports.collect {
       case g: Global[F] => g
@@ -113,8 +110,11 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F], tracer: Tracer)(imp
       case TableType(_, limits) => new TableInstance[F](limits.min, limits.max)
     }
     instance.memories = imemories ++ module.memories.map {
-      case MemType(limits) =>
-        new MemoryInstance[F](limits.min, limits.max, dataOnHeap, dataHardMax.toBytes.toInt, tracer)
+      case MemType(limits) => new MemoryInstance[F](limits.min, limits.max, dataOnHeap, dataHardMax.bytes.toInt)
+    }
+    // trace memory acceses if tracer exists
+    engine.tracer.foreach { tracer =>
+      instance.memories = instance.memories.map(TracingMemory(_, tracer))
     }
     instance.exps = module.exports.map {
       case Export.Function(name, tpe, idx) => (name, instance.funcs(idx))

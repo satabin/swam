@@ -19,16 +19,14 @@ package runtime
 package internals
 package instance
 
+import interpreter._
+
 import cats._
 import cats.implicits._
 
-import java.nio.ByteBuffer
-
-import scala.language.higherKinds
-
 private[runtime] case class FunctionInstance[F[_]](tpe: FuncType,
                                                    locals: Vector[ValType],
-                                                   code: ByteBuffer,
+                                                   code: Array[AsmInst[F]],
                                                    instance: Instance[F])(implicit F: MonadError[F, Throwable])
     extends Function[F] {
 

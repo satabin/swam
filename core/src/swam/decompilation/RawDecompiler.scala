@@ -26,8 +26,6 @@ import cats.effect._
 
 import fs2._
 
-import scala.language.higherKinds
-
 /** A decompiler from binary format, that formats sections as they come.
   * This is a raw decompiler, not performing any validation, nor transforming
   * the binary format.

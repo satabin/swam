@@ -19,15 +19,12 @@ package runtime
 package internals
 
 import config._
-
-import squants.information.InformationConversions._
+import util._
 
 package object interpreter {
 
   type Label = Long
 
-  val HighConfig = HighLevelStackConfiguration(5.bytes, 1)
-
-  val LowConfig = LowLevelStackConfiguration(5.bytes)
+  val LowConfig = StackConfiguration(MemorySize.fromBytes(5))
 
 }

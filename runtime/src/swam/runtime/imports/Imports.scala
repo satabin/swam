@@ -27,8 +27,6 @@ import shapeless._
 
 import java.nio.{ByteBuffer, ByteOrder}
 
-import scala.language.higherKinds
-
 /** Represents the imported elements of an instance.
   *  These can either be other module [[Instance]]s or Scala
   *  functions and variables made available to interact between
