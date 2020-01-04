@@ -25,8 +25,6 @@ import cats.implicits._
 
 import fs2._
 
-import scala.collection.compat._
-
 private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Throwable]) extends Validator[F] {
 
   private type Ctx = Context[F]

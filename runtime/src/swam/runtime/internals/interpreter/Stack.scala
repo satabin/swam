@@ -135,32 +135,23 @@ private[runtime] class ThreadFrame[F[_]](conf: StackConfiguration, baseInstance:
     }
   }
 
-  def pushBool(b: Boolean): Unit = {
+  def pushBool(b: Boolean): Unit =
     pushInt(if (b) 1 else 0)
-    tracer.traceEvent("spush", "i32", if (b) 1 else 0)
-  }
 
   def pushInt(i: Int): Unit =
     pushValue(i & 0X00000000FFFFFFFFL)
 
-  def pushLong(l: Long): Unit = {
+  def pushLong(l: Long): Unit =
     pushValue(l)
-    tracer.traceEvent("spush", "i64", l)
-  }
 
   def pushFloat(f: Float): Unit =
     pushValue(JFloat.floatToRawIntBits(f) & 0X00000000FFFFFFFFL)
 
-  def pushDouble(d: Double): Unit = {
+  def pushDouble(d: Double): Unit =
     pushValue(JDouble.doubleToRawLongBits(d))
-    tracer.traceEvent("spush", "f64", JDouble.doubleToRawLongBits(d))
-  }
 
-  def popBool(): Boolean = {
-    val r = popInt()
-    tracer.traceEvent("spop", "i32", r)
-    r != 0
-  }
+  def popBool(): Boolean =
+    popInt() != 0
 
   def popInt(): Int =
     (popValue() & 0X00000000FFFFFFFFL).toInt
@@ -168,43 +159,31 @@ private[runtime] class ThreadFrame[F[_]](conf: StackConfiguration, baseInstance:
   def peekInt(): Int =
     (peekValue() & 0X00000000FFFFFFFFL).toInt
 
-  def popLong(): Long = {
-    val r = popValue()
-    tracer.traceEvent("spop", "i32", r)
-    r
-  }
+  def popLong(): Long =
+    popValue()
 
   def peekLong(): Long =
     peekValue()
 
-  def popFloat(): Float = {
-    val r = JFloat.intBitsToFloat(popInt())
-    tracer.traceEvent("spop", "f32", r)
-    r
-  }
+  def popFloat(): Float =
+    JFloat.intBitsToFloat(popInt())
 
   def peekFloat(): Float =
     JFloat.intBitsToFloat(peekInt())
 
-  def popDouble(): Double = {
-    val r = JDouble.longBitsToDouble(popLong())
-    tracer.traceEvent("spop", "f64", r)
-    r
-  }
+  def popDouble(): Double =
+    JDouble.longBitsToDouble(popLong())
 
   def peekDouble(): Double =
     JDouble.longBitsToDouble(peekLong())
 
   def drop(n: Int): Unit = {
     tp -= n
-    tracer.traceEvent("sdrop", n)
   }
 
   def popValue(): Long = {
     tp -= 1
-    var r = stack(tp)
-    tracer.traceEvent("spop", "i64", r)
-    r
+    stack(tp)
   }
 
   def peekValue(): Long =
@@ -223,7 +202,6 @@ private[runtime] class ThreadFrame[F[_]](conf: StackConfiguration, baseInstance:
   def pushValue(l: Long): Unit = {
     stack(tp) = l
     tp += 1
-    tracer.traceEvent("spop", "i64", l)
   }
 
   def pushValues(values: Seq[Long]): Unit =
