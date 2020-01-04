@@ -50,8 +50,8 @@ class JULTracer(conf: TraceConfiguration) extends Tracer {
   logger.addHandler(handler)
 
   def traceEvent(tpe: EventType, args: List[String]): Unit =
-    if (tpe.entryName.matches(conf.filter))
-      logger.info(s"${tpe.entryName},${args.mkString(",")}")
+    if (conf.filter.equals("*") || tpe.entryName.matches(conf.filter))
+      logger.info(s"${tpe.entryName},${args.mkString(",")}${conf.separator}")
 
 }
 
@@ -63,6 +63,7 @@ private object PureFormatter extends Formatter {
 }
 
 case class TraceConfiguration(handler: HandlerType,
+                              separator: String,
                               filter: String,
                               level: String,
                               fileHandler: TracerFileHandlerCondiguration,

@@ -57,3 +57,7 @@ site/output
 
 .metals/
 .bloop/
+
+
+log.txt
+*.lck
