@@ -43,8 +43,4 @@ object ConfiguredByteOrder extends Enum[ConfiguredByteOrder] {
 
 case class DataConfiguration(onHeap: Boolean, hardMax: MemorySize)
 
-<<<<<<< HEAD
 case class StackConfiguration(size: MemorySize)
-=======
-case class StackConfiguration(size: MemorySize)
->>>>>>> d093848cc4e6d78bd9a8d4f47794bf6c105bf697
