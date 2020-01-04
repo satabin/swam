@@ -36,9 +36,6 @@ val swamUrl = "https://github.com/satabin/swam"
 
 val swamDeveloper = Developer("satabin", "Lucas Satabin", "https://github.com/satabin")
 
-var slumpsDeveloper1 = Developer("Jacarte", "Javier Cabrera Arteaga", "https://github.com/Jacarte")
-var slumpsDeveloper2 = Developer("jianguda", "Jian Gu", "https://github.com/jianguda")
-
 val fs2Version = "2.0.1"
 
 val pureconfigVersion = "0.12.1"
@@ -117,45 +114,6 @@ object text extends SwamModule with PublishModule {
       versionControl = VersionControl.github("satabin", "swam"),
       developers = Seq(swamDeveloper)
     )
-
-}
-
-
-object slumps extends SwamModule with PublishModule {
-
-  def moduleDeps = Seq(core)
-
-  def publishVersion = swamVersion
-
-  def artifactName = "swam-slumps"
-
-  def ivyDeps = Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion")
-
-  def pomSettings =
-    PomSettings(
-      description = "Slumps project integrated as a SWAM package",
-      organization = "assert-team.eu",
-      url = swamUrl,
-      licenses = Seq(swamLicense),
-      versionControl = VersionControl.github("Jacarte", "swam"),
-      developers = Seq(slumpsDeveloper1, slumpsDeveloper2)
-    )
-
-
-  object test extends SwamModule with ScalafmtModule {
-    def ivyDeps =
-      Agg(ivy"com.lihaoyi::utest:0.6.9", 
-          ivy"com.github.pathikrit::better-files:3.8.0", 
-          ivy"com.lihaoyi::pprint:0.5.5")
-
-    def moduleDeps = Seq(slumps, runtime, text, util.test, core)
-
-    object to_souper extends Tests with ScalafmtModule {
-      def moduleDeps = super.moduleDeps ++ Seq(slumps.test)
-      def testFrameworks = Seq("swam.util.Framework")
-    }
-
-  }
 
 }
 
