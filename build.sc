@@ -130,6 +130,10 @@ object runtime extends SwamModule with PublishModule {
 
     def testFrameworks = Seq("swam.util.Framework")
 
+    object trace extends Tests with ScalafmtModule {
+      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
+      def testFrameworks = Seq("swam.util.Framework")
+    }
   }
 
 }
