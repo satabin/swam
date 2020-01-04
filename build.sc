@@ -17,6 +17,15 @@ import headers.Headers
 import $file.mdoc
 import mdoc.MdocModule
 
+// val millVersion = System.getProperty("MILL_VERSION")
+
+
+// interp.load.ivy("com.lihaoyi" %% "mill-contrib-bloop" % millVersion)
+// interp.load.ivy("com.lihaoyi" %% "mill-contrib-buildinfo" % millVersion)
+
+// import $ivy.`com.lihaoyi::mill-contrib-bloop:0.5.2`
+
+
 import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
 
 val swamVersion = "0.4.0"
@@ -77,6 +86,12 @@ object core extends SwamModule with PublishModule {
     def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.1")
     def testFrameworks = Seq("swam.util.Framework")
     def moduleDeps = Seq(core, util.test)
+
+
+    object trace extends Tests with ScalafmtModule {
+      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
+      def testFrameworks = Seq("swam.util.Framework")
+    }
   }
 
 }
@@ -130,6 +145,10 @@ object runtime extends SwamModule with PublishModule {
 
     def testFrameworks = Seq("swam.util.Framework")
 
+    object trace extends Tests with ScalafmtModule {
+      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
+      def testFrameworks = Seq("swam.util.Framework")
+    }
   }
 
 }

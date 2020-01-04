@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Lucas Satabin
+ * Copyright 2019 Lucas Satabin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,25 @@
  */
 
 package swam
-package runtime
-package internals
-package instance
+package cfg
 
-private[runtime] class TableInstance[F[_]](min: Int, max: Option[Int]) extends Table[F] {
+import syntax.Inst
 
-  private val elems = Array.ofDim[Function[F]](min)
+/** An immutable control-flow graph.
+  *
+  * To create a new CFG, see [[CFGBuilder]].
+  */
+class CFG private[cfg] (basicBlocks: Array[BasicBlock]) {
 
-  val tpe = TableType(ElemType.FuncRef, Limits(min, max))
+  /** The basic blocks in this control flow graph. */
+  def blocks: List[BasicBlock] = basicBlocks.toList
 
-  def size = elems.length
+  /** The graph entry point. */
+  val entry: BasicBlock = basicBlocks(0)
 
-  def apply(idx: Int): Function[F] =
-    elems(idx)
-
-  def update(idx: Int, f: Function[F]) =
-    elems(idx) = f
+  /** The graph exit point. */
+  val exit: BasicBlock = basicBlocks(1)
 
 }
+
+case class BasicBlock(name: String, stmts: List[Inst], jump: Option[Jump])

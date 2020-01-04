@@ -23,8 +23,7 @@ import util._
 import enumeratum._
 import enumeratum.EnumEntry._
 
-/** Holds all the
-  * configurable values.
+/** Holds all the configurable values.
   *
   * @param stack Configures how the stack behaves.
   * @param data Configures how the data part behaves.
@@ -36,14 +35,16 @@ case class CompilerConfiguration(byteOrder: ConfiguredByteOrder)
 sealed trait ConfiguredByteOrder extends EnumEntry with Hyphencase
 
 object ConfiguredByteOrder extends Enum[ConfiguredByteOrder] {
-
-  def values = findValues
-
   case object LittleEndian extends ConfiguredByteOrder
   case object BigEndian extends ConfiguredByteOrder
   case object Native extends ConfiguredByteOrder
+  def values = findValues
 }
 
 case class DataConfiguration(onHeap: Boolean, hardMax: MemorySize)
 
+<<<<<<< HEAD
 case class StackConfiguration(size: MemorySize)
+=======
+case class StackConfiguration(size: MemorySize)
+>>>>>>> d093848cc4e6d78bd9a8d4f47794bf6c105bf697
