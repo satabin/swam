@@ -27,8 +27,6 @@ import cats.implicits._
 
 import java.nio.ByteBuffer
 
-import scala.collection.compat._
-
 /** A module instance that has already been initialized.
   *
   * @param module The [[Module]] of this instance.

@@ -21,8 +21,6 @@ package custom
 import scodec.Codec
 import scodec.codecs._
 
-import scala.collection.compat._
-
 case class Names(subsections: Vector[NameSubsection])
 
 sealed trait NameSubsection
