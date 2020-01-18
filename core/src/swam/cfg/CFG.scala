@@ -18,8 +18,7 @@ package swam
 package cfg
 
 import syntax.Inst
-
-import scala.annotation.tailrec
+import swam.util.Tree
 
 /** An immutable control-flow graph.
   *
@@ -30,58 +29,102 @@ class CFG private[cfg] (basicBlocks: Array[BasicBlock]) {
   /** Returns the basic block with given identifier.*/
   def block(block: Int): Option[BasicBlock] = basicBlocks.lift(block)
 
-  /** The basic blocks in this control flow graph. */
+  /** The basic blocks in this control flow graph in post order. */
   def blocks: List[BasicBlock] = basicBlocks.toList
 
   /** The graph entry point. */
-  val entry: BasicBlock = basicBlocks(0)
+  val entry: BasicBlock = basicBlocks(basicBlocks.length - 1)
 
-  /** The graph exit point. */
-  val exit: BasicBlock = basicBlocks(1)
-
-  /** The list of successors to the given basic block. */
   def successors(block: Int): List[Int] =
     if (block < 0 || block > basicBlocks.size)
       Nil
     else
-      basicBlocks(block).jump match {
-        case Some(Jump.To(tgt))            => List(tgt)
-        case Some(Jump.If(tTgt, eTgt))     => List(tTgt, eTgt)
-        case Some(Jump.Table(cases, dflt)) => cases.toList :+ dflt
-        case None                          => Nil
-      }
+      basicBlocks(block).successors
 
-  /** Visits the CFG basic blocks apply the aggregation function in postorder. */
-  def postorder[Res](zero: Res)(f: (Res, BasicBlock) => Res): Res = {
-    // this works in two steps:
-    //  1. the nodes are first discovered, stacking up nodes in order of traversal
-    //  2. the nodes are then aggregated when it has no undiscovered successors anymore
-    //     and is aggregated if this is the first time
-    @tailrec
-    def loop(stack: List[Int], discovered: Set[Int], aggregated: Set[Int], acc: Res): Res =
-      stack match {
-        case node :: rest =>
-          // add successors to the stack
-          val succ = successors(node).filterNot(discovered.contains(_))
-          if (succ.isEmpty)
-            // no successors, apply f if this is the first time we aggregate this node and continue
-            loop(rest,
-                 discovered + node,
-                 aggregated + node,
-                 if (aggregated.contains(node)) acc else f(acc, basicBlocks(node)))
-          else
-            // we have successors, stack them and continue
-            loop(succ ++ stack, discovered + node, aggregated, acc)
-        case Nil =>
-          acc
-      }
-    loop(List(0), Set.empty, Set.empty, zero)
-  }
+  def predecessors(block: Int): List[Int] =
+    if (block < 0 || block > basicBlocks.size)
+      Nil
+    else
+      basicBlocks(block).predecessors
+
+  /** Traverses the graph in postorder and applies the function `f` to compute the accumulated result. */
+  def postorder[Res](zero: Res)(f: (Res, BasicBlock) => Res): Res =
+    basicBlocks.foldLeft(zero)(f)
 
   /** Returns the list of basic blocks in reverse postorder. */
   def reversePostorder: List[Int] =
     postorder(List.empty[Int])((acc, node) => node.id :: acc)
 
+  /** Returns the immediate dominators. The result is indexed by the node identifiers. */
+  def idoms: Vector[Int] = {
+    // cache it as it will be reused for every pass
+    val reversed = reversePostorder
+    val doms = Array.fill[Int](basicBlocks.size)(-1)
+    doms(basicBlocks.length - 1) = basicBlocks.length - 1
+    def intersect(block1: Int, block2: Int): Int = {
+      def inc(finger: Int, tgt: Int): Int =
+        if (finger < tgt) {
+          inc(doms(finger), tgt)
+        } else {
+          finger
+        }
+      def loop(finger1: Int, finger2: Int): Int =
+        if (finger1 == finger2) {
+          finger1
+        } else {
+          val finger11 = inc(finger1, finger2)
+          val finger21 = inc(finger2, finger11)
+          loop(finger11, finger21)
+        }
+      loop(block1, block2)
+    }
+    def findFirstProcessed(preds: List[Int]): Option[(Int, List[Int])] =
+      preds match {
+        case p :: ps =>
+          if (doms(p) != -1)
+            Some(p -> ps)
+          else
+            findFirstProcessed(ps)
+        case Nil =>
+          None
+      }
+    def loop(pass: Int): Unit = {
+      val changed =
+        reversed.tail.foldLeft(false) { (changed, p) =>
+          val idom =
+            findFirstProcessed(basicBlocks(p).predecessors)
+              .map {
+                case (p, ps) =>
+                  ps.foldLeft(p) { (idom, p) =>
+                    if (doms(p) != -1)
+                      // already calculated
+                      intersect(p, idom)
+                    else
+                      idom
+                  }
+              }
+              .getOrElse(throw new Exception("this is a bug"))
+          if (doms(p) != idom) {
+            doms(p) = idom
+            true
+          } else {
+            changed
+          }
+        }
+      if (changed) loop(pass + 1)
+    }
+    loop(1)
+    doms.toVector
+  }
+
 }
 
-case class BasicBlock(id: Int, name: String, stmts: List[Inst], jump: Option[Jump])
+case class BasicBlock(id: Int, name: String, stmts: List[Inst], jump: Option[Jump])(val predecessors: List[Int]) {
+  def successors: List[Int] =
+    jump match {
+      case Some(Jump.To(tgt))            => List(tgt)
+      case Some(Jump.If(tTgt, eTgt))     => List(tTgt, eTgt)
+      case Some(Jump.Table(cases, dflt)) => cases.toList :+ dflt
+      case None                          => Nil
+    }
+}
