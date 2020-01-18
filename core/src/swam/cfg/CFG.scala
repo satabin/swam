@@ -18,7 +18,6 @@ package swam
 package cfg
 
 import syntax.Inst
-import swam.util.Tree
 
 /** An immutable control-flow graph.
   *
