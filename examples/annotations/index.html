@@ -9,7 +9,7 @@
     <link type="text/css" rel="stylesheet" href="/css/materialize.min.css" media="screen,projection"/>
     <style>body{font-family: overpass, sans-serif; }</style>
 
-    <meta name="generator" content="Nanoc 4.11.11">
+    <meta name="generator" content="Nanoc 4.11.14">
   </head>
   <body>
     <header>
@@ -19,6 +19,8 @@
           <li><a href="/examples/string/">Strings</a></li>
           
           <li><a href="/examples/fibo/">Recursion</a></li>
+          
+          <li><a href="/examples/cfg/">CFG Construction and Manipulation</a></li>
           
           <li><a href="/examples/logged/">Imports</a></li>
           
@@ -51,6 +53,8 @@
         <li><a href="/examples/string/">Strings</a></li>
         
         <li><a href="/examples/fibo/">Recursion</a></li>
+        
+        <li><a href="/examples/cfg/">CFG Construction and Manipulation</a></li>
         
         <li><a href="/examples/logged/">Imports</a></li>
         
@@ -125,11 +129,11 @@
 </code></pre></div></div>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">m</span><span class="o">.</span><span class="py">v3</span>
-<span class="c1">// res0: Int = 45
-</span><span class="nf">f</span><span class="o">().</span><span class="py">unsafeRunSync</span><span class="o">()</span>
+<span class="c1">// res0: Int = 45</span>
+<span class="nf">f</span><span class="o">().</span><span class="py">unsafeRunSync</span><span class="o">()</span>
 <span class="nv">m</span><span class="o">.</span><span class="py">v3</span>
-<span class="c1">// res2: Int = 45
-</span></code></pre></div></div>
+<span class="c1">// res2: Int = 45</span>
+</code></pre></div></div>
 
 <h2 id="exported-functions">Exported functions</h2>
 
@@ -168,8 +172,8 @@
 <p>Executing the imported function, returns the desired result:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">add42</span><span class="o">().</span><span class="py">unsafeRunSync</span><span class="o">()</span>
-<span class="c1">// res3: Int = 55
-</span></code></pre></div></div>
+<span class="c1">// res3: Int = 55</span>
+</code></pre></div></div>
 
 <h3 id="effectful-functions">Effectful functions</h3>
 
@@ -207,9 +211,9 @@ This type must be unique, and all effectful functions must use it.</p>
 <p>We can now run the <code>logged</code> function and the parameter is logged to stdout as expected</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">logged</span><span class="o">(</span><span class="mi">43</span><span class="o">).</span><span class="py">unsafeRunSync</span><span class="o">()</span>
-<span class="c1">// got: 43
-// res4: Int = 85
-</span></code></pre></div></div>
+<span class="c1">// got: 43</span>
+<span class="c1">// res4: Int = 85</span>
+</code></pre></div></div>
 
 
       </div>

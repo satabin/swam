@@ -9,7 +9,7 @@
     <link type="text/css" rel="stylesheet" href="/css/materialize.min.css" media="screen,projection"/>
     <style>body{font-family: overpass, sans-serif; }</style>
 
-    <meta name="generator" content="Nanoc 4.11.11">
+    <meta name="generator" content="Nanoc 4.11.14">
   </head>
   <body>
     <header>
@@ -19,6 +19,8 @@
           <li><a href="/examples/string/">Strings</a></li>
           
           <li><a href="/examples/fibo/">Recursion</a></li>
+          
+          <li><a href="/examples/cfg/">CFG Construction and Manipulation</a></li>
           
           <li><a href="/examples/logged/">Imports</a></li>
           
@@ -51,6 +53,8 @@
         <li><a href="/examples/string/">Strings</a></li>
         
         <li><a href="/examples/fibo/">Recursion</a></li>
+        
+        <li><a href="/examples/cfg/">CFG Construction and Manipulation</a></li>
         
         <li><a href="/examples/logged/">Imports</a></li>
         
@@ -97,133 +101,133 @@
 <p>The simple raw decompiler simply prints a text version of the module sections. It can render modules that are not valid.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">println</span><span class="o">(</span><span class="nv">rd</span><span class="o">.</span><span class="py">render</span><span class="o">(</span><span class="mi">0</span><span class="o">))</span>
-<span class="c1">// ; section "Types"
-// ; type 0
-// [i64] → [i64]
-// ; type 1
-// [i64, i64, i64] → [i64]
-// ; section "Imports"
-// 
-// ; section "Functions"
-// ; function type 0
-// 0
-// ; function type 1
-// 1
-// ; function type 2
-// 0
-// ; section "Tables"
-// 
-// ; section "Memories"
-// 
-// ; section "Globals"
-// 
-// ; section "Exports"
-// {name naive, func 0}
-// {name clever, func 2}
-// ; section "Elements"
-// 
-// ; section "Code"
-// ; function body 0
-// local.get 0
-// i64.const 2
-// i64.lt_s
-// if [i64]
-//   i64.const 1
-// else
-//   local.get 0
-//   i64.const 2
-//   i64.sub
-//   call 0
-//   local.get 0
-//   i64.const 1
-//   i64.sub
-//   call 0
-//   i64.add
-// end
-// ; function body 1
-// local.get 2
-// i64.const 0
-// i64.gt_s
-// if [i64]
-//   local.get 1
-//   local.get 1
-//   local.get 0
-//   i64.add
-//   local.get 2
-//   i64.const 1
-//   i64.sub
-//   call 1
-// else
-//   local.get 0
-// end
-// ; function body 2
-// i64.const 1
-// i64.const 1
-// local.get 0
-// call 1
-// ; section "Data"
-// 
-// ; custom section "name"
-// 00046669626f01170300056e616976650105696e6e65720206636c65766572021b03000401000169010c0300026e3201026e3102016e020401000169
-</span></code></pre></div></div>
+<span class="c1">// ; section "Types"</span>
+<span class="c1">// ; type 0</span>
+<span class="c1">// [i64] → [i64]</span>
+<span class="c1">// ; type 1</span>
+<span class="c1">// [i64, i64, i64] → [i64]</span>
+<span class="c1">// ; section "Imports"</span>
+<span class="c1">// </span>
+<span class="c1">// ; section "Functions"</span>
+<span class="c1">// ; function type 0</span>
+<span class="c1">// 0</span>
+<span class="c1">// ; function type 1</span>
+<span class="c1">// 1</span>
+<span class="c1">// ; function type 2</span>
+<span class="c1">// 0</span>
+<span class="c1">// ; section "Tables"</span>
+<span class="c1">// </span>
+<span class="c1">// ; section "Memories"</span>
+<span class="c1">// </span>
+<span class="c1">// ; section "Globals"</span>
+<span class="c1">// </span>
+<span class="c1">// ; section "Exports"</span>
+<span class="c1">// {name naive, func 0}</span>
+<span class="c1">// {name clever, func 2}</span>
+<span class="c1">// ; section "Elements"</span>
+<span class="c1">// </span>
+<span class="c1">// ; section "Code"</span>
+<span class="c1">// ; function body 0</span>
+<span class="c1">// local.get 0</span>
+<span class="c1">// i64.const 2</span>
+<span class="c1">// i64.lt_s</span>
+<span class="c1">// if [i64]</span>
+<span class="c1">//   i64.const 1</span>
+<span class="c1">// else</span>
+<span class="c1">//   local.get 0</span>
+<span class="c1">//   i64.const 2</span>
+<span class="c1">//   i64.sub</span>
+<span class="c1">//   call 0</span>
+<span class="c1">//   local.get 0</span>
+<span class="c1">//   i64.const 1</span>
+<span class="c1">//   i64.sub</span>
+<span class="c1">//   call 0</span>
+<span class="c1">//   i64.add</span>
+<span class="c1">// end</span>
+<span class="c1">// ; function body 1</span>
+<span class="c1">// local.get 2</span>
+<span class="c1">// i64.const 0</span>
+<span class="c1">// i64.gt_s</span>
+<span class="c1">// if [i64]</span>
+<span class="c1">//   local.get 1</span>
+<span class="c1">//   local.get 1</span>
+<span class="c1">//   local.get 0</span>
+<span class="c1">//   i64.add</span>
+<span class="c1">//   local.get 2</span>
+<span class="c1">//   i64.const 1</span>
+<span class="c1">//   i64.sub</span>
+<span class="c1">//   call 1</span>
+<span class="c1">// else</span>
+<span class="c1">//   local.get 0</span>
+<span class="c1">// end</span>
+<span class="c1">// ; function body 2</span>
+<span class="c1">// i64.const 1</span>
+<span class="c1">// i64.const 1</span>
+<span class="c1">// local.get 0</span>
+<span class="c1">// call 1</span>
+<span class="c1">// ; section "Data"</span>
+<span class="c1">// </span>
+<span class="c1">// ; custom section "name"</span>
+<span class="c1">// 00046669626f01170300056e616976650105696e6e65720206636c65766572021b03000401000169010c0300026e3201026e3102016e020401000169</span>
+</code></pre></div></div>
 
 <p>The smart text decompiler renders a formatted text version of the module. The module must be valid to be rendered.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">println</span><span class="o">(</span><span class="nv">td</span><span class="o">.</span><span class="py">render</span><span class="o">(</span><span class="mi">0</span><span class="o">))</span>
-<span class="c1">// (module $fibo
-//   (export
-//     "naive"
-//     (func $naive))
-//   (export
-//     "clever"
-//     (func $clever))
-//   (func $naive
-//     (param $i i64)
-//     (result i64)
-//     (if (result i64)
-//       (i64.lt_s
-//         (local.get $i)
-//         (i64.const 2))
-//     (then
-//       i64.const 1)
-//     (else
-//       (i64.add
-//         ((call $naive
-//           ((i64.sub
-//             (local.get $i)
-//             (i64.const 2)))))
-//         ((call $naive
-//           ((i64.sub
-//             (local.get $i)
-//             (i64.const 1)))))))))
-//   (func $inner
-//     (param $n2 i64)
-//     (param $n1 i64)
-//     (param $n i64)
-//     (result i64)
-//     (if (result i64)
-//       (i64.gt_s
-//         (local.get $n)
-//         (i64.const 0))
-//     (then
-//       (call $inner
-//         ((i64.sub
-//           (local.get $n)
-//           (i64.const 1)))
-//         ((i64.add
-//           (local.get $n1)
-//           (local.get $n2)))
-//         (local.get $n1)))
-//     (else
-//       local.get $n2)))
-//   (func $clever
-//     (param $i i64)
-//     (result i64)
-//     (call $inner
-//       (local.get $i)
-//       (i64.const 1)
-//       (i64.const 1))))
-</span></code></pre></div></div>
+<span class="c1">// (module $fibo</span>
+<span class="c1">//   (export</span>
+<span class="c1">//     "naive"</span>
+<span class="c1">//     (func $naive))</span>
+<span class="c1">//   (export</span>
+<span class="c1">//     "clever"</span>
+<span class="c1">//     (func $clever))</span>
+<span class="c1">//   (func $naive</span>
+<span class="c1">//     (param $i i64)</span>
+<span class="c1">//     (result i64)</span>
+<span class="c1">//     (if (result i64)</span>
+<span class="c1">//       (i64.lt_s</span>
+<span class="c1">//         (local.get $i)</span>
+<span class="c1">//         (i64.const 2))</span>
+<span class="c1">//     (then</span>
+<span class="c1">//       i64.const 1)</span>
+<span class="c1">//     (else</span>
+<span class="c1">//       (i64.add</span>
+<span class="c1">//         ((call $naive</span>
+<span class="c1">//           ((i64.sub</span>
+<span class="c1">//             (local.get $i)</span>
+<span class="c1">//             (i64.const 2)))))</span>
+<span class="c1">//         ((call $naive</span>
+<span class="c1">//           ((i64.sub</span>
+<span class="c1">//             (local.get $i)</span>
+<span class="c1">//             (i64.const 1)))))))))</span>
+<span class="c1">//   (func $inner</span>
+<span class="c1">//     (param $n2 i64)</span>
+<span class="c1">//     (param $n1 i64)</span>
+<span class="c1">//     (param $n i64)</span>
+<span class="c1">//     (result i64)</span>
+<span class="c1">//     (if (result i64)</span>
+<span class="c1">//       (i64.gt_s</span>
+<span class="c1">//         (local.get $n)</span>
+<span class="c1">//         (i64.const 0))</span>
+<span class="c1">//     (then</span>
+<span class="c1">//       (call $inner</span>
+<span class="c1">//         ((i64.sub</span>
+<span class="c1">//           (local.get $n)</span>
+<span class="c1">//           (i64.const 1)))</span>
+<span class="c1">//         ((i64.add</span>
+<span class="c1">//           (local.get $n1)</span>
+<span class="c1">//           (local.get $n2)))</span>
+<span class="c1">//         (local.get $n1)))</span>
+<span class="c1">//     (else</span>
+<span class="c1">//       local.get $n2)))</span>
+<span class="c1">//   (func $clever</span>
+<span class="c1">//     (param $i i64)</span>
+<span class="c1">//     (result i64)</span>
+<span class="c1">//     (call $inner</span>
+<span class="c1">//       (local.get $i)</span>
+<span class="c1">//       (i64.const 1)</span>
+<span class="c1">//       (i64.const 1))))</span>
+</code></pre></div></div>
 
 
       </div>

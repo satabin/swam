@@ -9,7 +9,7 @@
     <link type="text/css" rel="stylesheet" href="/css/materialize.min.css" media="screen,projection"/>
     <style>body{font-family: overpass, sans-serif; }</style>
 
-    <meta name="generator" content="Nanoc 4.11.11">
+    <meta name="generator" content="Nanoc 4.11.14">
   </head>
   <body>
     <header>
@@ -19,6 +19,8 @@
           <li><a href="/examples/string/">Strings</a></li>
           
           <li><a href="/examples/fibo/">Recursion</a></li>
+          
+          <li><a href="/examples/cfg/">CFG Construction and Manipulation</a></li>
           
           <li><a href="/examples/logged/">Imports</a></li>
           
@@ -51,6 +53,8 @@
         <li><a href="/examples/string/">Strings</a></li>
         
         <li><a href="/examples/fibo/">Recursion</a></li>
+        
+        <li><a href="/examples/cfg/">CFG Construction and Manipulation</a></li>
         
         <li><a href="/examples/logged/">Imports</a></li>
         
@@ -95,9 +99,9 @@
 <p>running function <code>f</code> logs the parameter.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">f</span><span class="o">(</span><span class="mi">4</span><span class="o">).</span><span class="py">unsafeRunSync</span><span class="o">()</span>
-<span class="c1">// got 4
-// res0: Int = 46
-</span></code></pre></div></div>
+<span class="c1">// got 4</span>
+<span class="c1">// res0: Int = 46</span>
+</code></pre></div></div>
 
 <p>It is also possible to use <a href="https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-2.0.0#heterogenous-lists"><code>HList</code>s</a> to represent imported modules with several exposed fields. For instance, let’s import the <code>console</code> module with an extra <code>colors</code> field exposed.</p>
 
