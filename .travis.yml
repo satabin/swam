@@ -7,6 +7,11 @@ env:
 
 jobs:
   include:
+    - stage: formatting
+      if: type = pull_request
+      script:
+        - ./millw __.reformat
+        - if [[ $(git diff --exit-code --name-status) ]]; then echo 'Your code is not formatted correctly, please format it, check it and push formatted code'; exit 1; fi
     - stage: test
       script:
         - ./millw runtime.compile
@@ -14,11 +19,6 @@ jobs:
     - script:
         - ./millw runtime.compile
         - ./millw examples.mdoc
-    - stage: formatting
-      if: type = pull_request
-      script:
-        - ./millw __.reformat
-        - if [[ $(git diff --exit-code --name-status) ]]; then echo 'Your code is not formatted correctly, please format it, check it and push formatted code'; exit 1; fi
 
 cache:
   directories:
