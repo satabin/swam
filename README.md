@@ -10,7 +10,7 @@ Swam is a [WebAssembly][1] interpreter written in Scala with the [cats][7] libra
 
 To build it, we use [mill](http://www.lihaoyi.com/mill/). Mill is not packaged for all Linux distributions, but you can use curl to install it (see Installation instructions in the [doc](http://www.lihaoyi.com/mill/)).
 
-You cann also use the [mill wrapper](https://github.com/lefou/millw) provided in this repository with the recommended mill version. It will download mill for you if you do not have it already, and run it. To use it, replace following `mill` commands by `./millw`
+You can also use the [mill wrapper](https://github.com/lefou/millw) provided in this repository with the recommended mill version. It will download mill for you if you do not have it already, and run it. To use it, replace following `mill` commands by `./millw`
 
 If you want to run the specification tests, just type:
 

@@ -17,7 +17,7 @@
 package swam
 package cfg
 
-/** A jump represents the last elemet of a basic block. */
+/** A jump represents the last element of a basic block. */
 sealed trait Jump
 
 object Jump {
