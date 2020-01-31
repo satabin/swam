@@ -19,6 +19,11 @@ package cfg
 
 import syntax.Inst
 
+import cats._
+import cats.implicits._
+
+import scala.annotation.tailrec
+
 /** An immutable control-flow graph.
   *
   * To create a new CFG, see [[CFGBuilder]].
@@ -54,7 +59,9 @@ class CFG private[cfg] (basicBlocks: Array[BasicBlock]) {
   def reversePostorder: List[Int] =
     postorder(List.empty[Int])((acc, node) => node.id :: acc)
 
-  /** Returns the immediate dominators. The result is indexed by the node identifiers. */
+  /** Returns the immediate dominators. The result is indexed by the node identifiers.
+    * Each cel in the vector contains the identifier of the immediate dominator.
+    */
   def idoms: Vector[Int] = {
     // cache it as it will be reused for every pass
     val reversed = reversePostorder
@@ -115,6 +122,147 @@ class CFG private[cfg] (basicBlocks: Array[BasicBlock]) {
     loop(1)
     doms.toVector
   }
+
+  /** Returns the dominator tree for this CFG.
+    * The tree contains the node identifiers.
+    */
+  def dominatorTree: DominatorTree =
+    new DominatorTree(idoms)
+
+}
+
+/** The dominator tree associated to a [[CFG]] which can be traversed
+  * in several ways.
+  */
+class DominatorTree private[cfg] (idoms: Vector[Int]) {
+  private lazy val byParent = idoms.toList.zipWithIndex.groupMap {
+    case (idom, node) if idom == node =>
+      // the root
+      None
+    case (idom, _) => Some(idom)
+  } {
+    case (idom, node) if idom == node =>
+      // the root
+      (None, node)
+    case (idom, node) => (Some(idom), node)
+  }
+
+  /** Traverses this tree, accumulating the result through the
+    * function `f` in preorder.
+    *
+    * The second argument of `f` is the parent of the currently
+    * processed node, if any.
+    */
+  def preorder[Res](zero: Res)(f: (Res, Option[Int], Int) => Res): Res = {
+    @tailrec
+    def loop(acc: Res, stack: List[List[(Option[Int], Int)]]): Res =
+      stack match {
+        case Nil :: rest =>
+          loop(acc, rest)
+        case ((parent, node) :: siblings) :: rest =>
+          val children = byParent.getOrElse(Some(node), Nil)
+          loop(f(acc, parent, node), children :: siblings :: rest)
+        case Nil =>
+          acc
+      }
+    loop(zero, List(List((None, idoms.size - 1))))
+  }
+
+  /** Monadicly traverses this tree, accumulating the result through the
+    * function `f` in preorder.
+    *
+    * The second argument of `f` is the parent of the currently
+    * processed node, if any.
+    *
+    * This may be used to impement short-circuit semantics.
+    */
+  def preorderM[F[_], Res](zero: Res)(f: (Res, Option[Int], Int) => F[Res])(implicit F: Monad[F]): F[Res] =
+    F.tailRecM((zero, List(List((Option.empty[Int], idoms.size - 1))))) {
+      case (acc, Nil :: rest) =>
+        F.pure(Left((acc, rest)))
+      case (acc, ((parent, node) :: siblings) :: rest) =>
+        f(acc, parent, node).map { acc =>
+          val children = byParent.getOrElse(Some(node), Nil)
+          Left((acc, children :: siblings :: rest))
+        }
+      case (acc, Nil) =>
+        F.pure(Right(acc))
+    }
+
+  /** Traverses this tree, accumulating the result through the
+    * function `f` in postorder.
+    *
+    * The second argument of `f` is the parent of the currently
+    * processed node, if any.
+    */
+  def postorder[Res](zero: Res)(f: (Res, Option[Int], Int) => Res): Res = {
+    @tailrec
+    def loop(acc: Res, stack: List[List[(Option[Int], Int)]], childrenDone: Set[Int]): Res =
+      stack match {
+        case Nil :: rest =>
+          loop(acc, rest, childrenDone)
+        case ((pair @ (parent, node)) :: siblings) :: rest =>
+          if (childrenDone.contains(node)) {
+            // children were processed, so do this node and continue to siblings
+            loop(f(acc, parent, node), siblings :: rest, childrenDone)
+          } else {
+            // children were not processed yet, check if any at all
+            byParent.get(Some(node)) match {
+              case Some(children) =>
+                // first process the children, then this node, then siblings
+                // next time we will encounter this node, the children will
+                // be processed and this node will be safe to process,
+                // so register this in `childrenDone`
+                loop(acc, children :: List(pair) :: siblings :: rest, childrenDone + node)
+              case None =>
+                // this is a leaf, process it, ad continue to siblings
+                loop(f(acc, parent, node), siblings :: rest, childrenDone)
+            }
+          }
+        case Nil =>
+          acc
+      }
+    // start at the root
+    loop(zero, List(List((None, idoms.size - 1))), Set.empty)
+  }
+
+  /** Monadicly traverses this tree, accumulating the result through the
+    * function `f` in postorder.
+    *
+    * The second argument of `f` is the parent of the currently
+    * processed node, if any.
+    *
+    * This may be used to impement short-circuit semantics.
+    */
+  def postorderM[F[_], Res](zero: Res)(f: (Res, Option[Int], Int) => F[Res])(implicit F: Monad[F]): F[Res] =
+    F.tailRecM((zero, List(List((Option.empty[Int], idoms.size - 1))), Set.empty[Int])) {
+      case (acc, Nil :: rest, childrenDone) =>
+        F.pure(Left((acc, rest, childrenDone)))
+      case (acc, ((pair @ (parent, node)) :: siblings) :: rest, childrenDone) =>
+        if (childrenDone.contains(node)) {
+          // children were processed, so do this node and continue to siblings
+          f(acc, parent, node).map { acc =>
+            Left((acc, siblings :: rest, childrenDone))
+          }
+        } else {
+          // children were not processed yet, check if any at all
+          byParent.get(Some(node)) match {
+            case Some(children) =>
+              // first process the children, then this node, then siblings
+              // next time we will encounter this node, the children will
+              // be processed and this node will be safe to process,
+              // so register this in `childrenDone`
+              F.pure(Left((acc, children :: List(pair) :: siblings :: rest, childrenDone + node)))
+            case None =>
+              // this is a leaf, process it, ad continue to siblings
+              f(acc, parent, node).map { acc =>
+                Left((acc, siblings :: rest, childrenDone))
+              }
+          }
+        }
+      case (acc, Nil, _) =>
+        F.pure(Right(acc))
+    }
 
 }
 
