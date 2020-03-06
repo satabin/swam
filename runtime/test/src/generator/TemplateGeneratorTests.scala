@@ -6,10 +6,11 @@ import java.nio.ByteBuffer
 import java.nio.file.Paths
 import java.util.concurrent.Executors
 
-import cats.effect.{Blocker, IO}
+import cats.effect.{Async, Blocker, IO}
 import pureconfig.ConfigSource
-import swam.runtime.Engine
+import swam.runtime.{Engine, formats, imports}
 import swam.runtime.config.EngineConfiguration
+import swam.runtime.formats.DefaultFormatters
 import swam.runtime.import_generator.ImportGenerator
 import swam.runtime.imports.{AsInstance, AsInterface, TCMap}
 import swam.syntax.Section.Imports
@@ -33,9 +34,11 @@ object TemplateGeneratorTests extends TestSuite {
   val blocker: Blocker = Blocker.liftExecutionContext(blockingPool)
 
   override def tests: Tests = Tests {
+    val f1 = "runtime/test/resources/program3.wasm"
+    val f2 = "runtime/test/resources/program.wasm"
+    val generator = ImportGenerator.make()
 
-    def testImportGenerationForProgram(f1: String, f2: String) {
-      val generator = ImportGenerator.make("IO")
+    test("generation") {
 
       val modul1 =
         engine
@@ -50,14 +53,21 @@ object TemplateGeneratorTests extends TestSuite {
       val text = generator.generateImportText(modul1.imports.concat(modul2.imports))
 
       println(text)
-
-      System.in.read()
     }
 
-    test("generation") {
-      testImportGenerationForProgram("runtime/test/resources/program3.wasm", "runtime/test/resources/program2.wasm")
+    test("create project") {
+
+      val modul1 =
+        engine
+          .compileBytes(fs2.io.file.readAll[IO](Paths.get(f1), blocker, 4096))
+          .unsafeRunSync()
+
+      val modul2 =
+        engine
+          .compileBytes(fs2.io.file.readAll[IO](Paths.get(f2), blocker, 4096))
+          .unsafeRunSync()
+
+      generator.createScalaProjectForImports("test_scala", modul1.imports)
     }
   }
 }
-
-import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}

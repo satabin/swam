@@ -1,10 +1,13 @@
 package swam.runtime.import_generator
 
+import java.io.{File, PrintWriter}
+
 import swam.{FuncType, ValType}
 import swam.ValType.{F32, F64, I32, I64}
 import swam.runtime.Import
+import scala.reflect.runtime.universe._
 
-import scala.collection.mutable
+import sys.process._
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-03-06
@@ -12,7 +15,9 @@ import scala.collection.mutable
 /**
   * Generates the scala code with the template to use as Import in the WASM execution
   */
-class ImportGenerator(val F: String) {
+class ImportGenerator() {
+
+  val f = "IO"
 
   def getScalaType(v: ValType): String = v match {
     case I32 => s"Int"
@@ -50,7 +55,7 @@ class ImportGenerator(val F: String) {
       .map(t => {
         buildParameter(t._2, t._1)
       })
-      .mkString(",")}): $F[${buildReturn(func.t)}]"
+      .mkString(",")}): $f[${buildReturn(func.t)}]"
   }
 
   def generateImportFunnction(func: Import.Function): Unit = {}
@@ -62,10 +67,13 @@ class ImportGenerator(val F: String) {
     var impl =
       s"""
         |import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
+        |import swam.runtime.formats._
+        |import swam.runtime.formats.DefaultFormatters._
+        |
         |
         |trait GeneratedImport {
-        |  type AsIIO[T] = AsInterface[T, $F]
-        |  type AsIsIO[T] = AsInstance[T, $F]
+        |  type AsIIO[T] = AsInterface[T, $f]
+        |  type AsIsIO[T] = AsInstance[T, $f]
         |
         |""".stripMargin
 
@@ -113,7 +121,7 @@ class ImportGenerator(val F: String) {
     s"""
        | $impl
        |  def imports() = {
-       |    Imports[${F}](
+       |    Imports[${f}](
        |          TCMap[String, AsIsIO](
        |            $import_ ))
        |  )
@@ -121,11 +129,28 @@ class ImportGenerator(val F: String) {
        | }
        |""".stripMargin
   }
+
+  /**
+    * Creates a new module inside SWAM folder
+    * @param projectName
+    * @param imports
+    * @return
+    */
+  def createScalaProjectForImports(projectName: String, imports: Vector[Import]) = {
+    s"mkdir -p $projectName".!!
+    s"mkdir -p $projectName/src".!!
+
+    val trait_ = generateImportText(imports)
+
+    val printer = new PrintWriter(new File(s"$projectName/src/GeneratedImport.scala"))
+    printer.print(trait_)
+    printer.close()
+  }
 }
 
 object ImportGenerator {
 
-  def make(F: String): ImportGenerator =
-    new ImportGenerator(F)
+  def make(): ImportGenerator =
+    new ImportGenerator()
 
 }
