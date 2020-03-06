@@ -8,7 +8,6 @@ import java.util.concurrent.Executors
 
 import cats.effect.{Blocker, IO}
 import pureconfig.ConfigSource
-import swam.import_generator.TemplateEngine
 import swam.runtime.Engine
 import swam.runtime.config.EngineConfiguration
 import swam.runtime.import_generator.ImportGenerator
@@ -19,6 +18,7 @@ import swam.validation.Validator
 import utest.{TestSuite, Tests, test}
 
 import scala.concurrent.ExecutionContext
+import scala.reflect.runtime._
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-03-06
@@ -32,37 +32,32 @@ object TemplateGeneratorTests extends TestSuite {
   val blockingPool = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
   val blocker: Blocker = Blocker.liftExecutionContext(blockingPool)
 
-  type AsIIO[T] = AsInterface[T, IO]
-  type AsIsIO[T] = AsInstance[T, IO]
-
-  def buffer = {
-    val buffer = ByteBuffer.allocate(2 * 64 * 1000)
-    buffer.limit(64 * 1000)
-    buffer
-  }
-
   override def tests: Tests = Tests {
 
-    def testImportGenerationForProgram()(implicit rootPath: utest.framework.TestPath): Unit = {
+    def testImportGenerationForProgram(f1: String, f2: String) {
+      val generator = ImportGenerator.make("IO")
 
-      val generator = ImportGenerator.make()
-
-      val module =
+      val modul1 =
         engine
-          .compileBytes(fs2.io.file.readAll[IO](Paths.get(rootPath.value.last), blocker, 4096))
+          .compileBytes(fs2.io.file.readAll[IO](Paths.get(f1), blocker, 4096))
           .unsafeRunSync()
 
-      val text = generator.generateImportText(module.imports)
+      val modul2 =
+        engine
+          .compileBytes(fs2.io.file.readAll[IO](Paths.get(f2), blocker, 4096))
+          .unsafeRunSync()
+
+      val text = generator.generateImportText(modul1.imports.concat(modul2.imports))
 
       println(text)
+
+      System.in.read()
     }
 
-    test("templateRenderer") {
-      val context = Map("F" -> "IO")
-
-      println(TemplateEngine().render("ImportTemplate.sc", context))
+    test("generation") {
+      testImportGenerationForProgram("runtime/test/resources/program3.wasm", "runtime/test/resources/program2.wasm")
     }
-
-    test("runtime/test/resources/program.wasm") { testImportGenerationForProgram() }
   }
 }
+
+import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
