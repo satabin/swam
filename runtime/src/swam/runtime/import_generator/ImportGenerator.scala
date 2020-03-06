@@ -38,12 +38,7 @@ class ImportGenerator() {
     * @return
     */
   def buildParameter(index: Int, tpr: ValType) =
-    s"p${tpr match {
-      case I32 => s"$index:${getScalaType(tpr)}"
-      case I64 => s"$index:${getScalaType(tpr)}"
-      case F32 => s"$index:${getScalaType(tpr)}"
-      case F64 => s"$index:${getScalaType(tpr)}"
-    }}"
+    s"p$index:${getScalaType(tpr)}"
 
   /**
     * Creates the string representing the scala function return based on the arity of the return object in WASM
