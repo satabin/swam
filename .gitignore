@@ -64,3 +64,4 @@ logs
 
 
 log.txt
+*.lck
