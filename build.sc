@@ -56,7 +56,7 @@ object core extends SwamModule with PublishModule {
       ivy"com.github.pureconfig::pureconfig-cats-effect:$pureconfigVersion",
       ivy"org.scodec::scodec-core:1.11.4",
       ivy"io.estatico::newtype:0.4.3",
-      ivy"org.scala-lang.modules::scala-collection-compat:2.1.2",
+      ivy"org.scala-lang.modules::scala-collection-compat:2.1.2"
     )
 
 
