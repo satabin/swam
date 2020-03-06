@@ -19,6 +19,11 @@ class ImportGenerator() {
 
   val f = "IO"
 
+  /**
+    * Map WASM to scala primitive types
+    * @param v
+    * @return
+    */
   def getScalaType(v: ValType): String = v match {
     case I32 => s"Int"
     case I64 => s"Long"
@@ -26,6 +31,12 @@ class ImportGenerator() {
     case F64 => s"Double"
   }
 
+  /**
+    * Creates the paramaters chain for the function signature in scala
+    * @param index
+    * @param tpr
+    * @return
+    */
   def buildParameter(index: Int, tpr: ValType) =
     s"p${tpr match {
       case I32 => s"$index:${getScalaType(tpr)}"
@@ -34,6 +45,11 @@ class ImportGenerator() {
       case F64 => s"$index:${getScalaType(tpr)}"
     }}"
 
+  /**
+    * Creates the string representing the scala function return based on the arity of the return object in WASM
+    * @param t
+    * @return
+    */
   def buildReturn(t: Vector[ValType]) = {
     if (t.isEmpty)
       "Unit"
@@ -47,6 +63,13 @@ class ImportGenerator() {
 
   var registeredFunctions: Set[String] = Set[String]()
 
+  /**
+    * Creates the function trait template
+    * @param moduleName
+    * @param fieldName
+    * @param func
+    * @return
+    */
   def buildFunctionTemplate(moduleName: String, fieldName: String, func: FuncType): String = {
     val name = s"${moduleName}_$fieldName"
 
@@ -58,8 +81,11 @@ class ImportGenerator() {
       .mkString(",")}): $f[${buildReturn(func.t)}]"
   }
 
-  def generateImportFunnction(func: Import.Function): Unit = {}
-
+  /**
+    * Creates the trait to implement the WASM import functions
+    * @param imports
+    * @return
+    */
   def generateImportText(imports: Vector[Import]) = {
 
     val sorted = imports.sortBy(f => f.moduleName)
@@ -131,7 +157,7 @@ class ImportGenerator() {
   }
 
   /**
-    * Creates a new module inside SWAM folder
+    * Creates a new module including a trait object to implement the Imports
     * @param projectName
     * @param imports
     * @return
