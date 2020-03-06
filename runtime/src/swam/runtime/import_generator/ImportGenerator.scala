@@ -57,7 +57,7 @@ class ImportGenerator() {
       if (t.length == 1)
         getScalaType(t.last)
       else
-        s"(${t.map(getScalaType).mkString(",")})"
+        t.map(getScalaType(_).mkString("(", ",", ")")
     }
   }
 
