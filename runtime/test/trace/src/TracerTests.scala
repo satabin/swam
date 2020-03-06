@@ -18,37 +18,34 @@ package swam
 package runtime
 package trace
 
-
 import utest._
 
 object TracerTests extends TestSuite {
 
-
   def runLog(handler: HandlerType) = {
     val conf: TraceConfiguration = new TraceConfiguration(
-        handler,
-        "\n",
-        "*",
-        "ALL",
-        new TracerFileHandlerCondiguration(
-          "log.txt",
-          true,
-          "."
-        ),
-        new SocketHanndlerCondiguration("localhost", 8080),
-        new CustomTracerConfiguration("unknown")
-      )
-      
-      val tracer = new JULTracer(conf)
+      handler,
+      "\n",
+      "*",
+      "ALL",
+      new TracerFileHandlerCondiguration(
+        "log.txt",
+        true,
+        "."
+      ),
+      new SocketHanndlerCondiguration("localhost", 8080),
+      new CustomTracerConfiguration("unknown")
+    )
 
-      tracer.traceEvent(EventType.SPush, List("123", "4", "123"))
+    val tracer = new JULTracer(conf)
+
+    tracer.traceEvent(EventType.SPush, List("123", "4", "123"))
   }
 
-  
-  val tests = Tests{
+  val tests = Tests {
     "console_tracer" - runLog(HandlerType.Console)
     "file_tracer" - runLog(HandlerType.File)
     // "socket_tracer" - runLog(HandlerType.Socket)
   }
-  
+
 }
