@@ -34,7 +34,7 @@ private class CFGicator[F[_]](val builder: CFGBuilder)(implicit F: MonadError[F,
       if (idx == 0)
         Some(continuation)
       else
-        parent.flatMap(_.continuation((idx - 1)))
+        parent.flatMap(_.continuation(idx - 1))
   }
 
   private object traverser extends Traverser[F, Context] {
@@ -44,14 +44,14 @@ private class CFGicator[F[_]](val builder: CFGBuilder)(implicit F: MonadError[F,
         // jump to new basic block, representing the start of this new block
         val newBB = ctx.currentBasicBlock.jumpToNew("block")
         // add a new continuation basic block
-        val cont = builder.addBasicBlock("next")
+        val cont = builder.addBasicBlock("next_block")
         F.pure(Context(Some(ctx), newBB, cont, None, true))
       case (ctx, _) =>
         F.pure(ctx)
     }
 
     override val blockTraverse: (Context, Block) => F[Context] = {
-      case (ctx, _) if ctx.reachable =>
+      case (ctx, _) =>
         // add a jump to the continuation
         ctx.currentBasicBlock.jumpTo(ctx.continuation)
         val cont = ctx.continuation
@@ -62,8 +62,6 @@ private class CFGicator[F[_]](val builder: CFGBuilder)(implicit F: MonadError[F,
             // this should never happen
             F.raiseError(new Exception("malformed graph"))
         }
-      case (ctx, _) =>
-        F.pure(ctx)
     }
 
     override val loopPrepare: (Context, Loop) => F[Context] = {
@@ -77,9 +75,9 @@ private class CFGicator[F[_]](val builder: CFGBuilder)(implicit F: MonadError[F,
     }
 
     override val loopTraverse: (Context, Loop) => F[Context] = {
-      case (ctx, _) if ctx.reachable =>
+      case (ctx, _) =>
         // add a jump to the block after the loop
-        val newBB = ctx.currentBasicBlock.jumpToNew("next")
+        val newBB = ctx.currentBasicBlock.jumpToNew("next_loop")
         ctx.parent match {
           case Some(ctx) =>
             F.pure(ctx.copy(currentBasicBlock = newBB))
@@ -87,8 +85,6 @@ private class CFGicator[F[_]](val builder: CFGBuilder)(implicit F: MonadError[F,
             // this should never happen
             F.raiseError(new Exception("malformed graph"))
         }
-      case (ctx, _) =>
-        F.pure(ctx)
     }
 
     override val thenPrepare: (Context, If) => F[Context] = {
@@ -96,14 +92,14 @@ private class CFGicator[F[_]](val builder: CFGBuilder)(implicit F: MonadError[F,
         // jump to new basic block, representing the start of the then branch
         val (thenBB, elseBB) = ctx.currentBasicBlock.conditionallyJumpToNew()
         // add a new continuation basic block
-        val cont = builder.addBasicBlock("next")
+        val cont = builder.addBasicBlock("next_if")
         F.pure(Context(Some(ctx), thenBB, cont, Some(elseBB), true))
       case (ctx, _) =>
         F.pure(ctx)
     }
 
     override val elsePrepare: (Context, If) => F[Context] = {
-      case (ctx, _) if ctx.reachable =>
+      case (ctx, _) =>
         // add a jump to the continuation at the end of the then branch (current BB)
         ctx.currentBasicBlock.jumpTo(ctx.continuation)
         // the continuation of the else branch is the same as the one from then branch, save it
@@ -116,12 +112,10 @@ private class CFGicator[F[_]](val builder: CFGBuilder)(implicit F: MonadError[F,
             // this should never happen
             F.raiseError(new Exception("malformed graph"))
         }
-      case (ctx, _) =>
-        F.pure(ctx)
     }
 
     override val ifTraverse: (Context, If) => F[Context] = {
-      case (ctx, _) if ctx.reachable =>
+      case (ctx, _) =>
         // add a jump to the continuation
         ctx.currentBasicBlock.jumpTo(ctx.continuation)
         val cont = ctx.continuation
@@ -132,8 +126,6 @@ private class CFGicator[F[_]](val builder: CFGBuilder)(implicit F: MonadError[F,
             // this should never happen
             F.raiseError(new Exception("malformed graph"))
         }
-      case (ctx, _) =>
-        F.pure(ctx)
     }
 
     override val otherPrepare: (Context, Inst) => F[Context] = {
@@ -163,7 +155,7 @@ private class CFGicator[F[_]](val builder: CFGBuilder)(implicit F: MonadError[F,
         } else {
           F.raiseError(new Exception(s"invalid label index(es): ${errors.mkString(", ")}"))
         }
-      case (ctx, Return | Unreachable) if ctx.reachable =>
+      case (ctx, inst @ (Return | Unreachable)) if ctx.reachable =>
         ctx.currentBasicBlock.addReturn()
         F.pure(ctx.copy(reachable = false))
       case (ctx, inst) =>

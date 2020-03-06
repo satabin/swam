@@ -7,19 +7,19 @@ env:
 
 jobs:
   include:
-    - stage: test
-      script:
-        -  python -m SimpleHTTPServer 8080 &
-        - ./millw runtime.compile
-        - ./millw all runtime.test
-    - script:
-        - ./millw runtime.compile
-        - ./millw examples.mdoc
     - stage: formatting
       if: type = pull_request
       script:
         - ./millw __.reformat
         - if [[ $(git diff --exit-code --name-status) ]]; then echo 'Your code is not formatted correctly, please format it, check it and push formatted code'; exit 1; fi
+    - stage: test
+      script:
+        -  python -m SimpleHTTPServer 8080 &
+        - ./millw runtime.compile
+        - ./millw all core.test runtime.test
+    - script:
+        - ./millw runtime.compile
+        - ./millw examples.mdoc
 
 cache:
   directories:

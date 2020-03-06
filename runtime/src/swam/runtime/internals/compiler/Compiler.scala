@@ -112,7 +112,7 @@ object FunctionContext {
     FunctionContext(LabelStack(null, 0, arity, 0), Nil, Map.empty, 0, 1)
 }
 
-/** Compiles a valid module to the low level [[swam.runtime.internals.interpreter.low.Asm$ assembly language]].
+/** Compiles a valid module to the low level [[swam.runtime.internals.interpreter.AsmInst assembly language]].
   * This is a one-pass assembler which generates typed breaks.
   *
   * This compiler executes the static part of the specification semantics, i.e. the one
