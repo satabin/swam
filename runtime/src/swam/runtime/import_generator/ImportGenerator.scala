@@ -69,10 +69,10 @@ class ImportGenerator() {
     val name = s"${moduleName}_$fieldName"
 
     s"def $name(${func.params
-      .zip(Seq.range(0, func.params.length))
-      .map(t => {
-        buildParameter(t._2, t._1)
-      })
+      .zipWithIndex
+      .map {
+        case (p, idx) => buildParameter(idx, p)
+      }
       .mkString(",")}): $f[${buildReturn(func.t)}]"
   }
 
