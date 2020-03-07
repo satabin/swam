@@ -23,7 +23,7 @@ class ImportGenerator {
     * @param v
     * @return
     */
-  def getScalaType(v: ValType): String = v match {
+  private def getScalaType(v: ValType): String = v match {
     case I32 => s"Int"
     case I64 => s"Long"
     case F32 => s"Float"
@@ -36,14 +36,14 @@ class ImportGenerator {
     * @param tpr
     * @return
     */
-  def buildParameter(index: Int, tpr: ValType) = s"p$index:${getScalaType(tpr)}"
+  private def buildParameter(index: Int, tpr: ValType) = s"p$index:${getScalaType(tpr)}"
 
   /**
     * Creates the string representing the scala function return based on the arity of the return object in WASM
     * @param t
     * @return
     */
-  def buildReturn(t: Vector[ValType]) = {
+  private def buildReturn(t: Vector[ValType]) = {
     if (t.isEmpty)
       "Unit"
     else {
@@ -63,7 +63,7 @@ class ImportGenerator {
     * @param func
     * @return
     */
-  def buildFunctionTemplate(moduleName: String, fieldName: String, func: FuncType): String = {
+  private def buildFunctionTemplate(moduleName: String, fieldName: String, func: FuncType): String = {
     val name = s"${moduleName}_$fieldName"
 
     s"def $name(${func.params.zipWithIndex

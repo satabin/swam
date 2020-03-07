@@ -113,7 +113,10 @@ object generator extends SwamModule with PublishModule {
 
   def artifactName = "swam-generator"
 
-  def ivyDeps = Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion")
+  def ivyDeps = Agg(
+    ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
+    ivy"com.github.scopt::scopt:3.7.1"
+  )
 
   def pomSettings =
     PomSettings(
