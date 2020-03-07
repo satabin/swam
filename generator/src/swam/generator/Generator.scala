@@ -7,7 +7,7 @@ import cats.effect.{Blocker, IO}
 import swam.runtime.Engine
 
 import scala.concurrent.ExecutionContext
-case class Config(wasms: Seq[File] = Seq(), createModuleScructure: String = "")
+case class Config(wasms: Seq[File] = Seq(), createBoilerplate: String = "")
 
 /**
     @author Javier Cabrera-Arteaga on 2020-03-07
@@ -24,17 +24,17 @@ object Generator extends App {
 
     help("help").text("prints this usage text")
 
+    opt[String]('p', "create-boilerplate")
+      .optional()
+      .action((f, c) => c.copy(createBoilerplate = f))
+      .text("Create a scala boilerplate project to implement the imports")
+
     arg[File]("<wasms>...")
       .unbounded()
       .required()
       .minOccurs(1)
       .action((x, c) => c.copy(wasms = c.wasms :+ x))
       .text("WASMs module to extract the imports")
-
-    arg[String]("<create-boilerplate>")
-      .unbounded()
-      .optional()
-      .text("Create a scala boilerplate project to implement the imports")
 
   }
 
@@ -47,10 +47,10 @@ object Generator extends App {
 
       val imports = config.wasms.flatMap(w => engine.compile(w.toPath, blocker, 4096).unsafeRunSync().imports).toVector
 
-      if (config.createModuleScructure.isEmpty) {
+      if (config.createBoilerplate.isEmpty) {
         print(generator.generateImportText(imports))
       } else {
-        generator.createScalaProjectForImports(config.createModuleScructure, imports)
+        generator.createScalaProjectForImports(config.createBoilerplate, imports)
       }
 
       System.exit(0)
