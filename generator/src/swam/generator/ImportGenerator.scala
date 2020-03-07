@@ -1,4 +1,5 @@
-package swam.runtime.import_generator
+package swam
+package generator
 
 import java.io.{File, PrintWriter}
 
@@ -11,8 +12,6 @@ import sys.process._
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-03-06
-  */
-/**
   * Generates the scala code with the template to use as Import in the WASM execution
   */
 class ImportGenerator() {
@@ -37,13 +36,7 @@ class ImportGenerator() {
     * @param tpr
     * @return
     */
-  def buildParameter(index: Int, tpr: ValType) =
-    s"p${tpr match {
-      case I32 => s"$index:${getScalaType(tpr)}"
-      case I64 => s"$index:${getScalaType(tpr)}"
-      case F32 => s"$index:${getScalaType(tpr)}"
-      case F64 => s"$index:${getScalaType(tpr)}"
-    }}"
+  def buildParameter(index: Int, tpr: ValType) = s"p$index:${getScalaType(tpr)}"
 
   /**
     * Creates the string representing the scala function return based on the arity of the return object in WASM
@@ -57,7 +50,7 @@ class ImportGenerator() {
       if (t.length == 1)
         getScalaType(t.last)
       else
-        s"(${t.map(getScalaType).mkString(",")})"
+        t.map(getScalaType(_).mkString("(", ",", ")"))
     }
   }
 
@@ -73,8 +66,7 @@ class ImportGenerator() {
   def buildFunctionTemplate(moduleName: String, fieldName: String, func: FuncType): String = {
     val name = s"${moduleName}_$fieldName"
 
-    s"def $name(${func.params
-      .zip(Seq.range(0, func.params.length))
+    s"def $name(${func.params.zipWithIndex
       .map(t => {
         buildParameter(t._2, t._1)
       })
@@ -88,72 +80,40 @@ class ImportGenerator() {
     */
   def generateImportText(imports: Vector[Import]) = {
 
-    val sorted = imports.sortBy(f => f.moduleName)
-
-    var impl =
-      s"""
-        |import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
-        |import swam.runtime.formats._
-        |import swam.runtime.formats.DefaultFormatters._
-        |
-        |
-        |trait GeneratedImport {
-        |  type AsIIO[T] = AsInterface[T, $f]
-        |  type AsIsIO[T] = AsInstance[T, $f]
-        |
-        |""".stripMargin
-
-    var import_ = ""
-
-    var module = ""
-    var functions = Seq[String]()
-
-    sorted.foreach {
-      case Import.Function(moduleName, fieldName, _, tpe) => {
-
-        if (module.isEmpty || module != moduleName) {
-          import_ +=
-            s""""$moduleName" -> TCMap[String, AsIIO]("""
-
-          if (module.isEmpty)
-            module = moduleName
-
-        }
-        val name = s"${moduleName}_$fieldName"
-
-        if (registeredFunctions contains name) {
-          System.err.println(s"WARNING: '$fieldName' already defined. Skipping generation")
-        } else {
-          registeredFunctions += name
-          impl +=
-            s"""
-                  | ${buildFunctionTemplate(moduleName, fieldName, tpe)}
-                  |""".stripMargin
-
-          functions = functions :+ s"""
-                              |                  "$fieldName" -> ${moduleName}_$fieldName _ """.stripMargin
-        }
-
-        if (module != moduleName) {
-          import_ += functions.mkString(",")
-          functions = Seq[String]()
-          import_ += ")"
-          module = moduleName
-        }
-      }
-    }
-    import_ += functions.mkString(",")
+    val sorted = imports
+      .collect { case i: Import.Function => i } // Filter by function type
+      .groupBy(t => t.moduleName) // Group by module
+      .map[String, Set[Import.Function]](t => (t._1, t._2.toSet)) // remove duplicated entries
 
     s"""
-       | $impl
-       |  def imports() = {
-       |    Imports[${f}](
-       |          TCMap[String, AsIsIO](
-       |            $import_ ))
-       |  )
-       |  }
-       | }
-       |""".stripMargin
+               |import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
+               |import swam.runtime.formats._
+               |import swam.runtime.formats.DefaultFormatters._
+               |
+               |
+               |trait GeneratedImport {
+               |  type AsIIO[T] = AsInterface[T, $f]
+               |  type AsIsIO[T] = AsInstance[T, $f]
+               |  
+               |  ${sorted.keys
+         .map(m =>
+           s"""
+               |  ${sorted(m)
+                .map(i => s"""${buildFunctionTemplate(m, i.fieldName, i.tpe)} """.stripMargin)
+                .mkString("\n")}
+               |""".stripMargin)
+         .mkString("")}
+               |  
+               |  def imports() = {
+               |    Imports[${f}](
+               |          TCMap[String, AsIsIO](
+               |   ${sorted.keys.map(m => s"""
+               |            "$m" -> TCMap[String, AsIIO]( ${sorted(m).map(i => { s"""
+               |                "${i.fieldName}" -> ${m}_${i.fieldName} _ """.stripMargin }).mkString(",")}
+               |      )""".stripMargin).mkString("")}
+               |    ))
+               |    }
+               |}""".stripMargin
   }
 
   /**
