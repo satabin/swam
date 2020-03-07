@@ -14,7 +14,7 @@ import sys.process._
   * @author Javier Cabrera-Arteaga on 2020-03-06
   * Generates the scala code with the template to use as Import in the WASM execution
   */
-class ImportGenerator() {
+class ImportGenerator {
 
   val f = "IO"
 
