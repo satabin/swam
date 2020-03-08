@@ -48,6 +48,7 @@ object Generator extends App {
       val imports = config.wasms.flatMap(w => engine.compile(w.toPath, blocker, 4096).unsafeRunSync().imports).toVector
 
       if (config.createBoilerplate.isEmpty) {
+        println()
         print(generator.generateImportText(imports))
       } else {
         generator.createScalaProjectForImports(config.createBoilerplate, imports)

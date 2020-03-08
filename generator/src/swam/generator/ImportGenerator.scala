@@ -2,13 +2,18 @@ package swam
 package generator
 
 import java.io.{File, PrintWriter}
+import java.nio.file.Paths
 
 import swam.{FuncType, ValType}
 import swam.ValType.{F32, F64, I32, I64}
 import swam.runtime.Import
+
 import scala.reflect.runtime.universe._
+import org.scalafmt.interfaces.Scalafmt
 
 import sys.process._
+import org.fusesource.scalate.{RenderContext, TemplateEngine}
+import java.io.File
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-03-06
@@ -17,6 +22,8 @@ import sys.process._
 class ImportGenerator {
 
   val f = "IO"
+  val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
+  val config = Paths.get(".scalafmt.conf")
 
   /**
     * Map WASM to scala primitive types
@@ -43,35 +50,18 @@ class ImportGenerator {
     * @param t
     * @return
     */
-  private def buildReturn(t: Vector[ValType]) = {
+  private def buildReturn(t: Vector[ValType]): String = {
     if (t.isEmpty)
       "Unit"
     else {
       if (t.length == 1)
         getScalaType(t.last)
       else
-        t.map(getScalaType(_).mkString("(", ",", ")"))
+        t.map(getScalaType).mkString("(", ",", ")")
     }
   }
 
   var registeredFunctions: Set[String] = Set[String]()
-
-  /**
-    * Creates the function trait template
-    * @param moduleName
-    * @param fieldName
-    * @param func
-    * @return
-    */
-  private def buildFunctionTemplate(moduleName: String, fieldName: String, func: FuncType): String = {
-    val name = s"${moduleName}_$fieldName"
-
-    s"def $name(${func.params.zipWithIndex
-      .map(t => {
-        buildParameter(t._2, t._1)
-      })
-      .mkString(",")}): $f[${buildReturn(func.t)}]"
-  }
 
   /**
     * Creates the trait to implement the WASM import functions
@@ -85,35 +75,41 @@ class ImportGenerator {
       .groupBy(t => t.moduleName) // Group by module
       .map[String, Set[Import.Function]](t => (t._1, t._2.toSet)) // remove duplicated entries
 
-    s"""
-               |import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
-               |import swam.runtime.formats._
-               |import swam.runtime.formats.DefaultFormatters._
-               |
-               |
-               |trait GeneratedImport {
-               |  type AsIIO[T] = AsInterface[T, $f]
-               |  type AsIsIO[T] = AsInstance[T, $f]
-               |  
-               |  ${sorted.keys
-         .map(m =>
-           s"""
-               |  ${sorted(m)
-                .map(i => s"""${buildFunctionTemplate(m, i.fieldName, i.tpe)} """.stripMargin)
-                .mkString("\n")}
-               |""".stripMargin)
-         .mkString("")}
-               |  
-               |  def imports() = {
-               |    Imports[${f}](
-               |          TCMap[String, AsIsIO](
-               |   ${sorted.keys.map(m => s"""
-               |            "$m" -> TCMap[String, AsIIO]( ${sorted(m).map(i => { s"""
-               |                "${i.fieldName}" -> ${m}_${i.fieldName} _ """.stripMargin }).mkString(",")}
-               |      )""".stripMargin).mkString("")}
-               |    ))
-               |    }
-               |}""".stripMargin
+    // Generating DTO
+    val dto = sorted.keys.zipWithIndex
+      .map(
+        m =>
+          Map(
+            "module" -> m._1,
+            "comma" -> (m._2 < sorted.keys.size - 1),
+            "fields" -> sorted(m._1).toSeq.zipWithIndex
+              .map(
+                f => {
+                  Map(
+                    "name" -> f._1.fieldName,
+                    "return" -> buildReturn(f._1.tpe.t),
+                    "params" -> f._1.tpe.params.zipWithIndex.map(t => s"p${t._2}:${getScalaType(t._1)}").mkString(","),
+                    "comma" -> (f._2 < sorted(m._1).size - 1)
+                  )
+                }
+              )
+          ))
+      .toSeq
+
+    val te = new TemplateEngine()
+    te.boot()
+
+    val result =
+      te.layout(getClass.getClassLoader.getResource("import_template.mustache").getFile,
+                Map(
+                  "imports" -> dto
+                ))
+
+    val file = Paths.get(s"GeneratedImport.scala")
+
+    //scalafmt.format(config, file, result)
+
+    result
   }
 
   /**
