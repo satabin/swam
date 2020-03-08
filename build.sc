@@ -117,7 +117,9 @@ object generator extends SwamModule with PublishModule {
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
     ivy"com.github.scopt::scopt:3.7.1",
     ivy"org.scalameta::scalafmt-dynamic:2.4.0",
-    ivy"org.scalatra.scalate::scalate-core:1.9.5"
+    ivy"org.scalatra.scalate::scalate-core:1.9.5",
+    ivy"org.json4s::json4s-jackson:3.7.0-M2"
+
   )
 
   def pomSettings =

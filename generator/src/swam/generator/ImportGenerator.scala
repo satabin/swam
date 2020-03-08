@@ -63,13 +63,7 @@ class ImportGenerator {
 
   var registeredFunctions: Set[String] = Set[String]()
 
-  /**
-    * Creates the trait to implement the WASM import functions
-    * @param imports
-    * @return
-    */
-  def generateImportText(imports: Vector[Import]) = {
-
+  def getContext(imports: Vector[Import]): Seq[Map[String, Any]] = {
     val sorted = imports
       .collect { case i: Import.Function => i } // Filter by function type
       .groupBy(t => t.moduleName) // Group by module
@@ -96,20 +90,28 @@ class ImportGenerator {
           ))
       .toSeq
 
+    dto
+  }
+
+  /**
+    * Creates the trait to implement the WASM import functions
+    * @param imports
+    * @return
+    */
+  def generateImportText(imports: Vector[Import]) = {
+
     val te = new TemplateEngine()
     te.boot()
 
     val result =
       te.layout(getClass.getClassLoader.getResource("import_template.mustache").getFile,
                 Map(
-                  "imports" -> dto
+                  "imports" -> getContext(imports)
                 ))
 
     val file = Paths.get(s"GeneratedImport.scala")
 
-    //scalafmt.format(config, file, result)
-
-    result
+    scalafmt.format(config, file, result)
   }
 
   /**

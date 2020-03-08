@@ -4,10 +4,12 @@ import java.io.File
 import java.util.concurrent.Executors
 
 import cats.effect.{Blocker, IO}
+import org.json4s.DefaultFormats
 import swam.runtime.Engine
+import org.json4s.jackson.Serialization.writePretty
 
 import scala.concurrent.ExecutionContext
-case class Config(wasms: Seq[File] = Seq(), createBoilerplate: String = "")
+case class Config(wasms: Seq[File] = Seq(), printTemplateContext: Boolean = false, createBoilerplate: String = "")
 
 /**
     @author Javier Cabrera-Arteaga on 2020-03-07
@@ -23,11 +25,17 @@ object Generator extends App {
     head("swam-generator")
 
     help("help").text("prints this usage text")
+    note("swam-generator generates the scala code using Mustache template engine")
 
     opt[String]('p', "create-boilerplate")
       .optional()
       .action((f, c) => c.copy(createBoilerplate = f))
       .text("Create a scala boilerplate project to implement the imports")
+
+    opt[Boolean]('c', "print-context")
+      .optional()
+      .action((f, c) => c.copy(printTemplateContext = f, createBoilerplate = "")) // Avoid he boilerplate generation
+      .text("Prints the template context (JSON) to feed the template engine")
 
     arg[File]("<wasms>...")
       .unbounded()
@@ -49,7 +57,14 @@ object Generator extends App {
 
       if (config.createBoilerplate.isEmpty) {
         println()
-        print(generator.generateImportText(imports))
+        if (!config.printTemplateContext)
+          println(generator.generateImportText(imports))
+        else {
+          val context = generator.getContext(imports)
+          implicit val formats = DefaultFormats
+
+          println(writePretty(context))
+        }
       } else {
         generator.createScalaProjectForImports(config.createBoilerplate, imports)
       }
