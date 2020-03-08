@@ -117,13 +117,7 @@ class ImportGenerator {
 
     val file = Paths.get(s"GeneratedImport.scala")
 
-    try {
-      scalafmt.format(config, file, result)
-    } catch {
-      case x: Exception => {
-        throw new RuntimeException(s"It seems that the generated file is not a valid scala file. ${x.getMessage}")
-      }
-    }
+    scalafmt.format(config, file, result)
   }
 
   /**
