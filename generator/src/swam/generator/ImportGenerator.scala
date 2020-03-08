@@ -71,7 +71,8 @@ class ImportGenerator {
     val sorted = imports
       .collect { case i: Import.Function => i } // Filter by function type
       .groupBy(t => t.moduleName) // Group by module
-      .map[String, Set[Import.Function]](t => (t._1, t._2.toSet)) // remove duplicated entries
+      .view
+      .mapValues(_.toSet) // remove duplicated entries
 
     // Generating DTO
     val dto = sorted.keys.zipWithIndex
@@ -102,7 +103,7 @@ class ImportGenerator {
     * @param imports
     * @return
     */
-  def generateImportText(imports: Vector[Import]) = {
+  def generateImportText(imports: Vector[Import], className: String) = {
 
     val te = new TemplateEngine()
     te.boot()
@@ -110,6 +111,7 @@ class ImportGenerator {
     val result =
       te.layout(templateFile,
                 Map(
+                  "className" -> className,
                   "imports" -> getContext(imports)
                 ))
 
@@ -130,13 +132,15 @@ class ImportGenerator {
     * @param imports
     * @return
     */
-  def createScalaProjectForImports(projectName: String, imports: Vector[Import]) = {
+  def createScalaProjectForImports(projectName: String,
+                                   imports: Vector[Import],
+                                   className: String = "GeneratedImport") = {
     s"mkdir -p $projectName".!!
     s"mkdir -p $projectName/src".!!
 
-    val trait_ = generateImportText(imports)
+    val trait_ = generateImportText(imports, className)
 
-    val printer = new PrintWriter(new File(s"$projectName/src/GeneratedImport.scala"))
+    val printer = new PrintWriter(new File(s"$projectName/src/$className.scala"))
     printer.print(trait_)
     printer.close()
   }

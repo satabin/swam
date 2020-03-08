@@ -3,26 +3,29 @@ package swam.generator
 import java.io.File
 import java.util.concurrent.Executors
 
-import cats.effect.{Blocker, IO}
+import cats.effect.{Blocker, ContextShift, ExitCode, IO, IOApp, Resource, Sync}
 import org.json4s.DefaultFormats
-import swam.runtime.Engine
+import swam.runtime.{Engine, Import}
 import org.json4s.jackson.Serialization.writePretty
 
 import scala.concurrent.ExecutionContext
 case class Config(wasms: Seq[File] = Seq(),
                   printTemplateContext: Boolean = false,
                   createBoilerplate: String = "",
+                  className: String = "GeneratedImports",
                   renderTemplate: File = null)
 
 /**
     @author Javier Cabrera-Arteaga on 2020-03-07
   */
-object Generator extends App {
+object Generator extends IOApp {
 
-  implicit val cs = IO.contextShift(ExecutionContext.Implicits.global)
-
-  val blockingPool = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
-  val blocker: Blocker = Blocker.liftExecutionContext(blockingPool)
+  def blockingThreadPool[F[_]](implicit F: Sync[F]): Resource[F, ExecutionContext] =
+    Resource(F.delay {
+      val executor = Executors.newCachedThreadPool()
+      val ec = ExecutionContext.fromExecutor(executor)
+      (ec, F.delay(executor.shutdown()))
+    })
 
   val parser = new scopt.OptionParser[Config]("scopt") {
     head("swam-generator")
@@ -34,6 +37,11 @@ object Generator extends App {
       .optional()
       .action((f, c) => c.copy(createBoilerplate = f))
       .text("Create a scala boilerplate project to implement the imports")
+
+    opt[String]('n', "trait-class-name")
+      .optional()
+      .action((f, c) => c.copy(className = f))
+      .text("Creates the trait object with the specified name")
 
     opt[Boolean]('c', "print-context")
       .optional()
@@ -54,37 +62,55 @@ object Generator extends App {
 
   }
 
-  parser.parse(args, Config()) match {
-    case Some(config) => {
+  def run(args: List[String]): IO[ExitCode] = {
 
-      val engine = Engine[IO]().unsafeRunSync()
-      val generator = ImportGenerator.make()
+    parser.parse(args, Config()) match {
+      case Some(config) => {
 
-      val imports = config.wasms.flatMap(w => engine.compile(w.toPath, blocker, 4096).unsafeRunSync().imports).toVector
+        val engine = Engine[IO]().unsafeRunSync()
+        val generator = ImportGenerator.make()
 
-      if (config.renderTemplate != null)
-        generator.changeTemplate(config.renderTemplate.getPath)
+        //       val imports =
 
-      if (config.createBoilerplate.isEmpty) {
-        println()
-        if (!config.printTemplateContext)
-          println(generator.generateImportText(imports))
-        else {
-          val context = generator.getContext(imports)
-          implicit val formats = DefaultFormats
+        val imports = blockingThreadPool[IO]
+          .use { ec =>
+            contextShift.evalOn(ec) {
 
-          println(writePretty(context))
+              IO {
+                config.wasms
+                  .flatMap(w =>
+                    engine.compile(w.toPath, Blocker.liftExecutionContext(ec), 4096).unsafeRunSync().imports)
+                  .toVector
+              }
+            }
+          }
+          .unsafeRunSync()
+
+        if (config.renderTemplate != null)
+          generator.changeTemplate(config.renderTemplate.getPath)
+
+        if (config.createBoilerplate.isEmpty) {
+          println()
+          if (!config.printTemplateContext)
+            println(generator.generateImportText(imports, config.className))
+          else {
+            val context = generator.getContext(imports)
+            implicit val formats = DefaultFormats
+
+            println(writePretty(context))
+          }
+        } else {
+          generator.createScalaProjectForImports(config.createBoilerplate, imports, config.className)
         }
-      } else {
-        generator.createScalaProjectForImports(config.createBoilerplate, imports)
       }
+      case None => {
+        parser.reportError("You must provide a WASM file")
+      }
+      // arguments are bad, error message will have been displayed
+    }
 
-      System.exit(0)
-    }
-    case None => {
-      parser.reportError("You must provide a WASM file")
-    }
-    // arguments are bad, error message will have been displayed
+    System.exit(0)
+    IO { ExitCode.Success }
   }
 
 }
