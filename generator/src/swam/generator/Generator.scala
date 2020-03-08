@@ -9,7 +9,10 @@ import swam.runtime.Engine
 import org.json4s.jackson.Serialization.writePretty
 
 import scala.concurrent.ExecutionContext
-case class Config(wasms: Seq[File] = Seq(), printTemplateContext: Boolean = false, createBoilerplate: String = "")
+case class Config(wasms: Seq[File] = Seq(),
+                  printTemplateContext: Boolean = false,
+                  createBoilerplate: String = "",
+                  renderTemplate: File = null)
 
 /**
     @author Javier Cabrera-Arteaga on 2020-03-07
@@ -37,6 +40,11 @@ object Generator extends App {
       .action((f, c) => c.copy(printTemplateContext = f, createBoilerplate = "")) // Avoid he boilerplate generation
       .text("Prints the template context (JSON) to feed the template engine")
 
+    opt[File]('t', "template")
+      .optional()
+      .action((x, c) => c.copy(renderTemplate = x))
+      .text("Replaces template for the imports generation")
+
     arg[File]("<wasms>...")
       .unbounded()
       .required()
@@ -46,7 +54,6 @@ object Generator extends App {
 
   }
 
-  // parser.parse returns Option[C]
   parser.parse(args, Config()) match {
     case Some(config) => {
 
@@ -54,6 +61,9 @@ object Generator extends App {
       val generator = ImportGenerator.make()
 
       val imports = config.wasms.flatMap(w => engine.compile(w.toPath, blocker, 4096).unsafeRunSync().imports).toVector
+
+      if (config.renderTemplate != null)
+        generator.changeTemplate(config.renderTemplate.getPath)
 
       if (config.createBoilerplate.isEmpty) {
         println()

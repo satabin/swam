@@ -25,6 +25,9 @@ class ImportGenerator {
   val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
   val config = Paths.get(".scalafmt.conf")
 
+  private var templateFile = getClass.getClassLoader.getResource("import_template.mustache").getFile
+  var registeredFunctions: Set[String] = Set[String]()
+
   /**
     * Map WASM to scala primitive types
     * @param v
@@ -38,12 +41,10 @@ class ImportGenerator {
   }
 
   /**
-    * Creates the paramaters chain for the function signature in scala
-    * @param index
-    * @param tpr
-    * @return
+    * Change the template file
+    * @param file
     */
-  private def buildParameter(index: Int, tpr: ValType) = s"p$index:${getScalaType(tpr)}"
+  def changeTemplate(file: String) = templateFile = file
 
   /**
     * Creates the string representing the scala function return based on the arity of the return object in WASM
@@ -61,8 +62,11 @@ class ImportGenerator {
     }
   }
 
-  var registeredFunctions: Set[String] = Set[String]()
-
+  /**
+    * Generates a context Map to feed the template rendering
+    * @param imports
+    * @return
+    */
   def getContext(imports: Vector[Import]): Seq[Map[String, Any]] = {
     val sorted = imports
       .collect { case i: Import.Function => i } // Filter by function type
@@ -104,14 +108,20 @@ class ImportGenerator {
     te.boot()
 
     val result =
-      te.layout(getClass.getClassLoader.getResource("import_template.mustache").getFile,
+      te.layout(templateFile,
                 Map(
                   "imports" -> getContext(imports)
                 ))
 
     val file = Paths.get(s"GeneratedImport.scala")
 
-    scalafmt.format(config, file, result)
+    try {
+      scalafmt.format(config, file, result)
+    } catch {
+      case x: Exception => {
+        throw new RuntimeException(s"It seems that the generated file is not a valid scala file. ${x.getMessage}")
+      }
+    }
   }
 
   /**
