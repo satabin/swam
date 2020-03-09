@@ -3,12 +3,14 @@ package swam.generator
 import java.io.File
 import java.util.concurrent.Executors
 
-import cats.effect.{Blocker, ContextShift, ExitCode, IO, IOApp, Resource, Sync}
+import cats.effect.{Blocker, ExitCode, IO, IOApp, Resource, Sync}
 import org.json4s.DefaultFormats
 import swam.runtime.{Engine, Import}
 import org.json4s.jackson.Serialization.writePretty
+import cats.implicits._
 
 import scala.concurrent.ExecutionContext
+
 case class Config(wasms: Seq[File] = Seq(),
                   printTemplateContext: Boolean = false,
                   createBoilerplate: String = "",
@@ -19,6 +21,8 @@ case class Config(wasms: Seq[File] = Seq(),
     @author Javier Cabrera-Arteaga on 2020-03-07
   */
 object Generator extends IOApp {
+
+  val generator = ImportGenerator[IO]
 
   def blockingThreadPool[F[_]](implicit F: Sync[F]): Resource[F, ExecutionContext] =
     Resource(F.delay {
@@ -62,55 +66,47 @@ object Generator extends IOApp {
 
   }
 
-  def run(args: List[String]): IO[ExitCode] = {
+  def getImports(w: File, blocker: Blocker) =
+    for {
+      engine <- Engine[IO]()
+      module <- engine.compile(w.toPath, blocker, 4096)
+    } yield module.imports
 
-    parser.parse(args, Config()) match {
-      case Some(config) => {
-
-        val engine = Engine[IO]().unsafeRunSync()
-        val generator = ImportGenerator.make()
-
-        //       val imports =
-
-        val imports = blockingThreadPool[IO]
-          .use { ec =>
-            contextShift.evalOn(ec) {
-
-              IO {
-                config.wasms
-                  .flatMap(w =>
-                    engine.compile(w.toPath, Blocker.liftExecutionContext(ec), 4096).unsafeRunSync().imports)
-                  .toVector
-              }
-            }
-          }
-          .unsafeRunSync()
-
-        if (config.renderTemplate != null)
-          generator.changeTemplate(config.renderTemplate.getPath)
-
-        if (config.createBoilerplate.isEmpty) {
-          println()
-          if (!config.printTemplateContext)
-            println(generator.generateImportText(imports, config.className))
-          else {
-            val context = generator.getContext(imports)
-            implicit val formats = DefaultFormats
-
-            println(writePretty(context))
-          }
-        } else {
-          generator.createScalaProjectForImports(config.createBoilerplate, imports, config.className)
-        }
-      }
-      case None => {
-        parser.reportError("You must provide a WASM file")
-      }
-      // arguments are bad, error message will have been displayed
+  def concatImports(wasms: Seq[File]): IO[Vector[Import]] = Blocker[IO].use { blocker =>
+    {
+      wasms.map(w => getImports(w, blocker)).reduce((r, l) => r.combine(l))
     }
+  }
 
-    System.exit(0)
-    IO { ExitCode.Success }
+  def generate(config: Config, imports: Vector[Import]): IO[Unit] = {
+    if (config.renderTemplate != null)
+      generator.changeTemplate(config.renderTemplate.getPath)
+
+    if (config.createBoilerplate.isEmpty) {
+      println()
+      if (!config.printTemplateContext)
+        IO(println(generator.generateImportText(imports, config.className)))
+      else {
+        val context = generator.getContext(imports)
+        implicit val formats = DefaultFormats
+
+        IO(println(writePretty(context)))
+      }
+    } else {
+      generator.createScalaProjectForImports(config.createBoilerplate, imports, config.className)
+    }
+  }
+
+  def run(args: List[String]): IO[ExitCode] = parser.parse(args, Config()) match {
+    case Some(config) => {
+      for {
+        imports <- concatImports(config.wasms)
+        _ <- generate(config, imports)
+      } yield ()
+    }.as(ExitCode.Success)
+    case None =>
+      IO(parser.reportError("You must provide a WASM file")).as(ExitCode.Error)
+    // arguments are bad, error message will have been displayed
   }
 
 }

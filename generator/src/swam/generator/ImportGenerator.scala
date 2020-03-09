@@ -1,25 +1,24 @@
 package swam
 package generator
 
-import java.io.{File, PrintWriter}
-import java.nio.file.Paths
+import java.nio.file.{Paths, StandardOpenOption}
 
-import swam.{FuncType, ValType}
 import swam.ValType.{F32, F64, I32, I64}
 import swam.runtime.Import
 
 import scala.reflect.runtime.universe._
 import org.scalafmt.interfaces.Scalafmt
-
-import sys.process._
-import org.fusesource.scalate.{RenderContext, TemplateEngine}
-import java.io.File
+import org.fusesource.scalate.TemplateEngine
+import cats.effect.{Blocker, Effect, IO}
+import cats.implicits._
+import cats.effect._
+import fs2.{text, _}
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-03-06
   * Generates the scala code with the template to use as Import in the WASM execution
   */
-class ImportGenerator {
+class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
 
   val f = "IO"
   val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
@@ -120,6 +119,26 @@ class ImportGenerator {
     scalafmt.format(config, file, result)
   }
 
+  def writeToFile(t: String, projectName: String, className: String) = {
+
+    Blocker[F]
+      .use { blocker =>
+        {
+
+          for {
+            _ <- io.file.createDirectories[F](blocker, Paths.get(s"$projectName/src")) // Creates the module structure
+            _ <- fs2
+              .Stream(t)
+              .through(text.utf8Encode)
+              .through(io.file
+                .writeAll[F](Paths.get(s"$projectName/src/$className.scala"), blocker, Seq(StandardOpenOption.CREATE)))
+              .compile
+              .drain
+          } yield ()
+        }
+      }
+  }
+
   /**
     * Creates a new module including a trait object to implement the Imports
     * @param projectName
@@ -129,20 +148,16 @@ class ImportGenerator {
   def createScalaProjectForImports(projectName: String,
                                    imports: Vector[Import],
                                    className: String = "GeneratedImport") = {
-    s"mkdir -p $projectName".!!
-    s"mkdir -p $projectName/src".!!
 
     val trait_ = generateImportText(imports, className)
 
-    val printer = new PrintWriter(new File(s"$projectName/src/$className.scala"))
-    printer.print(trait_)
-    printer.close()
+    writeToFile(trait_, projectName, className)
   }
 }
 
 object ImportGenerator {
 
-  def make(): ImportGenerator =
-    new ImportGenerator()
+  def apply[F[_]: Effect](implicit cs: ContextShift[F]): ImportGenerator[F] =
+    new ImportGenerator[F]()
 
 }
