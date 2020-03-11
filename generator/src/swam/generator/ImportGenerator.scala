@@ -23,9 +23,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
   val f = "IO"
   val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
   val config = Paths.get(".scalafmt.conf")
-
-  private var templateFile = getClass.getClassLoader.getResource("import_template.mustache").getFile
-  var registeredFunctions: Set[String] = Set[String]()
+  val defaultTemplate = getClass.getClassLoader.getResource("import_template.mustache").getFile;
 
   /**
     * Map WASM to scala primitive types
@@ -33,17 +31,11 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
     * @return
     */
   private def getScalaType(v: ValType): String = v match {
-    case I32 => s"Int"
-    case I64 => s"Long"
-    case F32 => s"Float"
-    case F64 => s"Double"
+    case I32 => "Int"
+    case I64 => "Long"
+    case F32 => "Float"
+    case F64 => "Double"
   }
-
-  /**
-    * Change the template file
-    * @param file
-    */
-  def changeTemplate(file: String) = templateFile = file
 
   /**
     * Creates the string representing the scala function return based on the arity of the return object in WASM
@@ -74,27 +66,27 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
       .mapValues(_.toSet) // remove duplicated entries
 
     // Generating DTO
-    val dto = sorted.keys.zipWithIndex
-      .map(
-        m =>
-          Map(
-            "module" -> m._1,
-            "comma" -> (m._2 < sorted.keys.size - 1),
-            "fields" -> sorted(m._1).toSeq.zipWithIndex
-              .map(
-                f => {
-                  Map(
-                    "name" -> f._1.fieldName,
-                    "return" -> buildReturn(f._1.tpe.t),
-                    "params" -> f._1.tpe.params.zipWithIndex.map(t => s"p${t._2}:${getScalaType(t._1)}").mkString(","),
-                    "comma" -> (f._2 < sorted(m._1).size - 1)
-                  )
-                }
-              )
-          ))
-      .toSeq
-
-    dto
+    sorted.zipWithIndex.map {
+      case ((moduleName, functions), index) =>
+        Map(
+          "module" -> moduleName,
+          "comma" -> (index < sorted.keys.size - 1),
+          "fields" -> functions.toSeq.zipWithIndex
+            .map {
+              case (field, fieldIndex) => {
+                Map(
+                  "name" -> field.fieldName,
+                  "nameCapital" -> field.fieldName.capitalize,
+                  "return" -> buildReturn(field.tpe.t),
+                  "params" -> field.tpe.params.zipWithIndex
+                    .map { case (type_, typeIndex) => s"p${typeIndex}:${getScalaType(type_)}" }
+                    .mkString(","),
+                  "comma" -> (fieldIndex < functions.size - 1)
+                )
+              }
+            }
+        )
+    }.toSeq
   }
 
   /**
@@ -102,7 +94,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
     * @param imports
     * @return
     */
-  def generateImportText(imports: Vector[Import], className: String) = {
+  def generateImportText(imports: Vector[Import], className: String, templateFile: String = defaultTemplate) = {
 
     val te = new TemplateEngine()
     te.boot()
@@ -114,7 +106,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
                   "imports" -> getContext(imports)
                 ))
 
-    val file = Paths.get(s"GeneratedImport.scala")
+    val file = Paths.get("GeneratedImport.scala")
 
     scalafmt.format(config, file, result)
   }
@@ -123,19 +115,17 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
 
     Blocker[F]
       .use { blocker =>
-        {
+        for {
+          _ <- io.file.createDirectories[F](blocker, Paths.get(s"$projectName/src")) // Creates the module structure
+          _ <- fs2
+            .Stream(t)
+            .through(text.utf8Encode)
+            .through(io.file
+              .writeAll[F](Paths.get(s"$projectName/src/$className.scala"), blocker, Seq(StandardOpenOption.CREATE)))
+            .compile
+            .drain
+        } yield ()
 
-          for {
-            _ <- io.file.createDirectories[F](blocker, Paths.get(s"$projectName/src")) // Creates the module structure
-            _ <- fs2
-              .Stream(t)
-              .through(text.utf8Encode)
-              .through(io.file
-                .writeAll[F](Paths.get(s"$projectName/src/$className.scala"), blocker, Seq(StandardOpenOption.CREATE)))
-              .compile
-              .drain
-          } yield ()
-        }
       }
   }
 
@@ -147,9 +137,10 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
     */
   def createScalaProjectForImports(projectName: String,
                                    imports: Vector[Import],
-                                   className: String = "GeneratedImport") = {
+                                   className: String = "GeneratedImport",
+                                   template: String = defaultTemplate) = {
 
-    val trait_ = generateImportText(imports, className)
+    val trait_ = generateImportText(imports, className, template)
 
     writeToFile(trait_, projectName, className)
   }

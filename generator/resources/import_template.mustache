@@ -10,7 +10,7 @@ trait {{className}} {
 
     {{#imports}}
         {{#fields}}
-            def {{module}}_{{name}}({{params}}): IO[{{return}}]
+            def {{module}}{{nameCapital}}({{params}}): IO[{{return}}]
         {{/fields}}
     {{/imports}}
 
@@ -21,7 +21,7 @@ trait {{className}} {
           TCMap[String, AsIsIO](
              "{{module}}" -> TCMap[String, AsIIO](
                 {{#fields}}
-                    "{{name}}" -> {{module}}_{{name}} _ {{#comma}},{{/comma}}
+                    "{{name}}" -> {{module}}{{nameCapital}} _ {{#comma}},{{/comma}}
                 {{/fields}}
                 ) {{#comma}},{{/comma}}
            )

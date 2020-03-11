@@ -24,13 +24,6 @@ object Generator extends IOApp {
 
   val generator = ImportGenerator[IO]
 
-  def blockingThreadPool[F[_]](implicit F: Sync[F]): Resource[F, ExecutionContext] =
-    Resource(F.delay {
-      val executor = Executors.newCachedThreadPool()
-      val ec = ExecutionContext.fromExecutor(executor)
-      (ec, F.delay(executor.shutdown()))
-    })
-
   val parser = new scopt.OptionParser[Config]("scopt") {
     head("swam-generator")
 
@@ -73,28 +66,26 @@ object Generator extends IOApp {
     } yield module.imports
 
   def concatImports(wasms: Seq[File]): IO[Vector[Import]] = Blocker[IO].use { blocker =>
-    {
-      wasms.map(w => getImports(w, blocker)).reduce((r, l) => r.combine(l))
-    }
+    wasms.map(w => getImports(w, blocker)).reduce((r, l) => r.combine(l))
   }
 
   def generate(config: Config, imports: Vector[Import]): IO[Unit] = {
-    if (config.renderTemplate != null)
-      generator.changeTemplate(config.renderTemplate.getPath)
-
     if (config.createBoilerplate.isEmpty) {
       println()
-      if (!config.printTemplateContext)
-        IO(println(generator.generateImportText(imports, config.className)))
-      else {
+      if (!config.printTemplateContext) {
+        config.renderTemplate match {
+          case null => IO(println(generator.generateImportText(imports, config.className)))
+          case template: File =>
+            IO(println(generator.generateImportText(imports, config.className, template.getPath)))
+        }
+
+      } else {
         val context = generator.getContext(imports)
         implicit val formats = DefaultFormats
-
         IO(println(writePretty(context)))
       }
-    } else {
+    } else
       generator.createScalaProjectForImports(config.createBoilerplate, imports, config.className)
-    }
   }
 
   def run(args: List[String]): IO[ExitCode] = parser.parse(args, Config()) match {
