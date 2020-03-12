@@ -166,7 +166,7 @@ object interpreter extends SwamModule with PublishModule {
 
   def publishVersion = swamVersion
 
-  def artifactName = "swam-generator"
+  def artifactName = "swam-interpreter"
 
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
@@ -175,7 +175,7 @@ object interpreter extends SwamModule with PublishModule {
 
   def pomSettings =
     PomSettings(
-      description = "Swam code generator library",
+      description = "SWAM interpreter",
       organization = "org.gnieh",
       url = swamUrl,
       licenses = Seq(swamLicense),
@@ -192,6 +192,32 @@ object interpreter extends SwamModule with PublishModule {
     def testFrameworks = Seq("swam.util.Framework")
   }
 
+}
+
+
+
+object swamstdlib extends SwamModule with PublishModule {
+
+  def moduleDeps = Seq(core, runtime)
+
+  def publishVersion = swamVersion
+
+  def artifactName = "swam-stdlib"
+
+  def ivyDeps = Agg(
+    ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
+    ivy"com.github.scopt::scopt:3.7.1"
+  )
+
+  def pomSettings =
+    PomSettings(
+      description = "SWAM wrapper for stdlib imports",
+      organization = "org.gnieh",
+      url = swamUrl,
+      licenses = Seq(swamLicense),
+      versionControl = VersionControl.github("satabin", "swam"),
+      developers = Seq(swamDeveloper)
+    )
 }
 
 object runtime extends SwamModule with PublishModule {
