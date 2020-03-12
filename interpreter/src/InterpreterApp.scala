@@ -22,7 +22,8 @@ case class Config(wasm: File = null,
                   debugCompiler: Boolean = false,
                   trace: Boolean = false,
                   traceOutDir: String = ".",
-                  traceFilter: String = "*")
+                  traceFilter: String = "*",
+                  tracePattern: String = "log.%u.txt")
 
 private object NoTimestampFormatter extends Formatter {
   override def format(x: LogRecord): String =
@@ -54,6 +55,11 @@ object InterpreterApp extends IOApp {
       .optional()
       .action((f, c) => c.copy(traceFilter = f))
       .text("Filter the traces. The parameter is a regular expression applied to the opcode, e.g.: 'mread|mwrite'")
+
+    opt[String]('l', "logfile-name")
+      .optional()
+      .action((f, c) => c.copy(tracePattern = f))
+      .text("SWAM uses a logger based on [[https://docs.oracle.com/en/java/javase/13/docs/api/java.logging/java/util/logging/package-summary.html java.util.logging]]. Provide any valid valid file pattern")
 
     opt[Boolean]('d', "debug-compiler")
       .optional()
@@ -89,10 +95,10 @@ object InterpreterApp extends IOApp {
       Blocker[IO].use { blocker =>
         for {
           compiler <- Compiler[IO]
-          tracer <- IO(JULTracer(NoTimestampFormatter, config.traceFilter))
-
           engine <- if (config.trace)
-            Engine[IO](tracer = Option(tracer))
+            Engine[IO](
+              tracer =
+                Option(JULTracer(config.traceOutDir, config.tracePattern, NoTimestampFormatter, config.traceFilter)))
           else
             Engine[IO]()
 

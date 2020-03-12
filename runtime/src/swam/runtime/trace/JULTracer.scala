@@ -60,14 +60,25 @@ class JULTracer(conf: TraceConfiguration, formatter: Formatter = PureFormatter) 
 }
 
 object JULTracer {
-  def apply(formatter: Formatter = PureFormatter, filter: String = "*"): JULTracer = {
-    val conf = ConfigSource.default
+  def apply(traceFolder: String,
+            traceNamePattern: String,
+            formatter: Formatter = PureFormatter,
+            filter: String = "*"): JULTracer = {
+    val default = ConfigSource.default
       .at("swam.runtime.tracer")
       .loadOrThrow[TraceConfiguration]
 
-    conf.filter = filter
+    val custom = TraceConfiguration(
+      HandlerType.File,
+      default.separator,
+      filter,
+      default.level,
+      TracerFileHandlerCondiguration(traceNamePattern, default.fileHandler.append, traceFolder),
+      default.socketHandler,
+      default.custom
+    )
 
-    new JULTracer(conf, formatter)
+    new JULTracer(custom, formatter)
   }
 }
 
@@ -80,7 +91,7 @@ private object PureFormatter extends Formatter {
 
 case class TraceConfiguration(handler: HandlerType,
                               separator: String,
-                              var filter: String,
+                              filter: String,
                               level: String,
                               fileHandler: TracerFileHandlerCondiguration,
                               socketHandler: SocketHanndlerCondiguration,
