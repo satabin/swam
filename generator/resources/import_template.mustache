@@ -1,0 +1,31 @@
+import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
+import swam.runtime.formats._
+import swam.runtime.formats.DefaultFormatters._
+
+
+trait {{className}} {
+  type AsIIO[T] = AsInterface[T, IO]
+  type AsIsIO[T] = AsInstance[T, IO]
+
+
+    {{#imports}}
+        {{#fields}}
+            def {{module}}{{nameCapital}}({{params}}): IO[{{return}}]
+        {{/fields}}
+    {{/imports}}
+
+
+    {{#imports}}
+    def imports() = {
+       Imports[IO](
+          TCMap[String, AsIsIO](
+             "{{module}}" -> TCMap[String, AsIIO](
+                {{#fields}}
+                    "{{name}}" -> {{module}}{{nameCapital}} _ {{#comma}},{{/comma}}
+                {{/fields}}
+                ) {{#comma}},{{/comma}}
+           )
+       )
+    }
+    {{/imports}}
+}
