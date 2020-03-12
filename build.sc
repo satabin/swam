@@ -147,7 +147,7 @@ object generator extends SwamModule with PublishModule {
 
 object interpreter extends SwamModule with PublishModule {
 
-  def moduleDeps = Seq(core, runtime)
+  def moduleDeps = Seq(text, core, runtime)
 
   def publishVersion = swamVersion
 
