@@ -1,25 +1,23 @@
 import mill._
+import scalalib._
 import mill.eval._
 import mill.scalalib._
 import mill.scalalib.publish._
 import mill.scalalib.scalafmt._
-
 import ammonite.ops._
 import mill.modules.Jvm.runSubprocess
-
 import coursier.maven.MavenRepository
-
 import $file.jmh
 import jmh.Jmh
 import $file.headers
 import headers.Headers
-
 import $file.mdoc
 import mdoc.MdocModule
-
 import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
+import generator.ivy
+import mill.api.PathRef
 
-val swamVersion = "0.5.0"
+val swamVersion = "0.6.0-SNAPSHOT"
 
 val swamLicense = License.`Apache-2.0`
 
@@ -107,7 +105,7 @@ object text extends SwamModule with PublishModule {
 
 object generator extends SwamModule with PublishModule {
 
-  def moduleDeps = Seq(core, runtime)
+  def moduleDeps = Seq(core, runtime, text)
 
   def publishVersion = swamVersion
 
@@ -132,16 +130,16 @@ object generator extends SwamModule with PublishModule {
       developers = Seq(swamDeveloper)
     )
 
+
   object test extends Tests with ScalafmtModule {
-    def ivyDeps =
-      Agg(ivy"com.lihaoyi::utest:0.7.1", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
-
-    def moduleDeps = Seq(generator, text, util.test)
-
+    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.1")
     def testFrameworks = Seq("swam.util.Framework")
+    def moduleDeps = Seq(core,text, util.test )
   }
-
 }
+
+
+
 
 object runtime extends SwamModule with PublishModule {
 
@@ -183,7 +181,7 @@ object examples extends SwamModule with MdocModule {
 
   def moduleDeps = Seq(runtime, text)
 
-  def mdocVersion = "1.3.6"
+  def mdocVersion = "2.1.3"
 
   def mdocSite = Map("VERSION" -> swamVersion)
 

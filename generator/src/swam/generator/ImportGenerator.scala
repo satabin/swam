@@ -12,7 +12,7 @@ import org.fusesource.scalate.TemplateEngine
 import cats.effect.{Blocker, Effect, IO}
 import cats.implicits._
 import cats.effect._
-import fs2.{text, _}
+import fs2._
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-03-06
@@ -63,7 +63,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
       .collect { case i: Import.Function => i } // Filter by function type
       .groupBy(t => t.moduleName) // Group by module
       .view
-      .mapValues(_.toSet) // remove duplicated entries
+      .mapValues(k => k.groupBy(i => i.fieldName).view.mapValues(t => t.last).toSet) // remove duplicated entries
 
     // Generating DTO
     sorted.zipWithIndex.map {
@@ -73,7 +73,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
           "comma" -> (index < sorted.keys.size - 1),
           "fields" -> functions.toSeq.zipWithIndex
             .map {
-              case (field, fieldIndex) => {
+              case ((name, field), fieldIndex) => {
                 Map(
                   "name" -> field.fieldName,
                   "nameCapital" -> field.fieldName.capitalize,
@@ -87,6 +87,12 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
             }
         )
     }.toSeq
+  }
+
+  def formatText(text: String) = {
+    val file = Paths.get("Formatted.scala")
+
+    scalafmt.format(config, file, text)
   }
 
   /**
@@ -106,9 +112,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
                   "imports" -> getContext(imports)
                 ))
 
-    val file = Paths.get("GeneratedImport.scala")
-
-    scalafmt.format(config, file, result)
+    formatText(result)
   }
 
   def writeToFile(t: String, projectName: String, className: String) = {
@@ -116,6 +120,8 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
     Blocker[F]
       .use { blocker =>
         for {
+          // replace
+          _ <- io.file.delete(blocker, Paths.get(s"$projectName/src/$className.scala"))
           _ <- io.file.createDirectories[F](blocker, Paths.get(s"$projectName/src")) // Creates the module structure
           _ <- fs2
             .Stream(t)
@@ -143,6 +149,21 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
     val trait_ = generateImportText(imports, className, template)
 
     writeToFile(trait_, projectName, className)
+  }
+
+  /**
+    * Creates scala project from witx
+    * @param typesTemplate
+    * @param traitTemplate
+    * @return
+    */
+  def createScalaProjectForImports(typesTemplate: String, traitTemplate: String, projectName: String) = {
+
+    for {
+      _ <- writeToFile(typesTemplate, projectName, "Types")
+      _ <- writeToFile(traitTemplate, projectName, "Module")
+    } yield ()
+
   }
 }
 

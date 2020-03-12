@@ -48,15 +48,20 @@ import java.nio.file.Paths
 
 val tcompiler = Compiler[IO]
 
-val engine = Engine[IO]
+val engine = Engine[IO]()
 
-val f = (for {
-  engine <- engine
-  tcompiler <- tcompiler
-  mod <- engine.compile(tcompiler.stream(Paths.get("annotations.wat"), true))
-  inst <- mod.importing("m", m).instantiate
-  f <- inst.exports.typed.procedure0("mutate")
-} yield f).unsafeRunSync()
+implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
+
+val f =
+  Blocker[IO].use { blocker =>
+    for {
+      engine <- engine
+      tcompiler <- tcompiler
+      mod <- engine.compile(tcompiler.stream(Paths.get("annotations.wat"), true, blocker))
+      inst <- mod.importing("m", m).instantiate
+      f <- inst.exports.typed.procedure0("mutate")
+    } yield f
+  }.unsafeRunSync()
 ```
 
 ```scala mdoc
@@ -90,13 +95,16 @@ val pm = new PureModule
 WebAssembly modules can now [import it, and call it](/examples/pure-annotations.wat):
 
 ```scala mdoc:silent
-val add42 = (for {
-  engine <- engine
-  tcompiler <- tcompiler
-  mod <- engine.compile(tcompiler.stream(Paths.get("pure-annotations.wat"), true))
-  inst <- mod.importing("m", pm).instantiate
-  f <- inst.exports.typed.function0[Int]("f")
-} yield f).unsafeRunSync()
+val add42 =
+  Blocker[IO].use { blocker =>
+    for {
+      engine <- engine
+      tcompiler <- tcompiler
+      mod <- engine.compile(tcompiler.stream(Paths.get("pure-annotations.wat"), true, blocker))
+      inst <- mod.importing("m", pm).instantiate
+      f <- inst.exports.typed.function0[Int]("f")
+    } yield f
+  }.unsafeRunSync()
 ```
 
 Executing the imported function, returns the desired result:
@@ -130,13 +138,16 @@ val mIO = new EffectfulModule[IO]
 Now, WebAssembly modules can [import that module and use the effectful function](/examples/effectful-annotations.wat):
 
 ```scala mdoc:silent
-val logged = (for {
-  engine <- engine
-  tcompiler <- tcompiler
-  mod <- engine.compile(tcompiler.stream(Paths.get("effectful-annotations.wat"), true))
-  inst <- mod.importing("console", mIO).instantiate
-  f <- inst.exports.typed.function1[Int, Int]("add42")
-} yield f).unsafeRunSync()
+val logged =
+  Blocker[IO].use { blocker =>
+    for {
+      engine <- engine
+      tcompiler <- tcompiler
+      mod <- engine.compile(tcompiler.stream(Paths.get("effectful-annotations.wat"), true, blocker))
+      inst <- mod.importing("console", mIO).instantiate
+      f <- inst.exports.typed.function1[Int, Int]("add42")
+    } yield f
+  }.unsafeRunSync()
 ```
 
 We can now run the `logged` function and the parameter is logged to stdout as expected

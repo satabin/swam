@@ -189,6 +189,99 @@ object AsInterface {
       def view(f: (P1, P2) => F[Ret]) = new IFunction2[F, P1, P2, Ret](f)
     }
 
+  implicit def function3AsInterface[P1, P2, P3, Ret, F[_]](
+      implicit F: MonadError[F, Throwable],
+      reader1: ValueReader[F, P1],
+      reader2: ValueReader[F, P2],
+      reader3: ValueReader[F, P3],
+      writer: ValueWriter[F, Ret]): AsInterface[(P1, P2, P3) => F[Ret], F] =
+    new AsInterface[(P1, P2, P3) => F[Ret], F] {
+      def view(f: (P1, P2, P3) => F[Ret]) = new IFunction3[F, P1, P2, P3, Ret](f)
+    }
+
+  implicit def function4AsInterface[P1, P2, P3, P4, Ret, F[_]](
+      implicit F: MonadError[F, Throwable],
+      reader1: ValueReader[F, P1],
+      reader2: ValueReader[F, P2],
+      reader3: ValueReader[F, P3],
+      reader4: ValueReader[F, P4],
+      writer: ValueWriter[F, Ret]): AsInterface[(P1, P2, P3, P4) => F[Ret], F] =
+    new AsInterface[(P1, P2, P3, P4) => F[Ret], F] {
+      def view(f: (P1, P2, P3, P4) => F[Ret]) = new IFunction4[F, P1, P2, P3, P4, Ret](f)
+    }
+
+  implicit def function5AsInterface[P1, P2, P3, P4, P5, Ret, F[_]](
+      implicit F: MonadError[F, Throwable],
+      reader1: ValueReader[F, P1],
+      reader2: ValueReader[F, P2],
+      reader3: ValueReader[F, P3],
+      reader4: ValueReader[F, P4],
+      reader5: ValueReader[F, P5],
+      writer: ValueWriter[F, Ret]): AsInterface[(P1, P2, P3, P4, P5) => F[Ret], F] =
+    new AsInterface[(P1, P2, P3, P4, P5) => F[Ret], F] {
+      def view(f: (P1, P2, P3, P4, P5) => F[Ret]) = new IFunction5[F, P1, P2, P3, P4, P5, Ret](f)
+    }
+
+  implicit def function6AsInterface[P1, P2, P3, P4, P5, P6, Ret, F[_]](
+      implicit F: MonadError[F, Throwable],
+      reader1: ValueReader[F, P1],
+      reader2: ValueReader[F, P2],
+      reader3: ValueReader[F, P3],
+      reader4: ValueReader[F, P4],
+      reader5: ValueReader[F, P5],
+      reader6: ValueReader[F, P6],
+      writer: ValueWriter[F, Ret]): AsInterface[(P1, P2, P3, P4, P5, P6) => F[Ret], F] =
+    new AsInterface[(P1, P2, P3, P4, P5, P6) => F[Ret], F] {
+      def view(f: (P1, P2, P3, P4, P5, P6) => F[Ret]) = new IFunction6[F, P1, P2, P3, P4, P5, P6, Ret](f)
+    }
+
+  implicit def function7AsInterface[P1, P2, P3, P4, P5, P6, P7, Ret, F[_]](
+      implicit F: MonadError[F, Throwable],
+      reader1: ValueReader[F, P1],
+      reader2: ValueReader[F, P2],
+      reader3: ValueReader[F, P3],
+      reader4: ValueReader[F, P4],
+      reader5: ValueReader[F, P5],
+      reader6: ValueReader[F, P6],
+      reader7: ValueReader[F, P7],
+      writer: ValueWriter[F, Ret]): AsInterface[(P1, P2, P3, P4, P5, P6, P7) => F[Ret], F] =
+    new AsInterface[(P1, P2, P3, P4, P5, P6, P7) => F[Ret], F] {
+      def view(f: (P1, P2, P3, P4, P5, P6, P7) => F[Ret]) = new IFunction7[F, P1, P2, P3, P4, P5, P6, P7, Ret](f)
+    }
+
+  implicit def function8AsInterface[P1, P2, P3, P4, P5, P6, P7, P8, Ret, F[_]](
+      implicit F: MonadError[F, Throwable],
+      reader1: ValueReader[F, P1],
+      reader2: ValueReader[F, P2],
+      reader3: ValueReader[F, P3],
+      reader4: ValueReader[F, P4],
+      reader5: ValueReader[F, P5],
+      reader6: ValueReader[F, P6],
+      reader7: ValueReader[F, P7],
+      reader8: ValueReader[F, P8],
+      writer: ValueWriter[F, Ret]): AsInterface[(P1, P2, P3, P4, P5, P6, P7, P8) => F[Ret], F] =
+    new AsInterface[(P1, P2, P3, P4, P5, P6, P7, P8) => F[Ret], F] {
+      def view(f: (P1, P2, P3, P4, P5, P6, P7, P8) => F[Ret]) =
+        new IFunction8[F, P1, P2, P3, P4, P5, P6, P7, P8, Ret](f)
+    }
+
+  implicit def function9AsInterface[P1, P2, P3, P4, P5, P6, P7, P8, P9, Ret, F[_]](
+      implicit F: MonadError[F, Throwable],
+      reader1: ValueReader[F, P1],
+      reader2: ValueReader[F, P2],
+      reader3: ValueReader[F, P3],
+      reader4: ValueReader[F, P4],
+      reader5: ValueReader[F, P5],
+      reader6: ValueReader[F, P6],
+      reader7: ValueReader[F, P7],
+      reader8: ValueReader[F, P8],
+      reader9: ValueReader[F, P9],
+      writer: ValueWriter[F, Ret]): AsInterface[(P1, P2, P3, P4, P5, P6, P7, P8, P9) => F[Ret], F] =
+    new AsInterface[(P1, P2, P3, P4, P5, P6, P7, P8, P9) => F[Ret], F] {
+      def view(f: (P1, P2, P3, P4, P5, P6, P7, P8, P9) => F[Ret]) =
+        new IFunction9[F, P1, P2, P3, P4, P5, P6, P7, P8, P9, Ret](f)
+    }
+
   implicit def arrayAsInterface[F[_]]: AsInterface[Array[Function[F]], F] =
     new AsInterface[Array[Function[F]], F] {
       def view(a: Array[Function[F]]) = new Table[F] {
@@ -236,7 +329,12 @@ object AsInterface {
         def unsafeWriteInt(idx: Int, v: Int) = b.putInt(idx, v)
         def unsafeWriteLong(idx: Int, v: Long) = b.putLong(idx, v)
         def unsafeWriteShort(idx: Int, v: Short) = b.putShort(idx, v)
-
+        def unsafeReadBytes(idx: Int, dst: Array[Byte]): Unit = {
+          val old = b.position()
+          b.position(idx)
+          b.get(dst)
+          b.position(old)
+        }
       }
     }
 

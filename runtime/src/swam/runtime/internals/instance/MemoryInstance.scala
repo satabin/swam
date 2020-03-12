@@ -23,8 +23,7 @@ import cats.effect._
 
 import java.nio.{ByteBuffer, ByteOrder}
 
-private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int)(
-    implicit F: Async[F])
+class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int)(implicit F: Async[F])
     extends Memory[F] {
 
   val tpe = MemType(Limits(min, max))
@@ -43,8 +42,9 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
 
   def size = buffer.capacity
 
-  def unsafeWriteByte(idx: Int, v: Byte) =
+  def unsafeWriteByte(idx: Int, v: Byte) = {
     buffer.put(idx, v)
+  }
 
   def unsafeReadByte(idx: Int) =
     buffer.get(idx)
@@ -55,8 +55,9 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
   def unsafeReadShort(idx: Int) =
     buffer.getShort(idx)
 
-  def unsafeWriteInt(idx: Int, v: Int) =
+  def unsafeWriteInt(idx: Int, v: Int) = {
     buffer.putInt(idx, v)
+  }
 
   def unsafeReadInt(idx: Int) =
     buffer.getInt(idx)
@@ -108,4 +109,8 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
     bytes.reset()
   }
 
+  def unsafeReadBytes(idx: Int, dst: Array[Byte]): Unit = {
+    buffer.position(idx)
+    buffer.get(dst)
+  }
 }

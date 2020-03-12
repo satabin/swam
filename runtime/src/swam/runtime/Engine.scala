@@ -157,11 +157,11 @@ class Engine[F[_]: Effect] private (val conf: EngineConfiguration,
 
 object Engine {
 
-  def apply[F[_]: Effect](): F[Engine[F]] =
+  def apply[F[_]: Effect](tracer: Option[Tracer] = None): F[Engine[F]] =
     for {
       validator <- Validator[F]
       conf <- ConfigSource.default.at("swam.runtime").loadF[F, EngineConfiguration]
-    } yield new Engine[F](conf, validator, None)
+    } yield new Engine[F](conf, validator, tracer)
 
   def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F], tracer: Option[Tracer]): Engine[F] =
     new Engine[F](conf, validator, tracer)

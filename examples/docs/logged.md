@@ -15,17 +15,22 @@ import java.nio.file.Paths
 
 val tcompiler = Compiler[IO]
 
-val engine = Engine[IO]
+val engine = Engine[IO]()
+
+implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
 
 def log(i: Int) = IO(println(s"got $i"))
 
-val f = (for {
-  engine <- engine
-  tcompiler <- tcompiler
-  mod <- engine.compile(tcompiler.stream(Paths.get("logged.wat"), true))
-  inst <- mod.importing("console", "log" -> log _).instantiate
-  f <- inst.exports.typed.function1[Int, Int]("add42")
-} yield f).unsafeRunSync()
+val f =
+  Blocker[IO].use { blocker =>
+    for {
+      engine <- engine
+      tcompiler <- tcompiler
+      mod <- engine.compile(tcompiler.stream(Paths.get("logged.wat"), true, blocker))
+      inst <- mod.importing("console", "log" -> log _).instantiate
+      f <- inst.exports.typed.function1[Int, Int]("add42")
+    } yield f
+  }.unsafeRunSync()
 ```
 
 running function `f` logs the parameter.
@@ -38,14 +43,15 @@ It is also possible to use [`HList`s][hlist] to represent imported modules with 
 ```scala mdoc:silent
 import shapeless._
 
-for {
-  engine <- engine
-  tcompiler <- tcompiler
-  mod <- engine.compile(tcompiler.stream(Paths.get("logged.wat"), true))
-  inst <- mod.importing("console", "log" -> log _ :: "colors" -> 256 :: HNil).instantiate
-  f <- inst.exports.typed.function1[Int, Int]("add42")
-} yield f
-
+Blocker[IO].use { blocker =>
+  for {
+    engine <- engine
+    tcompiler <- tcompiler
+    mod <- engine.compile(tcompiler.stream(Paths.get("logged.wat"), true, blocker))
+    inst <- mod.importing("console", "log" -> log _ :: "colors" -> 256 :: HNil).instantiate
+    f <- inst.exports.typed.function1[Int, Int]("add42")
+  } yield f
+}
 ```
 
 [hlist]: https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-2.0.0#heterogenous-lists

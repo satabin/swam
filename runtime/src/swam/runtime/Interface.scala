@@ -208,6 +208,13 @@ abstract class Memory[F[_]](implicit F: MonadError[F, Throwable]) extends Interf
   def readDouble(idx: Int): F[Double] = F.catchNonFatal(unsafeReadDouble(idx))
   def unsafeReadDouble(idx: Int): Double
 
+  /** Reads a byte array at the given index in memory.
+    *
+    *  $boundaries
+    */
+  def readBytes(idx: Int, dst: Array[Byte]): F[Unit] = F.catchNonFatal(unsafeReadBytes(idx, dst))
+  def unsafeReadBytes(idx: Int, dst: Array[Byte]): Unit
+
   /** Writes the bytes in the provided buffer at the given index in memory.
     *
     * This method is used by Swam to initialize the memory upon module
@@ -217,4 +224,5 @@ abstract class Memory[F[_]](implicit F: MonadError[F, Throwable]) extends Interf
     */
   def writeBytes(idx: Int, bytes: ByteBuffer): F[Unit] = F.catchNonFatal(unsafeWriteBytes(idx, bytes))
   def unsafeWriteBytes(idx: Int, bytes: ByteBuffer): Unit
+
 }
