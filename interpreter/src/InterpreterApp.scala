@@ -108,7 +108,8 @@ object InterpreterApp extends IOApp {
             engine.compile(config.wasm.toPath, blocker, 4096)
 
           instance <- engine.instantiate(module, imports())
-          _ <- instance.exports.function("main")
+          f <- instance.exports.function("main")
+          _ <- f.invoke(Vector(), None)
           exit <- IO(ExitCode.Success)
         } yield exit
       }
