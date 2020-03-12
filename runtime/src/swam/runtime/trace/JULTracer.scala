@@ -19,14 +19,18 @@ package runtime
 package trace
 
 import enumeratum._
-
 import pureconfig._
 import pureconfig.error._
-
 import java.util.logging._
 
+import cats.effect.Effect
+import swam.runtime.config.EngineConfiguration
+import swam.validation.Validator
+
+import pureconfig.generic.auto._
+
 /** A tracer based on [[https://docs.oracle.com/en/java/javase/13/docs/api/java.logging/java/util/logging/package-summary.html java.util.logging]]. */
-class JULTracer(conf: TraceConfiguration) extends Tracer {
+class JULTracer(conf: TraceConfiguration, formatter: Formatter = PureFormatter) extends Tracer {
 
   val logger = Logger.getLogger("swam")
   logger.setLevel(Level.parse(conf.level))
@@ -46,13 +50,25 @@ class JULTracer(conf: TraceConfiguration) extends Tracer {
     }
 
   // TODO add other formatters support
-  handler.setFormatter(PureFormatter)
+  handler.setFormatter(formatter)
   logger.addHandler(handler)
 
   def traceEvent(tpe: EventType, args: List[String]): Unit =
     if (conf.filter.equals("*") || tpe.entryName.matches(conf.filter))
       logger.info(s"${tpe.entryName},${args.mkString(",")}${conf.separator}")
 
+}
+
+object JULTracer {
+  def apply(formatter: Formatter = PureFormatter, filter: String = "*"): JULTracer = {
+    val conf = ConfigSource.default
+      .at("swam.runtime.tracer")
+      .loadOrThrow[TraceConfiguration]
+
+    conf.filter = filter
+
+    new JULTracer(conf, formatter)
+  }
 }
 
 private object PureFormatter extends Formatter {
@@ -64,7 +80,7 @@ private object PureFormatter extends Formatter {
 
 case class TraceConfiguration(handler: HandlerType,
                               separator: String,
-                              filter: String,
+                              var filter: String,
                               level: String,
                               fileHandler: TracerFileHandlerCondiguration,
                               socketHandler: SocketHanndlerCondiguration,

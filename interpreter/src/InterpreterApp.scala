@@ -3,11 +3,12 @@ package interpreter
 
 import java.io.File
 import java.nio.ByteBuffer
+import java.util.logging.{Formatter, LogRecord}
 
 import swam._
 import text._
 import runtime._
-
+import runtime.trace._
 import cats.effect.{Blocker, ExitCode, IO, IOApp}
 import swam.runtime.Engine
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
@@ -15,7 +16,18 @@ import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
 /**
     @author Javier Cabrera-Arteaga on 2020-03-12
   */
-case class Config(wasm: File = null, main: String = "", parse: Boolean = false, debugCompiler: Boolean = false)
+case class Config(wasm: File = null,
+                  main: String = "",
+                  parse: Boolean = false,
+                  debugCompiler: Boolean = false,
+                  trace: Boolean = false,
+                  traceOutDir: String = ".",
+                  traceFilter: String = "*")
+
+private object NoTimestampFormatter extends Formatter {
+  override def format(x: LogRecord): String =
+    x.getMessage
+}
 
 object InterpreterApp extends IOApp {
 
@@ -38,10 +50,20 @@ object InterpreterApp extends IOApp {
       .action((f, c) => c.copy(parse = f))
       .text("Parse the input file as text")
 
+    opt[String]('f', "filter")
+      .optional()
+      .action((f, c) => c.copy(traceFilter = f))
+      .text("Filter the traces. The parameter is a regular expression applied to the opcode, e.g.: 'mread|mwrite'")
+
     opt[Boolean]('d', "debug-compiler")
       .optional()
       .action((f, c) => c.copy(debugCompiler = f))
       .text("Activates the debug option for thee text parser")
+
+    opt[Boolean]('t', "trace")
+      .optional()
+      .action((f, c) => c.copy(trace = f))
+      .text("Traces WASM execution channels; stack, memory and opcodes")
 
     arg[File]("<wasm>")
       .required()
@@ -67,7 +89,13 @@ object InterpreterApp extends IOApp {
       Blocker[IO].use { blocker =>
         for {
           compiler <- Compiler[IO]
-          engine <- Engine[IO]
+          tracer <- IO(JULTracer(NoTimestampFormatter, config.traceFilter))
+
+          engine <- if (config.trace)
+            Engine[IO](tracer = Option(tracer))
+          else
+            Engine[IO]()
+
           module <- if (config.parse)
             engine.compile(compiler.stream(config.wasm.toPath, config.debugCompiler))
           else
