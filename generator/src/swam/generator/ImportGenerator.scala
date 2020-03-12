@@ -23,7 +23,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
   val f = "IO"
   val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
   val config = Paths.get(".scalafmt.conf")
-  val defaultTemplate = getClass.getClassLoader.getResource("import_template.mustache").getFile;
+  val defaultTemplate = getClass.getClassLoader.getResource("import_template.mustache").getFile
 
   /**
     * Map WASM to scala primitive types
