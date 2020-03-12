@@ -59,6 +59,8 @@ object core extends SwamModule with PublishModule {
       ivy"org.scala-lang.modules::scala-collection-compat:2.1.2"
     )
 
+
+
   def publishVersion = swamVersion
 
   def artifactName = "swam-core"
@@ -99,6 +101,45 @@ object text extends SwamModule with PublishModule {
       versionControl = VersionControl.github("satabin", "swam"),
       developers = Seq(swamDeveloper)
     )
+
+}
+
+
+object generator extends SwamModule with PublishModule {
+
+  def moduleDeps = Seq(core, runtime)
+
+  def publishVersion = swamVersion
+
+  def artifactName = "swam-generator"
+
+  def ivyDeps = Agg(
+    ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
+    ivy"com.github.scopt::scopt:3.7.1",
+    ivy"org.scalameta::scalafmt-dynamic:2.4.0",
+    ivy"org.scalatra.scalate::scalate-core:1.9.5",
+    ivy"org.json4s::json4s-jackson:3.7.0-M2"
+
+  )
+
+  def pomSettings =
+    PomSettings(
+      description = "Swam code generator library",
+      organization = "org.gnieh",
+      url = swamUrl,
+      licenses = Seq(swamLicense),
+      versionControl = VersionControl.github("satabin", "swam"),
+      developers = Seq(swamDeveloper)
+    )
+
+  object test extends Tests with ScalafmtModule {
+    def ivyDeps =
+      Agg(ivy"com.lihaoyi::utest:0.7.1", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
+
+    def moduleDeps = Seq(generator, text, util.test)
+
+    def testFrameworks = Seq("swam.util.Framework")
+  }
 
 }
 
