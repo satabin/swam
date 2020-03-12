@@ -4,7 +4,10 @@ package interpreter
 import java.io.File
 import java.nio.ByteBuffer
 
-import swam.runtime._
+import swam._
+import text._
+import runtime._
+
 import cats.effect.{Blocker, ExitCode, IO, IOApp}
 import swam.runtime.Engine
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
@@ -12,7 +15,7 @@ import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
 /**
     @author Javier Cabrera-Arteaga on 2020-03-12
   */
-case class Config(wasm: File = null, main: String = "")
+case class Config(wasm: File = null, main: String = "", parse: Boolean = false, debugCompiler: Boolean = false)
 
 object InterpreterApp extends IOApp {
 
@@ -29,6 +32,16 @@ object InterpreterApp extends IOApp {
       .optional()
       .action((f, c) => c.copy(main = f))
       .text("Executes provided function name as main. Executes the start function instead")
+
+    opt[Boolean]('p', "parse")
+      .optional()
+      .action((f, c) => c.copy(parse = f))
+      .text("Parse the input file as text")
+
+    opt[Boolean]('d', "debug-compiler")
+      .optional()
+      .action((f, c) => c.copy(debugCompiler = f))
+      .text("Activates the debug option for thee text parser")
 
     arg[File]("<wasm>")
       .required()
@@ -53,14 +66,17 @@ object InterpreterApp extends IOApp {
     case Some(config) =>
       Blocker[IO].use { blocker =>
         for {
+          compiler <- Compiler[IO]
+          engine <- Engine[IO]
+          module <- if (config.parse)
+            engine.compile(compiler.stream(config.wasm.toPath, config.debugCompiler))
+          else
+            engine.compile(config.wasm.toPath, blocker, 4096)
 
-          engine <- Engine[IO]()
-          module <- engine.compile(config.wasm.toPath, blocker, 4096)
           instance <- engine.instantiate(module, imports())
           _ <- instance.exports.function("main")
-          _ <- IO(println(123))
           exit <- IO(ExitCode.Success)
-        } yield (exit)
+        } yield exit
       }
     case None => {
       parser.reportError("You must provide a WASM file")
