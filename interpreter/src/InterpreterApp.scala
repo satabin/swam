@@ -35,7 +35,7 @@ object InterpreterApp extends IOApp {
   type AsIIO[T] = AsInterface[T, IO]
   type AsIsIO[T] = AsInstance[T, IO]
 
-  val parser = new scopt.OptionParser[Config]("scopt") {
+  val parser = new scopt.OptionParser[Config]("swam-interpreter") {
     head("swam-interpreter")
 
     help("help").text("prints this usage text")
