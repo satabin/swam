@@ -13,6 +13,9 @@ import cats.effect.{Blocker, ExitCode, IO, IOApp}
 import swam.runtime.Engine
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
 
+import swam.runtime.formats._
+import swam.runtime.formats.DefaultFormatters._
+
 /**
     @author Javier Cabrera-Arteaga on 2020-03-12
   */
@@ -23,7 +26,9 @@ case class Config(wasm: File = null,
                   trace: Boolean = false,
                   traceOutDir: String = ".",
                   traceFilter: String = "*",
-                  tracePattern: String = "log.txt")
+                  tracePattern: String = "log.txt",
+                  linkJarPath: File = null,
+                  className: String = "")
 
 private object NoTimestampFormatter extends Formatter {
   override def format(x: LogRecord): String =
@@ -77,24 +82,23 @@ object InterpreterApp extends IOApp {
       .action((f, c) => c.copy(trace = f))
       .text("Traces WASM execution channels; stack, memory and opcodes")
 
-  }
+    opt[File]('l', "link")
+      .optional()
+      .action((f, c) => c.copy(linkJarPath = f))
+      .text("Links the imports inside the jar file to be append in the executed WASM")
 
-  def buffer = {
-    val buffer = ByteBuffer.allocate(2 * pageSize)
-    buffer.limit(pageSize)
-    buffer
-  }
+    opt[String]('c', "class-name")
+      .optional()
+      .action((f, c) => c.copy(className = f))
+      .text("Imports class name")
 
-  def imports() =
-    Imports[IO](
-      TCMap[String, AsIsIO](
-        "env" -> TCMap[String, AsIIO]("memory" -> buffer)
-      ))
+  }
 
   def run(args: List[String]): IO[ExitCode] = parser.parse(args, Config()) match {
     case Some(config) =>
       Blocker[IO].use { blocker =>
         for {
+          imports <- IO(JVMLinker().getImports(config.linkJarPath, config.className))
           compiler <- Compiler[IO]
           engine <- if (config.trace)
             Engine[IO](
@@ -109,7 +113,8 @@ object InterpreterApp extends IOApp {
             engine.compile(config.wasm.toPath, blocker, 4096)
 
           instance <- engine.instantiate(module, imports())
-          _ <- instance.exports.function("main")
+          f <- instance.exports.function("main")
+          _ <- f.invoke(Vector(), None)
           exit <- IO(ExitCode.Success)
         } yield exit
       }
