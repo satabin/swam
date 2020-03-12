@@ -35,11 +35,16 @@ object InterpreterApp extends IOApp {
   type AsIIO[T] = AsInterface[T, IO]
   type AsIsIO[T] = AsInstance[T, IO]
 
-  val parser = new scopt.OptionParser[Config]("scopt") {
-    head("swam-generator")
+  val parser = new scopt.OptionParser[Config]("swam-interpreter") {
+    head("swam-interpreter")
 
     help("help").text("prints this usage text")
     note("swam-interpreter executes a WASM binary")
+
+    arg[File]("<wasm>")
+      .required()
+      .action((x, c) => c.copy(wasm = x))
+      .text("WASM module to be executed")
 
     opt[String]('s', "function")
       .required()
@@ -70,11 +75,6 @@ object InterpreterApp extends IOApp {
       .optional()
       .action((f, c) => c.copy(trace = f))
       .text("Traces WASM execution channels; stack, memory and opcodes")
-
-    arg[File]("<wasm>")
-      .required()
-      .action((x, c) => c.copy(wasm = x))
-      .text("WASM module to be executed")
 
   }
 
