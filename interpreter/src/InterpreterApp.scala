@@ -23,7 +23,7 @@ case class Config(wasm: File = null,
                   trace: Boolean = false,
                   traceOutDir: String = ".",
                   traceFilter: String = "*",
-                  tracePattern: String = "log.%u.txt")
+                  tracePattern: String = "log.txt")
 
 private object NoTimestampFormatter extends Formatter {
   override def format(x: LogRecord): String =
@@ -36,10 +36,16 @@ object InterpreterApp extends IOApp {
   type AsIsIO[T] = AsInstance[T, IO]
 
   val parser = new scopt.OptionParser[Config]("scopt") {
-    head("swam-generator")
+    head("swam-interpreter")
+
+    note("swam-interpreter executes a WASM binary")
+
+    arg[File]("<wasm>")
+      .required()
+      .action((x, c) => c.copy(wasm = x))
+      .text("WASM module to be executed")
 
     help("help").text("prints this usage text")
-    note("swam-interpreter executes a WASM binary")
 
     opt[String]('s', "function")
       .optional()
@@ -64,17 +70,12 @@ object InterpreterApp extends IOApp {
     opt[Boolean]('d', "debug-compiler")
       .optional()
       .action((f, c) => c.copy(debugCompiler = f))
-      .text("Activates the debug option for thee text parser")
+      .text("Activates the debug option for the text parser")
 
     opt[Boolean]('t', "trace")
       .optional()
       .action((f, c) => c.copy(trace = f))
       .text("Traces WASM execution channels; stack, memory and opcodes")
-
-    arg[File]("<wasm>")
-      .required()
-      .action((x, c) => c.copy(wasm = x))
-      .text("WASM module to be executed")
 
   }
 
