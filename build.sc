@@ -145,7 +145,7 @@ object generator extends SwamModule with PublishModule {
 
 
 
-object cli extends SwamModule with PublishModule {
+object cli extends SwamModule{
 
   def moduleDeps = Seq(text, core, runtime)
 
