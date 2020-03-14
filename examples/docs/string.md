@@ -15,21 +15,25 @@ val tcompiler = Compiler[IO]
 
 val engine = Engine[IO]
 
+implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
+
 val strings =
-  for {
-    engine <- engine
-    tcompiler <- tcompiler
-    m <- engine.compile(tcompiler.stream(Paths.get("string.wat"), true))
-    i <- m.instantiate
-    s1 <- {
-      import formats.string.cstring
-      i.exports.typed.global[String]("c-like")
-    }
-    s2 <- {
-      import formats.string.utf8
-      i.exports.typed.global[String]("utf8")
-    }
-  } yield (s1, s2)
+  Blocker[IO].use { blocker =>
+    for {
+      engine <- engine
+      tcompiler <- tcompiler
+      m <- engine.compile(tcompiler.stream(Paths.get("string.wat"), true, blocker))
+      i <- m.instantiate
+      s1 <- {
+        import formats.string.cstring
+        i.exports.typed.global[String]("c-like")
+      }
+      s2 <- {
+        import formats.string.utf8
+        i.exports.typed.global[String]("utf8")
+      }
+    } yield (s1, s2)
+  }
 
 val (s1, s2) = strings.unsafeRunSync()
 ```

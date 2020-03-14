@@ -190,7 +190,7 @@ object examples extends SwamModule with MdocModule {
 
   def moduleDeps = Seq(runtime, text)
 
-  def mdocVersion = "1.3.6"
+  def mdocVersion = "2.1.3"
 
   def mdocSite = Map("VERSION" -> swamVersion)
 

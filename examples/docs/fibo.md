@@ -16,13 +16,17 @@ val tcompiler = Compiler[IO]
 
 val engine = Engine[IO]
 
+implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
+
 def instantiate(p: String): Instance[IO] =
-  (for {
-    engine <- engine
-    tcompiler <- tcompiler
-    m <- engine.compile(tcompiler.stream(Paths.get(p), true))
-    i <- m.instantiate
-  } yield i).unsafeRunSync()
+  Blocker[IO].use { blocker =>
+    for {
+      engine <- engine
+      tcompiler <- tcompiler
+      m <- engine.compile(tcompiler.stream(Paths.get(p), true, blocker))
+      i <- m.instantiate
+    } yield i
+  }.unsafeRunSync()
 
 def time[T](t: => T): T = {
   val start = System.currentTimeMillis
