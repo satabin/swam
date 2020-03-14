@@ -18,14 +18,18 @@ val rdecompiler = RawDecompiler[IO]
 
 val tdecompiler = TextDecompiler[IO]
 
+implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
+
 def compdec(p: String): (Doc, Doc) =
-  (for {
-    tcompiler <- tcompiler
-    rdecompiler <- rdecompiler
-    tdecompiler <- tdecompiler
-    rd <- rdecompiler.decompile(tcompiler.stream(Paths.get(p), true))
-    td <- tdecompiler.decompile(tcompiler.stream(Paths.get(p), true))
-  } yield (rd, td)).unsafeRunSync()
+  Blocker[IO].use { blocker =>
+    for {
+      tcompiler <- tcompiler
+      rdecompiler <- rdecompiler
+      tdecompiler <- tdecompiler
+      rd <- rdecompiler.decompile(tcompiler.stream(Paths.get(p), true, blocker))
+      td <- tdecompiler.decompile(tcompiler.stream(Paths.get(p), true, blocker))
+    } yield (rd, td)
+  }.unsafeRunSync()
 
 val (rd, td) = compdec("fibo.wat")
 ```

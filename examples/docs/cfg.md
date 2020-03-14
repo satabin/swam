@@ -19,12 +19,16 @@ import java.nio.file.Paths
 
 val compiler = Compiler[IO]
 
+implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
+
 val cfg =
-  (for {
-    compiler <- compiler
-    naive <- compiler.compile(Paths.get("fibo.wat")).map(_.funcs(0))
-    cfg <- CFGicator.buildCFG[IO](naive.body)
-  } yield cfg).unsafeRunSync()
+  Blocker[IO].use { blocker =>
+    for {
+      compiler <- compiler
+      naive <- compiler.compile(Paths.get("fibo.wat"), blocker).map(_.funcs(0))
+      cfg <- CFGicator.buildCFG[IO](naive.body)
+    } yield cfg
+  }.unsafeRunSync()
 ```
 
 The CFG can be traversed in postorder (depth first) using the `CFG.postorder` function, that makes it possible to compute a value by accumulation.
