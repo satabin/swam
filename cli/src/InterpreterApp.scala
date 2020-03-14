@@ -12,6 +12,7 @@ import runtime.trace._
 import cats.effect.{Blocker, ExitCode, IO, IOApp}
 import swam.runtime.Engine
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
+import swam.runtime.formats.DefaultFormatters._
 
 /**
     @author Javier Cabrera-Arteaga on 2020-03-12
@@ -47,9 +48,9 @@ object InterpreterApp extends IOApp {
       .text("WASM module to be executed")
 
     opt[String]('s', "function")
-      .required()
+      .optional()
       .action((f, c) => c.copy(main = f))
-      .text("Executes provided function name as main. Executes the start function instead")
+      .text("Executes provided function name as main. Prints available functions if no name is provided")
 
     opt[Boolean]('p', "parse")
       .optional()
@@ -84,32 +85,54 @@ object InterpreterApp extends IOApp {
     buffer
   }
 
+  def printf(x: Int, y: Int): IO[Int] = IO { 1 }
+
   def imports() =
     Imports[IO](
       TCMap[String, AsIsIO](
-        "env" -> TCMap[String, AsIIO]("memory" -> buffer)
+        "env" -> TCMap[String, AsIIO]("memory" -> buffer, "printf" -> printf _)
       ))
+
+  def createInstance(blocker: Blocker, config: Config): IO[Instance[IO]] = {
+    for {
+      compiler <- Compiler[IO]
+      engine <- if (config.trace)
+        Engine[IO](
+          tracer = Option(JULTracer(config.traceOutDir, config.tracePattern, NoTimestampFormatter, config.traceFilter)))
+      else
+        Engine[IO]()
+
+      module <- if (config.parse)
+        engine.compile(compiler.stream(config.wasm.toPath, config.debugCompiler))
+      else
+        engine.compile(config.wasm.toPath, blocker, 4096)
+
+      instance <- engine.instantiate(module, imports())
+    } yield instance
+  }
 
   def run(args: List[String]): IO[ExitCode] = parser.parse(args, Config()) match {
     case Some(config) =>
       Blocker[IO].use { blocker =>
         for {
-          compiler <- Compiler[IO]
-          engine <- if (config.trace)
-            Engine[IO](
-              tracer =
-                Option(JULTracer(config.traceOutDir, config.tracePattern, NoTimestampFormatter, config.traceFilter)))
-          else
-            Engine[IO]()
-
-          module <- if (config.parse)
-            engine.compile(compiler.stream(config.wasm.toPath, config.debugCompiler))
-          else
-            engine.compile(config.wasm.toPath, blocker, 4096)
-
-          instance <- engine.instantiate(module, imports())
-          f <- instance.exports.function(config.main)
-          _ <- f.invoke(Vector(), None)
+          instance <- createInstance(blocker, config)
+          _ <- if (config.main.isEmpty) {
+            println("Listing available functions...")
+            instance.exports.list
+              .filter(p => p._2.getClass.equals(classOf[FuncType]))
+              .foreach {
+                case (name, tpe: FuncType) => {
+                  println(s"\t ${Console.GREEN} $name ${Console.RESET}${tpe.params.mkString("( ", ",", " )")} -> ${tpe.t
+                    .mkString(",")}")
+                }
+              }
+            IO(ExitCode.Success)
+          } else {
+            for {
+              f <- instance.exports.function(config.main)
+              _ <- f.invoke(Vector(), None)
+            } yield IO(ExitCode.Success)
+          }
           exit <- IO(ExitCode.Success)
         } yield exit
       }
