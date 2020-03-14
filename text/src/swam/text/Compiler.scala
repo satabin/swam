@@ -37,9 +37,9 @@ class Compiler[F[_]] private (validator: Validator[F])(implicit val F: Effect[F]
 
   private val binaryParser = new ModuleParser[F](validator)
 
-  def compile(file: Path): F[Module] =
+  def compile(file: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): F[Module] =
     for {
-      input <- F.liftIO(readFile(file))
+      input <- readFile(file, blocker, chunkSize)
       unresolved <- parse(input)
       mod <- compile(unresolved)
     } yield mod
@@ -53,9 +53,10 @@ class Compiler[F[_]] private (validator: Validator[F])(implicit val F: Effect[F]
   def stream(module: unresolved.Module, debug: Boolean): Stream[F, Section] =
     Stream.force(resolver.resolve(module, debug))
 
-  def stream(file: Path, debug: Boolean): Stream[F, Section] =
+  def stream(file: Path, debug: Boolean, blocker: Blocker, chunkSize: Int = 1024)(
+      implicit cs: ContextShift[F]): Stream[F, Section] =
     Stream.force(for {
-      input <- F.liftIO(readFile(file))
+      input <- readFile(file, blocker, chunkSize)
       unresolved <- parse(input)
     } yield stream(unresolved, debug))
 
