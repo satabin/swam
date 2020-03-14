@@ -17,14 +17,16 @@
 package swam
 
 import cats.effect._
+import cats.implicits._
+
+import fs2._
 
 import java.nio.file.Path
 
-import scala.io.Source
-
 package object text {
 
-  def readFile(f: Path): IO[String] =
-    IO(Source.fromFile(f.toFile, "UTF-8").mkString)
+  def readFile[F[_]](path: Path, blocker: Blocker, chunkSize: Int)(implicit F: Sync[F],
+                                                                          cs: ContextShift[F]): F[String] =
+    io.file.readAll[F](path, blocker, chunkSize).through(text.utf8Decode).compile.foldMonoid
 
 }
