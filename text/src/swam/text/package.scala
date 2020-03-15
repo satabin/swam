@@ -25,8 +25,7 @@ import java.nio.file.Path
 
 package object text {
 
-  def readFile[F[_]](path: Path, blocker: Blocker, chunkSize: Int)(implicit F: Sync[F],
-                                                                   cs: ContextShift[F]): F[String] =
+  def readFile[F[_]](path: Path, blocker: Blocker, chunkSize: Int)(implicit F: Sync[F], cs: ContextShift[F]): F[String] =
     io.file.readAll[F](path, blocker, chunkSize).through(text.utf8Decode).compile.foldMonoid
 
 }
