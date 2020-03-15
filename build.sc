@@ -148,16 +148,6 @@ object cli extends SwamModule{
     ivy"com.github.scopt::scopt:3.7.1"
   )
 
-  def pomSettings =
-    PomSettings(
-      description = "Swam code generator library",
-      organization = "org.gnieh",
-      url = swamUrl,
-      licenses = Seq(swamLicense),
-      versionControl = VersionControl.github("satabin", "swam"),
-      developers = Seq(swamDeveloper)
-    )
-
 }
 
 object runtime extends SwamModule with PublishModule {
