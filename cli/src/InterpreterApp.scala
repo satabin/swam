@@ -111,7 +111,7 @@ object InterpreterApp extends IOApp {
         Engine[IO]()
 
       module <- if (config.parse)
-        engine.compile(compiler.stream(config.wasm.toPath, config.debugCompiler))
+        engine.compile(compiler.stream(config.wasm.toPath, config.debugCompiler, blocker))
       else
         engine.compile(config.wasm.toPath, blocker, 4096)
 
