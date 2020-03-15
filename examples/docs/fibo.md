@@ -14,7 +14,7 @@ import java.nio.file.Paths
 
 val tcompiler = Compiler[IO]
 
-val engine = Engine[IO]
+val engine = Engine[IO]()
 
 implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
 
