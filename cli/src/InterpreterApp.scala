@@ -55,7 +55,7 @@ object InterpreterApp extends IOApp {
       .action((x, c) => c.copy(args = c.args :+ x))
       .text("Input arguments")
 
-    opt[String]('s', "function")
+    opt[String]('m', "main")
       .optional()
       .action((f, c) => c.copy(main = f))
       .text("Executes provided function name as main. Prints available functions if no name is provided")
