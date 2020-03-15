@@ -127,7 +127,10 @@ object InterpreterApp extends IOApp {
           _ <- if (config.main.isEmpty) {
             println("Listing available functions...")
             instance.exports.list
-              .collect { (name, f: FuncType) => (name, f) }
+              .collect[String, FuncType] {
+                case (name, f: FuncType) =>
+                  (name, f)
+              }
               .foreach {
                 case (name, tpe: FuncType) => {
                   println(s"\t ${Console.GREEN} $name ${Console.RESET}${tpe.params.mkString("( ", ",", " )")} -> ${tpe.t
