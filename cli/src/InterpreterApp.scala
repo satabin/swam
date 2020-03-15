@@ -18,6 +18,7 @@ import swam.runtime.formats.DefaultFormatters._
     @author Javier Cabrera-Arteaga on 2020-03-12
   */
 case class Config(wasm: File = null,
+                  args: Vector[String] = Vector(),
                   main: String = "",
                   parse: Boolean = false,
                   debugCompiler: Boolean = false,
@@ -46,6 +47,13 @@ object InterpreterApp extends IOApp {
       .required()
       .action((x, c) => c.copy(wasm = x))
       .text("WASM module to be executed")
+
+    arg[String]("<args>...")
+      .unbounded()
+      .required()
+      .minOccurs(0)
+      .action((x, c) => c.copy(args = c.args :+ x))
+      .text("Input arguments")
 
     opt[String]('m', "main")
       .optional()
