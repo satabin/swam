@@ -131,16 +131,6 @@ object generator extends SwamModule with PublishModule {
       versionControl = VersionControl.github("satabin", "swam"),
       developers = Seq(swamDeveloper)
     )
-
-  object test extends Tests with ScalafmtModule {
-    def ivyDeps =
-      Agg(ivy"com.lihaoyi::utest:0.7.1", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
-
-    def moduleDeps = Seq(generator, text, util.test)
-
-    def testFrameworks = Seq("swam.util.Framework")
-  }
-
 }
 
 
@@ -167,15 +157,6 @@ object cli extends SwamModule{
       versionControl = VersionControl.github("satabin", "swam"),
       developers = Seq(swamDeveloper)
     )
-
-  object test extends Tests with ScalafmtModule {
-    def ivyDeps =
-      Agg(ivy"com.lihaoyi::utest:0.7.1", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
-
-    def moduleDeps = Seq(generator, text, util.test)
-
-    def testFrameworks = Seq("swam.util.Framework")
-  }
 
 }
 
