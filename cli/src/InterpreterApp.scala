@@ -18,7 +18,6 @@ import swam.runtime.formats.DefaultFormatters._
     @author Javier Cabrera-Arteaga on 2020-03-12
   */
 case class Config(wasm: File = null,
-                  args: Vector[String] = Vector(),
                   main: String = "",
                   parse: Boolean = false,
                   debugCompiler: Boolean = false,
@@ -47,13 +46,6 @@ object InterpreterApp extends IOApp {
       .required()
       .action((x, c) => c.copy(wasm = x))
       .text("WASM module to be executed")
-
-    arg[String]("<args>...")
-      .unbounded()
-      .required()
-      .minOccurs(0)
-      .action((x, c) => c.copy(args = c.args :+ x))
-      .text("Input arguments")
 
     opt[String]('m', "main")
       .optional()
@@ -93,12 +85,10 @@ object InterpreterApp extends IOApp {
     buffer
   }
 
-  def printf(x: Int, y: Int): IO[Int] = IO { 1 }
-
   def imports() =
     Imports[IO](
       TCMap[String, AsIsIO](
-        "env" -> TCMap[String, AsIIO]("memory" -> buffer, "printf" -> printf _)
+        "env" -> TCMap[String, AsIIO]("memory" -> buffer)
       ))
 
   def createInstance(blocker: Blocker, config: Config): IO[Instance[IO]] = {
