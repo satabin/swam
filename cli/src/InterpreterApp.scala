@@ -127,7 +127,7 @@ object InterpreterApp extends IOApp {
           _ <- if (config.main.isEmpty) {
             println("Listing available functions...")
             instance.exports.list
-              .filter(p => p._2.getClass.equals(classOf[FuncType]))
+              .collect { (name, f: FuncType) => (name, f) }
               .foreach {
                 case (name, tpe: FuncType) => {
                   println(s"\t ${Console.GREEN} $name ${Console.RESET}${tpe.params.mkString("( ", ",", " )")} -> ${tpe.t
