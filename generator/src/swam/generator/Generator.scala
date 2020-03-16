@@ -15,7 +15,8 @@ case class Config(wasms: Seq[File] = Seq(),
                   printTemplateContext: Boolean = false,
                   createBoilerplate: String = "",
                   className: String = "GeneratedImports",
-                  renderTemplate: File = null)
+                  renderTemplate: File = null,
+                  generateCHelpAsComment: Boolean = true)
 
 /**
     @author Javier Cabrera-Arteaga on 2020-03-07
@@ -50,6 +51,12 @@ object Generator extends IOApp {
       .action((x, c) => c.copy(renderTemplate = x))
       .text("Replaces template for the imports generation")
 
+    opt[Boolean]('g', "generate-help")
+      .optional()
+      .action((x, c) => c.copy(generateCHelpAsComment = x))
+      .text(
+        "Executes man on the c function name and writes down the function description as a comment. True by default")
+
     arg[File]("<wasms>...")
       .unbounded()
       .required()
@@ -74,18 +81,25 @@ object Generator extends IOApp {
       println()
       if (!config.printTemplateContext) {
         config.renderTemplate match {
-          case null => IO(println(generator.generateImportText(imports, config.className)))
+          case null =>
+            IO(
+              println(generator
+                .generateImportText(imports, config.className, generateHelpAsComment = config.generateCHelpAsComment)))
           case template: File =>
-            IO(println(generator.generateImportText(imports, config.className, template.getPath)))
+            IO(println(
+              generator.generateImportText(imports, config.className, template.getPath, config.generateCHelpAsComment)))
         }
 
       } else {
-        val context = generator.getContext(imports)
+        val context = generator.getContext(imports, config.generateCHelpAsComment)
         implicit val formats = DefaultFormats
         IO(println(writePretty(context)))
       }
     } else
-      generator.createScalaProjectForImports(config.createBoilerplate, imports, config.className)
+      generator.createScalaProjectForImports(config.createBoilerplate,
+                                             imports,
+                                             config.className,
+                                             generateHelpAsComment = config.generateCHelpAsComment)
   }
 
   def run(args: List[String]): IO[ExitCode] = parser.parse(args, Config()) match {

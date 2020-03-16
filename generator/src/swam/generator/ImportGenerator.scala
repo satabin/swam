@@ -13,6 +13,7 @@ import cats.effect.{Blocker, Effect, IO}
 import cats.implicits._
 import cats.effect._
 import fs2.{text, _}
+import sys.process._
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-03-06
@@ -58,7 +59,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
     * @param imports
     * @return
     */
-  def getContext(imports: Vector[Import]): Seq[Map[String, Any]] = {
+  def getContext(imports: Vector[Import], generateHelpAsComment: Boolean = false): Seq[Map[String, Any]] = {
     val sorted = imports
       .collect { case i: Import.Function => i } // Filter by function type
       .groupBy(t => t.moduleName) // Group by module
@@ -78,6 +79,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
                   "name" -> field.fieldName,
                   "nameCapital" -> field.fieldName.capitalize,
                   "return" -> buildReturn(field.tpe.t),
+                  "comments" -> { if (generateHelpAsComment) manPage(field.fieldName) else "" },
                   "params" -> field.tpe.params.zipWithIndex
                     .map { case (type_, typeIndex) => s"p${typeIndex}:${getScalaType(type_)}" }
                     .mkString(","),
@@ -94,7 +96,10 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
     * @param imports
     * @return
     */
-  def generateImportText(imports: Vector[Import], className: String, templateFile: String = defaultTemplate) = {
+  def generateImportText(imports: Vector[Import],
+                         className: String,
+                         templateFile: String = defaultTemplate,
+                         generateHelpAsComment: Boolean = false) = {
 
     val te = new TemplateEngine()
     te.boot()
@@ -103,12 +108,16 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
       te.layout(templateFile,
                 Map(
                   "className" -> className,
-                  "imports" -> getContext(imports)
+                  "imports" -> getContext(imports, generateHelpAsComment)
                 ))
 
     val file = Paths.get("GeneratedImport.scala")
 
     scalafmt.format(config, file, result)
+  }
+
+  def manPage(funcName: String) = {
+    (s"man $funcName" #| "col -b").!!
   }
 
   def writeToFile(t: String, projectName: String, className: String) = {
@@ -138,9 +147,10 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
   def createScalaProjectForImports(projectName: String,
                                    imports: Vector[Import],
                                    className: String = "GeneratedImport",
-                                   template: String = defaultTemplate) = {
+                                   template: String = defaultTemplate,
+                                   generateHelpAsComment: Boolean = true) = {
 
-    val trait_ = generateImportText(imports, className, template)
+    val trait_ = generateImportText(imports, className, template, generateHelpAsComment)
 
     writeToFile(trait_, projectName, className)
   }

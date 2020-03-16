@@ -11,6 +11,9 @@ trait {{className}} {
 
     {{#imports}}
         {{#fields}}
+            /*
+                {{comments}}
+            */
             def {{module}}{{nameCapital}}({{params}}): IO[{{return}}]
         {{/fields}}
     {{/imports}}
