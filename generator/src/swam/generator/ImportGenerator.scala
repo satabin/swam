@@ -64,8 +64,9 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
       .collect { case i: Import.Function => i } // Filter by function type
       .groupBy(t => t.moduleName) // Group by module
       .view
-      .mapValues(_.toSet) // remove duplicated entries
+      .mapValues(k => k.groupBy(i => i.fieldName).view.mapValues(t => t.last).toSet) // remove duplicated entries
 
+    println(sorted.keys)
     // Generating DTO
     sorted.zipWithIndex.map {
       case ((moduleName, functions), index) =>
@@ -74,7 +75,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
           "comma" -> (index < sorted.keys.size - 1),
           "fields" -> functions.toSeq.zipWithIndex
             .map {
-              case (field, fieldIndex) => {
+              case ((name, field), fieldIndex) => {
                 Map(
                   "name" -> field.fieldName,
                   "nameCapital" -> field.fieldName.capitalize,
@@ -117,6 +118,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
   }
 
   def manPage(funcName: String) = {
+    println(s"looking for $funcName")
     (s"man $funcName" #| "col -b").!!
   }
 
@@ -151,7 +153,6 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
                                    generateHelpAsComment: Boolean = true) = {
 
     val trait_ = generateImportText(imports, className, template, generateHelpAsComment)
-
     writeToFile(trait_, projectName, className)
   }
 }
