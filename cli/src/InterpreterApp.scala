@@ -123,28 +123,24 @@ object InterpreterApp extends IOApp {
         for {
           instance <- createInstance(blocker, config)
           _ <- if (config.main.isEmpty) {
-            IO(println("Listing available functions..."))
-            instance.exports.list
+            IO(instance.exports.list
               .collect[String, FuncType] {
                 case (name, f: FuncType) =>
                   (name, f)
               }
               .foreach {
-                case (name, tpe: FuncType) => {
+                case (name, tpe: FuncType) =>
                   println(s"\t ${Console.GREEN} $name ${Console.RESET}${tpe.params.mkString("( ", ",", " )")} -> ${tpe.t
                     .mkString(",")}")
-                }
-              }
-            IO()
+
+              })
           } else {
             for {
               f <- instance.exports.function(config.main)
               _ <- f.invoke(Vector(), None)
-            } yield IO(ExitCode.Success)
+            } yield ()
           }
-        } yield ()
-
-        IO(ExitCode.Success)
+        } yield ExitCode.Success
       }
     case None => {
       parser.reportError("You must provide a WASM file")
