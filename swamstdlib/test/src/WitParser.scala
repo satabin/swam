@@ -767,7 +767,9 @@ object WitParser extends TestSuite {
                      |""".stripMargin
       val t = parse(types, TypesParser.file(_)).get.value
 
-      println(t)
+      t.keys.foreach(i => {
+        println(s"$i ${t(i).`type`}")
+      })
     }
   }
 
