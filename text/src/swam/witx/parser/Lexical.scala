@@ -26,6 +26,6 @@ object Lexical {
   def id[_: P]: P[String] =
     P("$" ~ idchar.rep(1).!)
 
-  def `type`[_: P]: P[String] =
+  def name[_: P]: P[String] =
     P(idchar.rep(1).!)
 }

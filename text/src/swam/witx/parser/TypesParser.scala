@@ -27,7 +27,7 @@ object TypesParser {
 
   def subtype[_: P]: P[BaseWitxType] = {
     P(
-      `type` | enum | flags | struct | array | handle | union
+      name | enum | flags | struct | array | handle | union
     ).map {
       case simpleType: String        => AliasType(simpleType)
       case complexType: BaseWitxType => complexType
@@ -47,7 +47,7 @@ object TypesParser {
   }
 
   def pointer[_: P]: P[Pointer] = {
-    P("(" ~ word("@witx") ~ (word("pointer") | word("const_pointer")) ~ `type` ~ ")").map { case tpe => Pointer(tpe) }
+    P("(" ~ word("@witx") ~ (word("pointer") | word("const_pointer")) ~ name ~ ")").map { case tpe => Pointer(tpe) }
   }
 
   def handle[_: P]: P[Handle] = {
@@ -70,14 +70,14 @@ object TypesParser {
   }
 
   def enum[_: P]: P[EnumType] = {
-    P("(" ~ word("enum") ~ `type` ~ id.rep(1) ~ ")").map {
+    P("(" ~ word("enum") ~ name ~ id.rep(1) ~ ")").map {
       case (t, names) =>
         EnumType(t, names)
     }
   }
 
   def flags[_: P]: P[FlagsType] = {
-    P("(" ~ word("flags") ~ `type` ~ id.rep(1) ~ ")").map { case (tpe, names) => FlagsType(tpe, names) }
+    P("(" ~ word("flags") ~ name ~ id.rep(1) ~ ")").map { case (tpe, names) => FlagsType(tpe, names) }
   }
 
 }
