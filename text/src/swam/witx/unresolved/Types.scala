@@ -26,3 +26,11 @@ case class UnionType(name: String, fields: Seq[Field]) extends BaseWitxType
 case class Handle() extends BaseWitxType
 
 case class Field(id: String, `type`: BaseWitxType)
+
+class Declaration()
+
+case class FunctionExport(id: String, params: Seq[Field], results: Seq[Field]) extends Declaration
+
+case class ImportDeclaration(name: String, `type`: String) extends Declaration
+
+case class ModuleInterface(id: String, declarations: Seq[Declaration]) extends Declaration

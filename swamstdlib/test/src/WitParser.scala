@@ -765,11 +765,6 @@ object WitParser extends TestSuite {
                      |  )
                      |)
                      |""".stripMargin
-      val tContext = parse(types, TypesParser.file(_)).get.value
-
-      tContext.keys.foreach(i => {
-        println(s"$i ${tContext(i)}")
-      })
 
       val funcs =
         """;; WASI Preview. This is an evolution of the API that WASI initially
@@ -1304,6 +1299,8 @@ object WitParser extends TestSuite {
           |    (result $error $errno)
           |  )
           |)""".stripMargin
+
+      val tContext = parse(types, TypesParser.file(_)).get.value
 
       val parser = ModuleParser(ImportContext.apply(tContext))
       val t = parse(funcs, parser.file(_)).get.value

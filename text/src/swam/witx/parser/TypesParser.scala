@@ -69,7 +69,6 @@ object TypesParser {
   }
 
   def tpe[_: P](importCtx: Map[String, BaseWitxType]): P[BaseWitxType] = {
-    println()
     P((id | name).map(x => {
       importCtx(x)
     }) | pointer)
