@@ -4,18 +4,20 @@ package parser
 
 import fastparse._
 import NoWhitespace._
-import swam.text.parser.Lexical.{idchar, linecomment}
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-03-18
   */
 object Lexical {
 
-  def comment[_: P]: P0 =
-    P(linecomment)
+  def linecomment[_: P]: P0 =
+    P(";;" ~/ CharsWhile(_ != '\u000a', 0))
 
   def ws[_: P]: P0 =
-    P(NoTrace((CharIn(" \u0009\u000a\u000d") | comment).rep))
+    P(NoTrace((CharIn(" \u0009\u000a\u000d") | linecomment).rep))
+
+  def idchar[_: P]: P0 =
+    P(CharIn("0-9A-Za-z!#$%&'*+\\-./:<=>?@\\\\^_`|~"))
 
   @inline
   def word[_: P](s: String) =
@@ -23,4 +25,7 @@ object Lexical {
 
   def id[_: P]: P[String] =
     P("$" ~ idchar.rep(1).!)
+
+  def `type`[_: P]: P[String] =
+    P(idchar.rep(1).!)
 }
