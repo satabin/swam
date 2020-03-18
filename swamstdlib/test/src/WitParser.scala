@@ -9,7 +9,7 @@ import better.files._
 import fastparse._
 import cats.effect._
 import swam.text.parser
-import swam.witx.parser.{ModuleParser, TypesParser}
+import swam.witx.parser.{ImportContext, ModuleParser, TypesParser}
 
 import scala.concurrent.ExecutionContext
 object WitParser extends TestSuite {
@@ -765,14 +765,11 @@ object WitParser extends TestSuite {
                      |  )
                      |)
                      |""".stripMargin
-      val t = parse(types, TypesParser.file(_)).get.value
+      val tContext = parse(types, TypesParser.file(_)).get.value
 
-      t.keys.foreach(i => {
-        println(s"$i ${t(i)}")
+      tContext.keys.foreach(i => {
+        println(s"$i ${tContext(i)}")
       })
-    }
-
-    test("console_tracer") {
 
       val funcs =
         """;; WASI Preview. This is an evolution of the API that WASI initially
@@ -1308,7 +1305,8 @@ object WitParser extends TestSuite {
           |  )
           |)""".stripMargin
 
-      val t = parse(funcs, ModuleParser.file(_)).get.value
+      val parser = ModuleParser(ImportContext.apply(tContext))
+      val t = parse(funcs, parser.file(_)).get.value
 
       println(t)
     }

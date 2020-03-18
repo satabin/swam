@@ -19,7 +19,8 @@ object TypesParser {
     "u32" -> BasicType("u32"),
     "u64" -> BasicType("u64"),
     "u8" -> BasicType("u8"),
-    "u16" -> BasicType("u16")
+    "u16" -> BasicType("u16"),
+    "string" -> BasicType("string")
   )
 
   def file[_: P]: P[Map[String, BaseWitxType]] = {
@@ -58,20 +59,25 @@ object TypesParser {
   }
 
   def pointer[_: P]: P[Pointer] = {
-    P("(" ~ word("@witx") ~ (word("pointer") | word("const_pointer")) ~ tpe ~ ")").map { case tpe => Pointer(tpe) }
+    P("(" ~ word("@witx") ~ (word("pointer") | word("const_pointer")) ~ tpe(declaredTypes) ~ ")").map {
+      case tpe => Pointer(tpe)
+    }
   }
 
   def handle[_: P]: P[Handle] = {
     P("(" ~ word("handle") ~ ")").map(_ => Handle())
   }
 
-  def tpe[_: P]: P[BaseWitxType] = {
-    P((id | name).map(x => declaredTypes(x)) | pointer)
+  def tpe[_: P](importCtx: Map[String, BaseWitxType]): P[BaseWitxType] = {
+    println()
+    P((id | name).map(x => {
+      importCtx(x)
+    }) | pointer)
   }
 
   def field[_: P]: P[Field] = {
     P(
-      "(" ~ word("field") ~ id ~ tpe ~ ")"
+      "(" ~ word("field") ~ id ~ tpe(declaredTypes) ~ ")"
     ).map {
       case (name, tpe) => Field(name, tpe)
     }
