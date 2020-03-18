@@ -28,29 +28,29 @@ object ModuleParser {
   def interface[_: P] = {
     P(
       "(" ~ word("@interface") ~ func ~ ")"
-    ).log
+    )
   }
 
   def func[_: P] = {
-    P(word("func") ~ "(" ~ word("export") ~ string ~ ")" ~ params.rep() ~ result.rep()).log
+    P(word("func") ~ "(" ~ word("export") ~ string ~ ")" ~ params.rep() ~ result.rep())
   }
 
   def params[_: P] = {
-    P("(" ~ word("param") ~ id ~ tpe ~ ")").log
+    P("(" ~ word("param") ~ id ~ tpe ~ ")")
   }
 
   def result[_: P] = {
-    P("(" ~ word("result") ~ id ~ tpe ~ ")").log
+    P("(" ~ word("result") ~ id ~ tpe ~ ")")
   }
 
   def tpe[_: P]: P[Boolean] = {
-    P(id | name | ptr).log.map { _ =>
+    P(id | name | ptr).map { _ =>
       true
     }
   }
 
   def ptr[_: P] = {
-    P("(" ~ word("@witx") ~ (word("pointer") | word("const_pointer")) ~ tpe ~ ")").log
+    P("(" ~ word("@witx") ~ (word("pointer") | word("const_pointer")) ~ tpe ~ ")")
   }
 
   def deps[_: P] = {

@@ -768,7 +768,7 @@ object WitParser extends TestSuite {
       val t = parse(types, TypesParser.file(_)).get.value
 
       t.keys.foreach(i => {
-        println(s"$i ${t(i).`type`}")
+        println(s"$i ${t(i)}")
       })
     }
 

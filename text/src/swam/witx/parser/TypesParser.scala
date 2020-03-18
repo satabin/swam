@@ -15,14 +15,25 @@ object TypesParser {
 
   import Lexical._
 
-  def file[_: P]: P[MapView[String, WitXType]] =
-    P(ws ~ types ~ ws ~ End)
-      .map(t => t.groupBy(i => i.name).view.mapValues(t => t.last))
+  private var declaredTypes = Map[String, BaseWitxType](
+    "u32" -> AliasType("u32"),
+    "u64" -> AliasType("u64"),
+    "u8" -> AliasType("u8"),
+    "u16" -> AliasType("u16")
+  )
 
-  def types[_: P]: P[Seq[WitXType]] = {
+  def file[_: P]: P[Map[String, BaseWitxType]] = {
+    P(ws ~ types ~ ws ~ End).map(_ => declaredTypes)
+  }
+
+  def types[_: P] = {
     P("(" ~ word("typename") ~ id ~/ subtype ~ ")")
+      .map {
+        case (name, tp) => {
+          declaredTypes = declaredTypes + (name -> tp)
+        }
+      }
       .rep(1)
-      .map(s => s.map { case (name, tpe) => new unresolved.WitXType(name, tpe) })
   }
 
   def subtype[_: P]: P[BaseWitxType] = {
@@ -42,24 +53,27 @@ object TypesParser {
 
   def array[_: P]: P[ArrayType] = {
     P("(" ~ word("array") ~ id ~ ")").map { i =>
-      ArrayType(i)
+      ArrayType(declaredTypes(i))
     }
   }
 
   def pointer[_: P]: P[Pointer] = {
-    P("(" ~ word("@witx") ~ (word("pointer") | word("const_pointer")) ~ name ~ ")").map { case tpe => Pointer(tpe) }
+    P("(" ~ word("@witx") ~ (word("pointer") | word("const_pointer")) ~ tpe ~ ")").map { case tpe => Pointer(tpe) }
   }
 
   def handle[_: P]: P[Handle] = {
     P("(" ~ word("handle") ~ ")").map(_ => Handle())
   }
 
-  def field[_: P]: P[Either[Field, PointerField]] = {
+  def tpe[_: P]: P[BaseWitxType] = {
+    P((id | name).map(x => declaredTypes(x)) | pointer)
+  }
+
+  def field[_: P]: P[Field] = {
     P(
-      "(" ~ word("field") ~ id ~ (id | pointer) ~ ")"
+      "(" ~ word("field") ~ id ~ tpe ~ ")"
     ).map {
-      case (name, tpe: String)  => Left(Field(name, tpe))
-      case (name, tpe: Pointer) => Right(PointerField(name, tpe))
+      case (name, tpe) => Field(name, tpe)
     }
   }
 
@@ -72,12 +86,12 @@ object TypesParser {
   def enum[_: P]: P[EnumType] = {
     P("(" ~ word("enum") ~ name ~ id.rep(1) ~ ")").map {
       case (t, names) =>
-        EnumType(t, names)
+        EnumType(declaredTypes(t), names)
     }
   }
 
   def flags[_: P]: P[FlagsType] = {
-    P("(" ~ word("flags") ~ name ~ id.rep(1) ~ ")").map { case (tpe, names) => FlagsType(tpe, names) }
+    P("(" ~ word("flags") ~ name ~ id.rep(1) ~ ")").map { case (tpe, names) => FlagsType(declaredTypes(tpe), names) }
   }
 
 }
