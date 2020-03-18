@@ -7,6 +7,8 @@ package unresolved
   */
 sealed trait BaseWitxType
 
+case class BasicType(name: String) extends BaseWitxType
+
 case class AliasType(name: String) extends BaseWitxType
 
 case class EnumType(`type`: BaseWitxType, names: Seq[String]) extends BaseWitxType

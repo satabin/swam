@@ -16,10 +16,10 @@ object TypesParser {
   import Lexical._
 
   private var declaredTypes = Map[String, BaseWitxType](
-    "u32" -> AliasType("u32"),
-    "u64" -> AliasType("u64"),
-    "u8" -> AliasType("u8"),
-    "u16" -> AliasType("u16")
+    "u32" -> BasicType("u32"),
+    "u64" -> BasicType("u64"),
+    "u8" -> BasicType("u8"),
+    "u16" -> BasicType("u16")
   )
 
   def file[_: P]: P[Map[String, BaseWitxType]] = {
