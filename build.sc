@@ -11,7 +11,6 @@ import jmh.Jmh
 import $file.headers
 import headers.Headers
 import $file.mdoc
-import interpreter.ivy
 import mdoc.MdocModule
 
 import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
@@ -148,40 +147,6 @@ object cli extends SwamModule{
 }
 
 
-
-object swamstdlib extends SwamModule with PublishModule {
-
-  def moduleDeps = Seq(core, runtime, text)
-
-  def publishVersion = swamVersion
-
-  def artifactName = "swam-stdlib"
-
-  def ivyDeps = Agg(
-    ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
-    ivy"com.github.scopt::scopt:3.7.1"
-  )
-
-  def pomSettings =
-    PomSettings(
-      description = "SWAM wrapper for stdlib imports",
-      organization = "org.gnieh",
-      url = swamUrl,
-      licenses = Seq(swamLicense),
-      versionControl = VersionControl.github("satabin", "swam"),
-      developers = Seq(swamDeveloper)
-    )
-
-
-  object test extends Tests with ScalafmtModule {
-    def ivyDeps =
-      Agg(ivy"com.lihaoyi::utest:0.7.1", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
-
-    def moduleDeps = Seq(generator, text, util.test)
-
-    def testFrameworks = Seq("swam.util.Framework")
-  }
-}
 
 object runtime extends SwamModule with PublishModule {
 
