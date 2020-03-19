@@ -141,13 +141,39 @@ object cli extends SwamModule{
 
   def publishVersion = swamVersion
 
-  def artifactName = "swam-cli"
+  def artifactName = "swam-interpreter"
 
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
     ivy"com.github.scopt::scopt:3.7.1"
   )
 
+}
+
+
+
+object swamstdlib extends SwamModule with PublishModule {
+
+  def moduleDeps = Seq(core, runtime)
+
+  def publishVersion = swamVersion
+
+  def artifactName = "swam-stdlib"
+
+  def ivyDeps = Agg(
+    ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
+    ivy"com.github.scopt::scopt:3.7.1"
+  )
+
+  def pomSettings =
+    PomSettings(
+      description = "SWAM wrapper for stdlib imports",
+      organization = "org.gnieh",
+      url = swamUrl,
+      licenses = Seq(swamLicense),
+      versionControl = VersionControl.github("satabin", "swam"),
+      developers = Seq(swamDeveloper)
+    )
 }
 
 object runtime extends SwamModule with PublishModule {
