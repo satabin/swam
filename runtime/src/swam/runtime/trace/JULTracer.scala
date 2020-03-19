@@ -73,7 +73,7 @@ object JULTracer {
       default.separator,
       filter,
       default.level,
-      TracerFileHandlerCondiguration(traceNamePattern, default.fileHandler.append, traceFolder),
+      TracerFileHandlerCondiguration(traceNamePattern, append = false, traceFolder),
       default.socketHandler,
       default.custom
     )

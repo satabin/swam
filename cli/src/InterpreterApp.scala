@@ -25,7 +25,7 @@ case class Config(wasm: File = null,
                   trace: Boolean = false,
                   traceOutDir: String = ".",
                   traceFilter: String = "*",
-                  tracePattern: String = "log.%u.txt")
+                  tracePattern: String = "log.txt")
 
 private object NoTimestampFormatter extends Formatter {
   override def format(x: LogRecord): String =
@@ -78,7 +78,7 @@ object InterpreterApp extends IOApp {
     opt[Boolean]('d', "debug-compiler")
       .optional()
       .action((f, c) => c.copy(debugCompiler = f))
-      .text("Activates the debug option for thee text parser")
+      .text("Activates the debug option for the text parser")
 
     opt[Boolean]('t', "trace")
       .optional()
