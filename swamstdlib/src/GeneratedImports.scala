@@ -12,7 +12,12 @@ trait GeneratedImports {
 
   def envSrand(p0: Int): IO[Unit]
   def envTime(p0: Int): IO[Int]
-  def envPrintf(p0: Int, p1: Int): IO[Int]
+  def envPrintf(p0: Int, p1: Int): IO[Int] = {
+    IO {
+      println("Hello world")
+      12
+    }
+  }
   def envRand(): IO[Int]
   def imports() = {
     Imports[IO](
