@@ -3,18 +3,15 @@ import mill.eval._
 import mill.scalalib._
 import mill.scalalib.publish._
 import mill.scalalib.scalafmt._
-
 import ammonite.ops._
 import mill.modules.Jvm.runSubprocess
-
 import coursier.maven.MavenRepository
-
 import $file.jmh
 import jmh.Jmh
 import $file.headers
 import headers.Headers
-
 import $file.mdoc
+import interpreter.ivy
 import mdoc.MdocModule
 
 import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
@@ -154,7 +151,7 @@ object cli extends SwamModule{
 
 object swamstdlib extends SwamModule with PublishModule {
 
-  def moduleDeps = Seq(core, runtime)
+  def moduleDeps = Seq(core, runtime, text)
 
   def publishVersion = swamVersion
 
@@ -174,6 +171,16 @@ object swamstdlib extends SwamModule with PublishModule {
       versionControl = VersionControl.github("satabin", "swam"),
       developers = Seq(swamDeveloper)
     )
+
+
+  object test extends Tests with ScalafmtModule {
+    def ivyDeps =
+      Agg(ivy"com.lihaoyi::utest:0.7.1", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
+
+    def moduleDeps = Seq(generator, text, util.test)
+
+    def testFrameworks = Seq("swam.util.Framework")
+  }
 }
 
 object runtime extends SwamModule with PublishModule {
