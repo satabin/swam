@@ -6,6 +6,7 @@ import java.nio.ByteBuffer
 import java.util.logging.{Formatter, LogRecord}
 
 import swam._
+
 import text._
 import runtime._
 import runtime.trace._
@@ -25,7 +26,9 @@ case class Config(wasm: File = null,
                   trace: Boolean = false,
                   traceOutDir: String = ".",
                   traceFilter: String = "*",
-                  tracePattern: String = "log.txt")
+                  tracePattern: String = "log.txt",
+                  linkJarPath: File = null,
+                  className: String = "")
 
 private object NoTimestampFormatter extends Formatter {
   override def format(x: LogRecord): String =
@@ -85,22 +88,21 @@ object InterpreterApp extends IOApp {
       .action((f, c) => c.copy(trace = f))
       .text("Traces WASM execution channels; stack, memory and opcodes")
 
-  }
+    opt[File]('l', "link")
+      .optional()
+      .action((f, c) => c.copy(linkJarPath = f))
+      .text("Links the imports inside the jar file to be append in the executed WASM")
 
-  def buffer = {
-    val buffer = ByteBuffer.allocate(2 * pageSize)
-    buffer.limit(pageSize)
-    buffer
-  }
+    opt[String]('c', "class-name")
+      .optional()
+      .action((f, c) => c.copy(className = f))
+      .text("Imports class name")
 
-  def imports() =
-    Imports[IO](
-      TCMap[String, AsIsIO](
-        "env" -> TCMap[String, AsIIO]("memory" -> buffer)
-      ))
+  }
 
   def createInstance(blocker: Blocker, config: Config): IO[Instance[IO]] = {
     for {
+      imports <- IO(JVMLinker().getImports(config.linkJarPath, config.className))
       compiler <- Compiler[IO]
       engine <- if (config.trace)
         Engine[IO](

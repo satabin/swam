@@ -26,19 +26,11 @@ class JVMLinker {
     buffer
   }
 
-  def envPrintf(p0: Int, p1: Int): IO[Int] = {
-    IO {
-      println("Hello world")
-      12
-    }
-  }
-
   private def imports() =
     Imports[IO](
       TCMap[String, AsIsIO](
         "env" -> TCMap[String, AsIIO](
-          "memory" -> buffer,
-          "printf" -> envPrintf _
+          "memory" -> buffer
         )
       ))
   //
