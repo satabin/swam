@@ -63,7 +63,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
       .collect { case i: Import.Function => i } // Filter by function type
       .groupBy(t => t.moduleName) // Group by module
       .view
-      .mapValues(_.toSet) // remove duplicated entries
+      .mapValues(k => k.groupBy(i => i.fieldName).view.mapValues(t => t.last).toSet) // remove duplicated entries
 
     // Generating DTO
     sorted.zipWithIndex.map {
@@ -73,7 +73,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
           "comma" -> (index < sorted.keys.size - 1),
           "fields" -> functions.toSeq.zipWithIndex
             .map {
-              case (field, fieldIndex) => {
+              case ((name, field), fieldIndex) => {
                 Map(
                   "name" -> field.fieldName,
                   "nameCapital" -> field.fieldName.capitalize,
