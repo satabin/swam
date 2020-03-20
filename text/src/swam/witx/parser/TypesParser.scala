@@ -2,7 +2,11 @@ package swam
 package witx
 package parser
 
+import java.nio.file.Path
+
+import cats.effect._
 import fastparse._
+import swam.text.{ParserException, readFile}
 import swam.witx.parser.parser.WitxWhitespace._
 import swam.witx.unresolved._
 

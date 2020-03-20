@@ -1,6 +1,9 @@
 package swam
 package generator
 
+import java.io
+import java.nio.file.Paths
+
 import utest.{TestSuite, Tests, test}
 
 import runtime._
@@ -20,11 +23,24 @@ object WitParser extends TestSuite {
 
   implicit val cs = IO.contextShift(ExecutionContext.Implicits.global)
 
-  def runParse() = {}
+  def runParse() = {
+    val wasi_snaphot = Paths.get("text/resources/wasi_witx/wasi_snapshot_preview1.witx")
+
+    val parser = WitxParser[IO]
+    val ctx = ImportContext[IO]()
+
+    Blocker[IO]
+      .use(blocker => {
+        for {
+          instruction <- parser.parseModuleInterface(wasi_snaphot, blocker, ctx)
+          _ <- IO(println(instruction))
+        } yield ()
+      })
+      .unsafeRunSync()
+  }
 
   val tests = Tests {
-    "console_tracer" - runParse()
-
+    "parsing_witx" - runParse()
   }
 
 }
