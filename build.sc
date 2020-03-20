@@ -12,7 +12,6 @@ import $file.headers
 import headers.Headers
 import $file.mdoc
 import mdoc.MdocModule
-
 import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
 
 val swamVersion = "0.6.0-SNAPSHOT"
@@ -103,7 +102,7 @@ object text extends SwamModule with PublishModule {
 
 object generator extends SwamModule with PublishModule {
 
-  def moduleDeps = Seq(core, runtime)
+  def moduleDeps = Seq(core, runtime, text)
 
   def publishVersion = swamVersion
 
@@ -127,6 +126,13 @@ object generator extends SwamModule with PublishModule {
       versionControl = VersionControl.github("satabin", "swam"),
       developers = Seq(swamDeveloper)
     )
+
+
+  object test extends Tests with ScalafmtModule {
+    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.1")
+    def testFrameworks = Seq("swam.util.Framework")
+    def moduleDeps = Seq(core,text, util.test )
+  }
 }
 
 

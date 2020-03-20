@@ -1,19 +1,17 @@
-package swam.witx.parser
+package swam
+package witx
+package parser
 
 import fastparse._
-import swam.binary.ModuleParser
 import swam.witx.parser.parser.WitxWhitespace._
 import swam.witx.unresolved._
-import swam.text.parser.Lexical.string
-
-import scala.collection.MapView
 
 /**
     @author Javier Cabrera-Arteaga on 2020-03-18
   */
 class ModuleParser(val importContext: ImportContext) {
 
-  import Lexical._
+  import swam.text.parser.Lexical._
   import TypesParser.tpe
 
   def file[_: P] =

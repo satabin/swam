@@ -6,14 +6,12 @@ import fastparse._
 import swam.witx.parser.parser.WitxWhitespace._
 import swam.witx.unresolved._
 
-import scala.collection.MapView
-
 /**
     @author Javier Cabrera-Arteaga on 2020-03-18
   */
 object TypesParser {
 
-  import Lexical._
+  import text.parser.Lexical._
 
   private var declaredTypes = Map[String, BaseWitxType](
     "u32" -> BasicType("u32"),
@@ -39,11 +37,8 @@ object TypesParser {
 
   def subtype[_: P]: P[BaseWitxType] = {
     P(
-      name | enum | flags | struct | array | handle | union
-    ).map {
-      case simpleType: String        => AliasType(simpleType)
-      case complexType: BaseWitxType => complexType
-    }
+      name.map(t => AliasType(t)) | enum | flags | struct | array | handle | union
+    )
   }
 
   def struct[_: P]: P[StructType] = {

@@ -48,6 +48,9 @@ object Lexical {
   def id[_: P]: P[String] =
     P("$" ~ idchar.rep(1).!)
 
+  def name[_: P]: P[String] =
+    P(idchar.rep(1).!)
+
   private def sign[_: P] =
     P(CharIn("+\\-").?.!.map {
       case "" | "+" => 1

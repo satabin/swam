@@ -1,6 +1,4 @@
-package swam
-package witx
-package parser
+package swam.witx.parser
 
 import fastparse._
 
