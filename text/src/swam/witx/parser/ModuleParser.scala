@@ -30,7 +30,7 @@ class ModuleParser[F[_]: Effect](val importContext: ImportContext[F]) {
         (`import`.map { case (name, tp) => ImportDeclaration(name, tp) }
           | interface(types))
           .rep(1) ~ ")").map {
-      case (name, decs) => ModuleInterface(name, decs)
+      case (name, decs) => (types, ModuleInterface(name, decs))
     }
 
   def `import`[_: P] = {

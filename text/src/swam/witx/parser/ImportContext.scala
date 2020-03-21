@@ -16,13 +16,14 @@ import scala.concurrent.ExecutionContext
   */
 class ImportContext[F[_]](implicit val F: Effect[F]) {
 
+  // TODO FIX !
   implicit val cs = IO.contextShift(ExecutionContext.Implicits.global)
 
   def load(path: String) = {
     Blocker[IO]
       .use { blocker =>
         WitxParser[IO].parseTypes(Paths.get(
-                                    s"/Users/javierca/Documents/Develop/swam/text/resources/wasi_witx/$path"
+                                    s"/Users/javierca/Documents/Develop/swam/generator/resources/wasi_witx/$path"
                                   ),
                                   blocker)
       }

@@ -16,13 +16,14 @@ import cats.implicits._
 class WitxParser[F[_]](implicit val F: Effect[F]) {
 
   def parseModuleInterface(file: Path, blocker: Blocker, ctx: ImportContext[F], chunkSize: Int = 1024)(
-      implicit cs: ContextShift[F]): F[ModuleInterface] =
+      implicit cs: ContextShift[F]): F[(Map[String, BaseWitxType], ModuleInterface)] =
     for {
       input <- readFile(file, blocker, chunkSize)
       interface <- parseModuleString(input, ctx)
     } yield interface
 
-  private[swam] def parseModuleString(input: String, ctx: ImportContext[F]): F[ModuleInterface] =
+  private[swam] def parseModuleString(input: String,
+                                      ctx: ImportContext[F]): F[(Map[String, BaseWitxType], ModuleInterface)] =
     F.liftIO {
       IO(fastparse.parse(input, ModuleParser[F](ctx).file(_))).flatMap {
         case Parsed.Success(m, _)          => IO.pure(m)
