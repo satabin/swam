@@ -30,13 +30,14 @@ class ImportContext[F[_]](implicit val F: Effect[F]) {
       .unsafeRunSync()
   }
 
-  def getInPath(path: String): String = {
+  def getInPath(path: String, includes: String*): String = {
     if (Files.exists(Paths.get(path)))
       path
     else
       System
         .getenv("PATH")
         .split(":")
+        .concat(includes)
         .filter(t => Files.exists(Paths.get(s"$t/$path")))(0)
   }
 

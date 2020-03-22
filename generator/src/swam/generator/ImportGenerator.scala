@@ -12,7 +12,7 @@ import org.fusesource.scalate.TemplateEngine
 import cats.effect.{Blocker, Effect, IO}
 import cats.implicits._
 import cats.effect._
-import fs2.{text, _}
+import fs2._
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-03-06
@@ -89,6 +89,12 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
     }.toSeq
   }
 
+  def formatText(text: String) = {
+    val file = Paths.get("Formatted.scala")
+
+    scalafmt.format(config, file, text)
+  }
+
   /**
     * Creates the trait to implement the WASM import functions
     * @param imports
@@ -106,9 +112,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
                   "imports" -> getContext(imports)
                 ))
 
-    val file = Paths.get("GeneratedImport.scala")
-
-    scalafmt.format(config, file, result)
+    formatText(result)
   }
 
   def writeToFile(t: String, projectName: String, className: String) = {
@@ -143,6 +147,21 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
     val trait_ = generateImportText(imports, className, template)
 
     writeToFile(trait_, projectName, className)
+  }
+
+  /**
+    * Creates scala project from witx
+    * @param typesTemplate
+    * @param traitTemplate
+    * @return
+    */
+  def createScalaProjectForImports(typesTemplate: String, traitTemplate: String, projectName: String) = {
+
+    for {
+      _ <- writeToFile(typesTemplate, projectName, "Types")
+      _ <- writeToFile(traitTemplate, projectName, "Module")
+    } yield ()
+
   }
 }
 
