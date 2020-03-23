@@ -4,12 +4,25 @@ import java.nio.ByteBuffer
 
 import Types._
 import cats.effect._
-import swam.impl.Pointer
   trait Module {
 
-		def adapt[Tin, Tout](in: Tin): Tout
-
 		var mem: ByteBuffer
+
+		def getString(buffer: ByteBuffer,offset: Int) = {
+			val arr = buffer.array()
+			val end = arr.indexWhere({ c =>
+				c == 0
+			}, offset)
+
+			{
+				offset until end
+				}
+				.map { c =>
+					arr(c).toChar
+				}
+				.mkString("")
+		}
+
 
 		def args_getImpl(argv: Pointer[Pointer[u8]], argv_buf: Pointer[u8]): (errnoEnum.Value)
 
@@ -22,7 +35,7 @@ import swam.impl.Pointer
 				, (i, r) => mem.put(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](args_getImpl(argvAdapted, argv_bufAdapted)))
+			IO(args_getImpl(argvAdapted, argv_bufAdapted).id)
 		}
 
 		def args_sizes_getImpl(argc: Pointer[size], argv_buf_size: Pointer[size]): (errnoEnum.Value)
@@ -35,7 +48,7 @@ import swam.impl.Pointer
 				, (i, r) => mem.putInt(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](args_sizes_getImpl(argcAdapted, argv_buf_sizeAdapted)))
+			IO(args_sizes_getImpl(argcAdapted, argv_buf_sizeAdapted).id)
 		}
 
 		def environ_getImpl(environ: Pointer[Pointer[u8]], environ_buf: Pointer[u8]): (errnoEnum.Value)
@@ -49,7 +62,7 @@ import swam.impl.Pointer
 				, (i, r) => mem.put(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](environ_getImpl(environAdapted, environ_bufAdapted)))
+			IO(environ_getImpl(environAdapted, environ_bufAdapted).id)
 		}
 
 		def environ_sizes_getImpl(environc: Pointer[size], environ_buf_size: Pointer[size]): (errnoEnum.Value)
@@ -62,7 +75,7 @@ import swam.impl.Pointer
 				, (i, r) => mem.putInt(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](environ_sizes_getImpl(environcAdapted, environ_buf_sizeAdapted)))
+			IO(environ_sizes_getImpl(environcAdapted, environ_buf_sizeAdapted).id)
 		}
 
 		def clock_res_getImpl(id: clockidEnum.Value, resolution: Pointer[timestamp]): (errnoEnum.Value)
@@ -73,7 +86,7 @@ import swam.impl.Pointer
 				, (i, r) => mem.putLong(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](clock_res_getImpl(idAdapted, resolutionAdapted)))
+			IO(clock_res_getImpl(idAdapted, resolutionAdapted).id)
 		}
 
 		def clock_time_getImpl(id: clockidEnum.Value, precision: timestamp, time: Pointer[timestamp]): (errnoEnum.Value)
@@ -84,7 +97,7 @@ import swam.impl.Pointer
 				, (i, r) => mem.putLong(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](clock_time_getImpl(idAdapted, precision, timeAdapted)))
+			IO(clock_time_getImpl(idAdapted, precision, timeAdapted).id)
 		}
 
 		def fd_adviseImpl(fd: fd, offset: filesize, len: filesize, advice: adviceEnum.Value): (errnoEnum.Value)
@@ -92,7 +105,7 @@ import swam.impl.Pointer
 		def fd_advise(fd: Int, offset: Long, len: Long, advice: Int) = {
 			val adviceAdapted: adviceEnum.Value = adviceEnum(advice)
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_adviseImpl(fd, offset, len, adviceAdapted)))
+			IO(fd_adviseImpl(fd, offset, len, adviceAdapted).id)
 		}
 
 		def fd_allocateImpl(fd: fd, offset: filesize, len: filesize): (errnoEnum.Value)
@@ -100,7 +113,7 @@ import swam.impl.Pointer
 		def fd_allocate(fd: Int, offset: Long, len: Long) = {
 
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_allocateImpl(fd, offset, len)))
+			IO(fd_allocateImpl(fd, offset, len).id)
 		}
 
 		def fd_closeImpl(fd: fd): (errnoEnum.Value)
@@ -108,7 +121,7 @@ import swam.impl.Pointer
 		def fd_close(fd: Int) = {
 
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_closeImpl(fd)))
+			IO(fd_closeImpl(fd).id)
 		}
 
 		def fd_datasyncImpl(fd: fd): (errnoEnum.Value)
@@ -116,7 +129,7 @@ import swam.impl.Pointer
 		def fd_datasync(fd: Int) = {
 
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_datasyncImpl(fd)))
+			IO(fd_datasyncImpl(fd).id)
 		}
 
 		def fd_fdstat_getImpl(fd: fd, stat: Pointer[fdstat]): (errnoEnum.Value)
@@ -124,7 +137,7 @@ import swam.impl.Pointer
 		def fd_fdstat_get(fd: Int, stat: Int) = {
 			val statAdapted: Pointer[fdstat] = new Pointer[fdstat](stat, (i) => fdstat(mem, i), (i, r) => r.write())
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_fdstat_getImpl(fd, statAdapted)))
+			IO(fd_fdstat_getImpl(fd, statAdapted).id)
 		}
 
 		def fd_fdstat_set_flagsImpl(fd: fd, flags: fdflagsFlags.Value): (errnoEnum.Value)
@@ -132,7 +145,7 @@ import swam.impl.Pointer
 		def fd_fdstat_set_flags(fd: Int, flags: Int) = {
 			val flagsAdapted: fdflagsFlags.Value = fdflagsFlags(flags)
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_fdstat_set_flagsImpl(fd, flagsAdapted)))
+			IO(fd_fdstat_set_flagsImpl(fd, flagsAdapted).id)
 		}
 
 		def fd_fdstat_set_rightsImpl(fd: fd, fs_rights_base: rightsFlags.Value, fs_rights_inheriting: rightsFlags.Value): (errnoEnum.Value)
@@ -141,7 +154,7 @@ import swam.impl.Pointer
 			val fs_rights_baseAdapted: rightsFlags.Value = rightsFlags(fs_rights_base)
 			val fs_rights_inheritingAdapted: rightsFlags.Value = rightsFlags(fs_rights_inheriting)
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_fdstat_set_rightsImpl(fd, fs_rights_baseAdapted, fs_rights_inheritingAdapted)))
+			IO(fd_fdstat_set_rightsImpl(fd, fs_rights_baseAdapted, fs_rights_inheritingAdapted).id)
 		}
 
 		def fd_filestat_getImpl(fd: fd, buf: Pointer[filestat]): (errnoEnum.Value)
@@ -149,7 +162,7 @@ import swam.impl.Pointer
 		def fd_filestat_get(fd: Int, buf: Int) = {
 			val bufAdapted: Pointer[filestat] = new Pointer[filestat](buf, (i) => filestat(mem, i), (i, r) => r.write())
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_filestat_getImpl(fd, bufAdapted)))
+			IO(fd_filestat_getImpl(fd, bufAdapted).id)
 		}
 
 		def fd_filestat_set_sizeImpl(fd: fd, size: filesize): (errnoEnum.Value)
@@ -157,7 +170,7 @@ import swam.impl.Pointer
 		def fd_filestat_set_size(fd: Int, size: Long) = {
 
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_filestat_set_sizeImpl(fd, size)))
+			IO(fd_filestat_set_sizeImpl(fd, size).id)
 		}
 
 		def fd_filestat_set_timesImpl(fd: fd, atim: timestamp, mtim: timestamp, fst_flags: fstflagsFlags.Value): (errnoEnum.Value)
@@ -165,18 +178,18 @@ import swam.impl.Pointer
 		def fd_filestat_set_times(fd: Int, atim: Long, mtim: Long, fst_flags: Int) = {
 			val fst_flagsAdapted: fstflagsFlags.Value = fstflagsFlags(fst_flags)
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_filestat_set_timesImpl(fd, atim, mtim, fst_flagsAdapted)))
+			IO(fd_filestat_set_timesImpl(fd, atim, mtim, fst_flagsAdapted).id)
 		}
 
 		def fd_preadImpl(fd: fd, iovs: iovec_array, iovsLen: u32, offset: filesize, nread: Pointer[size]): (errnoEnum.Value)
 
 		def fd_pread(fd: Int, iovs: Int, iovsLen: Int, offset: Long, nread: Int) = {
-			val iovsAdapted: iovec_array = loadArray[iovec](iovs)
+			val iovsAdapted: iovec_array = new ArrayInstance[iovec](iovs, iovsLen, 8, (i) => `iovec`(mem, i)).values
 			val nreadAdapted: Pointer[size] = new Pointer[size](nread, (i) => mem.getInt(i)
 				, (i, r) => mem.putInt(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_preadImpl(fd, iovsAdapted, iovsLen, offset, nreadAdapted)))
+			IO(fd_preadImpl(fd, iovsAdapted, iovsLen, offset, nreadAdapted).id)
 		}
 
 		def fd_prestat_getImpl(fd: fd, buf: Pointer[prestat]): (errnoEnum.Value)
@@ -184,7 +197,7 @@ import swam.impl.Pointer
 		def fd_prestat_get(fd: Int, buf: Int) = {
 			val bufAdapted: Pointer[prestat] = new Pointer[prestat](buf, (i) => prestat(mem, i), (i, r) => `r`.write())
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_prestat_getImpl(fd, bufAdapted)))
+			IO(fd_prestat_getImpl(fd, bufAdapted).id)
 		}
 
 		def fd_prestat_dir_nameImpl(fd: fd, path: Pointer[u8], path_len: size): (errnoEnum.Value)
@@ -194,29 +207,29 @@ import swam.impl.Pointer
 				, (i, r) => mem.put(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_prestat_dir_nameImpl(fd, pathAdapted, path_len)))
+			IO(fd_prestat_dir_nameImpl(fd, pathAdapted, path_len).id)
 		}
 
 		def fd_pwriteImpl(fd: fd, iovs: ciovec_array, iovsLen: u32, offset: filesize, nwritten: Pointer[size]): (errnoEnum.Value)
 
 		def fd_pwrite(fd: Int, iovs: Int, iovsLen: Int, offset: Long, nwritten: Int) = {
-			val iovsAdapted: ciovec_array = loadArray[ciovec](iovs)
+			val iovsAdapted: ciovec_array = new ArrayInstance[ciovec](iovs, iovsLen, 8, (i) => `ciovec`(mem, i)).values
 			val nwrittenAdapted: Pointer[size] = new Pointer[size](nwritten, (i) => mem.getInt(i)
 				, (i, r) => mem.putInt(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_pwriteImpl(fd, iovsAdapted, iovsLen, offset, nwrittenAdapted)))
+			IO(fd_pwriteImpl(fd, iovsAdapted, iovsLen, offset, nwrittenAdapted).id)
 		}
 
 		def fd_readImpl(fd: fd, iovs: iovec_array, iovsLen: u32, nread: Pointer[size]): (errnoEnum.Value)
 
 		def fd_read(fd: Int, iovs: Int, iovsLen: Int, nread: Int) = {
-			val iovsAdapted: iovec_array = loadArray[iovec](iovs)
+			val iovsAdapted: iovec_array = new ArrayInstance[iovec](iovs, iovsLen, 8, (i) => iovec(mem, i)).values
 			val nreadAdapted: Pointer[size] = new Pointer[size](nread, (i) => mem.getInt(i)
 				, (i, r) => mem.putInt(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_readImpl(fd, iovsAdapted, iovsLen, nreadAdapted)))
+			IO(fd_readImpl(fd, iovsAdapted, iovsLen, nreadAdapted).id)
 		}
 
 		def fd_readdirImpl(fd: fd, buf: Pointer[u8], buf_len: size, cookie: dircookie, bufused: Pointer[size]): (errnoEnum.Value)
@@ -229,7 +242,7 @@ import swam.impl.Pointer
 				, (i, r) => mem.putInt(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_readdirImpl(fd, bufAdapted, buf_len, cookie, bufusedAdapted)))
+			IO(fd_readdirImpl(fd, bufAdapted, buf_len, cookie, bufusedAdapted).id)
 		}
 
 		def fd_renumberImpl(fd: fd, to: fd): (errnoEnum.Value)
@@ -237,7 +250,7 @@ import swam.impl.Pointer
 		def fd_renumber(fd: Int, to: Int) = {
 
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_renumberImpl(fd, to)))
+			IO(fd_renumberImpl(fd, to).id)
 		}
 
 		def fd_seekImpl(fd: fd, offset: filedelta, whence: whenceEnum.Value, newoffset: Pointer[filesize]): (errnoEnum.Value)
@@ -248,7 +261,7 @@ import swam.impl.Pointer
 				, (i, r) => mem.putLong(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_seekImpl(fd, offset, whenceAdapted, newoffsetAdapted)))
+			IO(fd_seekImpl(fd, offset, whenceAdapted, newoffsetAdapted).id)
 		}
 
 		def fd_syncImpl(fd: fd): (errnoEnum.Value)
@@ -256,7 +269,7 @@ import swam.impl.Pointer
 		def fd_sync(fd: Int) = {
 
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_syncImpl(fd)))
+			IO(fd_syncImpl(fd).id)
 		}
 
 		def fd_tellImpl(fd: fd, offset: Pointer[filesize]): (errnoEnum.Value)
@@ -266,18 +279,18 @@ import swam.impl.Pointer
 				, (i, r) => mem.putLong(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_tellImpl(fd, offsetAdapted)))
+			IO(fd_tellImpl(fd, offsetAdapted).id)
 		}
 
 		def fd_writeImpl(fd: fd, iovs: ciovec_array, iovsLen: u32, nwritten: Pointer[size]): (errnoEnum.Value)
 
 		def fd_write(fd: Int, iovs: Int, iovsLen: Int, nwritten: Int) = {
-			val iovsAdapted: ciovec_array = loadArray[ciovec](iovs)
+			val iovsAdapted: ciovec_array = new ArrayInstance[ciovec](iovs, iovsLen, 8, (i) => `ciovec`(mem, i)).values
 			val nwrittenAdapted: Pointer[size] = new Pointer[size](nwritten, (i) => mem.getInt(i)
 				, (i, r) => mem.putInt(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](fd_writeImpl(fd, iovsAdapted, iovsLen, nwrittenAdapted)))
+			IO(fd_writeImpl(fd, iovsAdapted, iovsLen, nwrittenAdapted).id)
 		}
 
 		def path_create_directoryImpl(fd: fd, path: string): (errnoEnum.Value)
@@ -285,7 +298,7 @@ import swam.impl.Pointer
 		def path_create_directory(fd: Int, path: Int) = {
 			val pathAdapted: String = getString(mem, path)
 
-			IO(adapt[(errnoEnum.Value), (Int)](path_create_directoryImpl(fd, pathAdapted)))
+			IO(path_create_directoryImpl(fd, pathAdapted).id)
 		}
 
 		def path_filestat_getImpl(fd: fd, flags: lookupflagsFlags.Value, path: string, buf: Pointer[filestat]): (errnoEnum.Value)
@@ -295,7 +308,7 @@ import swam.impl.Pointer
 			val pathAdapted: String = getString(mem, path)
 			val bufAdapted: Pointer[filestat] = new Pointer[filestat](buf, (i) => filestat(mem, i), (i, r) => r.write())
 
-			IO(adapt[(errnoEnum.Value), (Int)](path_filestat_getImpl(fd, flagsAdapted, pathAdapted, bufAdapted)))
+			IO(path_filestat_getImpl(fd, flagsAdapted, pathAdapted, bufAdapted).id)
 		}
 
 		def path_filestat_set_timesImpl(fd: fd, flags: lookupflagsFlags.Value, path: string, atim: timestamp, mtim: timestamp, fst_flags: fstflagsFlags.Value): (errnoEnum.Value)
@@ -305,7 +318,7 @@ import swam.impl.Pointer
 			val pathAdapted: String = getString(mem, path)
 			val fst_flagsAdapted: fstflagsFlags.Value = fstflagsFlags(fst_flags)
 
-			IO(adapt[(errnoEnum.Value), (Int)](path_filestat_set_timesImpl(fd, flagsAdapted, pathAdapted, atim, mtim, fst_flagsAdapted)))
+			IO(path_filestat_set_timesImpl(fd, flagsAdapted, pathAdapted, atim, mtim, fst_flagsAdapted).id)
 		}
 
 		def path_linkImpl(old_fd: fd, old_flags: lookupflagsFlags.Value, old_path: string, new_fd: fd, new_path: string): (errnoEnum.Value)
@@ -315,7 +328,7 @@ import swam.impl.Pointer
 			val old_pathAdapted: String = getString(mem, old_path)
 			val new_pathAdapted: String = getString(mem, new_path)
 
-			IO(adapt[(errnoEnum.Value), (Int)](path_linkImpl(old_fd, old_flagsAdapted, old_pathAdapted, new_fd, new_pathAdapted)))
+			IO(path_linkImpl(old_fd, old_flagsAdapted, old_pathAdapted, new_fd, new_pathAdapted).id)
 		}
 
 		def path_openImpl(fd: fd, dirflags: lookupflagsFlags.Value, path: string, oflags: oflagsFlags.Value, fs_rights_base: rightsFlags.Value, fs_rights_inherting: rightsFlags.Value, fdflags: fdflagsFlags.Value, opened_fd: Pointer[fd]): (errnoEnum.Value)
@@ -331,7 +344,7 @@ import swam.impl.Pointer
 				, (i, r) => mem.putInt(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](path_openImpl(fd, dirflagsAdapted, pathAdapted, oflagsAdapted, fs_rights_baseAdapted, fs_rights_inhertingAdapted, fdflagsAdapted, opened_fdAdapted)))
+			IO(path_openImpl(fd, dirflagsAdapted, pathAdapted, oflagsAdapted, fs_rights_baseAdapted, fs_rights_inhertingAdapted, fdflagsAdapted, opened_fdAdapted).id)
 		}
 
 		def path_readlinkImpl(fd: fd, path: string, buf: Pointer[u8], buf_len: size, bufused: Pointer[size]): (errnoEnum.Value)
@@ -345,7 +358,7 @@ import swam.impl.Pointer
 				, (i, r) => mem.putInt(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](path_readlinkImpl(fd, pathAdapted, bufAdapted, buf_len, bufusedAdapted)))
+			IO(path_readlinkImpl(fd, pathAdapted, bufAdapted, buf_len, bufusedAdapted).id)
 		}
 
 		def path_remove_directoryImpl(fd: fd, path: string): (errnoEnum.Value)
@@ -353,7 +366,7 @@ import swam.impl.Pointer
 		def path_remove_directory(fd: Int, path: Int) = {
 			val pathAdapted: String = getString(mem, path)
 
-			IO(adapt[(errnoEnum.Value), (Int)](path_remove_directoryImpl(fd, pathAdapted)))
+			IO(path_remove_directoryImpl(fd, pathAdapted).id)
 		}
 
 		def path_renameImpl(fd: fd, old_path: string, new_fd: fd, new_path: string): (errnoEnum.Value)
@@ -362,7 +375,7 @@ import swam.impl.Pointer
 			val old_pathAdapted: String = getString(mem, old_path)
 			val new_pathAdapted: String = getString(mem, new_path)
 
-			IO(adapt[(errnoEnum.Value), (Int)](path_renameImpl(fd, old_pathAdapted, new_fd, new_pathAdapted)))
+			IO(path_renameImpl(fd, old_pathAdapted, new_fd, new_pathAdapted).id)
 		}
 
 		def path_symlinkImpl(old_path: string, fd: fd, new_path: string): (errnoEnum.Value)
@@ -371,7 +384,7 @@ import swam.impl.Pointer
 			val old_pathAdapted: String = getString(mem, old_path)
 			val new_pathAdapted: String = getString(mem, new_path)
 
-			IO(adapt[(errnoEnum.Value), (Int)](path_symlinkImpl(old_pathAdapted, fd, new_pathAdapted)))
+			IO(path_symlinkImpl(old_pathAdapted, fd, new_pathAdapted).id)
 		}
 
 		def path_unlink_fileImpl(fd: fd, path: string): (errnoEnum.Value)
@@ -379,7 +392,7 @@ import swam.impl.Pointer
 		def path_unlink_file(fd: Int, path: Int) = {
 			val pathAdapted: String = getString(mem, path)
 
-			IO(adapt[(errnoEnum.Value), (Int)](path_unlink_fileImpl(fd, pathAdapted)))
+			IO(path_unlink_fileImpl(fd, pathAdapted).id)
 		}
 
 		def poll_oneoffImpl(in: Pointer[subscription], out: Pointer[event], nsubscriptions: size, nevents: Pointer[size]): (errnoEnum.Value)
@@ -391,7 +404,7 @@ import swam.impl.Pointer
 				, (i, r) => mem.putInt(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](poll_oneoffImpl(inAdapted, outAdapted, nsubscriptions, neventsAdapted)))
+			IO(poll_oneoffImpl(inAdapted, outAdapted, nsubscriptions, neventsAdapted).id)
 		}
 
 		def proc_exitImpl(rval: exitcode): ()
@@ -407,7 +420,7 @@ import swam.impl.Pointer
 		def proc_raise(sig: Int) = {
 			val sigAdapted: signalEnum.Value = signalEnum(sig)
 
-			IO(adapt[(errnoEnum.Value), (Int)](proc_raiseImpl(sigAdapted)))
+			IO(proc_raiseImpl(sigAdapted).id)
 		}
 
 		def sched_yieldImpl(): (errnoEnum.Value)
@@ -415,7 +428,7 @@ import swam.impl.Pointer
 		def sched_yield() = {
 
 
-			IO(adapt[(errnoEnum.Value), (Int)](sched_yieldImpl()))
+			IO(sched_yieldImpl().id)
 		}
 
 		def random_getImpl(buf: Pointer[u8], buf_len: size): (errnoEnum.Value)
@@ -425,34 +438,34 @@ import swam.impl.Pointer
 				, (i, r) => mem.put(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](random_getImpl(bufAdapted, buf_len)))
+			IO(random_getImpl(bufAdapted, buf_len).id)
 		}
 
 		def sock_recvImpl(fd: fd, ri_data: iovec_array, ri_dataLen: u32, ri_flags: riflagsFlags.Value, ro_datalen: Pointer[size], ro_flags: Pointer[roflagsFlags.Value]): (errnoEnum.Value)
 
 		def sock_recv(fd: Int, ri_data: Int, ri_dataLen: Int, ri_flags: Int, ro_datalen: Int, ro_flags: Int) = {
-			val ri_dataAdapted: iovec_array = loadArray[iovec](ri_data)
+			val ri_dataAdapted: iovec_array = new ArrayInstance[iovec](ri_data, ri_dataLen, 8, (i) => `iovec`(mem, i)).values
 			val ri_flagsAdapted: riflagsFlags.Value = riflagsFlags(ri_flags)
 			val ro_datalenAdapted: Pointer[size] = new Pointer[size](ro_datalen, (i) => mem.getInt(i)
 				, (i, r) => mem.putInt(i, `r`)
 			)
-			val ro_flagsAdapted: Pointer[roflagsFlags.Value] = new Pointer[roflagsFlags.Value](ro_flags, (i) => mem.getShort(i)
-				, (i, r) => mem.putShort(i, `r`)
+			val ro_flagsAdapted: Pointer[roflagsFlags.Value] = new Pointer[roflagsFlags.Value](ro_flags, (i) => roflagsFlags(mem.getShort(i))
+				, (i, r) => mem.putShort(i, `r`.id.toShort)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](sock_recvImpl(fd, ri_dataAdapted, ri_dataLen, ri_flagsAdapted, ro_datalenAdapted, ro_flagsAdapted)))
+			IO(sock_recvImpl(fd, ri_dataAdapted, ri_dataLen, ri_flagsAdapted, ro_datalenAdapted, ro_flagsAdapted))
 		}
 
 		def sock_sendImpl(fd: fd, si_data: ciovec_array, si_dataLen: u32, si_flags: siflags, so_datalen: Pointer[size]): (errnoEnum.Value)
 
 		def sock_send(fd: Int, si_data: Int, si_dataLen: Int, si_flags: Int, so_datalen: Int) = {
-			val si_dataAdapted: ciovec_array = loadArray[ciovec](si_data)
-			val si_flagsAdapted: Short = si_flags
+			val si_dataAdapted: ciovec_array = new ArrayInstance[ciovec](si_data, si_dataLen, 8, (i) => `ciovec`(mem, i)).values
+			val si_flagsAdapted: Short = si_flags.toShort
 			val so_datalenAdapted: Pointer[size] = new Pointer[size](so_datalen, (i) => mem.getInt(i)
 				, (i, r) => mem.putInt(i, `r`)
 			)
 
-			IO(adapt[(errnoEnum.Value), (Int)](sock_sendImpl(fd, si_dataAdapted, si_dataLen, si_flagsAdapted, so_datalenAdapted)))
+			IO(sock_sendImpl(fd, si_dataAdapted, si_dataLen, si_flagsAdapted, so_datalenAdapted).id)
 		}
 
 		def sock_shutdownImpl(fd: fd, how: sdflagsFlags.Value): (errnoEnum.Value)
@@ -460,7 +473,7 @@ import swam.impl.Pointer
 		def sock_shutdown(fd: Int, how: Int) = {
 			val howAdapted: sdflagsFlags.Value = sdflagsFlags(how)
 
-			IO(adapt[(errnoEnum.Value), (Int)](sock_shutdownImpl(fd, howAdapted)))
+			IO(sock_shutdownImpl(fd, howAdapted).id)
 		}
 
 

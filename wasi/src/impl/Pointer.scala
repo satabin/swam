@@ -1,5 +1,5 @@
 package swam
-package impl
+package wasi
 
 import fs2.Chunk.ByteBuffer
 
