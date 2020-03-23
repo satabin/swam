@@ -18,12 +18,12 @@ object TypesParser {
   import text.parser.Lexical._
 
   private var declaredTypes = Map[String, BaseWitxType](
-    "u32" -> BasicType("u32"),
-    "u64" -> BasicType("u64"),
-    "s64" -> BasicType("s64"),
-    "u8" -> BasicType("u8"),
-    "u16" -> BasicType("u16"),
-    "string" -> BasicType("string")
+    "u32" -> BasicType("u32", 4),
+    "u64" -> BasicType("u64", 8),
+    "s64" -> BasicType("s64", 8),
+    "u8" -> BasicType("u8", 1),
+    "u16" -> BasicType("u16", 2),
+    "string" -> BasicType("string", 4)
   )
 
   def file[_: P]: P[Map[String, BaseWitxType]] = {
@@ -46,7 +46,7 @@ object TypesParser {
     P(
       name.map(t => {
         if (!declaredTypes.contains(t)) throw new Exception(s"Type $t not found")
-        AliasType(typeId, t)
+        AliasType(typeId, declaredTypes(t))
       }) | enum(typeId) | flags(typeId) | struct(typeId) | array(typeId) | handle(typeId) | union(typeId)
     )
   }
@@ -81,7 +81,7 @@ object TypesParser {
     P(
       "(" ~ word("field") ~ id ~ tpe(declaredTypes) ~ ")"
     ).map {
-      case (name, tpe) => Field(name, tpe)
+      case (name, tpe) => Field(name, tpe, isResult = false)
     }
   }
 

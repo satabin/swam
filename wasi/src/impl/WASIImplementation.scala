@@ -12,8 +12,6 @@ import swam.runtime.formats.DefaultFormatters._
   */
 object WASIImplementation extends Module {
 
-  import Types._
-
   type AsIIO[T] = AsInterface[T, IO]
   type AsIsIO[T] = AsInstance[T, IO]
 

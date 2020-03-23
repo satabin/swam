@@ -7,7 +7,7 @@ package unresolved
   */
 sealed trait Declaration
 
-case class Field(id: String, tpe: BaseWitxType) extends Declaration
+case class Field(id: String, tpe: BaseWitxType, isResult: Boolean = false) extends Declaration
 
 case class FunctionExport(id: String, params: Seq[Field], results: Seq[Field]) extends Declaration
 

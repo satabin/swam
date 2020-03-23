@@ -37,6 +37,7 @@ abstract class TypesTraverser[Res](val types: Map[String, BaseWitxType]) {
       case x: UnionType  => unionTypeTraverser(zero, x)
       case x: Handle     => handleTypeTraverser(zero, x)
       case x: ArrayType  => arrayTypeTraverser(zero, x)
+      case x: Pointer    => pointerTypeTraverser(zero, x)
     }
   }
 }

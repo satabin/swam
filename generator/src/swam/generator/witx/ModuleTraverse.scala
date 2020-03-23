@@ -1,6 +1,6 @@
 package swam.generator.witx
 
-import swam.witx.traverser.ModuleInterfaceTraverser
+import swam.witx.traverser.{ModuleInterfaceTraverser, TypesTraverser}
 import swam.witx.unresolved.{
   AliasType,
   ArrayType,
@@ -23,7 +23,7 @@ import swam.witx.unresolved.{
 class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
     extends ModuleInterfaceTraverser[String](module) {
 
-  case class Adapt(from: String, to: String = "")
+  case class Adapt(from: String, to: String)
 
   override val functionExportTraverser = {
     case (_, f: FunctionExport) =>
@@ -39,10 +39,11 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
 
   def processAdaptor(fields: Seq[Field]) = {
     fields
-      .map(p => (p.id, mapTypeToWasm(p.tpe)))
+      .map(p => (p, mapTypeToWasm(p.tpe)))
       .filter { case (_, adaptor) => adaptor.from != adaptor.to }
       .map {
-        case (name, adaptor) => s"\tval ${name}Adapted: ${adaptor.to} = adapt[${adaptor.from}, ${adaptor.to}]($name)"
+        case (field, adaptor) =>
+          s"\tval ${field.id}Adapted: ${adaptor.to} = ${new InitTypeEmitTraverser(field.id).traverse("", field.tpe)}"
       }
       .mkString("\n")
   }
@@ -107,9 +108,62 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
     case "string" => Adapt("Int", "String")
   }
 
-  def mapAliasType(t: AliasType): Adapt = mapTypeToWasm(types(t.name))
+  def mapAliasType(t: AliasType): Adapt = mapTypeToWasm(types(t.tpe.tpeName))
 
   override def traverseAll(zero: String, compose: (String, String) => String) =
     s"package swam\npackage wasi\nimport Types._ \nimport cats.effect._\n  trait Module { def adapt[Tin, Tout](in: Tin): Tout \n\n${super
       .traverseAll(zero, compose)}\n }"
+
+  class InitTypeEmitTraverser(name: String) extends TypesTraverser[String](types) {
+
+    override val basicTypeTraverser = {
+      case (_, t: BasicType) =>
+        t.name match {
+          case "u8"     => name
+          case "u16"    => name
+          case "u32"    => name
+          case "u64"    => name
+          case "s64"    => name
+          case "string" => s"getString(mem, $name)"
+        }
+    }
+
+    override val aliasTypeTraverser = {
+      case (_, t: AliasType) => traverse("", types(t.tpe.tpeName))
+    }
+
+    override val enumTypeTraverser = {
+      case (_, t: EnumType) => s"${t.tpeName}Enum($name)"
+    }
+
+    override val flagsTypeTraverser = {
+      case (_, t: FlagsType) => s"${t.tpeName}Flags($name)"
+    }
+
+    override val structTypeTraverser = {
+
+      case (_, t: StructType) => s"${t.tpeName}(mem, $name)"
+
+    }
+
+    override val handleTypeTraverser = {
+      case (_, t: Handle) => s"Handle($name)"
+    }
+
+    override val unionTypeTraverser = {
+      case (_, t: UnionType) => s"${t.tpeName}(mem, $name)"
+
+    }
+
+    override val arrayTypeTraverser = {
+      case (_, t: ArrayType) => s"loadArray[${getVal(t.tpe)}]($name)"
+    }
+
+    override val pointerTypeTraverser = {
+      case (_, p: Pointer) =>
+        s"new Pointer[${getVal(p.tpe)}]( $name, (i) => ${new LoadTypeEmitTraverser("", types, mem = "mem", offset = "i")
+          .traverse("", p.tpe)}, (i, r) => ${new WriteTypeEmitTraverser("r", "", types, mem = "mem", offset = "i")
+          .traverse("", p.tpe)})"
+    }
+  }
 }

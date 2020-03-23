@@ -65,7 +65,9 @@ class ModuleParser[F[_]: Effect](val importContext: ImportContext[F],
   def func[_: P](types: Map[String, BaseWitxType]): P[FunctionExport] = {
     P(word("func") ~ "(" ~ word("export") ~ string ~ ")" ~ param(types).rep() ~ result(types).rep()).map {
       case (name, params, results) => {
-        val paramsImports = splitResultsAndParamsByWASIType(params.flatten, results.flatten)
+        val paramsImports =
+          splitResultsAndParamsByWASIType(params.flatten,
+                                          results.flatten.map(r => r.copy(r.id, r.tpe, isResult = true)))
         FunctionExport(name, paramsImports._1, paramsImports._2)
       }
     }
