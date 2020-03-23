@@ -139,11 +139,27 @@ object generator extends SwamModule with PublishModule {
 
 object cli extends SwamModule{
 
-  def moduleDeps = Seq(text, core, runtime)
+  def moduleDeps = Seq(text, core, runtime, wasi)
 
   def publishVersion = swamVersion
 
   def artifactName = "swam-interpreter"
+
+  def ivyDeps = Agg(
+    ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
+    ivy"com.github.scopt::scopt:3.7.1"
+  )
+
+}
+
+
+object wasi extends SwamModule{
+
+  def moduleDeps = Seq(text, core, runtime)
+
+  def publishVersion = swamVersion
+
+  def artifactName = "swam-wasi"
 
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",

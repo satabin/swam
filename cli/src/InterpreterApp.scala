@@ -115,7 +115,7 @@ object InterpreterApp extends IOApp {
       else
         engine.compile(config.wasm.toPath, blocker, 4096)
 
-      instance <- engine.instantiate(module, imports())
+      instance <- engine.instantiate(module, wasi.WASIImplementation.imports())
     } yield instance
   }
 

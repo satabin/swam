@@ -257,11 +257,12 @@ object AsInterface {
       reader4: ValueReader[F, P4],
       reader5: ValueReader[F, P5],
       reader6: ValueReader[F, P6],
-  reader7: ValueReader[F, P7],
-  reader8: ValueReader[F, P8],
+      reader7: ValueReader[F, P7],
+      reader8: ValueReader[F, P8],
       writer: ValueWriter[F, Ret]): AsInterface[(P1, P2, P3, P4, P5, P6, P7, P8) => F[Ret], F] =
     new AsInterface[(P1, P2, P3, P4, P5, P6, P7, P8) => F[Ret], F] {
-      def view(f: (P1, P2, P3, P4, P5, P6, P7, P8) => F[Ret]) = new IFunction8[F, P1, P2, P3, P4, P5, P6, P7, P8 Ret](f)
+      def view(f: (P1, P2, P3, P4, P5, P6, P7, P8) => F[Ret]) =
+        new IFunction8[F, P1, P2, P3, P4, P5, P6, P7, P8, Ret](f)
     }
 
   implicit def arrayAsInterface[F[_]]: AsInterface[Array[Function[F]], F] =

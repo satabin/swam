@@ -10,7 +10,9 @@ import swam.witx.unresolved.{BaseWitxType, _}
 /**
     @author Javier Cabrera-Arteaga on 2020-03-18
   */
-class ModuleParser[F[_]: Effect](val importContext: ImportContext[F]) {
+class ModuleParser[F[_]: Effect](val importContext: ImportContext[F],
+                                 multipleResult: Boolean = false,
+                                 expandArrayTypes: Boolean = true) {
 
   import swam.text.parser.Lexical._
   import TypesParser.tpe
@@ -43,18 +45,51 @@ class ModuleParser[F[_]: Effect](val importContext: ImportContext[F]) {
     )
   }
 
+  def splitResultsAndParamsByWASIType(params: Seq[Field], results: Seq[Field]): (Seq[Field], Seq[Field]) = {
+    if (multipleResult)
+      (params, results)
+    else {
+      if (results.length > 1) {
+        return (params.concat(results.tail.map(t => Field(t.id, Pointer(t.tpe)))), Seq(results.head))
+      }
+      (params, results)
+    }
+  }
+
+  def expandArrayTypes(fields: Seq[Field], types: Map[String, BaseWitxType]): Seq[Field] = {
+    fields
+      .map(f =>
+        f.tpe match {
+          case _: ArrayType => Seq(f, Field(s"${f.id}Len", types("u32")))
+          case _            => Seq(f)
+        })
+      .flatMap(f => f.toSeq)
+  }
+
   def func[_: P](types: Map[String, BaseWitxType]): P[FunctionExport] = {
     P(word("func") ~ "(" ~ word("export") ~ string ~ ")" ~ param(types).rep() ~ result(types).rep()).map {
-      case (name, params, results) => FunctionExport(name, params, results)
+      case (name, params, results) => {
+        val expandedParams = if (expandArrayTypes) expandArrayTypes(params, types) else params
+        val expandedResults = if (expandArrayTypes) expandArrayTypes(results, types) else results
+        val paramsImports = splitResultsAndParamsByWASIType(expandedParams, expandedResults)
+
+        FunctionExport(name, paramsImports._1, paramsImports._2)
+      }
     }
   }
 
   def param[_: P](types: Map[String, BaseWitxType]): P[Field] = {
-    P("(" ~ word("param") ~ id ~ tpe(types) ~ ")").map { case (name, tpe) => Field(name, tpe) }
+    P("(" ~ word("param") ~ field(types) ~ ")")
   }
 
   def result[_: P](types: Map[String, BaseWitxType]): P[Field] = {
-    P("(" ~ word("result") ~ id ~ tpe(types) ~ ")").map { case (name, tpe) => Field(name, tpe) }
+    P("(" ~ word("result") ~ field(types) ~ ")")
+  }
+
+  def field[_: P](types: Map[String, BaseWitxType]): P[Field] = {
+    P(id ~ tpe(types)).map {
+      case (name, tpe) => Field(name, tpe)
+    }
   }
 
   def ptr[_: P](types: Map[String, BaseWitxType]): P[BaseWitxType] = {

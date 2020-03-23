@@ -56,7 +56,9 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
             if (provided.tpe <:< imp.tpe)
               F.pure(Left((idx + 1, acc :+ provided)))
             else
-              F.raiseError(new LinkException(s"Expected import of type ${imp.tpe} but got ${provided.tpe}"))
+              F.raiseError(
+                new LinkException(
+                  s"Expected import ${imp.moduleName}.${imp.fieldName} of type ${imp.tpe} but got ${provided.tpe}"))
           }
         }
     }
