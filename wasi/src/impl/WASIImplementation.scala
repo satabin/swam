@@ -17,6 +17,10 @@ object WASIImplementation extends Module {
   type AsIIO[T] = AsInterface[T, IO]
   type AsIsIO[T] = AsInstance[T, IO]
 
+  val WASI_STDIN = 0
+  val WASI_STDOUT = 1
+  val WASI_STDERR = 2
+
   def imports() = {
     Imports[IO](
       TCMap[String, AsIsIO](
@@ -71,7 +75,7 @@ object WASIImplementation extends Module {
     )
   }
 
-  override def adapt[Tin, Tout](in: Tin): Tout = ???
+  override def adapt[Tin, Tout](in: Tin): Tout = {}
 
   override def args_getImpl(argv: Pointer[Pointer[u8]], argv_buf: Pointer[u8]): Types.errnoEnum.Value = ???
 
@@ -223,4 +227,6 @@ object WASIImplementation extends Module {
                              so_datalen: Pointer[size]): Types.errnoEnum.Value = ???
 
   override def sock_shutdownImpl(fd: fd, how: Types.sdflagsFlags.Value): Types.errnoEnum.Value = ???
+
+  override def proc_exitImpl(rval: exitcode): Unit = ???
 }

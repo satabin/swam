@@ -68,7 +68,10 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
 
     println(s""""${f.id}" -> ${f.id} _,""")
 
-    s"IO(adapt[${to.mkString("(", ",", ")")}, ${from.mkString("(", ",", ")")}](${f.id}Impl($args)))"
+    if (to.nonEmpty)
+      s"IO(adapt[${to.mkString("(", ",", ")")}, ${from.mkString("(", ",", ")")}](${f.id}Impl($args)))"
+    else
+      s"IO(${f.id}Impl($args))"
   }
 
   def mapTypeToWasm(t: BaseWitxType): Adapt = t match {
@@ -107,6 +110,6 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
   def mapAliasType(t: AliasType): Adapt = mapTypeToWasm(types(t.name))
 
   override def traverseAll(zero: String, compose: (String, String) => String) =
-    s"package impl\nimport Types._ \nimport cats.effect._\n  trait Module { def adapt[Tin, Tout](in: Tin): Tout \n\n${super
+    s"package swam\npackage wasi\nimport Types._ \nimport cats.effect._\n  trait Module { def adapt[Tin, Tout](in: Tin): Tout \n\n${super
       .traverseAll(zero, compose)}\n }"
 }
