@@ -56,39 +56,32 @@ class ModuleParser[F[_]: Effect](val importContext: ImportContext[F],
     }
   }
 
-  def expandArrayTypes(fields: Seq[Field], types: Map[String, BaseWitxType]): Seq[Field] = {
-    fields
-      .map(f =>
-        f.tpe match {
-          case _: ArrayType => Seq(f, Field(s"${f.id}Len", types("u32")))
-          case _            => Seq(f)
-        })
-      .flatMap(f => f.toSeq)
-  }
+  def expandArrayTypes(field: Field, types: Map[String, BaseWitxType]): Seq[Field] =
+    field.tpe match {
+      case _: ArrayType => Seq(field, Field(s"${field.id}Len", types("u32")))
+      case _            => Seq(field)
+    }
 
   def func[_: P](types: Map[String, BaseWitxType]): P[FunctionExport] = {
     P(word("func") ~ "(" ~ word("export") ~ string ~ ")" ~ param(types).rep() ~ result(types).rep()).map {
       case (name, params, results) => {
-        val expandedParams = if (expandArrayTypes) expandArrayTypes(params, types) else params
-        val expandedResults = if (expandArrayTypes) expandArrayTypes(results, types) else results
-        val paramsImports = splitResultsAndParamsByWASIType(expandedParams, expandedResults)
-
+        val paramsImports = splitResultsAndParamsByWASIType(params.flatten, results.flatten)
         FunctionExport(name, paramsImports._1, paramsImports._2)
       }
     }
   }
 
-  def param[_: P](types: Map[String, BaseWitxType]): P[Field] = {
+  def param[_: P](types: Map[String, BaseWitxType]): P[Seq[Field]] = {
     P("(" ~ word("param") ~ field(types) ~ ")")
   }
 
-  def result[_: P](types: Map[String, BaseWitxType]): P[Field] = {
+  def result[_: P](types: Map[String, BaseWitxType]): P[Seq[Field]] = {
     P("(" ~ word("result") ~ field(types) ~ ")")
   }
 
-  def field[_: P](types: Map[String, BaseWitxType]): P[Field] = {
+  def field[_: P](types: Map[String, BaseWitxType]): P[Seq[Field]] = {
     P(id ~ tpe(types)).map {
-      case (name, tpe) => Field(name, tpe)
+      case (name, tpe) => if (expandArrayTypes) expandArrayTypes(Field(name, tpe), types) else Seq(Field(name, tpe))
     }
   }
 
