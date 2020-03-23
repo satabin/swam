@@ -6,7 +6,7 @@ import Types._
 import cats.effect._
   trait Module {
 
-		var mem: ByteBuffer
+		val mem: ByteBuffer
 
 		def getString(buffer: ByteBuffer,offset: Int) = {
 			val arr = buffer.array()
@@ -453,7 +453,7 @@ import cats.effect._
 				, (i, r) => mem.putShort(i, `r`.id.toShort)
 			)
 
-			IO(sock_recvImpl(fd, ri_dataAdapted, ri_dataLen, ri_flagsAdapted, ro_datalenAdapted, ro_flagsAdapted))
+			IO(sock_recvImpl(fd, ri_dataAdapted, ri_dataLen, ri_flagsAdapted, ro_datalenAdapted, ro_flagsAdapted).id)
 		}
 
 		def sock_sendImpl(fd: fd, si_data: ciovec_array, si_dataLen: u32, si_flags: siflags, so_datalen: Pointer[size]): (errnoEnum.Value)
