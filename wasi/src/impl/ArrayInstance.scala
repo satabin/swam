@@ -6,6 +6,10 @@ package wasi
   */
 class ArrayInstance[T](val offset: Int, val size: Int, val objSize: Int, val get: (Int) => T) {
 
-  val values: Array[T] = Range(0, size, objSize).map(t => get(t)).toArray
+  val values: List[T] = Range(offset, size * objSize + offset, objSize)
+    .map(t => {
+      get(t)
+    })
+    .toList
 
 }

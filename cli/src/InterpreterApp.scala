@@ -6,7 +6,6 @@ import java.nio.ByteBuffer
 import java.util.logging.{Formatter, LogRecord}
 
 import swam._
-
 import text._
 import runtime._
 import runtime.trace._
@@ -14,6 +13,7 @@ import cats.effect.{Blocker, ExitCode, IO, IOApp}
 import swam.runtime.Engine
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
 import swam.runtime.formats.DefaultFormatters._
+import swam.runtime.internals.instance.MemoryInstance
 
 /**
     @author Javier Cabrera-Arteaga on 2020-03-12
@@ -100,6 +100,13 @@ object InterpreterApp extends IOApp {
 
   }
 
+  def getMemoryBuffer(mem: Memory[IO]): ByteBuffer = {
+    mem match {
+      case m: MemoryInstance[IO] => m.buffer
+      case m: TracingMemory[IO]  => getMemoryBuffer(m.inner)
+    }
+  }
+
   def createInstance(blocker: Blocker, config: Config): IO[Instance[IO]] = {
     for {
       imports <- IO(JVMLinker().getImports(config.linkJarPath, config.className))
@@ -115,7 +122,10 @@ object InterpreterApp extends IOApp {
       else
         engine.compile(config.wasm.toPath, blocker, 4096)
 
-      instance <- engine.instantiate(module, wasi.WASIImplementation.imports())
+      wasi <- IO(new wasi.WASIImplementation())
+      instance <- engine.instantiate(module, wasi.imports())
+      mem <- instance.exports.memory("memory")
+      _ <- IO(wasi.mem = getMemoryBuffer(mem))
     } yield instance
   }
 

@@ -23,8 +23,7 @@ import cats.effect._
 
 import java.nio.{ByteBuffer, ByteOrder}
 
-private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int)(
-    implicit F: Async[F])
+class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax: Int)(implicit F: Async[F])
     extends Memory[F] {
 
   val tpe = MemType(Limits(min, max))

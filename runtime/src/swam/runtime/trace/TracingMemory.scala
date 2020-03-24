@@ -22,7 +22,7 @@ import cats._
 import java.nio.ByteBuffer
 
 /** A memory instance that traces all calls to the underlying memory instance. */
-private[runtime] class TracingMemory[F[_]](inner: Memory[F], tracer: Tracer)(implicit F: MonadError[F, Throwable])
+class TracingMemory[F[_]](val inner: Memory[F], tracer: Tracer)(implicit F: MonadError[F, Throwable])
     extends Memory[F] {
 
   def tpe: MemType = inner.tpe

@@ -3,7 +3,6 @@ package wasi
 
 import java.nio.ByteBuffer
 
-import swam.impl.Pointer
 
 object Types {
 
@@ -13,14 +12,14 @@ object Types {
 		val subscription_clock_abstime = Value(0)
 	}
 
-	type ciovec_array = Array[ciovec]
+	type ciovec_array = List[ciovec]
 	type exitcode = u32
 
 	case class `prestat`(mem: ByteBuffer, offset: Int) extends WASI_STRUCT { // UNION
 		val `dir` = prestat_dir(mem, offset + 0)
 
-		def write() = {
-			dir.write()
+		def write(offset: Int, mem: ByteBuffer) = {
+			dir.write(offset, mem)
 		}
 	}
 
@@ -34,17 +33,11 @@ object Types {
 	type s64 = Long
 	type u8 = Byte
 
-	case class `fdstat`(mem: ByteBuffer, offset: Int) extends WASI_STRUCT {
-		val `fs_filetype` = mem.get(offset + 0)
-
-		val `fs_flags` = mem.getShort(offset + 1)
-
-		val `fs_rights_base` = mem.getLong(offset + 3)
-
-		val `fs_rights_inheriting` = mem.getLong(offset + 11)
+	case class `fdstat`(`fs_filetype`: Byte,  `fs_flags`: Short, `fs_rights_base` : Long, `fs_rights_inheriting`: Long) extends WASI_STRUCT {
 
 
-		def write() = {
+
+		def write(offset: Int, mem: ByteBuffer) = {
 			mem.put(offset + 0, `fs_filetype`)
 
 			mem.putShort(offset + 1, `fs_flags`)
@@ -57,17 +50,19 @@ object Types {
 	}
 
 	case class `ciovec`(mem: ByteBuffer, offset: Int) extends WASI_STRUCT {
-		val `buf` = new Pointer[u8](offset, (i) => mem.get(i)
+		val `buf` = new Pointer[u8](mem.getInt(offset), (i) => mem.get(i)
 			, (i, r) => mem.put(i, `r`)
 		)
 		val `buf_len` = mem.getInt(offset + 4)
 
 
-		def write() = {
+		def write(offset: Int, mem: ByteBuffer) = {
 			mem.putInt(offset, `buf`.offset)
 			mem.putInt(offset + 4, `buf_len`)
 
 		}
+
+		override def toString = s"$offset, $buf_len"
 	}
 
 	object signalEnum extends Enumeration {
@@ -87,7 +82,7 @@ object Types {
 		val `flags` = mem.getShort(offset + 20)
 
 
-		def write() = {
+		def write(offset: Int, mem: ByteBuffer) = {
 			mem.putInt(offset + 0, `id`)
 
 			mem.putLong(offset + 4, `timeout`)
@@ -128,7 +123,7 @@ object Types {
 		val `d_type` = mem.get(offset + 20)
 
 
-		def write() = {
+		def write(offset: Int, mem: ByteBuffer) = {
 			mem.putLong(offset + 0, `d_next`)
 
 			mem.putLong(offset + 8, `d_ino`)
@@ -144,7 +139,7 @@ object Types {
 		val `file_descriptor` = mem.getInt(offset + 0)
 
 
-		def write() = {
+		def write(offset: Int, mem: ByteBuffer) = {
 			mem.putInt(offset + 0, `file_descriptor`)
 
 		}
@@ -159,14 +154,14 @@ object Types {
 
 		val `fd_readwrite` = event_fd_readwrite(mem, offset + 11)
 
-		def write() = {
+		def write(offset: Int, mem: ByteBuffer) = {
 			mem.putLong(offset + 0, `userdata`)
 
 			mem.putShort(offset + 8, `error`)
 
 			mem.put(offset + 10, `type`)
 
-			fd_readwrite.write()
+			fd_readwrite.write(offset + 11, mem)
 		}
 	}
 
@@ -188,7 +183,7 @@ object Types {
 		val `ctim` = mem.getLong(offset + 49)
 
 
-		def write() = {
+		def write(offset: Int, mem: ByteBuffer) = {
 			mem.putLong(offset + 0, `dev`)
 
 			mem.putLong(offset + 8, `ino`)
@@ -222,10 +217,10 @@ object Types {
 
 		val `u` = subscription_u(mem, offset + 8)
 
-		def write() = {
+		def write(offset: Int, mem: ByteBuffer) = {
 			mem.putLong(offset + 0, `userdata`)
 
-			`u`.write()
+			`u`.write(offset + 8, mem)
 		}
 	}
 
@@ -243,7 +238,7 @@ object Types {
 	}
 
 	type dircookie = u64
-	type iovec_array = Array[iovec]
+	type iovec_array = List[iovec]
 
 	object riflagsFlags extends Enumeration {
 		val recv_peek = Value(0)
@@ -256,7 +251,7 @@ object Types {
 		val `flags` = mem.getShort(offset + 8)
 
 
-		def write() = {
+		def write(offset: Int, mem: ByteBuffer) = {
 			mem.putLong(offset + 0, `nbytes`)
 
 			mem.putShort(offset + 8, `flags`)
@@ -271,10 +266,10 @@ object Types {
 		val `fd_read` = subscription_fd_readwrite(mem, offset + 22)
 		val `fd_write` = subscription_fd_readwrite(mem, offset + 26)
 
-		def write() = {
-			clock.write()
-			fd_read.write()
-			fd_write.write()
+		def write(offset: Int, mem: ByteBuffer) = {
+			clock.write(offset, mem)
+			fd_read.write(offset + 22, mem)
+			fd_write.write(offset + 26, mem)
 		}
 	}
 
@@ -289,7 +284,7 @@ object Types {
 		val `buf_len` = mem.getInt(offset + 4)
 
 
-		def write() = {
+		def write(offset: Int, mem: ByteBuffer) = {
 			mem.putInt(offset, `buf`.offset)
 			mem.putInt(offset + 4, `buf_len`)
 		}
@@ -310,36 +305,42 @@ object Types {
 	type linkcount = u64
 
 	object rightsFlags extends Enumeration {
-		val fd_datasync = Value(0)
-		val fd_read = Value(1)
-		val fd_seek = Value(2)
-		val fd_fdstat_set_flags = Value(3)
-		val fd_sync = Value(4)
-		val fd_tell = Value(5)
-		val fd_write = Value(6)
-		val fd_advise = Value(7)
-		val fd_allocate = Value(8)
-		val path_create_directory = Value(9)
-		val path_create_file = Value(10)
-		val path_link_source = Value(11)
-		val path_link_target = Value(12)
-		val path_open = Value(13)
-		val fd_readdir = Value(14)
-		val path_readlink = Value(15)
-		val path_rename_source = Value(16)
-		val path_rename_target = Value(17)
-		val path_filestat_get = Value(18)
-		val path_filestat_set_size = Value(19)
-		val path_filestat_set_times = Value(20)
-		val fd_filestat_get = Value(21)
-		val fd_filestat_set_size = Value(22)
-		val fd_filestat_set_times = Value(23)
-		val path_symlink = Value(24)
-		val path_remove_directory = Value(25)
-		val path_unlink_file = Value(26)
-		val poll_fd_readwrite = Value(27)
-		val sock_shutdown = Value(28)
+		val fd_datasync = Value(0x0000000000000001)
+		val fd_read = Value(0x0000000000000002)
+		val fd_seek = Value(0x0000000000000004)
+		val fd_fdstat_set_flags = Value(0x0000000000000008)
+		val fd_sync = Value(0x0000000000000010)
+		val fd_tell = Value(0x0000000000000020)
+		val fd_write = Value(0x0000000000000040)
+		val fd_advise = Value(0x0000000000000080)
+		val fd_allocate = Value(0x0000000000000100)
+		val path_create_directory = Value(0x0000000000000200)
+		val path_create_file = Value(0x0000000000000400)
+		val path_link_source = Value(0x0000000000000800)
+		val path_link_target = Value(0x0000000000001000)
+		val path_open = Value(0x0000000000002000)
+		val fd_readdir = Value(0x0000000000004000)
+		val path_readlink = Value(0x0000000000008000)
+		val path_rename_source = Value(0x0000000000010000)
+		val path_rename_target = Value(0x0000000000020000)
+		val path_filestat_get = Value(0x0000000000040000)
+		val path_filestat_set_size = Value(0x0000000000080000)
+		val path_filestat_set_times = Value(0x0000000000100000)
+		val fd_filestat_get = Value(0x0000000000200000)
+		val fd_filestat_set_size = Value(0x0000000000400000)
+		val fd_filestat_set_times = Value(0x0000000000800000)
+		val path_symlink = Value(0x0000000001000000)
+		val path_remove_directory = Value(0x0000000002000000)
+		val path_unlink_file = Value(0x0000000004000000)
+		val poll_fd_readwrite = Value(0x0000000008000000)
+		val sock_shutdown = Value(0x0000000010000000)
+
 	}
+
+	val regular_file_base = rightsFlags.fd_datasync.id | rightsFlags.fd_read.id | rightsFlags.fd_seek.id | rightsFlags.fd_fdstat_set_flags.id | rightsFlags.fd_sync.id | rightsFlags.fd_tell.id | rightsFlags.fd_write.id | rightsFlags.fd_advise.id | rightsFlags.fd_allocate.id | rightsFlags.fd_filestat_get.id | rightsFlags.fd_filestat_set_size.id | rightsFlags.fd_filestat_set_times.id |
+		rightsFlags.poll_fd_readwrite.id
+
+	val RIGHTS_REGULAR_FILE_INHERITING = 0
 
 	object preopentypeEnum extends Enumeration {
 		val `dir` = Value
@@ -350,12 +351,13 @@ object Types {
 	}
 
 	object fdflagsFlags extends Enumeration {
-		val append = Value(0)
-		val dsync = Value(1)
-		val nonblock = Value(2)
-		val rsync = Value(3)
-		val sync = Value(4)
+		val append = Value(0x0001)
+		val dsync = Value(0x0002)
+		val nonblock = Value(0x0004)
+		val rsync = Value(0x0008)
+		val sync = Value(0x0010)
 	}
+
 
 	type device = u64
 	type u16 = Short
@@ -364,7 +366,7 @@ object Types {
 		val `pr_name_len` = mem.getInt(offset + 0)
 
 
-		def write() = {
+		def write(offset: Int, mem: ByteBuffer) = {
 			mem.putInt(offset + 0, `pr_name_len`)
 
 		}
