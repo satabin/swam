@@ -5,6 +5,7 @@ import java.io.{File, FileDescriptor, FileInputStream, FileOutputStream}
 import java.nio.ByteBuffer
 
 import cats.effect.IO
+import impl.FileStat
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
 import swam.runtime.formats._
 import swam.runtime.formats.DefaultFormatters._
@@ -29,21 +30,44 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
     WASI_STDERR -> `fdstat`(-1, -1, -1, -1)
   )
 
-  var fdMapFile = Map[fd, FileDescriptor](
-    WASI_STDIN -> FileDescriptor.in,
-    WASI_STDOUT -> FileDescriptor.out,
-    WASI_STDERR -> FileDescriptor.err
-  )
+  var fdMapFile = Map[fd, FileStat](
+    )
 
   class WASIException(val errno: errnoEnum.Value) extends Exception
+
+  def getPath(fd: Int): FileStat = {
+
+    fd match {
+      case 0 => new FileStat(fd = 0)
+      case 1 => new FileStat(fd = 1)
+      case 2 => new FileStat(fd = 2)
+    }
+
+    fdMapFile(fd)
+  }
 
   /**
     * Returns stat numbers: filetype rightsBase rightsInheriting
     *
     * @param fd
     */
-  def parseStats(fd: FileDescriptor) = {
-    (filetypeEnum.`regular_file`, regular_file_base, RIGHTS_REGULAR_FILE_INHERITING)
+  def parseStats(fd: FileStat) = {
+    if (fd.isBlockDevice())
+      (filetypeEnum.`block_device`, RIGHTS_ALL, RIGHTS_BLOCK_DEVICE_INHERITING)
+    if (fd.isCharacterDevice())
+      (filetypeEnum.`character_device`, RIGHTS_CHARACTER_DEVICE_BASE, RIGHTS_CHARACTER_DEVICE_INHERITING)
+    if (fd.isDirectory())
+      (filetypeEnum.`directory`, RIGHTS_DIRECTORY_BASE, RIGHTS_DIRECTORY_INHERITING)
+    if (fd.isFIFO())
+      (filetypeEnum.`socket_stream`, RIGHTS_SOCKET_BASE, RIGHTS_SOCKET_INHERITING)
+    if (fd.isFile())
+      (filetypeEnum.`regular_file`, RIGHTS_REGULAR_FILE_BASE, RIGHTS_REGULAR_FILE_INHERITING)
+    if (fd.isSocket())
+      (filetypeEnum.`socket_stream`, RIGHTS_SOCKET_BASE, RIGHTS_SOCKET_INHERITING)
+    if (fd.isSymbolicLink())
+      (filetypeEnum.`symbolic_link`, 0, 0)
+
+    (filetypeEnum.`unknown`, 0, 0)
   }
 
   def checkRight(fd: fd, rights: Int): `fdstat` = {
@@ -55,7 +79,7 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       throw new WASIException(errnoEnum.`perm`)
 
     var st = fdMap(fd)
-    val file = fdMapFile(fd)
+    val file = getPath(fd)
 
     val stats = parseStats(file)
     if (st.`fs_filetype` == -1) {
@@ -233,7 +257,9 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
 
   override def fd_datasyncImpl(fd: fd): Types.errnoEnum.Value = {
     checkRight(fd, rightsFlags.fd_datasync.id)
-    // TODO fdatasyncSync
+
+    // TODO
+    throw new Exception("Not implemented")
     errnoEnum.`fault`
   }
 
@@ -287,17 +313,20 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val rstat = parseStats(fdMapFile(fd))
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
 
   }
 
   override def fd_filestat_set_sizeImpl(fd: fd, size: filesize): Types.errnoEnum.Value = {
     checkRight(fd, rightsFlags.fd_filestat_set_size.id)
+
     // TODO
+    throw new Exception("Not implemented")
     errnoEnum.`fault`
   }
 
@@ -305,7 +334,9 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
                                          atim: timestamp,
                                          mtim: timestamp,
                                          fst_flags: Types.fstflagsFlags.Value): Types.errnoEnum.Value = {
+
     // TODO
+    throw new Exception("Not implemented")
     errnoEnum.`fault`
   }
 
@@ -318,10 +349,9 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
     try {
       val stats = checkRight(fd, rightsFlags.fd_read.id | rightsFlags.fd_write.id)
       var cumul = 0
-      val writer = new FileInputStream(fdMapFile(fd))
+      val reader = fdMapFile(fd)
       iovs.foreach(iov => {
-        val arr = new Array[Byte](iov.`buf_len`)
-        writer.read(arr, 0, arr.length)
+        val arr = reader.read(0, iov.`buf_len`)
         cumul += iov.`buf_len`
         arr.zipWithIndex.foreach { case (va, i) => iov.`buf`._set(i, va) }
       })
@@ -338,10 +368,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, 0)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -350,10 +381,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, 0)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -367,10 +399,9 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
     try {
       checkRight(fd, rightsFlags.fd_read.id)
       var cumul = 0
-      val writer = new FileInputStream(fdMapFile(fd))
+      val reader = fdMapFile(fd)
       iovs.foreach(iov => {
-        val arr = new Array[Byte](iov.`buf_len`)
-        writer.read(arr, 0, arr.length)
+        val arr = reader.read(0, iov.`buf_len`)
         cumul += iov.`buf_len`
         arr.zipWithIndex.foreach { case (va, i) => iov.`buf`._set(i, va) }
       })
@@ -387,9 +418,15 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
                               buf: Pointer[u8],
                               buf_len: size,
                               cookie: dircookie,
-                              bufused: Pointer[size]): Types.errnoEnum.Value = ???
+                              bufused: Pointer[size]): Types.errnoEnum.Value = {
+    // TODO
 
-  override def fd_renumberImpl(fd: fd, to: fd): Types.errnoEnum.Value = ???
+    throw new Exception("Not implemented")
+  }
+
+  override def fd_renumberImpl(fd: fd, to: fd): Types.errnoEnum.Value = {
+    throw new Exception("Not implemented")
+  }
 
   override def fd_seekImpl(fd: fd,
                            offset: filedelta,
@@ -399,10 +436,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, rightsFlags.fd_seek.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -411,10 +449,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, rightsFlags.fd_sync.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -423,10 +462,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, rightsFlags.fd_tell.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -438,9 +478,9 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
     try {
       checkRight(fd, rightsFlags.fd_write.id)
       var cumul = 0
-      val writer = new FileOutputStream(fdMapFile(fd))
+      val writer = fdMapFile(fd)
       iovs.foreach(iov => {
-        writer.write(Range(0, iov.`buf_len`).map(i => iov.`buf`._get(i)).toArray, 0, iov.`buf_len`)
+        writer.write(Range(0, iov.`buf_len`).map(i => iov.`buf`._get(i)).toArray)
         cumul += iov.`buf_len`
       })
 
@@ -458,10 +498,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, rightsFlags.path_create_directory.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -473,10 +514,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, rightsFlags.fd_filestat_get.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -490,10 +532,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, rightsFlags.path_filestat_set_times.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -507,10 +550,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val nstats = checkRight(old_fd, rightsFlags.path_link_target.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -527,10 +571,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, rightsFlags.path_open.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -543,10 +588,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, rightsFlags.path_readlink.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -555,10 +601,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, rightsFlags.path_remove_directory.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -568,10 +615,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val nstats = checkRight(fd, rightsFlags.path_rename_target.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -580,10 +628,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, rightsFlags.path_symlink.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 
@@ -592,10 +641,11 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       val stats = checkRight(fd, rightsFlags.path_unlink_file.id)
 
       // TODO
+      throw new Exception("Not implemented")
 
       errnoEnum.`fault`
     } catch {
-      case x: WASIException => x.errno
+      case x: WASIException => throw x
     }
   }
 

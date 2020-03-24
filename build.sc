@@ -13,6 +13,7 @@ import headers.Headers
 import $file.mdoc
 import mdoc.MdocModule
 import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
+import generator.ivy
 
 val swamVersion = "0.6.0-SNAPSHOT"
 
@@ -163,9 +164,17 @@ object wasi extends SwamModule{
 
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
-    ivy"com.github.scopt::scopt:3.7.1"
+    ivy"com.github.scopt::scopt:3.7.1",
+    ivy"net.java.dev.jna:jna:4.0.0",
+    ivy"com.lihaoyi::os-lib:0.6.2"
   )
 
+
+  object test extends Tests with ScalafmtModule {
+    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.1")
+    def testFrameworks = Seq("swam.util.Framework")
+    def moduleDeps = Seq(core,text, wasi, util.test )
+  }
 }
 
 
