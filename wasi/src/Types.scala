@@ -342,6 +342,7 @@ object Types {
 
 	val RIGHTS_REGULAR_FILE_INHERITING = 0
 
+
 	object preopentypeEnum extends Enumeration {
 		val `dir` = Value
 	}

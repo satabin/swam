@@ -122,7 +122,7 @@ object InterpreterApp extends IOApp {
       else
         engine.compile(config.wasm.toPath, blocker, 4096)
 
-      wasi <- IO(new wasi.WASIImplementation())
+      wasi <- IO(new wasi.WASIImplementation(args = config.args.toSeq))
       instance <- engine.instantiate(module, wasi.imports())
       mem <- instance.exports.memory("memory")
       _ <- IO(wasi.mem = getMemoryBuffer(mem))

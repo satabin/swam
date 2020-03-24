@@ -7,19 +7,15 @@ import cats.effect._
 trait Module {
 
   var mem: ByteBuffer
+  val args: Seq[String]
 
-  def getString(buffer: ByteBuffer, offset: Int) = {
-    val arr = buffer.array()
-    val end = arr.indexWhere({ c =>
-      c == 0
-    }, offset)
-
-    {
-      offset until end
-    }.map { c =>
-        arr(c).toChar
-      }
-      .mkString("")
+  def getString(buffer: ByteBuffer, offset: Int, length: Int) = {
+    val results = new Array[Byte](length)
+    val old = mem.position()
+    mem.position(offset)
+    val str = String.valueOf(buffer.get(results, 0, length))
+    mem.position(old)
+    str
   }
 
   def args_getImpl(argv: Pointer[Pointer[u8]], argv_buf: Pointer[u8]): (errnoEnum.Value)
@@ -273,8 +269,8 @@ trait Module {
 
   def path_create_directoryImpl(fd: fd, path: string): (errnoEnum.Value)
 
-  def path_create_directory(fd: Int, path: Int) = {
-    val pathAdapted: String = getString(mem, path)
+  def path_create_directory(fd: Int, path: Int, pathLen: Int) = {
+    val pathAdapted: String = getString(mem, path, pathLen)
 
     IO(path_create_directoryImpl(fd, pathAdapted).id)
   }
@@ -284,9 +280,9 @@ trait Module {
                             path: string,
                             buf: Pointer[filestat]): (errnoEnum.Value)
 
-  def path_filestat_get(fd: Int, flags: Int, path: Int, buf: Int) = {
+  def path_filestat_get(fd: Int, flags: Int, path: Int, pathLen: Int, buf: Int) = {
     val flagsAdapted: lookupflagsFlags.Value = lookupflagsFlags(flags)
-    val pathAdapted: String = getString(mem, path)
+    val pathAdapted: String = getString(mem, path, pathLen)
     val bufAdapted: Pointer[filestat] = new Pointer[filestat](buf, (i) => filestat(mem, i), (i, r) => r.write(i, mem))
 
     IO(path_filestat_getImpl(fd, flagsAdapted, pathAdapted, bufAdapted).id)
@@ -299,9 +295,9 @@ trait Module {
                                   mtim: timestamp,
                                   fst_flags: fstflagsFlags.Value): (errnoEnum.Value)
 
-  def path_filestat_set_times(fd: Int, flags: Int, path: Int, atim: Long, mtim: Long, fst_flags: Int) = {
+  def path_filestat_set_times(fd: Int, flags: Int, path: Int, pathLen: Int, atim: Long, mtim: Long, fst_flags: Int) = {
     val flagsAdapted: lookupflagsFlags.Value = lookupflagsFlags(flags)
-    val pathAdapted: String = getString(mem, path)
+    val pathAdapted: String = getString(mem, path, pathLen)
     val fst_flagsAdapted: fstflagsFlags.Value = fstflagsFlags(fst_flags)
 
     IO(path_filestat_set_timesImpl(fd, flagsAdapted, pathAdapted, atim, mtim, fst_flagsAdapted).id)
@@ -313,10 +309,10 @@ trait Module {
                     new_fd: fd,
                     new_path: string): (errnoEnum.Value)
 
-  def path_link(old_fd: Int, old_flags: Int, old_path: Int, new_fd: Int, new_path: Int) = {
+  def path_link(old_fd: Int, old_flags: Int, old_path: Int, oldLen: Int, new_fd: Int, new_path: Int, newLen: Int) = {
     val old_flagsAdapted: lookupflagsFlags.Value = lookupflagsFlags(old_flags)
-    val old_pathAdapted: String = getString(mem, old_path)
-    val new_pathAdapted: String = getString(mem, new_path)
+    val old_pathAdapted: String = getString(mem, old_path, oldLen)
+    val new_pathAdapted: String = getString(mem, new_path, newLen)
 
     IO(path_linkImpl(old_fd, old_flagsAdapted, old_pathAdapted, new_fd, new_pathAdapted).id)
   }
@@ -324,6 +320,7 @@ trait Module {
   def path_openImpl(fd: fd,
                     dirflags: lookupflagsFlags.Value,
                     path: string,
+                    pathLen: Int,
                     oflags: oflagsFlags.Value,
                     fs_rights_base: rightsFlags.Value,
                     fs_rights_inherting: rightsFlags.Value,
@@ -333,16 +330,17 @@ trait Module {
   def path_open(fd: Int,
                 dirflags: Int,
                 path: Int,
+                pathLen: Int,
                 oflags: Int,
-                fs_rights_base: Int,
-                fs_rights_inherting: Int,
+                fs_rights_base: Long,
+                fs_rights_inherting: Long,
                 fdflags: Int,
                 opened_fd: Int) = {
     val dirflagsAdapted: lookupflagsFlags.Value = lookupflagsFlags(dirflags)
-    val pathAdapted: String = getString(mem, path)
+    val pathAdapted: String = getString(mem, path, pathLen)
     val oflagsAdapted: oflagsFlags.Value = oflagsFlags(oflags)
-    val fs_rights_baseAdapted: rightsFlags.Value = rightsFlags(fs_rights_base)
-    val fs_rights_inhertingAdapted: rightsFlags.Value = rightsFlags(fs_rights_inherting)
+    val fs_rights_baseAdapted: rightsFlags.Value = rightsFlags(fs_rights_base.toInt)
+    val fs_rights_inhertingAdapted: rightsFlags.Value = rightsFlags(fs_rights_inherting.toInt)
     val fdflagsAdapted: fdflagsFlags.Value = fdflagsFlags(fdflags)
     val opened_fdAdapted: Pointer[fd] = new Pointer[fd](opened_fd, (i) => mem.getInt(i), (i, r) => mem.putInt(i, `r`))
 
@@ -350,6 +348,7 @@ trait Module {
       path_openImpl(fd,
                     dirflagsAdapted,
                     pathAdapted,
+                    pathLen,
                     oflagsAdapted,
                     fs_rights_baseAdapted,
                     fs_rights_inhertingAdapted,
@@ -363,8 +362,8 @@ trait Module {
                         buf_len: size,
                         bufused: Pointer[size]): (errnoEnum.Value)
 
-  def path_readlink(fd: Int, path: Int, buf: Int, buf_len: Int, bufused: Int) = {
-    val pathAdapted: String = getString(mem, path)
+  def path_readlink(fd: Int, path: Int, pathLen: Int, buf: Int, buf_len: Int, bufused: Int) = {
+    val pathAdapted: String = getString(mem, path, pathLen)
     val bufAdapted: Pointer[u8] = new Pointer[u8](buf, (i) => mem.get(i), (i, r) => mem.put(i, `r`))
     val bufusedAdapted: Pointer[size] = new Pointer[size](bufused, (i) => mem.getInt(i), (i, r) => mem.putInt(i, `r`))
 
@@ -373,34 +372,34 @@ trait Module {
 
   def path_remove_directoryImpl(fd: fd, path: string): (errnoEnum.Value)
 
-  def path_remove_directory(fd: Int, path: Int) = {
-    val pathAdapted: String = getString(mem, path)
+  def path_remove_directory(fd: Int, path: Int, pathLen: Int) = {
+    val pathAdapted: String = getString(mem, path, pathLen)
 
     IO(path_remove_directoryImpl(fd, pathAdapted).id)
   }
 
   def path_renameImpl(fd: fd, old_path: string, new_fd: fd, new_path: string): (errnoEnum.Value)
 
-  def path_rename(fd: Int, old_path: Int, new_fd: Int, new_path: Int) = {
-    val old_pathAdapted: String = getString(mem, old_path)
-    val new_pathAdapted: String = getString(mem, new_path)
+  def path_rename(fd: Int, old_path: Int, oldLen: Int, new_fd: Int, new_path: Int, newLen: Int) = {
+    val old_pathAdapted: String = getString(mem, old_path, oldLen)
+    val new_pathAdapted: String = getString(mem, new_path, newLen)
 
     IO(path_renameImpl(fd, old_pathAdapted, new_fd, new_pathAdapted).id)
   }
 
   def path_symlinkImpl(old_path: string, fd: fd, new_path: string): (errnoEnum.Value)
 
-  def path_symlink(old_path: Int, fd: Int, new_path: Int) = {
-    val old_pathAdapted: String = getString(mem, old_path)
-    val new_pathAdapted: String = getString(mem, new_path)
+  def path_symlink(old_path: Int, oldLen: Int, fd: Int, new_path: Int, newLen: Int) = {
+    val old_pathAdapted: String = getString(mem, old_path, oldLen)
+    val new_pathAdapted: String = getString(mem, new_path, newLen)
 
     IO(path_symlinkImpl(old_pathAdapted, fd, new_pathAdapted).id)
   }
 
   def path_unlink_fileImpl(fd: fd, path: string): (errnoEnum.Value)
 
-  def path_unlink_file(fd: Int, path: Int) = {
-    val pathAdapted: String = getString(mem, path)
+  def path_unlink_file(fd: Int, path: Int, pathLen: Int) = {
+    val pathAdapted: String = getString(mem, path, pathLen)
 
     IO(path_unlink_fileImpl(fd, pathAdapted).id)
   }
@@ -444,7 +443,7 @@ trait Module {
   def random_getImpl(buf: Pointer[u8], buf_len: size): (errnoEnum.Value)
 
   def random_get(buf: Int, buf_len: Int) = {
-    val bufAdapted: Pointer[u8] = new Pointer[u8](buf, (i) => mem.get(i), (i, r) => mem.put(i, `r`))
+    val bufAdapted: Pointer[u8] = new Pointer[u8](mem.getInt(buf), (i) => mem.get(i), (i, r) => mem.put(i, `r`))
 
     IO(random_getImpl(bufAdapted, buf_len).id)
   }
