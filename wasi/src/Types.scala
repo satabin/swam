@@ -278,7 +278,7 @@ object Types {
 	}
 
 	case class `iovec`(mem: ByteBuffer, offset: Int) extends WASI_STRUCT {
-		val `buf` = new Pointer[u8](offset, (i) => mem.get(i)
+		val `buf` = new Pointer[u8](mem.getInt(offset), (i) => mem.get(i)
 			, (i, r) => mem.put(i, `r`)
 		)
 		val `buf_len` = mem.getInt(offset + 4)

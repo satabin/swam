@@ -1,7 +1,7 @@
 package swam
 package wasi
 
-import java.io.{File, FileDescriptor, FileOutputStream}
+import java.io.{File, FileDescriptor, FileInputStream, FileOutputStream}
 import java.nio.ByteBuffer
 
 import cats.effect.IO
@@ -42,7 +42,9 @@ class WASIImplementation(override var mem: ByteBuffer = null) extends Module {
     *
     * @param fd
     */
-  def parseStats(fd: FileDescriptor) = (filetypeEnum.`regular_file`, regular_file_base, RIGHTS_REGULAR_FILE_INHERITING)
+  def parseStats(fd: FileDescriptor) = {
+    (filetypeEnum.`regular_file`, regular_file_base, RIGHTS_REGULAR_FILE_INHERITING)
+  }
 
   def checkRight(fd: fd, rights: Int): `fdstat` = {
 
@@ -190,7 +192,25 @@ class WASIImplementation(override var mem: ByteBuffer = null) extends Module {
                              offset: filesize,
                              nwritten: Pointer[size]): Types.errnoEnum.Value = ???
 
-  override def fd_readImpl(fd: fd, iovs: iovec_array, iovsLen: u32, nread: Pointer[size]): Types.errnoEnum.Value = ???
+  override def fd_readImpl(fd: fd, iovs: iovec_array, iovsLen: u32, nread: Pointer[size]): Types.errnoEnum.Value = {
+    try {
+      checkRight(fd, rightsFlags.fd_read.id)
+      var cumul = 0
+      val writer = new FileInputStream(fdMapFile(fd))
+      iovs.foreach(iov => {
+        val arr = new Array[Byte](iov.`buf_len`)
+        writer.read(arr, 0, arr.length)
+        cumul += iov.`buf_len`
+        arr.zipWithIndex.foreach { case (va, i) => iov.`buf`._set(i, va) }
+      })
+
+      nread._set(0, cumul)
+
+      Types.errnoEnum.`success`
+    } catch {
+      case x: WASIException => x.errno
+    }
+  }
 
   override def fd_readdirImpl(fd: fd,
                               buf: Pointer[u8],
