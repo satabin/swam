@@ -36,7 +36,7 @@ object JNATest extends TestSuite {
 
     val stat = st.fstat(1)
 
-    println(stat.mode())
+    println(stat.isFile())
   }
 
   val tests = Tests {
