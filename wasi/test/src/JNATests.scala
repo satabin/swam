@@ -1,7 +1,8 @@
 package swam
 package wasi
 
-import java.io
+import java.{io, util}
+import java.lang.reflect.{Field, Modifier}
 import java.nio.file.Paths
 
 import utest.{TestSuite, Tests, test}
@@ -10,11 +11,13 @@ import swam.test.util._
 import utest._
 import better.files._
 import cats.effect._
-import com.sun.jna.Native
+import com.sun.jna.{Native, Structure}
 import fs2.io.file
-import impl.FileStat
+import swam.impl.JNA.LibCWrapper
+import swam.impl.JNA.helper.LibCHelper
+import swam.impl.JNA.impl.PosixFactory
+import swam.impl.JNA.impl.macos.MacOSFileStat
 import swam.text.parser
-import swam.wasi.libc
 import swam.witx.WitxParser
 import swam.witx.parser.{ImportContext, TypesParser}
 import swam.witx.unresolved._
@@ -29,10 +32,11 @@ object JNATest extends TestSuite {
 
   def runTest() = {
 
-    val f = new FileStat("/Users/javierca/Documents/Develop/slumps/crow/out/Bitwise_IO/Bitwise_IO.wasm")
+    val st = PosixFactory()
 
-    println(f.dev, f.ino, f.mode, f.nlink, f.size, f.isFile(), f.isDirectory())
+    val stat = st.fstat(1)
 
+    println(stat.mode())
   }
 
   val tests = Tests {
