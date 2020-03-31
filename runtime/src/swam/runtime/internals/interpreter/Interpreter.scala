@@ -80,6 +80,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
   private def run(thread: Frame[F]): F[Option[Long]] = {
     def loop(): F[Option[Long]] = {
       val inst = thread.fetch()
+      //println(s"\t\t$inst")
       inst.execute(thread) match {
         case Continue => loop()
         case Suspend(res) =>

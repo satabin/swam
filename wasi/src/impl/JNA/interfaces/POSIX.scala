@@ -116,4 +116,8 @@ trait POSIX {
 
   def errno(value: Int): Unit
 
+  def strerror(errnum: Int): String
+
+  def write(fd: Int, bytes: Array[Byte], size: Int): Int
+
 }

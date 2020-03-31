@@ -38,13 +38,26 @@ object Types {
 
 
 		def write(offset: Int, mem: ByteBuffer) = {
-			mem.put(offset + 0, `fs_filetype`)
 
-			mem.putShort(offset + 1, `fs_flags`)
+			/* WASI JS
+			  this.view.setUint8(bufPtr, stats.filetype); // FILETYPE u8
+        this.view.setUint16(bufPtr + 2, 0, true); // FDFLAG u16
+        this.view.setUint16(bufPtr + 4, 0, true); // FDFLAG u16
+        this.view.setBigUint64(bufPtr + 8, stats.rights.base, true); // u64
+        this.view.setBigUint64(
+          bufPtr + 8 + 8, stats.rights.inheriting, true,
+        );
 
-			mem.putLong(offset + 3, `fs_rights_base`)
+			 */
+			mem.put(offset, `fs_filetype`)
 
-			mem.putLong(offset + 11, `fs_rights_inheriting`)
+			mem.putShort(offset + 2, `fs_flags`)
+
+			mem.putShort(offset + 4, `fs_flags`)
+
+			mem.putLong(offset + 8, `fs_rights_base`)
+
+			mem.putLong(offset + 8 + 8, `fs_rights_inheriting`)
 
 		}
 	}
@@ -103,7 +116,8 @@ object Types {
 	type filedelta = s64
 
 	object errnoEnum extends Enumeration {
-		val `success`, `2big`, `acces`, `addrinuse`, `addrnotavail`, `afnosupport`, `again`, `already`, `badf`, `badmsg`, `busy`, `canceled`, `child`, `connaborted`, `connrefused`, `connreset`, `deadlk`, `destaddrreq`, `dom`, `dquot`, `exist`, `fault`, `fbig`, `hostunreach`, `idrm`, `ilseq`, `inprogress`, `intr`, `inval`, `io`, `isconn`, `isdir`, `loop`, `mfile`, `mlink`, `msgsize`, `multihop`, `nametoolong`, `netdown`, `netreset`, `netunreach`, `nfile`, `nobufs`, `nodev`, `noent`, `noexec`, `nolck`, `nolink`, `nomem`, `nomsg`, `noprotoopt`, `nospc`, `nosys`, `notconn`, `notdir`, `notempty`, `notrecoverable`, `notsock`, `notsup`, `notty`, `nxio`, `overflow`, `ownerdead`, `perm`, `pipe`, `proto`, `protonosupport`, `prototype`, `range`, `rofs`, `spipe`, `srch`, `stale`, `timedout`, `txtbsy`, `xdev`, `notcapable` = Value
+		val `success` = Value(0)
+		val `2big`, `acces`, `addrinuse`, `addrnotavail`, `afnosupport`, `again`, `already`, `badf`, `badmsg`, `busy`, `canceled`, `child`, `connaborted`, `connrefused`, `connreset`, `deadlk`, `destaddrreq`, `dom`, `dquot`, `exist`, `fault`, `fbig`, `hostunreach`, `idrm`, `ilseq`, `inprogress`, `intr`, `inval`, `io`, `isconn`, `isdir`, `loop`, `mfile`, `mlink`, `msgsize`, `multihop`, `nametoolong`, `netdown`, `netreset`, `netunreach`, `nfile`, `nobufs`, `nodev`, `noent`, `noexec`, `nolck`, `nolink`, `nomem`, `nomsg`, `noprotoopt`, `nospc`, `nosys`, `notconn`, `notdir`, `notempty`, `notrecoverable`, `notsock`, `notsup`, `notty`, `nxio`, `overflow`, `ownerdead`, `perm`, `pipe`, `proto`, `protonosupport`, `prototype`, `range`, `rofs`, `spipe`, `srch`, `stale`, `timedout`, `txtbsy`, `xdev`, `notcapable` = Value
 	}
 
 	object lookupflagsFlags extends Enumeration {

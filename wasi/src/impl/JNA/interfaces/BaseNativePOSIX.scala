@@ -142,5 +142,9 @@ abstract class BaseNativePOSIX(val libc: LibC) extends POSIX {
 
   override def errno: Int = Native.getLastError
 
-  override def errno(value: Int): Unit = Native.setLastError(value);
+  override def errno(value: Int): Unit = Native.setLastError(value)
+
+  override def strerror(value: Int): String = libc.strerror(value)
+
+  override def write(fd: Int, bytes: Array[Byte], size: Int): Int = libc.write(fd, bytes, size)
 }
