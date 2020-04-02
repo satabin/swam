@@ -1,4 +1,5 @@
 import mill._
+import scalalib._
 import mill.eval._
 import mill.scalalib._
 import mill.scalalib.publish._
@@ -14,6 +15,8 @@ import $file.mdoc
 import mdoc.MdocModule
 import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
 import generator.ivy
+import mill.api.PathRef
+import wasi.millSourcePath
 
 val swamVersion = "0.6.0-SNAPSHOT"
 
@@ -164,11 +167,13 @@ object wasi extends SwamModule{
 
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
-    ivy"com.github.scopt::scopt:3.7.1",
-    ivy"net.java.dev.jna:jna:4.0.0",
-    ivy"com.lihaoyi::os-lib:0.6.2"
+    ivy"com.github.scopt::scopt:3.7.1"
   )
 
+  def unmanagedClasspath = T {
+    if (!ammonite.ops.exists(millSourcePath / "lib")) Agg()
+    else Agg.from(ammonite.ops.ls(millSourcePath / "lib").map(PathRef(_)))
+  }
 
   object test extends Tests with ScalafmtModule {
     def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.1")

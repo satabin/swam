@@ -1,43 +1,48 @@
 package swam
 package wasi
 
+import java.io.{File, FileDescriptor, InputStream, PrintStream}
 import java.{io, util}
 import java.lang.reflect.{Field, Modifier}
 import java.nio.file.Paths
 
-import swam.impl.JNA.LibCWrapper
+import org.jruby.ext.posix._
 import utest._
-import swam.impl.JNA.impl.PosixFactory
 
 import scala.concurrent.ExecutionContext
+
+class DummyHandler extends POSIXHandler {
+  override def error(errors: POSIX.ERRORS, s: Name): Unit = {}
+
+  override def unimplementedError(s: Name): Unit = {}
+
+  override def warn(warning_id: POSIXHandler.WARNING_ID, s: Name, objects: Any*): Unit = {}
+
+  override def isVerbose: Boolean = false
+
+  override def getCurrentWorkingDirectory: File = { new File("/tmp") }
+
+  override def getEnv: Array[Name] = throw new UnsupportedOperationException("Not supported yet.")
+
+  override def getInputStream: InputStream = throw new UnsupportedOperationException("Not supported yet.")
+
+  override def getOutputStream: PrintStream = throw new UnsupportedOperationException("Not supported yet.")
+
+  override def getPID: GlobalIdx = throw new UnsupportedOperationException("Not supported yet.")
+
+  override def getErrorStream: PrintStream = throw new UnsupportedOperationException("Not supported yet.")
+}
 
 object JNATest extends TestSuite {
 
   val tests = Tests {
     test("Testing_stdout") {
-      val st = PosixFactory()
-      val stat = st.fstat(1)
-      assert(stat.isFifo())
-    }
 
-    test("Testing regular file") {
-      val st = PosixFactory()
+      val pos = POSIXFactory.getPOSIX(new DummyHandler(), true)
 
-      val stat = st.stat("generator/resources/wasi_witx/get.sh")
+      val st = pos.fstat(FileDescriptor.in)
 
-      val err = st.errno
-
-      if (err > 0)
-        println(st.strerror(err))
-      assert(err == 0)
-
-      assert(stat.isFile())
-    }
-
-    test("Testing writing") {
-      val libc = LibCWrapper.run()
-
-      libc.write(1, Array[Byte](3, 48, 3, 4), 3)
+      println(st)
     }
   }
 

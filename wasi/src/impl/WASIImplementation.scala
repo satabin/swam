@@ -5,9 +5,6 @@ import java.io.{File, FileDescriptor, FileInputStream, FileOutputStream}
 import java.nio.ByteBuffer
 
 import cats.effect.IO
-import swam.impl.JNA.LibCWrapper
-import swam.impl.JNA.impl.macos.MacOSPOSIX
-import swam.impl.JNA.interfaces.{FileStat, POSIX}
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
 import swam.runtime.formats._
 import swam.runtime.formats.DefaultFormatters._
@@ -22,7 +19,7 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
   type AsIIO[T] = AsInterface[T, IO]
   type AsIsIO[T] = AsInstance[T, IO]
 
-  val posix: POSIX = new MacOSPOSIX(LibCWrapper.run()) // TODO create factor
+  //val posix: POSIX = new MacOSPOSIX(LibCWrapper.run()) // TODO create factor
 
   class WASIException(val errno: errnoEnum.Value) extends Exception
 
@@ -31,8 +28,8 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
     *
     * @param fd
     */
-  def parseStats(fd: FileStat): (Types.filetypeEnum.Value, fd, fd) = {
-    if (fd.isBlockDev())
+  def parseStats(fd: Int): (Types.filetypeEnum.Value, fd, fd) = {
+    /*if (fd.isBlockDev())
       return (filetypeEnum.`block_device`, RIGHTS_ALL, RIGHTS_BLOCK_DEVICE_INHERITING)
     if (fd.isCharDev())
       return (filetypeEnum.`character_device`, RIGHTS_CHARACTER_DEVICE_BASE, RIGHTS_CHARACTER_DEVICE_INHERITING)
@@ -45,15 +42,15 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
     if (fd.isSocket())
       return (filetypeEnum.`socket_stream`, RIGHTS_SOCKET_BASE, RIGHTS_SOCKET_INHERITING)
     if (fd.isSymlink())
-      return (filetypeEnum.`symbolic_link`, 0, 0)
+      return (filetypeEnum.`symbolic_link`, 0, 0)*/
 
     (filetypeEnum.`unknown`, 0, 0)
   }
 
   def checkRight(fd: fd, rights: Int): `fdstat` = {
 
-    val posixStat = posix.fstat(fd)
-    val stat = parseStats(posixStat)
+    //val posixStat = posix.fstat(fd)
+    val stat = parseStats(1)
 
     if (rights != 0 && (stat._2 & rights) == 0)
       throw new WASIException(errnoEnum.`perm`)
@@ -447,9 +444,9 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
 
     try {
       checkRight(fd, rightsFlags.fd_write.id)
-      val cumul =
+      /* val cumul =
         iovs.map(iov => posix.write(fd, Range(0, iov.`buf_len`).map(i => iov.`buf`._get(i)).toArray, iov.`buf_len`)).sum
-      nwritten._set(0, cumul)
+      nwritten._set(0, cumul)*/
       Types.errnoEnum.`success`
     } catch {
       case x: WASIException => x.errno
