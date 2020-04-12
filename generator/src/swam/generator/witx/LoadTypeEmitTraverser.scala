@@ -20,15 +20,20 @@ import swam.witx.unresolved.{
 class LoadTypeEmitTraverser(prev: String, types: Map[String, BaseWitxType], offset: String = "", mem: String = "")
     extends TypesTraverser[String](types) {
 
+  def concatOffsets(offset: String, prev: String) = {
+    if (prev.isEmpty) offset
+    else s"$offset + $prev"
+  }
+
   override val basicTypeTraverser = {
     case (_, t: BasicType) =>
       t.name match {
-        case "u8"     => s"$mem.get($offset $prev)\n"
-        case "u16"    => s"$mem.getShort($offset $prev)\n"
-        case "u32"    => s"$mem.getInt($offset $prev)\n"
-        case "u64"    => s"$mem.getLong($offset  $prev)\n"
-        case "s64"    => s"$mem.getLong($offset $prev)\n"
-        case "string" => s"$mem.getInt($offset $prev)\n"
+        case "u8"     => s"($mem.readByte(${concatOffsets(offset, prev)}).unsafeRunSync() & 0xff).toByte\n"
+        case "u16"    => s"($mem.readShort(${concatOffsets(offset, prev)}).unsafeRunSync & 0xffff).toShort\n"
+        case "u32"    => s"$mem.readInt(${concatOffsets(offset, prev)}).unsafeRunSync & 0xffffffff\n"
+        case "u64"    => s"$mem.readLong(${concatOffsets(offset, prev)}).unsafeRunSync & 0xffffffffffffffffL\n"
+        case "s64"    => s"$mem.readLong(${concatOffsets(offset, prev)}).unsafeRunSync\n"
+        case "string" => s"$mem.getInt(${concatOffsets(offset, prev)})\n"
       }
   }
 
@@ -58,27 +63,27 @@ class LoadTypeEmitTraverser(prev: String, types: Map[String, BaseWitxType], offs
 
   override val structTypeTraverser = {
 
-    case (_, t: StructType) => s"${t.tpeName}($mem, $offset $prev)"
+    case (_, t: StructType) => s"${t.tpeName}($mem, ${concatOffsets(offset, prev)})"
 
   }
 
   override val handleTypeTraverser = {
-    case (_, t: Handle) => s"$mem.getInt($offset $prev)\n"
+    case (_, t: Handle) => s"$mem.readInt(${concatOffsets(offset, prev)}).unsafeRunSync\n"
   }
 
   override val unionTypeTraverser = {
-    case (_, t: UnionType) => s"${t.tpeName}($mem, $offset $prev)"
-
+    case (_, t: UnionType) =>
+      s"${t.tpeName}($mem, ${concatOffsets(offset, prev)})"
   }
 
   override val arrayTypeTraverser = {
-    case (_, t: ArrayType) => s"$mem.getInt($offset $prev)\n"
+    case (n, t: ArrayType) => s"new ArrayInstance[${t.tpeName}](, Len, ${t.size} ,(i) => (mem, i)).values)\n"
   }
 
   override val pointerTypeTraverser = {
     case (_, p: Pointer) =>
-      s"new Pointer[${getVal(p.tpe)}]($offset, (i) => ${new LoadTypeEmitTraverser("", types, offset, "mem")
-        .traverse("", p.tpe)}, (i, r) => ${new WriteTypeEmitTraverser("r", "", types, offset, mem)
+      s"new Pointer[${getVal(p.tpe)}](mem.readInt($offset).unsafeRunSync, (i) => ${new LoadTypeEmitTraverser("", types, "i", "mem")
+        .traverse("", p.tpe)}, (i, r) => ${new WriteTypeEmitTraverser("r", "", types, "i", mem)
         .traverse("", p.tpe)})"
   }
 }

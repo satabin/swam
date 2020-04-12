@@ -329,7 +329,12 @@ object AsInterface {
         def unsafeWriteInt(idx: Int, v: Int) = b.putInt(idx, v)
         def unsafeWriteLong(idx: Int, v: Long) = b.putLong(idx, v)
         def unsafeWriteShort(idx: Int, v: Short) = b.putShort(idx, v)
-
+        def unsafeReadBytes(idx: Int, dst: Array[Byte]): Unit = {
+          val old = b.position()
+          b.position(idx)
+          b.get(dst)
+          b.position(old)
+        }
       }
     }
 

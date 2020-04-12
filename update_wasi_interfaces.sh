@@ -1,0 +1,1 @@
+mill generator.run -x True -p wasi -i generator/resources/wasi_witx generator/resources/wasi_witx/wasi_snapshot_preview1.witx

@@ -120,6 +120,8 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
     Blocker[F]
       .use { blocker =>
         for {
+          // replace
+          _ <- io.file.delete(blocker, Paths.get(s"$projectName/src/$className.scala"))
           _ <- io.file.createDirectories[F](blocker, Paths.get(s"$projectName/src")) // Creates the module structure
           _ <- fs2
             .Stream(t)

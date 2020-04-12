@@ -25,15 +25,20 @@ class WriteTypeEmitTraverser(f: String,
                              mem: String = "")
     extends TypesTraverser[String](types) {
 
+  def concatOffsets(offset: String, prev: String) = {
+    if (prev.isEmpty) offset
+    else s"$offset + $prev"
+  }
+
   override val basicTypeTraverser = {
     case (_, t: BasicType) =>
       t.name match {
-        case "u8"     => s"$mem.put($offset $prev,`${f}`)\n"
-        case "u16"    => s"$mem.putShort($offset $prev,`${f}`)\n"
-        case "u32"    => s"$mem.putInt($offset $prev,`${f}`)\n"
-        case "u64"    => s"$mem.putLong($offset $prev,`${f}`)\n"
-        case "s64"    => s"$mem.putLong($offset $prev,`${f}`)\n"
-        case "string" => s"$mem.putInt($offset $prev,`${f}`)\n"
+        case "u8"     => s"$mem.writeByte(${concatOffsets(offset, prev)}, (`${f}` & 0xff).toByte )\n"
+        case "u16"    => s"$mem.writeShort(${concatOffsets(offset, prev)},`${f}`)\n"
+        case "u32"    => s"$mem.writeInt(${concatOffsets(offset, prev)},`${f}`)\n"
+        case "u64"    => s"$mem.writeLong(${concatOffsets(offset, prev)},`${f}`)\n"
+        case "s64"    => s"$mem.writeLong(${concatOffsets(offset, prev)},`${f}`)\n"
+        case "string" => s"$mem.writeInt(${concatOffsets(offset, prev)},`${f}`)\n"
       }
   }
 
@@ -51,23 +56,23 @@ class WriteTypeEmitTraverser(f: String,
 
   override val structTypeTraverser = {
 
-    case (_, t: StructType) => s"$f.write()"
+    case (_, t: StructType) => s"$f.write(${concatOffsets(offset, prev)}, mem)"
 
   }
 
   override val handleTypeTraverser = {
-    case (_, t: Handle) => s"$mem.putInt($offset $prev, `${f}`)\n"
+    case (_, t: Handle) => s"$mem.writeInt(${concatOffsets(offset, prev)}, `${f}`)\n"
   }
 
   override val unionTypeTraverser = {
-    case (_, t: UnionType) => s"`$f`.write()"
+    case (_, t: UnionType) => s"$f.write(${concatOffsets(offset, prev)}, mem)"
 
   }
 
   override val arrayTypeTraverser = {
-    case (_, t: ArrayType) => s"$mem.putInt($offset  $prev, `${f}`)\n"
+    case (_, t: ArrayType) => s"$mem.writeInt(${concatOffsets(offset, prev)}, `${f}`)\n"
   }
   override val pointerTypeTraverser = {
-    case (_, p: Pointer) => s"$mem.putInt(i,`${f}`.offset)\n"
+    case (_, p: Pointer) => s"$mem.writeInt(${concatOffsets(offset, prev)},`${f}`.offset)\n"
   }
 }

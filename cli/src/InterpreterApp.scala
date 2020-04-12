@@ -107,7 +107,7 @@ object InterpreterApp extends IOApp {
     }
   }
 
-  def createInstance(blocker: Blocker, config: Config): IO[Instance[IO]] = {
+  def createInstance(blocker: Blocker, config: Config) = {
     for {
       imports <- IO(JVMLinker().getImports(config.linkJarPath, config.className))
       compiler <- Compiler[IO]
@@ -125,8 +125,11 @@ object InterpreterApp extends IOApp {
       wasi <- IO(new wasi.WASIImplementation(args = config.args.toSeq))
       instance <- engine.instantiate(module, wasi.imports())
       mem <- instance.exports.memory("memory")
-      _ <- IO(wasi.mem = getMemoryBuffer(mem))
-    } yield instance
+      buf <- IO(getMemoryBuffer(mem))
+      _ <- IO(wasi.mem = mem)
+      // s_ <- IO(wasi.printMem())
+
+    } yield (instance, mem)
   }
 
   def run(args: List[String]): IO[ExitCode] = parser.parse(args, Config()) match {
@@ -135,7 +138,7 @@ object InterpreterApp extends IOApp {
         for {
           instance <- createInstance(blocker, config)
           _ <- if (config.main.isEmpty) {
-            IO(instance.exports.list
+            IO(instance._1.exports.list
               .collect[String, FuncType] {
                 case (name, f: FuncType) =>
                   (name, f)
@@ -148,8 +151,9 @@ object InterpreterApp extends IOApp {
               })
           } else {
             for {
-              f <- instance.exports.function(config.main)
-              _ <- f.invoke(Vector(), None)
+              e <- Engine[IO]()
+              f <- instance._1.exports.function(config.main)
+              _ <- f.invoke(Vector(), Option(instance._2))
             } yield ()
           }
         } yield ExitCode.Success

@@ -30,9 +30,23 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
       s"def ${f.id}Impl${f.params
         .map(f => s"${f.id}:${getVal(f.tpe)}")
         .mkString("(", ",", ")")}:${mapFieldsToTuple(f.results)}\n\n" +
-        s"def ${f.id}(${f.params.map(m => s"${m.id}:${mapTypeToWasm(m.tpe).from}").mkString(",")}) = {\n${processAdaptor(
-          f.params)} \n\n ${processResults(f)} \n}\n\n"
+        s"def ${f.id}(${processParameters(f.params).mkString(",")}) = {\n${processAdaptor(f.params)} \n\n ${processResults(f)} \n}\n\n"
 
+  }
+
+  def processParameters(fields: Seq[Field]): Seq[String] = {
+    if (fields.isEmpty) Seq()
+    else {
+      val head = fields.head
+      val adaptor = mapTypeToWasm(head.tpe)
+
+      adaptor.to match {
+        case "String" => Seq(s"${head.id}:${adaptor.from}", s"${head.id}Len:Int") ++ processParameters(fields.tail)
+        case _        => Seq(s"${head.id}:${adaptor.from}") ++ processParameters(fields.tail)
+      }
+    }
+
+    // ${f.params.map(m => s"${m.id}:${mapTypeToWasm(m.tpe).from}").mkString(",")}
   }
 
   def mapFieldsToTuple(fields: Seq[Field]) = fields.map(t => getVal(t.tpe)).mkString("(", ",", ")")
@@ -70,7 +84,7 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
     println(s""""${f.id}" -> ${f.id} _,""")
 
     if (to.nonEmpty)
-      s"IO(adapt[${to.mkString("(", ",", ")")}, ${from.mkString("(", ",", ")")}](${f.id}Impl($args)))"
+      s"IO(${f.id}Impl($args).id)"
     else
       s"IO(${f.id}Impl($args))"
   }
@@ -111,7 +125,7 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
   def mapAliasType(t: AliasType): Adapt = mapTypeToWasm(types(t.tpe.tpeName))
 
   override def traverseAll(zero: String, compose: (String, String) => String) =
-    s"package swam\npackage wasi\nimport Types._ \nimport cats.effect._\n  trait Module { def adapt[Tin, Tout](in: Tin): Tout \n\n${super
+    s"package swam\npackage wasi\nimport Types._\nimport Header._ \nimport cats.effect._\nimport cats.effect.IO \nimport swam.runtime.Memory\n  trait Module { val mem: Memory[IO] \n\n${super
       .traverseAll(zero, compose)}\n }"
 
   class InitTypeEmitTraverser(name: String) extends TypesTraverser[String](types) {
@@ -124,7 +138,7 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
           case "u32"    => name
           case "u64"    => name
           case "s64"    => name
-          case "string" => s"getString(mem, $name)"
+          case "string" => s"getString(mem, $name, ${name}Len)"
         }
     }
 
@@ -155,13 +169,15 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
 
     }
 
+    // new ArrayInstance[iovec](iovs, iovsLen, 8, (i) => `iovec`(mem, i)).values
     override val arrayTypeTraverser = {
-      case (_, t: ArrayType) => s"loadArray[${getVal(t.tpe)}]($name)"
+      case (_, t: ArrayType) =>
+        s"new ArrayInstance[${getVal(t.tpe)}]($name, ${name}Len, ${t.size} ,(i) => ${getVal(t.tpe)}(mem, i)).values"
     }
 
     override val pointerTypeTraverser = {
       case (_, p: Pointer) =>
-        s"new Pointer[${getVal(p.tpe)}]( $name, (i) => ${new LoadTypeEmitTraverser("", types, mem = "mem", offset = "i")
+        s"new Pointer[${getVal(p.tpe)}](mem.readInt($name).unsafeRunSync, (i) => ${new LoadTypeEmitTraverser("", types, mem = "mem", offset = "i")
           .traverse("", p.tpe)}, (i, r) => ${new WriteTypeEmitTraverser("r", "", types, mem = "mem", offset = "i")
           .traverse("", p.tpe)})"
     }

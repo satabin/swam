@@ -107,6 +107,10 @@ class TracingMemory[F[_]](val inner: Memory[F], tracer: Tracer)(implicit F: Mona
     res
   }
 
+  override def unsafeReadBytes(idx: Int, dst: Array[Byte]): Unit = {
+    val res = inner.unsafeReadBytes(idx, dst)
+    tracer.traceEvent(EventType.MRead, List("mread", "bytes", idx.toString, res.toString))
+  }
 }
 
 private[runtime] object TracingMemory {

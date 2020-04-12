@@ -107,4 +107,10 @@ class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax:
     bytes.reset()
   }
 
+  def unsafeReadBytes(idx: GlobalIdx, dst: Array[Byte]): Unit = {
+    val old = buffer.position()
+    buffer.position(idx)
+    buffer.get(dst)
+    buffer.position(old)
+  }
 }

@@ -1,20 +1,21 @@
 package swam
 package wasi
 
-import java.io.{File, FileDescriptor, FileInputStream, FileOutputStream}
+import java.io.{File, FileDescriptor, FileInputStream, FileOutputStream, PrintWriter}
 import java.nio.ByteBuffer
 
 import cats.effect.IO
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
 import swam.runtime.formats._
 import swam.runtime.formats.DefaultFormatters._
+import swam.runtime.{Memory, pageSize}
 import swam.wasi.Types._
 
 /**
     @author Javier Cabrera-Arteaga on 2020-03-23
     Follow NodeJS implementation https://github.com/nodejs/wasi/tree/wasi/lib of WASI to implement this
   */
-class WASIImplementation(override var mem: ByteBuffer = null, override val args: Seq[String]) extends Module {
+class WASIImplementation(val args: Seq[String]) extends Module {
 
   type AsIIO[T] = AsInterface[T, IO]
   type AsIsIO[T] = AsInstance[T, IO]
@@ -44,16 +45,18 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
     if (fd.isSymlink())
       return (filetypeEnum.`symbolic_link`, 0, 0)*/
 
-    (filetypeEnum.`unknown`, 0, 0)
+    fd match { // mock
+      case 0 => (filetypeEnum.`character_device`, RIGHTS_CHARACTER_DEVICE_BASE, RIGHTS_CHARACTER_DEVICE_INHERITING)
+      case 1 => (filetypeEnum.`character_device`, RIGHTS_CHARACTER_DEVICE_BASE, RIGHTS_CHARACTER_DEVICE_INHERITING)
+      case 2 => (filetypeEnum.`character_device`, RIGHTS_CHARACTER_DEVICE_BASE, RIGHTS_CHARACTER_DEVICE_INHERITING)
+      case _ => (filetypeEnum.`unknown`, 0, 0)
+    }
   }
 
   def checkRight(fd: fd, rights: Int): `fdstat` = {
 
     //val posixStat = posix.fstat(fd)
-    val stat = parseStats(1)
-
-    if (rights != 0 && (stat._2 & rights) == 0)
-      throw new WASIException(errnoEnum.`perm`)
+    val stat = parseStats(fd)
 
     `fdstat`(stat._1.id.toByte, 0, stat._2, stat._3)
   }
@@ -130,21 +133,18 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
     var offset = argv_buf.offset
 
     args.foreach(arg => {
-      mem.putInt(coffset, offset)
+      mem.writeInt(coffset, offset)
       coffset += 4
       val bytes = new Array[Byte](arg.length + 1)
-      val oldPos = mem.position()
-      mem.position(offset)
-      mem.put(arg.getBytes(), 0, bytes.length)
-      mem.position(oldPos)
+      mem.writeBytes(offset, ByteBuffer.wrap(arg.getBytes()))
       offset += bytes.length
     })
     errnoEnum.`success`
   }
 
   override def args_sizes_getImpl(argc: Pointer[size], argv_buf_size: Pointer[size]): Types.errnoEnum.Value = {
-    mem.putInt(argc.offset, args.length)
-    mem.putInt(argv_buf_size.offset, args.map(t => t.length).sum)
+    mem.writeInt(argc.offset, args.length)
+    mem.writeInt(argv_buf_size.offset, args.map(t => t.length).sum)
     errnoEnum.`success`
   }
 
@@ -154,13 +154,12 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
 
     System.getenv().forEach {
       case (key, value) => {
-        mem.putInt(coffset, offset)
+        mem.writeInt(coffset, offset)
         coffset += 4
         val bytes = new Array[Byte](s"$key=$value".getBytes().length + 1)
-        val oldPos = mem.position()
-        mem.position(offset)
-        mem.put(s"$key=$value".getBytes(), 0, bytes.length)
-        mem.position(oldPos)
+        //mem.position(offset)
+        mem.writeBytes(offset, ByteBuffer.wrap(s"$key=$value".getBytes()))
+        //mem.position(oldPos)
         offset += bytes.length
       }
     }
@@ -178,13 +177,13 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
       }
     }
 
-    mem.putInt(environc.offset, System.getenv().size())
-    mem.putInt(environ_buf_size.offset, cumul)
+    mem.writeInt(environc.offset, System.getenv().size())
+    mem.writeInt(environ_buf_size.offset, cumul)
     errnoEnum.`success`
   }
 
   override def clock_res_getImpl(id: Types.clockidEnum.Value, resolution: Pointer[timestamp]): Types.errnoEnum.Value = {
-    mem.putLong(resolution.offset, 0L)
+    mem.writeLong(resolution.offset, 0L)
     errnoEnum.`success`
   }
 
@@ -196,7 +195,7 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
     if (nowVal < 0)
       throw new WASIException(errnoEnum.`inval`)
 
-    mem.putLong(time.offset, nowVal)
+    mem.writeLong(time.offset, nowVal)
 
     errnoEnum.`success`
   }
@@ -228,11 +227,21 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
     errnoEnum.`fault`
   }
 
+  def printMem() = {
+    val f = new PrintWriter(new File("trace.mem"))
+    /*mem.position(0)
+    for (i <- 0 until mem.limit())
+      f.write(s"${(mem.get(i))}\n")*/
+
+    f.close()
+  }
+
   override def fd_fdstat_getImpl(fd: fd, stat: Types.`fdstat`, offset: Int): Types.errnoEnum.Value = {
 
     try {
       val st = checkRight(fd, 0)
       st.write(offset, mem)
+
       Types.errnoEnum.`success`
     } catch {
       case x: WASIException => x.errno
@@ -444,14 +453,23 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
 
     try {
       checkRight(fd, rightsFlags.fd_write.id)
-      /* val cumul =
-        iovs.map(iov => posix.write(fd, Range(0, iov.`buf_len`).map(i => iov.`buf`._get(i)).toArray, iov.`buf_len`)).sum
-      nwritten._set(0, cumul)*/
+      printMem()
+
+      val cumul =
+        iovs
+          .map(iov => {
+            //print(fd, (0 until iov.`buf_len`).map(i => iov.`buf`._get(i).toChar).mkString(""))
+            print((0 until iov.`buf_len`).map(i => iov.`buf`._get(i).toChar).mkString(""))
+            iov.`buf_len`
+          })
+          .sum
+      nwritten._set(0, cumul)
       Types.errnoEnum.`success`
     } catch {
       case x: WASIException => x.errno
     }
 
+    //-31 0 1 2 2 4 65 83 99 782
   }
 
   override def path_create_directoryImpl(fd: fd, path: string): Types.errnoEnum.Value = {
@@ -519,15 +537,15 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
     }
   }
 
-  override def path_openImpl(fd: fd,
-                             dirflags: Types.lookupflagsFlags.Value,
-                             path: string,
-                             pathLen: Int,
-                             oflags: Types.oflagsFlags.Value,
-                             fs_rights_base: Types.rightsFlags.Value,
-                             fs_rights_inherting: Types.rightsFlags.Value,
-                             fdflags: Types.fdflagsFlags.Value,
-                             opened_fd: Pointer[fd]): Types.errnoEnum.Value = {
+  def path_openImpl(fd: fd,
+                    dirflags: Types.lookupflagsFlags.Value,
+                    path: string,
+                    pathLen: Int,
+                    oflags: Types.oflagsFlags.Value,
+                    fs_rights_base: Types.rightsFlags.Value,
+                    fs_rights_inherting: Types.rightsFlags.Value,
+                    fdflags: Types.fdflagsFlags.Value,
+                    opened_fd: Pointer[fd]): Types.errnoEnum.Value = {
     try {
       val stats = checkRight(fd, rightsFlags.path_open.id)
 
@@ -663,4 +681,15 @@ class WASIImplementation(override var mem: ByteBuffer = null, override val args:
   override def sock_shutdownImpl(fd: fd, how: Types.sdflagsFlags.Value): Types.errnoEnum.Value = {
     errnoEnum.`nosys`
   }
+
+  override var mem: Memory[IO] = null
+
+  override def path_openImpl(fd: fd,
+                             dirflags: Types.lookupflagsFlags.Value,
+                             path: string,
+                             oflags: Types.oflagsFlags.Value,
+                             fs_rights_base: Types.rightsFlags.Value,
+                             fs_rights_inherting: Types.rightsFlags.Value,
+                             fdflags: Types.fdflagsFlags.Value,
+                             opened_fd: Pointer[fd]): Types.errnoEnum.Value = ???
 }
