@@ -22,7 +22,11 @@ trait Module {
                                                        (i) => mem.readByte(i).unsafeRunSync(),
                                                        (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
 
-    IO(args_getImpl(argvAdapted, argv_bufAdapted).id)
+    IO(try {
+      args_getImpl(argvAdapted, argv_bufAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def args_sizes_getImpl(argc: Pointer[size], argv_buf_size: Pointer[size]): (errnoEnum.Value)
@@ -35,7 +39,11 @@ trait Module {
                                                                 (i) => mem.readInt(i).unsafeRunSync,
                                                                 (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
-    IO(args_sizes_getImpl(argcAdapted, argv_buf_sizeAdapted).id)
+    IO(try {
+      args_sizes_getImpl(argcAdapted, argv_buf_sizeAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def environ_getImpl(environ: Pointer[Pointer[u8]], environ_buf: Pointer[u8]): (errnoEnum.Value)
@@ -52,7 +60,11 @@ trait Module {
                                                           (i) => mem.readByte(i).unsafeRunSync(),
                                                           (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
 
-    IO(environ_getImpl(environAdapted, environ_bufAdapted).id)
+    IO(try {
+      environ_getImpl(environAdapted, environ_bufAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def environ_sizes_getImpl(environc: Pointer[size], environ_buf_size: Pointer[size]): (errnoEnum.Value)
@@ -65,7 +77,11 @@ trait Module {
                                                                    (i) => mem.readInt(i).unsafeRunSync,
                                                                    (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
-    IO(environ_sizes_getImpl(environcAdapted, environ_buf_sizeAdapted).id)
+    IO(try {
+      environ_sizes_getImpl(environcAdapted, environ_buf_sizeAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def clock_res_getImpl(id: clockidEnum.Value, resolution: Pointer[timestamp]): (errnoEnum.Value)
@@ -76,7 +92,11 @@ trait Module {
                                                                        (i) => mem.readLong(i).unsafeRunSync,
                                                                        (i, r) => mem.writeLong(i, `r`).unsafeRunSync)
 
-    IO(clock_res_getImpl(idAdapted, resolutionAdapted).id)
+    IO(try {
+      clock_res_getImpl(idAdapted, resolutionAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def clock_time_getImpl(id: clockidEnum.Value, precision: timestamp, time: Pointer[timestamp]): (errnoEnum.Value)
@@ -87,7 +107,11 @@ trait Module {
                                                                  (i) => mem.readLong(i).unsafeRunSync,
                                                                  (i, r) => mem.writeLong(i, `r`).unsafeRunSync)
 
-    IO(clock_time_getImpl(idAdapted, precision, timeAdapted).id)
+    IO(try {
+      clock_time_getImpl(idAdapted, precision, timeAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_adviseImpl(fd: fd, offset: filesize, len: filesize, advice: adviceEnum.Value): (errnoEnum.Value)
@@ -95,28 +119,44 @@ trait Module {
   def fd_advise(fd: Int, offset: Long, len: Long, advice: Int) = {
     val adviceAdapted: adviceEnum.Value = adviceEnum(advice)
 
-    IO(fd_adviseImpl(fd, offset, len, adviceAdapted).id)
+    IO(try {
+      fd_adviseImpl(fd, offset, len, adviceAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_allocateImpl(fd: fd, offset: filesize, len: filesize): (errnoEnum.Value)
 
   def fd_allocate(fd: Int, offset: Long, len: Long) = {
 
-    IO(fd_allocateImpl(fd, offset, len).id)
+    IO(try {
+      fd_allocateImpl(fd, offset, len).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_closeImpl(fd: fd): (errnoEnum.Value)
 
   def fd_close(fd: Int) = {
 
-    IO(fd_closeImpl(fd).id)
+    IO(try {
+      fd_closeImpl(fd).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_datasyncImpl(fd: fd): (errnoEnum.Value)
 
   def fd_datasync(fd: Int) = {
 
-    IO(fd_datasyncImpl(fd).id)
+    IO(try {
+      fd_datasyncImpl(fd).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_fdstat_getImpl(fd: fd, stat: fdstat, offset: Int): (errnoEnum.Value)
@@ -124,7 +164,11 @@ trait Module {
   def fd_fdstat_get(fd: Int, stat: Int) = {
     val statAdapted: fdstat = fdstat(-1, -1, -1, -1)
 
-    IO(fd_fdstat_getImpl(fd, statAdapted, stat).id)
+    IO(try {
+      fd_fdstat_getImpl(fd, statAdapted, stat).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_fdstat_set_flagsImpl(fd: fd, flags: fdflagsFlags.Value): (errnoEnum.Value)
@@ -132,7 +176,11 @@ trait Module {
   def fd_fdstat_set_flags(fd: Int, flags: Int) = {
     val flagsAdapted: fdflagsFlags.Value = fdflagsFlags(flags)
 
-    IO(fd_fdstat_set_flagsImpl(fd, flagsAdapted).id)
+    IO(try {
+      fd_fdstat_set_flagsImpl(fd, flagsAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_fdstat_set_rightsImpl(fd: fd,
@@ -143,7 +191,11 @@ trait Module {
     val fs_rights_baseAdapted: rightsFlags.Value = rightsFlags(fs_rights_base)
     val fs_rights_inheritingAdapted: rightsFlags.Value = rightsFlags(fs_rights_inheriting)
 
-    IO(fd_fdstat_set_rightsImpl(fd, fs_rights_baseAdapted, fs_rights_inheritingAdapted).id)
+    IO(try {
+      fd_fdstat_set_rightsImpl(fd, fs_rights_baseAdapted, fs_rights_inheritingAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_filestat_getImpl(fd: fd, buf: Pointer[filestat]): (errnoEnum.Value)
@@ -152,14 +204,22 @@ trait Module {
     val bufAdapted: Pointer[filestat] =
       new Pointer[filestat](mem.readInt(buf).unsafeRunSync, (i) => filestat(mem, i), (i, r) => r.write(i, mem))
 
-    IO(fd_filestat_getImpl(fd, bufAdapted).id)
+    IO(try {
+      fd_filestat_getImpl(fd, bufAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_filestat_set_sizeImpl(fd: fd, size: filesize): (errnoEnum.Value)
 
   def fd_filestat_set_size(fd: Int, size: Long) = {
 
-    IO(fd_filestat_set_sizeImpl(fd, size).id)
+    IO(try {
+      fd_filestat_set_sizeImpl(fd, size).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_filestat_set_timesImpl(fd: fd,
@@ -170,18 +230,26 @@ trait Module {
   def fd_filestat_set_times(fd: Int, atim: Long, mtim: Long, fst_flags: Int) = {
     val fst_flagsAdapted: fstflagsFlags.Value = fstflagsFlags(fst_flags)
 
-    IO(fd_filestat_set_timesImpl(fd, atim, mtim, fst_flagsAdapted).id)
+    IO(try {
+      fd_filestat_set_timesImpl(fd, atim, mtim, fst_flagsAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_preadImpl(fd: fd, iovs: iovec_array, iovsLen: u32, offset: filesize, nread: Pointer[size]): (errnoEnum.Value)
 
   def fd_pread(fd: Int, iovs: Int, iovsLen: Int, offset: Long, nread: Int) = {
-    val iovsAdapted: iovec_array = new ArrayInstance[iovec](iovs, iovsLen, 12, (i) => iovec(mem, i)).values
+    val iovsAdapted: iovec_array = new ArrayInstance[iovec](iovs, iovsLen, 8, (i) => iovec(mem, i)).values
     val nreadAdapted: Pointer[size] = new Pointer[size](mem.readInt(nread).unsafeRunSync,
                                                         (i) => mem.readInt(i).unsafeRunSync,
                                                         (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
-    IO(fd_preadImpl(fd, iovsAdapted, iovsLen, offset, nreadAdapted).id)
+    IO(try {
+      fd_preadImpl(fd, iovsAdapted, iovsLen, offset, nreadAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_prestat_getImpl(fd: fd, buf: Pointer[prestat]): (errnoEnum.Value)
@@ -190,7 +258,11 @@ trait Module {
     val bufAdapted: Pointer[prestat] =
       new Pointer[prestat](mem.readInt(buf).unsafeRunSync, (i) => prestat(mem, i), (i, r) => r.write(i, mem))
 
-    IO(fd_prestat_getImpl(fd, bufAdapted).id)
+    IO(try {
+      fd_prestat_getImpl(fd, bufAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_prestat_dir_nameImpl(fd: fd, path: Pointer[u8], path_len: size): (errnoEnum.Value)
@@ -200,7 +272,11 @@ trait Module {
                                                    (i) => mem.readByte(i).unsafeRunSync(),
                                                    (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
 
-    IO(fd_prestat_dir_nameImpl(fd, pathAdapted, path_len).id)
+    IO(try {
+      fd_prestat_dir_nameImpl(fd, pathAdapted, path_len).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_pwriteImpl(fd: fd,
@@ -210,23 +286,31 @@ trait Module {
                     nwritten: Pointer[size]): (errnoEnum.Value)
 
   def fd_pwrite(fd: Int, iovs: Int, iovsLen: Int, offset: Long, nwritten: Int) = {
-    val iovsAdapted: ciovec_array = new ArrayInstance[ciovec](iovs, iovsLen, 12, (i) => ciovec(mem, i)).values
+    val iovsAdapted: ciovec_array = new ArrayInstance[ciovec](iovs, iovsLen, 8, (i) => ciovec(mem, i)).values
     val nwrittenAdapted: Pointer[size] = new Pointer[size](mem.readInt(nwritten).unsafeRunSync,
                                                            (i) => mem.readInt(i).unsafeRunSync,
                                                            (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
-    IO(fd_pwriteImpl(fd, iovsAdapted, iovsLen, offset, nwrittenAdapted).id)
+    IO(try {
+      fd_pwriteImpl(fd, iovsAdapted, iovsLen, offset, nwrittenAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_readImpl(fd: fd, iovs: iovec_array, iovsLen: u32, nread: Pointer[size]): (errnoEnum.Value)
 
   def fd_read(fd: Int, iovs: Int, iovsLen: Int, nread: Int) = {
-    val iovsAdapted: iovec_array = new ArrayInstance[iovec](iovs, iovsLen, 12, (i) => iovec(mem, i)).values
+    val iovsAdapted: iovec_array = new ArrayInstance[iovec](iovs, iovsLen, 8, (i) => iovec(mem, i)).values
     val nreadAdapted: Pointer[size] = new Pointer[size](mem.readInt(nread).unsafeRunSync,
                                                         (i) => mem.readInt(i).unsafeRunSync,
                                                         (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
-    IO(fd_readImpl(fd, iovsAdapted, iovsLen, nreadAdapted).id)
+    IO(try {
+      fd_readImpl(fd, iovsAdapted, iovsLen, nreadAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_readdirImpl(fd: fd,
@@ -243,14 +327,22 @@ trait Module {
                                                           (i) => mem.readInt(i).unsafeRunSync,
                                                           (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
-    IO(fd_readdirImpl(fd, bufAdapted, buf_len, cookie, bufusedAdapted).id)
+    IO(try {
+      fd_readdirImpl(fd, bufAdapted, buf_len, cookie, bufusedAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_renumberImpl(fd: fd, to: fd): (errnoEnum.Value)
 
   def fd_renumber(fd: Int, to: Int) = {
 
-    IO(fd_renumberImpl(fd, to).id)
+    IO(try {
+      fd_renumberImpl(fd, to).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_seekImpl(fd: fd, offset: filedelta, whence: whenceEnum.Value, newoffset: Pointer[filesize]): (errnoEnum.Value)
@@ -261,14 +353,22 @@ trait Module {
                                                                     (i) => mem.readLong(i).unsafeRunSync,
                                                                     (i, r) => mem.writeLong(i, `r`).unsafeRunSync)
 
-    IO(fd_seekImpl(fd, offset, whenceAdapted, newoffsetAdapted).id)
+    IO(try {
+      fd_seekImpl(fd, offset, whenceAdapted, newoffsetAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_syncImpl(fd: fd): (errnoEnum.Value)
 
   def fd_sync(fd: Int) = {
 
-    IO(fd_syncImpl(fd).id)
+    IO(try {
+      fd_syncImpl(fd).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_tellImpl(fd: fd, offset: Pointer[filesize]): (errnoEnum.Value)
@@ -278,7 +378,11 @@ trait Module {
                                                                  (i) => mem.readLong(i).unsafeRunSync,
                                                                  (i, r) => mem.writeLong(i, `r`).unsafeRunSync)
 
-    IO(fd_tellImpl(fd, offsetAdapted).id)
+    IO(try {
+      fd_tellImpl(fd, offsetAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def fd_writeImpl(fd: fd, iovs: ciovec_array, iovsLen: u32, nwritten: Int): (errnoEnum.Value)
@@ -286,7 +390,11 @@ trait Module {
   def fd_write(fd: Int, iovs: Int, iovsLen: Int, nwritten: Int) = {
     val iovsAdapted: ciovec_array = new ArrayInstance[ciovec](iovs, iovsLen, 8, (i) => ciovec(mem, i)).values
 
-    IO(fd_writeImpl(fd, iovsAdapted, iovsLen, nwritten).id)
+    IO(try {
+      fd_writeImpl(fd, iovsAdapted, iovsLen, nwritten).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def path_create_directoryImpl(fd: fd, path: string): (errnoEnum.Value)
@@ -294,7 +402,11 @@ trait Module {
   def path_create_directory(fd: Int, path: Int, pathLen: Int) = {
     val pathAdapted: String = getString(mem, path, pathLen)
 
-    IO(path_create_directoryImpl(fd, pathAdapted).id)
+    IO(try {
+      path_create_directoryImpl(fd, pathAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def path_filestat_getImpl(fd: fd,
@@ -308,7 +420,11 @@ trait Module {
     val bufAdapted: Pointer[filestat] =
       new Pointer[filestat](mem.readInt(buf).unsafeRunSync, (i) => filestat(mem, i), (i, r) => r.write(i, mem))
 
-    IO(path_filestat_getImpl(fd, flagsAdapted, pathAdapted, bufAdapted).id)
+    IO(try {
+      path_filestat_getImpl(fd, flagsAdapted, pathAdapted, bufAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def path_filestat_set_timesImpl(fd: fd,
@@ -323,7 +439,11 @@ trait Module {
     val pathAdapted: String = getString(mem, path, pathLen)
     val fst_flagsAdapted: fstflagsFlags.Value = fstflagsFlags(fst_flags)
 
-    IO(path_filestat_set_timesImpl(fd, flagsAdapted, pathAdapted, atim, mtim, fst_flagsAdapted).id)
+    IO(try {
+      path_filestat_set_timesImpl(fd, flagsAdapted, pathAdapted, atim, mtim, fst_flagsAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def path_linkImpl(old_fd: fd,
@@ -343,7 +463,11 @@ trait Module {
     val old_pathAdapted: String = getString(mem, old_path, old_pathLen)
     val new_pathAdapted: String = getString(mem, new_path, new_pathLen)
 
-    IO(path_linkImpl(old_fd, old_flagsAdapted, old_pathAdapted, new_fd, new_pathAdapted).id)
+    IO(try {
+      path_linkImpl(old_fd, old_flagsAdapted, old_pathAdapted, new_fd, new_pathAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def path_openImpl(fd: fd,
@@ -374,7 +498,7 @@ trait Module {
                                                         (i) => mem.readInt(i).unsafeRunSync,
                                                         (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
-    IO(
+    IO(try {
       path_openImpl(fd,
                     dirflagsAdapted,
                     pathAdapted,
@@ -382,7 +506,10 @@ trait Module {
                     fs_rights_baseAdapted,
                     fs_rights_inhertingAdapted,
                     fdflagsAdapted,
-                    opened_fdAdapted).id)
+                    opened_fdAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def path_readlinkImpl(fd: fd,
@@ -400,7 +527,11 @@ trait Module {
                                                           (i) => mem.readInt(i).unsafeRunSync,
                                                           (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
-    IO(path_readlinkImpl(fd, pathAdapted, bufAdapted, buf_len, bufusedAdapted).id)
+    IO(try {
+      path_readlinkImpl(fd, pathAdapted, bufAdapted, buf_len, bufusedAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def path_remove_directoryImpl(fd: fd, path: string): (errnoEnum.Value)
@@ -408,7 +539,11 @@ trait Module {
   def path_remove_directory(fd: Int, path: Int, pathLen: Int) = {
     val pathAdapted: String = getString(mem, path, pathLen)
 
-    IO(path_remove_directoryImpl(fd, pathAdapted).id)
+    IO(try {
+      path_remove_directoryImpl(fd, pathAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def path_renameImpl(fd: fd, old_path: string, new_fd: fd, new_path: string): (errnoEnum.Value)
@@ -417,7 +552,11 @@ trait Module {
     val old_pathAdapted: String = getString(mem, old_path, old_pathLen)
     val new_pathAdapted: String = getString(mem, new_path, new_pathLen)
 
-    IO(path_renameImpl(fd, old_pathAdapted, new_fd, new_pathAdapted).id)
+    IO(try {
+      path_renameImpl(fd, old_pathAdapted, new_fd, new_pathAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def path_symlinkImpl(old_path: string, fd: fd, new_path: string): (errnoEnum.Value)
@@ -426,7 +565,11 @@ trait Module {
     val old_pathAdapted: String = getString(mem, old_path, old_pathLen)
     val new_pathAdapted: String = getString(mem, new_path, new_pathLen)
 
-    IO(path_symlinkImpl(old_pathAdapted, fd, new_pathAdapted).id)
+    IO(try {
+      path_symlinkImpl(old_pathAdapted, fd, new_pathAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def path_unlink_fileImpl(fd: fd, path: string): (errnoEnum.Value)
@@ -434,7 +577,11 @@ trait Module {
   def path_unlink_file(fd: Int, path: Int, pathLen: Int) = {
     val pathAdapted: String = getString(mem, path, pathLen)
 
-    IO(path_unlink_fileImpl(fd, pathAdapted).id)
+    IO(try {
+      path_unlink_fileImpl(fd, pathAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def poll_oneoffImpl(in: Pointer[subscription],
@@ -451,7 +598,11 @@ trait Module {
                                                           (i) => mem.readInt(i).unsafeRunSync,
                                                           (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
-    IO(poll_oneoffImpl(inAdapted, outAdapted, nsubscriptions, neventsAdapted).id)
+    IO(try {
+      poll_oneoffImpl(inAdapted, outAdapted, nsubscriptions, neventsAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def proc_exitImpl(rval: exitcode) = {}
@@ -466,14 +617,22 @@ trait Module {
   def proc_raise(sig: Int) = {
     val sigAdapted: signalEnum.Value = signalEnum(sig)
 
-    IO(proc_raiseImpl(sigAdapted).id)
+    IO(try {
+      proc_raiseImpl(sigAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def sched_yieldImpl(): (errnoEnum.Value)
 
   def sched_yield() = {
 
-    IO(sched_yieldImpl().id)
+    IO(try {
+      sched_yieldImpl().id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def random_getImpl(buf: Pointer[u8], buf_len: size): (errnoEnum.Value)
@@ -483,7 +642,11 @@ trait Module {
                                                   (i) => mem.readByte(i).unsafeRunSync(),
                                                   (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
 
-    IO(random_getImpl(bufAdapted, buf_len).id)
+    IO(try {
+      random_getImpl(bufAdapted, buf_len).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def sock_recvImpl(fd: fd,
@@ -494,7 +657,7 @@ trait Module {
                     ro_flags: Pointer[roflagsFlags.Value]): (errnoEnum.Value)
 
   def sock_recv(fd: Int, ri_data: Int, ri_dataLen: Int, ri_flags: Int, ro_datalen: Int, ro_flags: Int) = {
-    val ri_dataAdapted: iovec_array = new ArrayInstance[iovec](ri_data, ri_dataLen, 12, (i) => iovec(mem, i)).values
+    val ri_dataAdapted: iovec_array = new ArrayInstance[iovec](ri_data, ri_dataLen, 8, (i) => iovec(mem, i)).values
     val ri_flagsAdapted: riflagsFlags.Value = riflagsFlags(ri_flags)
     val ro_datalenAdapted: Pointer[size] = new Pointer[size](mem.readInt(ro_datalen).unsafeRunSync,
                                                              (i) => mem.readInt(i).unsafeRunSync,
@@ -504,7 +667,11 @@ trait Module {
       (i) => roflagsFlags(mem.readShort(i).unsafeRunSync),
       (i, r) => mem.writeShort(i, `r`.id.toShort).unsafeRunSync)
 
-    IO(sock_recvImpl(fd, ri_dataAdapted, ri_dataLen, ri_flagsAdapted, ro_datalenAdapted, ro_flagsAdapted).id)
+    IO(try {
+      sock_recvImpl(fd, ri_dataAdapted, ri_dataLen, ri_flagsAdapted, ro_datalenAdapted, ro_flagsAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def sock_sendImpl(fd: fd,
@@ -514,13 +681,17 @@ trait Module {
                     so_datalen: Pointer[size]): (errnoEnum.Value)
 
   def sock_send(fd: Int, si_data: Int, si_dataLen: Int, si_flags: Int, so_datalen: Int) = {
-    val si_dataAdapted: ciovec_array = new ArrayInstance[ciovec](si_data, si_dataLen, 12, (i) => ciovec(mem, i)).values
+    val si_dataAdapted: ciovec_array = new ArrayInstance[ciovec](si_data, si_dataLen, 8, (i) => ciovec(mem, i)).values
     val si_flagsAdapted: Short = si_flags.toShort
     val so_datalenAdapted: Pointer[size] = new Pointer[size](mem.readInt(so_datalen).unsafeRunSync,
                                                              (i) => mem.readInt(i).unsafeRunSync,
                                                              (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
-    IO(sock_sendImpl(fd, si_dataAdapted, si_dataLen, si_flagsAdapted, so_datalenAdapted).id)
+    IO(try {
+      sock_sendImpl(fd, si_dataAdapted, si_dataLen, si_flagsAdapted, so_datalenAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
   def sock_shutdownImpl(fd: fd, how: sdflagsFlags.Value): (errnoEnum.Value)
@@ -528,7 +699,11 @@ trait Module {
   def sock_shutdown(fd: Int, how: Int) = {
     val howAdapted: sdflagsFlags.Value = sdflagsFlags(how)
 
-    IO(sock_shutdownImpl(fd, howAdapted).id)
+    IO(try {
+      sock_shutdownImpl(fd, howAdapted).id
+    } catch {
+      case x: WASIException => x.errno.id
+    })
   }
 
 }

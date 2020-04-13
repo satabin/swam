@@ -12,6 +12,8 @@ import swam.runtime.{Memory, pageSize}
 import swam.wasi.Types._
 import swam.wasi.TypesHeader._
 
+import scala.collection.immutable.HashMap
+
 /**
     @author Javier Cabrera-Arteaga on 2020-03-23
     Follow NodeJS implementation https://github.com/nodejs/wasi/tree/wasi/lib of WASI to implement this
@@ -21,16 +23,19 @@ class WASIImplementation(val args: Seq[String]) extends Module {
   type AsIIO[T] = AsInterface[T, IO]
   type AsIsIO[T] = AsInstance[T, IO]
 
+  val fdMap: Map[Int, `fdstat`] = HashMap[Int, `fdstat`](
+    0 -> `fdstat`(filetypeEnum.`character_device`.id.toByte, 0, STDIN_DEFAULT_RIGHTS, 0),
+    1 -> `fdstat`(filetypeEnum.`character_device`.id.toByte, 0, STDOUT_DEFAULT_RIGHTS, 0),
+    2 -> `fdstat`(filetypeEnum.`character_device`.id.toByte, 0, STDERR_DEFAULT_RIGHTS, 0)
+  )
   //val posix: POSIX = new MacOSPOSIX(LibCWrapper.run()) // TODO create factor
-
-  class WASIException(val errno: errnoEnum.Value) extends Exception
 
   /**
     * Returns stat numbers: filetype rightsBase rightsInheriting
     *
     * @param fd
     */
-  def parseStats(fd: Int): (Types.filetypeEnum.Value, Long, Long) = {
+  def parseStats(fd: Int): `fdstat` = {
     /*if (fd.isBlockDev())
       return (filetypeEnum.`block_device`, RIGHTS_ALL, RIGHTS_BLOCK_DEVICE_INHERITING)
     if (fd.isCharDev())
@@ -45,21 +50,22 @@ class WASIImplementation(val args: Seq[String]) extends Module {
       return (filetypeEnum.`socket_stream`, RIGHTS_SOCKET_BASE, RIGHTS_SOCKET_INHERITING)
     if (fd.isSymlink())
       return (filetypeEnum.`symbolic_link`, 0, 0)*/
+    if (!fdMap.contains(fd))
+      throw new WASIException(errnoEnum.`badf`)
 
-    fd match { // mock
-      case 0 => (filetypeEnum.`character_device`, STDIN_DEFAULT_RIGHTS, 0)
-      case 1 => (filetypeEnum.`character_device`, STDOUT_DEFAULT_RIGHTS, 0)
-      case 2 => (filetypeEnum.`character_device`, STDERR_DEFAULT_RIGHTS, 0)
-      case _ => (filetypeEnum.`unknown`, 0, 0)
-    }
+    val entry = fdMap(fd)
+    // Update entry
+
+    entry
   }
 
   def checkRight(fd: fd, rights: Int): `fdstat` = {
-
-    //val posixStat = posix.fstat(fd)
     val stat = parseStats(fd)
 
-    `fdstat`(stat._1.id.toByte, 0, stat._2, stat._3)
+    if (rights != 0 && (stat.`fs_rights_base` & rights) == 0)
+      throw new WASIException(errno = errnoEnum.`perm`) // raise errno exception
+
+    stat
   }
 
   val CPU_START = System.nanoTime()

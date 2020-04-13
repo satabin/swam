@@ -83,10 +83,20 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
 
     println(s""""${f.id}" -> ${f.id} _,""")
 
-    if (to.nonEmpty)
-      s"IO(${f.id}Impl($args).id)"
+    /*try {
+      val st = checkRight(fd, 0)
+      st.write(offset, mem)
+      printMem()
+      Types.errnoEnum.`success`
+    } catch {
+      case x: WASIException => x.errno
+    }*/
+
+    s"IO( try {\n ${if (to.nonEmpty)
+      s"${f.id}Impl($args).id"
     else
-      s"IO(${f.id}Impl($args))"
+      s"${f.id}Impl($args)"} } catch {\n case x: WASIException => x.errno.id } )"
+
   }
 
   def mapTypeToWasm(t: BaseWitxType): Adapt = t match {
