@@ -28,12 +28,12 @@ class LoadTypeEmitTraverser(prev: String, types: Map[String, BaseWitxType], offs
   override val basicTypeTraverser = {
     case (_, t: BasicType) =>
       t.name match {
-        case "u8"     => s"($mem.readByte(${concatOffsets(offset, prev)}).unsafeRunSync() & 0xff).toByte\n"
-        case "u16"    => s"($mem.readShort(${concatOffsets(offset, prev)}).unsafeRunSync & 0xffff).toShort\n"
-        case "u32"    => s"$mem.readInt(${concatOffsets(offset, prev)}).unsafeRunSync & 0xffffffff\n"
-        case "u64"    => s"$mem.readLong(${concatOffsets(offset, prev)}).unsafeRunSync & 0xffffffffffffffffL\n"
+        case "u8"     => s"$mem.readByte(${concatOffsets(offset, prev)}).unsafeRunSync()\n"
+        case "u16"    => s"$mem.readShort(${concatOffsets(offset, prev)}).unsafeRunSync\n"
+        case "u32"    => s"$mem.readInt(${concatOffsets(offset, prev)}).unsafeRunSync\n"
+        case "u64"    => s"$mem.readLong(${concatOffsets(offset, prev)}).unsafeRunSync\n"
         case "s64"    => s"$mem.readLong(${concatOffsets(offset, prev)}).unsafeRunSync\n"
-        case "string" => s"$mem.getInt(${concatOffsets(offset, prev)})\n"
+        case "string" => s"$mem.readInt(${concatOffsets(offset, prev)}).unsafeRunSync\n"
       }
   }
 

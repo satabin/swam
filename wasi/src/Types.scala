@@ -12,6 +12,7 @@ object Types {
 
   type ciovec_array = List[ciovec]
   type exitcode = u32
+
   case class `prestat`(mem: Memory[IO], offset: Int) extends WASI_STRUCT { // UNION
     val `dir` = prestat_dir(mem, offset + 0)
 
@@ -37,6 +38,7 @@ object Types {
 
     val `noreuse` = Value
   }
+
   type s64 = Long
   type u8 = Byte
 
@@ -44,27 +46,29 @@ object Types {
       extends WASI_STRUCT {
 
     def write(offset: Int, mem: Memory[IO]) = {
-      mem.writeByte(offset + 0, (`fs_filetype` & 0xff).toByte)
+      mem.writeByte(offset + 0, `fs_filetype`).unsafeRunSync
 
-      mem.writeShort(offset + 2, `fs_flags`)
+      mem.writeShort(offset + 2, 0).unsafeRunSync
 
-      mem.writeLong(offset + 6, `fs_rights_base`)
+      mem.writeShort(offset + 4, 0).unsafeRunSync
 
-      mem.writeLong(offset + 14, `fs_rights_inheriting`)
+      mem.writeLong(offset + 8, `fs_rights_base`).unsafeRunSync
+
+      mem.writeLong(offset + 16, `fs_rights_inheriting`).unsafeRunSync
 
     }
   }
 
   case class `ciovec`(mem: Memory[IO], offset: Int) extends WASI_STRUCT {
     val `buf` = new Pointer[u8](mem.readInt(offset).unsafeRunSync,
-                                (i) => (mem.readByte(i).unsafeRunSync() & 0xff).toByte,
-                                (i, r) => mem.writeByte(i, (`r` & 0xff).toByte))
+                                (i) => mem.readByte(i).unsafeRunSync(),
+                                (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
     val `buf_len` = mem.readInt(offset + 4).unsafeRunSync
 
     def write(offset: Int, mem: Memory[IO]) = {
-      mem.writeInt(offset + 0, `buf`.offset)
+      mem.writeInt(offset + 0, `buf`.offset).unsafeRunSync
 
-      mem.writeInt(offset + 4, `buf_len`)
+      mem.writeInt(offset + 4, `buf_len`).unsafeRunSync
 
     }
   }
@@ -133,25 +137,27 @@ object Types {
 
     val `sys` = Value
   }
+
   type dirnamlen = u32
   type userdata = u64
+
   case class `subscription_clock`(mem: Memory[IO], offset: Int) extends WASI_STRUCT {
-    val `id` = mem.readInt(offset + 0).unsafeRunSync & 0xffffffff
+    val `id` = mem.readInt(offset + 0).unsafeRunSync
 
-    val `timeout` = mem.readLong(offset + 4).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `timeout` = mem.readLong(offset + 4).unsafeRunSync
 
-    val `precision` = mem.readLong(offset + 12).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `precision` = mem.readLong(offset + 12).unsafeRunSync
 
-    val `flags` = (mem.readShort(offset + 20).unsafeRunSync & 0xffff).toShort
+    val `flags` = mem.readShort(offset + 20).unsafeRunSync
 
     def write(offset: Int, mem: Memory[IO]) = {
-      mem.writeInt(offset + 0, `id`)
+      mem.writeInt(offset + 0, `id`).unsafeRunSync
 
-      mem.writeLong(offset + 4, `timeout`)
+      mem.writeLong(offset + 4, `timeout`).unsafeRunSync
 
-      mem.writeLong(offset + 12, `precision`)
+      mem.writeLong(offset + 12, `precision`).unsafeRunSync
 
-      mem.writeShort(offset + 20, `flags`)
+      mem.writeShort(offset + 20, `flags`).unsafeRunSync
 
     }
   }
@@ -164,9 +170,11 @@ object Types {
 
     val `fd_write` = Value(0x0000000000000040)
   }
+
   type filesize = u64
   type u32 = Int
   type filedelta = s64
+
   object errnoEnum extends Enumeration {
 
     val `success` = Value
@@ -323,29 +331,31 @@ object Types {
 
     val `notcapable` = Value
   }
+
   object lookupflagsFlags extends Enumeration {
     val symlink_follow = Value(0)
   }
 
   type timestamp = u64
   type size = u32
+
   case class `dirent`(mem: Memory[IO], offset: Int) extends WASI_STRUCT {
-    val `d_next` = mem.readLong(offset + 0).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `d_next` = mem.readLong(offset + 0).unsafeRunSync
 
-    val `d_ino` = mem.readLong(offset + 8).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `d_ino` = mem.readLong(offset + 8).unsafeRunSync
 
-    val `d_namlen` = mem.readInt(offset + 16).unsafeRunSync & 0xffffffff
+    val `d_namlen` = mem.readInt(offset + 16).unsafeRunSync
 
-    val `d_type` = (mem.readByte(offset + 20).unsafeRunSync() & 0xff).toByte
+    val `d_type` = mem.readByte(offset + 20).unsafeRunSync()
 
     def write(offset: Int, mem: Memory[IO]) = {
-      mem.writeLong(offset + 0, `d_next`)
+      mem.writeLong(offset + 0, `d_next`).unsafeRunSync
 
-      mem.writeLong(offset + 8, `d_ino`)
+      mem.writeLong(offset + 8, `d_ino`).unsafeRunSync
 
-      mem.writeInt(offset + 16, `d_namlen`)
+      mem.writeInt(offset + 16, `d_namlen`).unsafeRunSync
 
-      mem.writeByte(offset + 20, (`d_type` & 0xff).toByte)
+      mem.writeByte(offset + 20, `d_type`).unsafeRunSync
 
     }
   }
@@ -354,64 +364,64 @@ object Types {
     val `file_descriptor` = mem.readInt(offset + 0).unsafeRunSync
 
     def write(offset: Int, mem: Memory[IO]) = {
-      mem.writeInt(offset + 0, `file_descriptor`)
+      mem.writeInt(offset + 0, `file_descriptor`).unsafeRunSync
 
     }
   }
 
   case class `event`(mem: Memory[IO], offset: Int) extends WASI_STRUCT {
-    val `userdata` = mem.readLong(offset + 0).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `userdata` = mem.readLong(offset + 0).unsafeRunSync
 
-    val `error` = (mem.readShort(offset + 8).unsafeRunSync & 0xffff).toShort
+    val `error` = mem.readShort(offset + 8).unsafeRunSync
 
-    val `type` = (mem.readByte(offset + 12).unsafeRunSync() & 0xff).toByte
+    val `type` = mem.readByte(offset + 12).unsafeRunSync()
 
     val `fd_readwrite` = event_fd_readwrite(mem, offset + 14)
 
     def write(offset: Int, mem: Memory[IO]) = {
-      mem.writeLong(offset + 0, `userdata`)
+      mem.writeLong(offset + 0, `userdata`).unsafeRunSync
 
-      mem.writeShort(offset + 8, `error`)
+      mem.writeShort(offset + 8, `error`).unsafeRunSync
 
-      mem.writeByte(offset + 12, (`type` & 0xff).toByte)
+      mem.writeByte(offset + 12, `type`).unsafeRunSync
 
       fd_readwrite.write(offset + 14, mem)
     }
   }
 
   case class `filestat`(mem: Memory[IO], offset: Int) extends WASI_STRUCT {
-    val `dev` = mem.readLong(offset + 0).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `dev` = mem.readLong(offset + 0).unsafeRunSync
 
-    val `ino` = mem.readLong(offset + 8).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `ino` = mem.readLong(offset + 8).unsafeRunSync
 
-    val `filetype` = (mem.readByte(offset + 16).unsafeRunSync() & 0xff).toByte
+    val `filetype` = mem.readByte(offset + 16).unsafeRunSync()
 
-    val `nlink` = mem.readLong(offset + 18).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `nlink` = mem.readLong(offset + 18).unsafeRunSync
 
-    val `size` = mem.readLong(offset + 26).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `size` = mem.readLong(offset + 26).unsafeRunSync
 
-    val `atim` = mem.readLong(offset + 34).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `atim` = mem.readLong(offset + 34).unsafeRunSync
 
-    val `mtim` = mem.readLong(offset + 42).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `mtim` = mem.readLong(offset + 42).unsafeRunSync
 
-    val `ctim` = mem.readLong(offset + 50).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `ctim` = mem.readLong(offset + 50).unsafeRunSync
 
     def write(offset: Int, mem: Memory[IO]) = {
-      mem.writeLong(offset + 0, `dev`)
+      mem.writeLong(offset + 0, `dev`).unsafeRunSync
 
-      mem.writeLong(offset + 8, `ino`)
+      mem.writeLong(offset + 8, `ino`).unsafeRunSync
 
-      mem.writeByte(offset + 16, (`filetype` & 0xff).toByte)
+      mem.writeByte(offset + 16, `filetype`).unsafeRunSync
 
-      mem.writeLong(offset + 18, `nlink`)
+      mem.writeLong(offset + 18, `nlink`).unsafeRunSync
 
-      mem.writeLong(offset + 26, `size`)
+      mem.writeLong(offset + 26, `size`).unsafeRunSync
 
-      mem.writeLong(offset + 34, `atim`)
+      mem.writeLong(offset + 34, `atim`).unsafeRunSync
 
-      mem.writeLong(offset + 42, `mtim`)
+      mem.writeLong(offset + 42, `mtim`).unsafeRunSync
 
-      mem.writeLong(offset + 50, `ctim`)
+      mem.writeLong(offset + 50, `ctim`).unsafeRunSync
 
     }
   }
@@ -434,6 +444,7 @@ object Types {
 
     val `symbolic_link` = Value
   }
+
   object sdflagsFlags extends Enumeration {
     val rd = Value(0)
 
@@ -441,18 +452,19 @@ object Types {
   }
 
   case class `subscription`(mem: Memory[IO], offset: Int) extends WASI_STRUCT {
-    val `userdata` = mem.readLong(offset + 0).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `userdata` = mem.readLong(offset + 0).unsafeRunSync
 
     val `u` = subscription_u(mem, offset + 8)
 
     def write(offset: Int, mem: Memory[IO]) = {
-      mem.writeLong(offset + 0, `userdata`)
+      mem.writeLong(offset + 0, `userdata`).unsafeRunSync
 
       u.write(offset + 8, mem)
     }
   }
 
   type string = String
+
   object fstflagsFlags extends Enumeration {
     val atim = Value(0)
 
@@ -469,6 +481,7 @@ object Types {
 
   type dircookie = u64
   type iovec_array = List[iovec]
+
   object riflagsFlags extends Enumeration {
     val recv_peek = Value(0)
 
@@ -476,19 +489,20 @@ object Types {
   }
 
   case class `event_fd_readwrite`(mem: Memory[IO], offset: Int) extends WASI_STRUCT {
-    val `nbytes` = mem.readLong(offset + 0).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL
+    val `nbytes` = mem.readLong(offset + 0).unsafeRunSync
 
-    val `flags` = (mem.readShort(offset + 8).unsafeRunSync & 0xffff).toShort
+    val `flags` = mem.readShort(offset + 8).unsafeRunSync
 
     def write(offset: Int, mem: Memory[IO]) = {
-      mem.writeLong(offset + 0, `nbytes`)
+      mem.writeLong(offset + 0, `nbytes`).unsafeRunSync
 
-      mem.writeShort(offset + 8, `flags`)
+      mem.writeShort(offset + 8, `flags`).unsafeRunSync
 
     }
   }
 
   type u64 = Long
+
   case class `subscription_u`(mem: Memory[IO], offset: Int) extends WASI_STRUCT { // UNION
     val `clock` = subscription_clock(mem, offset + 0)
     val `fd_read` = subscription_fd_readwrite(mem, offset + 24)
@@ -511,16 +525,17 @@ object Types {
 
     val `thread_cputime_id` = Value
   }
+
   case class `iovec`(mem: Memory[IO], offset: Int) extends WASI_STRUCT {
     val `buf` = new Pointer[u8](mem.readInt(offset).unsafeRunSync,
-                                (i) => (mem.readByte(i).unsafeRunSync() & 0xff).toByte,
-                                (i, r) => mem.writeByte(i, (`r` & 0xff).toByte))
-    val `buf_len` = mem.readInt(offset + 8).unsafeRunSync & 0xffffffff
+                                (i) => mem.readByte(i).unsafeRunSync(),
+                                (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
+    val `buf_len` = mem.readInt(offset + 8).unsafeRunSync
 
     def write(offset: Int, mem: Memory[IO]) = {
-      mem.writeInt(offset + 0, `buf`.offset)
+      mem.writeInt(offset + 0, `buf`.offset).unsafeRunSync
 
-      mem.writeInt(offset + 8, `buf_len`)
+      mem.writeInt(offset + 8, `buf_len`).unsafeRunSync
 
     }
   }
@@ -543,72 +558,48 @@ object Types {
 
     val `end` = Value
   }
+
   type siflags = u16
   type linkcount = u64
+
   object rightsFlags extends Enumeration {
     val fd_datasync = Value(0x0000000000000001)
-
     val fd_read = Value(0x0000000000000002)
-
     val fd_seek = Value(0x0000000000000004)
-
     val fd_fdstat_set_flags = Value(0x0000000000000008)
-
     val fd_sync = Value(0x0000000000000010)
-
     val fd_tell = Value(0x0000000000000020)
-
     val fd_write = Value(0x0000000000000040)
-
     val fd_advise = Value(0x0000000000000080)
-
     val fd_allocate = Value(0x0000000000000100)
-
     val path_create_directory = Value(0x0000000000000200)
-
     val path_create_file = Value(0x0000000000000400)
-
     val path_link_source = Value(0x0000000000000800)
-
     val path_link_target = Value(0x0000000000001000)
-
     val path_open = Value(0x0000000000002000)
-
     val fd_readdir = Value(0x0000000000004000)
-
     val path_readlink = Value(0x0000000000008000)
-
     val path_rename_source = Value(0x0000000000010000)
-
     val path_rename_target = Value(0x0000000000020000)
-
     val path_filestat_get = Value(0x0000000000040000)
-
     val path_filestat_set_size = Value(0x0000000000080000)
-
     val path_filestat_set_times = Value(0x0000000000100000)
-
     val fd_filestat_get = Value(0x0000000000200000)
-
     val fd_filestat_set_size = Value(0x0000000000400000)
-
     val fd_filestat_set_times = Value(0x0000000000800000)
-
     val path_symlink = Value(0x0000000001000000)
-
     val path_remove_directory = Value(0x0000000002000000)
-
     val path_unlink_file = Value(0x0000000004000000)
-
     val poll_fd_readwrite = Value(0x0000000008000000)
-
     val sock_shutdown = Value(0x0000000010000000)
+
   }
 
   object preopentypeEnum extends Enumeration {
 
     val `dir` = Value
   }
+
   object eventrwflagsFlags extends Enumeration {
     val fd_readwrite_hangup = Value(0)
   }
@@ -625,31 +616,14 @@ object Types {
     val sync = Value(4)
   }
 
-  val RIGHTS_ALL = rightsFlags.fd_datasync.id | rightsFlags.fd_read.id | rightsFlags.fd_seek.id | rightsFlags.fd_fdstat_set_flags.id | rightsFlags.fd_sync.id | rightsFlags.fd_tell.id | rightsFlags.fd_write.id | rightsFlags.fd_advise.id | rightsFlags.fd_allocate.id | rightsFlags.fd_filestat_get.id | rightsFlags.fd_filestat_set_size.id | rightsFlags.fd_filestat_set_times.id |
-    rightsFlags.poll_fd_readwrite.id | rightsFlags.path_create_directory.id | rightsFlags.path_create_file.id | rightsFlags.path_link_source.id | rightsFlags.path_link_target.id | rightsFlags.path_open.id |
-    rightsFlags.fd_readdir.id | rightsFlags.path_readlink.id | rightsFlags.path_rename_source.id | rightsFlags.path_rename_target.id | rightsFlags.fd_filestat_get.id | rightsFlags.fd_filestat_set_size.id | rightsFlags.fd_filestat_set_times.id | rightsFlags.path_symlink.id | rightsFlags.path_remove_directory.id | rightsFlags.path_unlink_file.id | rightsFlags.poll_fd_readwrite.id | rightsFlags.sock_shutdown.id
-
-  val RIGHTS_REGULAR_FILE_BASE = rightsFlags.fd_datasync.id | rightsFlags.fd_read.id | rightsFlags.fd_seek.id | rightsFlags.fd_fdstat_set_flags.id | rightsFlags.fd_sync.id | rightsFlags.fd_tell.id | rightsFlags.fd_write.id | rightsFlags.fd_advise.id | rightsFlags.fd_allocate.id | rightsFlags.fd_filestat_get.id | rightsFlags.fd_filestat_set_size.id | rightsFlags.fd_filestat_set_times.id |
-    rightsFlags.poll_fd_readwrite.id
-  val RIGHTS_REGULAR_FILE_INHERITING = 0
-
-  val RIGHTS_BLOCK_DEVICE_INHERITING = RIGHTS_ALL
-  val RIGHTS_CHARACTER_DEVICE_BASE = RIGHTS_ALL
-  val RIGHTS_CHARACTER_DEVICE_INHERITING = RIGHTS_ALL
-
-  val RIGHTS_DIRECTORY_BASE = rightsFlags.fd_fdstat_set_flags.id | rightsFlags.fd_sync.id | rightsFlags.fd_advise.id | rightsFlags.path_create_directory.id | rightsFlags.path_create_file.id | rightsFlags.path_link_source.id | rightsFlags.path_link_target.id | rightsFlags.path_open.id | rightsFlags.fd_readdir.id | rightsFlags.path_readlink.id | rightsFlags.path_rename_source.id | rightsFlags.path_rename_target.id | rightsFlags.path_filestat_get.id |
-    rightsFlags.fd_filestat_set_size.id | rightsFlags.fd_filestat_set_times.id | rightsFlags.fd_filestat_get.id | rightsFlags.fd_filestat_set_times.id | rightsFlags.path_symlink.id | rightsFlags.path_unlink_file.id | rightsFlags.path_remove_directory.id | rightsFlags.poll_fd_readwrite.id
-  val RIGHTS_DIRECTORY_INHERITING = RIGHTS_DIRECTORY_BASE | RIGHTS_REGULAR_FILE_BASE
-
-  val RIGHTS_SOCKET_BASE = rightsFlags.fd_read.id | rightsFlags.fd_fdstat_set_flags.id | rightsFlags.fd_write.id | rightsFlags.fd_filestat_get.id | rightsFlags.poll_fd_readwrite.id | rightsFlags.sock_shutdown.id
-  val RIGHTS_SOCKET_INHERITING = RIGHTS_ALL;
   type device = u64
   type u16 = Short
+
   case class `prestat_dir`(mem: Memory[IO], offset: Int) extends WASI_STRUCT {
-    val `pr_name_len` = mem.readInt(offset + 0).unsafeRunSync & 0xffffffff
+    val `pr_name_len` = mem.readInt(offset + 0).unsafeRunSync
 
     def write(offset: Int, mem: Memory[IO]) = {
-      mem.writeInt(offset + 0, `pr_name_len`)
+      mem.writeInt(offset + 0, `pr_name_len`).unsafeRunSync
 
     }
   }

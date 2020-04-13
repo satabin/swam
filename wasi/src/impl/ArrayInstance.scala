@@ -6,9 +6,8 @@ package wasi
   */
 class ArrayInstance[T](val offset: Int, val size: Int, val objSize: Int, val get: (Int) => T) {
 
-  val values: List[T] = (offset to (size * objSize + offset) by objSize)
+  val values: List[T] = (offset until (size * objSize + offset) by objSize)
     .map(t => {
-      println(t)
       get(t)
     })
     .toList

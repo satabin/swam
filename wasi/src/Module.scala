@@ -6,8 +6,7 @@ import cats.effect._
 import cats.effect.IO
 import swam.runtime.Memory
 trait Module {
-
-  var mem: Memory[IO]
+  var mem: Memory[IO] = null
 
   def args_getImpl(argv: Pointer[Pointer[u8]], argv_buf: Pointer[u8]): (errnoEnum.Value)
 
@@ -16,12 +15,12 @@ trait Module {
       mem.readInt(argv).unsafeRunSync,
       (i) =>
         new Pointer[u8](mem.readInt(i).unsafeRunSync,
-                        (i) => (mem.readByte(i).unsafeRunSync() & 0xff).toByte,
-                        (i, r) => mem.writeByte(i, (`r` & 0xff).toByte)),
-      (i, r) => mem.writeInt(i, `r`.offset))
+                        (i) => mem.readByte(i).unsafeRunSync(),
+                        (i, r) => mem.writeByte(i, `r`).unsafeRunSync),
+      (i, r) => mem.writeInt(i, `r`.offset).unsafeRunSync)
     val argv_bufAdapted: Pointer[u8] = new Pointer[u8](mem.readInt(argv_buf).unsafeRunSync,
-                                                       (i) => (mem.readByte(i).unsafeRunSync() & 0xff).toByte,
-                                                       (i, r) => mem.writeByte(i, (`r` & 0xff).toByte))
+                                                       (i) => mem.readByte(i).unsafeRunSync(),
+                                                       (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
 
     IO(args_getImpl(argvAdapted, argv_bufAdapted).id)
   }
@@ -30,11 +29,11 @@ trait Module {
 
   def args_sizes_get(argc: Int, argv_buf_size: Int) = {
     val argcAdapted: Pointer[size] = new Pointer[size](mem.readInt(argc).unsafeRunSync,
-                                                       (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                       (i, r) => mem.writeInt(i, `r`))
+                                                       (i) => mem.readInt(i).unsafeRunSync,
+                                                       (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
     val argv_buf_sizeAdapted: Pointer[size] = new Pointer[size](mem.readInt(argv_buf_size).unsafeRunSync,
-                                                                (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                                (i, r) => mem.writeInt(i, `r`))
+                                                                (i) => mem.readInt(i).unsafeRunSync,
+                                                                (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(args_sizes_getImpl(argcAdapted, argv_buf_sizeAdapted).id)
   }
@@ -46,12 +45,12 @@ trait Module {
       mem.readInt(environ).unsafeRunSync,
       (i) =>
         new Pointer[u8](mem.readInt(i).unsafeRunSync,
-                        (i) => (mem.readByte(i).unsafeRunSync() & 0xff).toByte,
-                        (i, r) => mem.writeByte(i, (`r` & 0xff).toByte)),
-      (i, r) => mem.writeInt(i, `r`.offset))
+                        (i) => mem.readByte(i).unsafeRunSync(),
+                        (i, r) => mem.writeByte(i, `r`).unsafeRunSync),
+      (i, r) => mem.writeInt(i, `r`.offset).unsafeRunSync)
     val environ_bufAdapted: Pointer[u8] = new Pointer[u8](mem.readInt(environ_buf).unsafeRunSync,
-                                                          (i) => (mem.readByte(i).unsafeRunSync() & 0xff).toByte,
-                                                          (i, r) => mem.writeByte(i, (`r` & 0xff).toByte))
+                                                          (i) => mem.readByte(i).unsafeRunSync(),
+                                                          (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
 
     IO(environ_getImpl(environAdapted, environ_bufAdapted).id)
   }
@@ -60,11 +59,11 @@ trait Module {
 
   def environ_sizes_get(environc: Int, environ_buf_size: Int) = {
     val environcAdapted: Pointer[size] = new Pointer[size](mem.readInt(environc).unsafeRunSync,
-                                                           (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                           (i, r) => mem.writeInt(i, `r`))
+                                                           (i) => mem.readInt(i).unsafeRunSync,
+                                                           (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
     val environ_buf_sizeAdapted: Pointer[size] = new Pointer[size](mem.readInt(environ_buf_size).unsafeRunSync,
-                                                                   (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                                   (i, r) => mem.writeInt(i, `r`))
+                                                                   (i) => mem.readInt(i).unsafeRunSync,
+                                                                   (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(environ_sizes_getImpl(environcAdapted, environ_buf_sizeAdapted).id)
   }
@@ -73,10 +72,9 @@ trait Module {
 
   def clock_res_get(id: Int, resolution: Int) = {
     val idAdapted: clockidEnum.Value = clockidEnum(id)
-    val resolutionAdapted: Pointer[timestamp] = new Pointer[timestamp](
-      mem.readInt(resolution).unsafeRunSync,
-      (i) => mem.readLong(i).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL,
-      (i, r) => mem.writeLong(i, `r`))
+    val resolutionAdapted: Pointer[timestamp] = new Pointer[timestamp](mem.readInt(resolution).unsafeRunSync,
+                                                                       (i) => mem.readLong(i).unsafeRunSync,
+                                                                       (i, r) => mem.writeLong(i, `r`).unsafeRunSync)
 
     IO(clock_res_getImpl(idAdapted, resolutionAdapted).id)
   }
@@ -86,9 +84,8 @@ trait Module {
   def clock_time_get(id: Int, precision: Long, time: Int) = {
     val idAdapted: clockidEnum.Value = clockidEnum(id)
     val timeAdapted: Pointer[timestamp] = new Pointer[timestamp](mem.readInt(time).unsafeRunSync,
-                                                                 (i) =>
-                                                                   mem.readLong(i).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL,
-                                                                 (i, r) => mem.writeLong(i, `r`))
+                                                                 (i) => mem.readLong(i).unsafeRunSync,
+                                                                 (i, r) => mem.writeLong(i, `r`).unsafeRunSync)
 
     IO(clock_time_getImpl(idAdapted, precision, timeAdapted).id)
   }
@@ -181,8 +178,8 @@ trait Module {
   def fd_pread(fd: Int, iovs: Int, iovsLen: Int, offset: Long, nread: Int) = {
     val iovsAdapted: iovec_array = new ArrayInstance[iovec](iovs, iovsLen, 12, (i) => iovec(mem, i)).values
     val nreadAdapted: Pointer[size] = new Pointer[size](mem.readInt(nread).unsafeRunSync,
-                                                        (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                        (i, r) => mem.writeInt(i, `r`))
+                                                        (i) => mem.readInt(i).unsafeRunSync,
+                                                        (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(fd_preadImpl(fd, iovsAdapted, iovsLen, offset, nreadAdapted).id)
   }
@@ -200,8 +197,8 @@ trait Module {
 
   def fd_prestat_dir_name(fd: Int, path: Int, path_len: Int) = {
     val pathAdapted: Pointer[u8] = new Pointer[u8](mem.readInt(path).unsafeRunSync,
-                                                   (i) => (mem.readByte(i).unsafeRunSync() & 0xff).toByte,
-                                                   (i, r) => mem.writeByte(i, (`r` & 0xff).toByte))
+                                                   (i) => mem.readByte(i).unsafeRunSync(),
+                                                   (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
 
     IO(fd_prestat_dir_nameImpl(fd, pathAdapted, path_len).id)
   }
@@ -215,8 +212,8 @@ trait Module {
   def fd_pwrite(fd: Int, iovs: Int, iovsLen: Int, offset: Long, nwritten: Int) = {
     val iovsAdapted: ciovec_array = new ArrayInstance[ciovec](iovs, iovsLen, 12, (i) => ciovec(mem, i)).values
     val nwrittenAdapted: Pointer[size] = new Pointer[size](mem.readInt(nwritten).unsafeRunSync,
-                                                           (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                           (i, r) => mem.writeInt(i, `r`))
+                                                           (i) => mem.readInt(i).unsafeRunSync,
+                                                           (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(fd_pwriteImpl(fd, iovsAdapted, iovsLen, offset, nwrittenAdapted).id)
   }
@@ -226,8 +223,8 @@ trait Module {
   def fd_read(fd: Int, iovs: Int, iovsLen: Int, nread: Int) = {
     val iovsAdapted: iovec_array = new ArrayInstance[iovec](iovs, iovsLen, 12, (i) => iovec(mem, i)).values
     val nreadAdapted: Pointer[size] = new Pointer[size](mem.readInt(nread).unsafeRunSync,
-                                                        (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                        (i, r) => mem.writeInt(i, `r`))
+                                                        (i) => mem.readInt(i).unsafeRunSync,
+                                                        (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(fd_readImpl(fd, iovsAdapted, iovsLen, nreadAdapted).id)
   }
@@ -240,11 +237,11 @@ trait Module {
 
   def fd_readdir(fd: Int, buf: Int, buf_len: Int, cookie: Long, bufused: Int) = {
     val bufAdapted: Pointer[u8] = new Pointer[u8](mem.readInt(buf).unsafeRunSync,
-                                                  (i) => (mem.readByte(i).unsafeRunSync() & 0xff).toByte,
-                                                  (i, r) => mem.writeByte(i, (`r` & 0xff).toByte))
+                                                  (i) => mem.readByte(i).unsafeRunSync(),
+                                                  (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
     val bufusedAdapted: Pointer[size] = new Pointer[size](mem.readInt(bufused).unsafeRunSync,
-                                                          (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                          (i, r) => mem.writeInt(i, `r`))
+                                                          (i) => mem.readInt(i).unsafeRunSync,
+                                                          (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(fd_readdirImpl(fd, bufAdapted, buf_len, cookie, bufusedAdapted).id)
   }
@@ -260,10 +257,9 @@ trait Module {
 
   def fd_seek(fd: Int, offset: Long, whence: Int, newoffset: Int) = {
     val whenceAdapted: whenceEnum.Value = whenceEnum(whence)
-    val newoffsetAdapted: Pointer[filesize] = new Pointer[filesize](
-      mem.readInt(newoffset).unsafeRunSync,
-      (i) => mem.readLong(i).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL,
-      (i, r) => mem.writeLong(i, `r`))
+    val newoffsetAdapted: Pointer[filesize] = new Pointer[filesize](mem.readInt(newoffset).unsafeRunSync,
+                                                                    (i) => mem.readLong(i).unsafeRunSync,
+                                                                    (i, r) => mem.writeLong(i, `r`).unsafeRunSync)
 
     IO(fd_seekImpl(fd, offset, whenceAdapted, newoffsetAdapted).id)
   }
@@ -279,22 +275,18 @@ trait Module {
 
   def fd_tell(fd: Int, offset: Int) = {
     val offsetAdapted: Pointer[filesize] = new Pointer[filesize](mem.readInt(offset).unsafeRunSync,
-                                                                 (i) =>
-                                                                   mem.readLong(i).unsafeRunSync & 0XFFFFFFFFFFFFFFFFL,
-                                                                 (i, r) => mem.writeLong(i, `r`))
+                                                                 (i) => mem.readLong(i).unsafeRunSync,
+                                                                 (i, r) => mem.writeLong(i, `r`).unsafeRunSync)
 
     IO(fd_tellImpl(fd, offsetAdapted).id)
   }
 
-  def fd_writeImpl(fd: fd, iovs: ciovec_array, iovsLen: u32, nwritten: Pointer[size]): (errnoEnum.Value)
+  def fd_writeImpl(fd: fd, iovs: ciovec_array, iovsLen: u32, nwritten: Int): (errnoEnum.Value)
 
   def fd_write(fd: Int, iovs: Int, iovsLen: Int, nwritten: Int) = {
-    val iovsAdapted: ciovec_array = new ArrayInstance[ciovec](iovs, iovsLen, 12, (i) => ciovec(mem, i)).values
-    val nwrittenAdapted: Pointer[size] = new Pointer[size](mem.readInt(nwritten).unsafeRunSync,
-                                                           (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                           (i, r) => mem.writeInt(i, `r`))
+    val iovsAdapted: ciovec_array = new ArrayInstance[ciovec](iovs, iovsLen, 8, (i) => ciovec(mem, i)).values
 
-    IO(fd_writeImpl(fd, iovsAdapted, iovsLen, nwrittenAdapted).id)
+    IO(fd_writeImpl(fd, iovsAdapted, iovsLen, nwritten).id)
   }
 
   def path_create_directoryImpl(fd: fd, path: string): (errnoEnum.Value)
@@ -380,7 +372,7 @@ trait Module {
     val fdflagsAdapted: fdflagsFlags.Value = fdflagsFlags(fdflags)
     val opened_fdAdapted: Pointer[fd] = new Pointer[fd](mem.readInt(opened_fd).unsafeRunSync,
                                                         (i) => mem.readInt(i).unsafeRunSync,
-                                                        (i, r) => mem.writeInt(i, `r`))
+                                                        (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(
       path_openImpl(fd,
@@ -402,11 +394,11 @@ trait Module {
   def path_readlink(fd: Int, path: Int, pathLen: Int, buf: Int, buf_len: Int, bufused: Int) = {
     val pathAdapted: String = getString(mem, path, pathLen)
     val bufAdapted: Pointer[u8] = new Pointer[u8](mem.readInt(buf).unsafeRunSync,
-                                                  (i) => (mem.readByte(i).unsafeRunSync() & 0xff).toByte,
-                                                  (i, r) => mem.writeByte(i, (`r` & 0xff).toByte))
+                                                  (i) => mem.readByte(i).unsafeRunSync(),
+                                                  (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
     val bufusedAdapted: Pointer[size] = new Pointer[size](mem.readInt(bufused).unsafeRunSync,
-                                                          (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                          (i, r) => mem.writeInt(i, `r`))
+                                                          (i) => mem.readInt(i).unsafeRunSync,
+                                                          (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(path_readlinkImpl(fd, pathAdapted, bufAdapted, buf_len, bufusedAdapted).id)
   }
@@ -456,8 +448,8 @@ trait Module {
     val outAdapted: Pointer[event] =
       new Pointer[event](mem.readInt(out).unsafeRunSync, (i) => event(mem, i), (i, r) => r.write(i, mem))
     val neventsAdapted: Pointer[size] = new Pointer[size](mem.readInt(nevents).unsafeRunSync,
-                                                          (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                          (i, r) => mem.writeInt(i, `r`))
+                                                          (i) => mem.readInt(i).unsafeRunSync,
+                                                          (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(poll_oneoffImpl(inAdapted, outAdapted, nsubscriptions, neventsAdapted).id)
   }
@@ -488,8 +480,8 @@ trait Module {
 
   def random_get(buf: Int, buf_len: Int) = {
     val bufAdapted: Pointer[u8] = new Pointer[u8](mem.readInt(buf).unsafeRunSync,
-                                                  (i) => (mem.readByte(i).unsafeRunSync() & 0xff).toByte,
-                                                  (i, r) => mem.writeByte(i, (`r` & 0xff).toByte))
+                                                  (i) => mem.readByte(i).unsafeRunSync(),
+                                                  (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
 
     IO(random_getImpl(bufAdapted, buf_len).id)
   }
@@ -505,12 +497,12 @@ trait Module {
     val ri_dataAdapted: iovec_array = new ArrayInstance[iovec](ri_data, ri_dataLen, 12, (i) => iovec(mem, i)).values
     val ri_flagsAdapted: riflagsFlags.Value = riflagsFlags(ri_flags)
     val ro_datalenAdapted: Pointer[size] = new Pointer[size](mem.readInt(ro_datalen).unsafeRunSync,
-                                                             (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                             (i, r) => mem.writeInt(i, `r`))
+                                                             (i) => mem.readInt(i).unsafeRunSync,
+                                                             (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
     val ro_flagsAdapted: Pointer[roflagsFlags.Value] = new Pointer[roflagsFlags.Value](
       mem.readInt(ro_flags).unsafeRunSync,
-      (i) => (roflagsFlags(mem.readShort(i).unsafeRunSync & 0xffff)),
-      (i, r) => mem.writeShort(i, `r`.id.toShort))
+      (i) => roflagsFlags(mem.readShort(i).unsafeRunSync),
+      (i, r) => mem.writeShort(i, `r`.id.toShort).unsafeRunSync)
 
     IO(sock_recvImpl(fd, ri_dataAdapted, ri_dataLen, ri_flagsAdapted, ro_datalenAdapted, ro_flagsAdapted).id)
   }
@@ -525,8 +517,8 @@ trait Module {
     val si_dataAdapted: ciovec_array = new ArrayInstance[ciovec](si_data, si_dataLen, 12, (i) => ciovec(mem, i)).values
     val si_flagsAdapted: Short = si_flags.toShort
     val so_datalenAdapted: Pointer[size] = new Pointer[size](mem.readInt(so_datalen).unsafeRunSync,
-                                                             (i) => mem.readInt(i).unsafeRunSync & 0xffffffff,
-                                                             (i, r) => mem.writeInt(i, `r`))
+                                                             (i) => mem.readInt(i).unsafeRunSync,
+                                                             (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(sock_sendImpl(fd, si_dataAdapted, si_dataLen, si_flagsAdapted, so_datalenAdapted).id)
   }

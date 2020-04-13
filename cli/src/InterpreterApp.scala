@@ -123,9 +123,8 @@ object InterpreterApp extends IOApp {
         engine.compile(config.wasm.toPath, blocker, 4096)
 
       wasi <- IO(new wasi.WASIImplementation(args = config.args.toSeq))
-      instance <- engine.instantiate(module, wasi.imports())
+      instance <- module.importing(wasi.imports()).instantiate
       mem <- instance.exports.memory("memory")
-      buf <- IO(getMemoryBuffer(mem))
       _ <- IO(wasi.mem = mem)
       // s_ <- IO(wasi.printMem())
 
@@ -151,7 +150,6 @@ object InterpreterApp extends IOApp {
               })
           } else {
             for {
-              e <- Engine[IO]()
               f <- instance._1.exports.function(config.main)
               _ <- f.invoke(Vector(), Option(instance._2))
             } yield ()

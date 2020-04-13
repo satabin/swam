@@ -48,7 +48,7 @@ class TracingMemory[F[_]](val inner: Memory[F], tracer: Tracer)(implicit F: Mona
 
   def unsafeReadByte(idx: Int): Byte = {
     val res = inner.unsafeReadByte(idx)
-    tracer.traceEvent(EventType.MRead, List("mread", "i8", idx.toString, res.toString))
+    tracer.traceEvent(EventType.MRead, List("i8", idx.toString, res.toString))
     res
   }
 
@@ -59,7 +59,7 @@ class TracingMemory[F[_]](val inner: Memory[F], tracer: Tracer)(implicit F: Mona
 
   def unsafeReadShort(idx: Int): Short = {
     val res = inner.unsafeReadShort(idx)
-    tracer.traceEvent(EventType.MRead, List("mread", "i16", idx.toString, res.toString))
+    tracer.traceEvent(EventType.MRead, List("i16", idx.toString, res.toString))
     res
   }
 
@@ -70,7 +70,7 @@ class TracingMemory[F[_]](val inner: Memory[F], tracer: Tracer)(implicit F: Mona
 
   def unsafeReadInt(idx: Int): Int = {
     val res = inner.unsafeReadInt(idx)
-    tracer.traceEvent(EventType.MRead, List("mread", "i32", idx.toString, res.toString))
+    tracer.traceEvent(EventType.MRead, List("i32", idx.toString, res.toString))
     res
   }
 
@@ -81,7 +81,7 @@ class TracingMemory[F[_]](val inner: Memory[F], tracer: Tracer)(implicit F: Mona
 
   def unsafeReadLong(idx: Int): Long = {
     val res = inner.unsafeReadLong(idx)
-    tracer.traceEvent(EventType.MRead, List("mread", "i64", idx.toString, res.toString))
+    tracer.traceEvent(EventType.MRead, List("i64", idx.toString, res.toString))
     res
   }
 
@@ -92,7 +92,7 @@ class TracingMemory[F[_]](val inner: Memory[F], tracer: Tracer)(implicit F: Mona
 
   def unsafeReadFloat(idx: Int): Float = {
     val res = inner.unsafeReadFloat(idx)
-    tracer.traceEvent(EventType.MRead, List("mread", "f32", idx.toString, res.toString))
+    tracer.traceEvent(EventType.MRead, List("f32", idx.toString, res.toString))
     res
   }
 
@@ -103,13 +103,13 @@ class TracingMemory[F[_]](val inner: Memory[F], tracer: Tracer)(implicit F: Mona
 
   def unsafeReadDouble(idx: Int): Double = {
     val res = inner.unsafeReadDouble(idx)
-    tracer.traceEvent(EventType.MRead, List("mread", "f64", idx.toString, res.toString))
+    tracer.traceEvent(EventType.MRead, List("f64", idx.toString, res.toString))
     res
   }
 
   override def unsafeReadBytes(idx: Int, dst: Array[Byte]): Unit = {
     val res = inner.unsafeReadBytes(idx, dst)
-    tracer.traceEvent(EventType.MRead, List("mread", "bytes", idx.toString, res.toString))
+    tracer.traceEvent(EventType.MRead, List("bytes", idx.toString, res.toString))
   }
 }
 

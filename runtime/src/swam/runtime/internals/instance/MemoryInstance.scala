@@ -42,8 +42,9 @@ class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax:
 
   def size = buffer.capacity
 
-  def unsafeWriteByte(idx: Int, v: Byte) =
+  def unsafeWriteByte(idx: Int, v: Byte) = {
     buffer.put(idx, v)
+  }
 
   def unsafeReadByte(idx: Int) =
     buffer.get(idx)

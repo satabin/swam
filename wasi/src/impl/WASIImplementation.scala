@@ -10,6 +10,7 @@ import swam.runtime.formats._
 import swam.runtime.formats.DefaultFormatters._
 import swam.runtime.{Memory, pageSize}
 import swam.wasi.Types._
+import swam.wasi.TypesHeader._
 
 /**
     @author Javier Cabrera-Arteaga on 2020-03-23
@@ -29,7 +30,7 @@ class WASIImplementation(val args: Seq[String]) extends Module {
     *
     * @param fd
     */
-  def parseStats(fd: Int): (Types.filetypeEnum.Value, fd, fd) = {
+  def parseStats(fd: Int): (Types.filetypeEnum.Value, Long, Long) = {
     /*if (fd.isBlockDev())
       return (filetypeEnum.`block_device`, RIGHTS_ALL, RIGHTS_BLOCK_DEVICE_INHERITING)
     if (fd.isCharDev())
@@ -46,9 +47,9 @@ class WASIImplementation(val args: Seq[String]) extends Module {
       return (filetypeEnum.`symbolic_link`, 0, 0)*/
 
     fd match { // mock
-      case 0 => (filetypeEnum.`character_device`, RIGHTS_CHARACTER_DEVICE_BASE, RIGHTS_CHARACTER_DEVICE_INHERITING)
-      case 1 => (filetypeEnum.`character_device`, RIGHTS_CHARACTER_DEVICE_BASE, RIGHTS_CHARACTER_DEVICE_INHERITING)
-      case 2 => (filetypeEnum.`character_device`, RIGHTS_CHARACTER_DEVICE_BASE, RIGHTS_CHARACTER_DEVICE_INHERITING)
+      case 0 => (filetypeEnum.`character_device`, STDIN_DEFAULT_RIGHTS, 0)
+      case 1 => (filetypeEnum.`character_device`, STDOUT_DEFAULT_RIGHTS, 0)
+      case 2 => (filetypeEnum.`character_device`, STDERR_DEFAULT_RIGHTS, 0)
       case _ => (filetypeEnum.`unknown`, 0, 0)
     }
   }
@@ -229,9 +230,9 @@ class WASIImplementation(val args: Seq[String]) extends Module {
 
   def printMem() = {
     val f = new PrintWriter(new File("trace.mem"))
-    /*mem.position(0)
-    for (i <- 0 until mem.limit())
-      f.write(s"${(mem.get(i))}\n")*/
+
+    for (i <- 0 until mem.size)
+      f.write(s"${(mem.readByte(i).unsafeRunSync())}\n")
 
     f.close()
   }
@@ -241,7 +242,7 @@ class WASIImplementation(val args: Seq[String]) extends Module {
     try {
       val st = checkRight(fd, 0)
       st.write(offset, mem)
-
+      printMem()
       Types.errnoEnum.`success`
     } catch {
       case x: WASIException => x.errno
@@ -446,30 +447,25 @@ class WASIImplementation(val args: Seq[String]) extends Module {
     }
   }
 
-  override def fd_writeImpl(fd: fd,
-                            iovs: ciovec_array,
-                            iovsLen: u32,
-                            nwritten: Pointer[size]): Types.errnoEnum.Value = {
+  override def fd_writeImpl(fd: fd, iovs: ciovec_array, iovsLen: u32, nwritten: Int): Types.errnoEnum.Value = {
 
-    try {
-      checkRight(fd, rightsFlags.fd_write.id)
-      printMem()
+    checkRight(fd, rightsFlags.fd_write.id)
 
-      val cumul =
-        iovs
-          .map(iov => {
-            //print(fd, (0 until iov.`buf_len`).map(i => iov.`buf`._get(i).toChar).mkString(""))
-            print((0 until iov.`buf_len`).map(i => iov.`buf`._get(i).toChar).mkString(""))
-            iov.`buf_len`
-          })
-          .sum
-      nwritten._set(0, cumul)
-      Types.errnoEnum.`success`
-    } catch {
-      case x: WASIException => x.errno
-    }
+    val cumul =
+      iovs
+        .map(iov => {
+          //print(fd, (0 until iov.`buf_len`).map(i => iov.`buf`._get(i).toChar).mkString(""))
+          //print()
+          val s = (0 until iov.`buf_len`).map(i => iov.`buf`._get(i).toChar).mkString("")
+          System.out.print(s)
+          System.out.flush()
+          iov.`buf_len`
+        })
+        .sum
+    mem.writeInt(nwritten, cumul).unsafeRunSync()
 
-    //-31 0 1 2 2 4 65 83 99 782
+    //printMem()
+    Types.errnoEnum.`success`
   }
 
   override def path_create_directoryImpl(fd: fd, path: string): Types.errnoEnum.Value = {
@@ -681,8 +677,6 @@ class WASIImplementation(val args: Seq[String]) extends Module {
   override def sock_shutdownImpl(fd: fd, how: Types.sdflagsFlags.Value): Types.errnoEnum.Value = {
     errnoEnum.`nosys`
   }
-
-  override var mem: Memory[IO] = null
 
   override def path_openImpl(fd: fd,
                              dirflags: Types.lookupflagsFlags.Value,

@@ -224,4 +224,5 @@ abstract class Memory[F[_]](implicit F: MonadError[F, Throwable]) extends Interf
     */
   def writeBytes(idx: Int, bytes: ByteBuffer): F[Unit] = F.catchNonFatal(unsafeWriteBytes(idx, bytes))
   def unsafeWriteBytes(idx: Int, bytes: ByteBuffer): Unit
+
 }
