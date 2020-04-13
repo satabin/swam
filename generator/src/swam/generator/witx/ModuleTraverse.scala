@@ -130,6 +130,7 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
     case "u64"    => Adapt("Long", "Long")
     case "s64"    => Adapt("Long", "Long")
     case "string" => Adapt("Int", "String")
+    case "ptr"    => Adapt("Int", "Int")
   }
 
   def mapAliasType(t: AliasType): Adapt = mapTypeToWasm(types(t.tpe.tpeName))
@@ -149,6 +150,7 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
           case "u64"    => name
           case "s64"    => name
           case "string" => s"getString(mem, $name, ${name}Len)"
+          case "ptr"    => name
         }
     }
 

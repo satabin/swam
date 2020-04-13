@@ -21,11 +21,12 @@ import swam.runtime.internals.instance.MemoryInstance
   */
 case class Config(wasm: File = null,
                   args: Vector[String] = Vector(),
-                  main: String = "",
+                  main: String = "_start",
                   parse: Boolean = false,
                   debugCompiler: Boolean = false,
                   trace: Boolean = false,
                   traceWasi: Boolean = false,
+                  appendArgs2Memory: Boolean = false,
                   traceOutDir: String = ".",
                   traceFilter: String = "*",
                   tracePattern: String = "log.txt",
@@ -93,7 +94,13 @@ object InterpreterApp extends IOApp {
     opt[Boolean]('r', "trace-wasi")
       .optional()
       .action((f, c) => c.copy(traceWasi = f))
-      .text("Traces WASM execution channels; stack, memory and opcodes including wasu")
+      .text("Traces WASM execution channels; stack, memory and opcodes including WASI")
+
+    opt[Boolean]('s', "append-args")
+      .optional()
+      .action((f, c) => c.copy(appendArgs2Memory = f))
+      .text(
+        "Append args at the end of the memory before calling the function passing the address and offset as addresses")
 
     opt[File]('l', "link")
       .optional()
@@ -116,7 +123,7 @@ object InterpreterApp extends IOApp {
 
   def prepareWASI(module: Module[IO], config: Config) =
     for {
-      wasi <- IO(new wasi.WASIImplementation(args = config.args.toSeq))
+      wasi <- IO(new wasi.WASIImplementation(args = config.wasm.getName +: config.args.toSeq))
       instance <- module.importing(wasi.imports()).instantiate
       mem <- instance.exports.memory("memory")
       wrappMem <- IO(getMemory(mem, config.traceWasi))
@@ -148,7 +155,10 @@ object InterpreterApp extends IOApp {
         prepareWASI(module, config)
       else
         prepeareNonWASI(module, config)
-      (length, offset) <- IO(writeArgsToMemory(wrappMem, config.wasm.getName +: config.args))
+
+      (length, offset) <- if (config.appendArgs2Memory)
+        IO(writeArgsToMemory(wrappMem, config.wasm.getName +: config.args))
+      else IO((0, -1))
     } yield (instance, wrappMem, length, offset)
   }
 
@@ -180,18 +190,6 @@ object InterpreterApp extends IOApp {
         prev = ptrs._2
       }
     }
-
-    def printMem() = {
-      val f = new PrintWriter(new File("trace.mem"))
-
-      for (i <- 0 until mem.size)
-        f.write(s"${(mem.readByte(i).unsafeRunSync().toChar)}")
-
-      f.close()
-    }
-
-    /// printMem()
-
     (args.length, lastPosition)
   }
 

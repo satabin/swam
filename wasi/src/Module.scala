@@ -8,39 +8,27 @@ import swam.runtime.Memory
 trait Module {
   var mem: Memory[IO] = null
 
-  def args_getImpl(argv: Pointer[Pointer[u8]], argv_buf: Pointer[u8]): (errnoEnum.Value)
-
-  def args_get(argv: Int, argv_buf: Int) = {
-    val argvAdapted: Pointer[Pointer[u8]] = new Pointer[Pointer[u8]](
-      mem.readInt(argv).unsafeRunSync,
-      (i) =>
-        new Pointer[u8](mem.readInt(i).unsafeRunSync,
-                        (i) => mem.readByte(i).unsafeRunSync(),
-                        (i, r) => mem.writeByte(i, `r`).unsafeRunSync),
-      (i, r) => mem.writeInt(i, `r`.offset).unsafeRunSync)
-    val argv_bufAdapted: Pointer[u8] = new Pointer[u8](mem.readInt(argv_buf).unsafeRunSync,
-                                                       (i) => mem.readByte(i).unsafeRunSync(),
-                                                       (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
-
-    IO(try {
-      args_getImpl(argvAdapted, argv_bufAdapted).id
-    } catch {
-      case x: WASIException => x.errno.id
-    })
+  def tryToExecute(a: => errnoEnum.Value) = {
+    IO(
+      try a.id
+      catch {
+        case x: WASIException => x.errno.id
+      }
+    )
   }
 
-  def args_sizes_getImpl(argc: Pointer[size], argv_buf_size: Pointer[size]): (errnoEnum.Value)
+  def args_getImpl(argv: ptr, argv_buf: ptr): (errnoEnum.Value)
+
+  def args_get(argv: Int, argv_buf: Int) = {
+    tryToExecute(args_getImpl(argv, argv_buf))
+  }
+
+  def args_sizes_getImpl(argc: ptr, argv_buf_size: ptr): (errnoEnum.Value)
 
   def args_sizes_get(argc: Int, argv_buf_size: Int) = {
-    val argcAdapted: Pointer[size] = new Pointer[size](mem.readInt(argc).unsafeRunSync,
-                                                       (i) => mem.readInt(i).unsafeRunSync,
-                                                       (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
-    val argv_buf_sizeAdapted: Pointer[size] = new Pointer[size](mem.readInt(argv_buf_size).unsafeRunSync,
-                                                                (i) => mem.readInt(i).unsafeRunSync,
-                                                                (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(try {
-      args_sizes_getImpl(argcAdapted, argv_buf_sizeAdapted).id
+      args_sizes_getImpl(argc, argv_buf_size).id
     } catch {
       case x: WASIException => x.errno.id
     })
@@ -67,48 +55,36 @@ trait Module {
     })
   }
 
-  def environ_sizes_getImpl(environc: Pointer[size], environ_buf_size: Pointer[size]): (errnoEnum.Value)
+  def environ_sizes_getImpl(environc: ptr, environ_buf_size: ptr): (errnoEnum.Value)
 
   def environ_sizes_get(environc: Int, environ_buf_size: Int) = {
-    val environcAdapted: Pointer[size] = new Pointer[size](mem.readInt(environc).unsafeRunSync,
-                                                           (i) => mem.readInt(i).unsafeRunSync,
-                                                           (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
-    val environ_buf_sizeAdapted: Pointer[size] = new Pointer[size](mem.readInt(environ_buf_size).unsafeRunSync,
-                                                                   (i) => mem.readInt(i).unsafeRunSync,
-                                                                   (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(try {
-      environ_sizes_getImpl(environcAdapted, environ_buf_sizeAdapted).id
+      environ_sizes_getImpl(environc, environ_buf_size).id
     } catch {
       case x: WASIException => x.errno.id
     })
   }
 
-  def clock_res_getImpl(id: clockidEnum.Value, resolution: Pointer[timestamp]): (errnoEnum.Value)
+  def clock_res_getImpl(id: clockidEnum.Value, resolution: ptr): (errnoEnum.Value)
 
   def clock_res_get(id: Int, resolution: Int) = {
     val idAdapted: clockidEnum.Value = clockidEnum(id)
-    val resolutionAdapted: Pointer[timestamp] = new Pointer[timestamp](mem.readInt(resolution).unsafeRunSync,
-                                                                       (i) => mem.readLong(i).unsafeRunSync,
-                                                                       (i, r) => mem.writeLong(i, `r`).unsafeRunSync)
 
     IO(try {
-      clock_res_getImpl(idAdapted, resolutionAdapted).id
+      clock_res_getImpl(idAdapted, resolution).id
     } catch {
       case x: WASIException => x.errno.id
     })
   }
 
-  def clock_time_getImpl(id: clockidEnum.Value, precision: timestamp, time: Pointer[timestamp]): (errnoEnum.Value)
+  def clock_time_getImpl(id: clockidEnum.Value, precision: timestamp, time: ptr): (errnoEnum.Value)
 
   def clock_time_get(id: Int, precision: Long, time: Int) = {
     val idAdapted: clockidEnum.Value = clockidEnum(id)
-    val timeAdapted: Pointer[timestamp] = new Pointer[timestamp](mem.readInt(time).unsafeRunSync,
-                                                                 (i) => mem.readLong(i).unsafeRunSync,
-                                                                 (i, r) => mem.writeLong(i, `r`).unsafeRunSync)
 
     IO(try {
-      clock_time_getImpl(idAdapted, precision, timeAdapted).id
+      clock_time_getImpl(idAdapted, precision, time).id
     } catch {
       case x: WASIException => x.errno.id
     })
@@ -474,8 +450,8 @@ trait Module {
                     dirflags: lookupflagsFlags.Value,
                     path: string,
                     oflags: oflagsFlags.Value,
-                    fs_rights_base: rightsFlags.Value,
-                    fs_rights_inherting: rightsFlags.Value,
+                    fs_rights_base: Long,
+                    fs_rights_inherting: Long,
                     fdflags: fdflagsFlags.Value,
                     opened_fd: Pointer[fd]): (errnoEnum.Value)
 
@@ -484,15 +460,13 @@ trait Module {
                 path: Int,
                 pathLen: Int,
                 oflags: Int,
-                fs_rights_base: Int,
-                fs_rights_inherting: Int,
+                fs_rights_base: Long,
+                fs_rights_inherting: Long,
                 fdflags: Int,
                 opened_fd: Int) = {
     val dirflagsAdapted: lookupflagsFlags.Value = lookupflagsFlags(dirflags)
     val pathAdapted: String = getString(mem, path, pathLen)
     val oflagsAdapted: oflagsFlags.Value = oflagsFlags(oflags)
-    val fs_rights_baseAdapted: rightsFlags.Value = rightsFlags(fs_rights_base)
-    val fs_rights_inhertingAdapted: rightsFlags.Value = rightsFlags(fs_rights_inherting)
     val fdflagsAdapted: fdflagsFlags.Value = fdflagsFlags(fdflags)
     val opened_fdAdapted: Pointer[fd] = new Pointer[fd](mem.readInt(opened_fd).unsafeRunSync,
                                                         (i) => mem.readInt(i).unsafeRunSync,
@@ -503,8 +477,8 @@ trait Module {
                     dirflagsAdapted,
                     pathAdapted,
                     oflagsAdapted,
-                    fs_rights_baseAdapted,
-                    fs_rights_inhertingAdapted,
+                    fs_rights_base,
+                    fs_rights_inherting,
                     fdflagsAdapted,
                     opened_fdAdapted).id
     } catch {

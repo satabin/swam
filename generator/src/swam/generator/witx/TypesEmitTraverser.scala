@@ -32,6 +32,7 @@ class TypesEmitTraverser(types: Map[String, BaseWitxType]) extends TypesTraverse
         case "u64"    => s"type ${t.tpeName} = Long\n"
         case "s64"    => s"type ${t.tpeName} = Long\n"
         case "string" => s"type ${t.tpeName} = String\n"
+        case "ptr"    => s"type ${t.tpeName} = Int\n"
       }
   }
 

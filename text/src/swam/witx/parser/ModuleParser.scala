@@ -45,12 +45,14 @@ class ModuleParser[F[_]: Effect](val importContext: ImportContext[F],
     )
   }
 
-  def splitResultsAndParamsByWASIType(params: Seq[Field], results: Seq[Field]): (Seq[Field], Seq[Field]) = {
+  def splitResultsAndParamsByWASIType(params: Seq[Field],
+                                      results: Seq[Field],
+                                      types: Map[String, BaseWitxType]): (Seq[Field], Seq[Field]) = {
     if (multipleResult)
       (params, results)
     else {
       if (results.length > 1) {
-        return (params.concat(results.tail.map(t => Field(t.id, Pointer(t.tpe)))), Seq(results.head))
+        return (params.concat(results.tail.map(t => Field(t.id, types("ptr")))), Seq(results.head))
       }
       (params, results)
     }
@@ -67,7 +69,8 @@ class ModuleParser[F[_]: Effect](val importContext: ImportContext[F],
       case (name, params, results) => {
         val paramsImports =
           splitResultsAndParamsByWASIType(params.flatten,
-                                          results.flatten.map(r => r.copy(r.id, r.tpe, isResult = true)))
+                                          results.flatten.map(r => r.copy(r.id, r.tpe, isResult = true)),
+                                          types)
         FunctionExport(name, paramsImports._1, paramsImports._2)
       }
     }

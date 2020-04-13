@@ -67,6 +67,7 @@ object Types {
       mem.writeByte(offset + 0, `fs_filetype`).unsafeRunSync
 
       mem.writeShort(offset + 2, `fs_flags`).unsafeRunSync
+      mem.writeShort(offset + 2, `fs_flags`).unsafeRunSync
       mem.writeShort(offset + 4, 0).unsafeRunSync
 
       mem.writeLong(offset + 8, `fs_rights_base`).unsafeRunSync
@@ -577,6 +578,7 @@ object Types {
   }
 
   type siflags = u16
+  type ptr = Int
   type linkcount = u64
 
   object rightsFlags extends Enumeration {
