@@ -148,10 +148,7 @@ object InterpreterApp extends IOApp {
         prepareWASI(module, config)
       else
         prepeareNonWASI(module, config)
-
-      wrappMem <- IO(getMemory(mem, config.traceWasi))
       (length, offset) <- IO(writeArgsToMemory(wrappMem, config.wasm.getName +: config.args))
-
     } yield (instance, wrappMem, length, offset)
   }
 
