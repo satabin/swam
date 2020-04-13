@@ -143,15 +143,15 @@ class WASIImplementation(val args: Seq[String]) extends Module {
       mem.writeInt(coffset, offset)
       coffset += 4
       val bytes = new Array[Byte](arg.length + 1)
-      mem.writeBytes(offset, ByteBuffer.wrap(arg.getBytes()))
+      mem.writeBytes(offset, ByteBuffer.wrap(arg.getBytes())).unsafeRunSync()
       offset += bytes.length
     })
     errnoEnum.`success`
   }
 
   override def args_sizes_getImpl(argc: Pointer[size], argv_buf_size: Pointer[size]): Types.errnoEnum.Value = {
-    mem.writeInt(argc.offset, args.length)
-    mem.writeInt(argv_buf_size.offset, args.map(t => t.length).sum)
+    mem.writeInt(argc.offset, args.length).unsafeRunSync()
+    mem.writeInt(argv_buf_size.offset, args.map(t => t.length).sum).unsafeRunSync()
     errnoEnum.`success`
   }
 

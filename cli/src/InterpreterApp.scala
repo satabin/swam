@@ -1,7 +1,7 @@
 package swam
 package interpreter
 
-import java.io.File
+import java.io.{File, PrintWriter}
 import java.nio.ByteBuffer
 import java.util.logging.{Formatter, LogRecord}
 
@@ -11,6 +11,7 @@ import runtime._
 import runtime.trace._
 import cats.effect.{Blocker, ExitCode, IO, IOApp}
 import swam.runtime.Engine
+import swam.runtime.Value.Int32
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
 import swam.runtime.formats.DefaultFormatters._
 import swam.runtime.internals.instance.MemoryInstance
@@ -24,6 +25,7 @@ case class Config(wasm: File = null,
                   parse: Boolean = false,
                   debugCompiler: Boolean = false,
                   trace: Boolean = false,
+                  traceWasi: Boolean = false,
                   traceOutDir: String = ".",
                   traceFilter: String = "*",
                   tracePattern: String = "log.txt",
@@ -88,6 +90,11 @@ object InterpreterApp extends IOApp {
       .action((f, c) => c.copy(trace = f))
       .text("Traces WASM execution channels; stack, memory and opcodes")
 
+    opt[Boolean]('r', "trace-wasi")
+      .optional()
+      .action((f, c) => c.copy(traceWasi = f))
+      .text("Traces WASM execution channels; stack, memory and opcodes including wasu")
+
     opt[File]('l', "link")
       .optional()
       .action((f, c) => c.copy(linkJarPath = f))
@@ -100,10 +107,10 @@ object InterpreterApp extends IOApp {
 
   }
 
-  def getMemoryBuffer(mem: Memory[IO]): ByteBuffer = {
+  def getMemory(mem: Memory[IO], traceWasi: Boolean): Memory[IO] = {
     mem match {
-      case m: MemoryInstance[IO] => m.buffer
-      case m: TracingMemory[IO]  => getMemoryBuffer(m.inner)
+      case m: MemoryInstance[IO] => m
+      case m: TracingMemory[IO]  => if (traceWasi) m else m.inner
     }
   }
 
@@ -125,19 +132,66 @@ object InterpreterApp extends IOApp {
       wasi <- IO(new wasi.WASIImplementation(args = config.args.toSeq))
       instance <- module.importing(wasi.imports()).instantiate
       mem <- instance.exports.memory("memory")
-      _ <- IO(wasi.mem = mem)
+      wrappMem <- IO(getMemory(mem, config.traceWasi))
+      (length, offset) <- IO(writeArgsToMemory(wrappMem, config.wasm.getName +: config.args))
+      _ <- IO(wasi.mem = wrappMem)
       // s_ <- IO(wasi.printMem())
 
-    } yield (instance, mem)
+    } yield (instance, mem, length, offset)
   }
+
+  def writeSimpleArg(mem: Memory[IO], arg: String, offset: Int, ptrOffset: Int) = {
+
+    mem.writeInt(ptrOffset, offset).unsafeRunSync()
+    mem.writeBytes(offset, ByteBuffer.wrap(arg.getBytes())).unsafeRunSync()
+
+    (ptrOffset + 4, offset + arg.getBytes.length + 1)
+  }
+
+  def writeArgsToMemory(mem: Memory[IO], args: Vector[String]) = {
+    val lastPosition = mem.size
+
+    // create size
+    val newSize = 4 * args.length + args.map(a => a.getBytes().length + 1).sum // trailing zero
+
+    val scale = Math.ceil((newSize + mem.size) / mem.size).toInt
+    // grow a little bit
+    mem.grow(scale)
+
+    val headSize = 4 * args.length
+
+    var prev = lastPosition + headSize
+    //write_args_so_far
+    args.zipWithIndex.foreach {
+      case (arg, index) => {
+        val ptrs = writeSimpleArg(mem, arg, prev, lastPosition + index * 4)
+        prev = ptrs._2
+      }
+    }
+
+    def printMem() = {
+      val f = new PrintWriter(new File("trace.mem"))
+
+      for (i <- 0 until mem.size)
+        f.write(s"${(mem.readByte(i).unsafeRunSync().toChar)}")
+
+      f.close()
+    }
+
+    /// printMem()
+
+    (args.length, lastPosition)
+  }
+
+  def getMainFunctionArgs(argc: Int, args: Int) = if (argc == 1) Vector() else Vector(Int32(argc), Int32(args))
 
   def run(args: List[String]): IO[ExitCode] = parser.parse(args, Config()) match {
     case Some(config) =>
       Blocker[IO].use { blocker =>
         for {
-          instance <- createInstance(blocker, config)
+          (instance, mem, argC, args) <- createInstance(blocker, config)
           _ <- if (config.main.isEmpty) {
-            IO(instance._1.exports.list
+            IO(instance.exports.list
               .collect[String, FuncType] {
                 case (name, f: FuncType) =>
                   (name, f)
@@ -150,8 +204,8 @@ object InterpreterApp extends IOApp {
               })
           } else {
             for {
-              f <- instance._1.exports.function(config.main)
-              _ <- f.invoke(Vector(), Option(instance._2))
+              f <- instance.exports.function(config.main)
+              _ <- f.invoke(getMainFunctionArgs(argC, args), Option(mem))
             } yield ()
           }
         } yield ExitCode.Success
