@@ -5,7 +5,7 @@ import java.io.{File, PrintWriter}
 import java.nio.ByteBuffer
 import java.util.logging.{Formatter, LogRecord}
 
-import swam._
+import swam.{wasi, _}
 import text._
 import runtime._
 import runtime.trace._
@@ -114,9 +114,24 @@ object InterpreterApp extends IOApp {
     }
   }
 
+  def prepareWASI(module: Module[IO], config: Config) =
+    for {
+      wasi <- IO(new wasi.WASIImplementation(args = config.args.toSeq))
+      instance <- module.importing(wasi.imports()).instantiate
+      mem <- instance.exports.memory("memory")
+      wrappMem <- IO(getMemory(mem, config.traceWasi))
+      _ <- IO(wasi.mem = wrappMem)
+    } yield (instance, mem, wrappMem)
+
+  def prepeareNonWASI(module: Module[IO], config: Config) =
+    for {
+      instance <- module.instantiate
+      mem <- instance.exports.memory("memory")
+      wrappMem <- IO(getMemory(mem, config.traceWasi))
+    } yield (instance, mem, wrappMem)
+
   def createInstance(blocker: Blocker, config: Config) = {
     for {
-      imports <- IO(JVMLinker().getImports(config.linkJarPath, config.className))
       compiler <- Compiler[IO]
       engine <- if (config.trace)
         Engine[IO](
@@ -129,15 +144,15 @@ object InterpreterApp extends IOApp {
       else
         engine.compile(config.wasm.toPath, blocker, 4096)
 
-      wasi <- IO(new wasi.WASIImplementation(args = config.args.toSeq))
-      instance <- module.importing(wasi.imports()).instantiate
-      mem <- instance.exports.memory("memory")
+      (instance, mem, wrappMem) <- if (module.imports.collect { case x => x.moduleName.startsWith("wasi_") }.nonEmpty)
+        prepareWASI(module, config)
+      else
+        prepeareNonWASI(module, config)
+
       wrappMem <- IO(getMemory(mem, config.traceWasi))
       (length, offset) <- IO(writeArgsToMemory(wrappMem, config.wasm.getName +: config.args))
-      _ <- IO(wasi.mem = wrappMem)
-      // s_ <- IO(wasi.printMem())
 
-    } yield (instance, mem, length, offset)
+    } yield (instance, wrappMem, length, offset)
   }
 
   def writeSimpleArg(mem: Memory[IO], arg: String, offset: Int, ptrOffset: Int) = {
@@ -183,7 +198,7 @@ object InterpreterApp extends IOApp {
     (args.length, lastPosition)
   }
 
-  def getMainFunctionArgs(argc: Int, args: Int) = if (argc == 1) Vector() else Vector(Int32(argc), Int32(args))
+  def getMainFunctionArgs(argc: Int, args: Int) = if (argc <= 2) Vector() else Vector(Int32(argc), Int32(args))
 
   def run(args: List[String]): IO[ExitCode] = parser.parse(args, Config()) match {
     case Some(config) =>
