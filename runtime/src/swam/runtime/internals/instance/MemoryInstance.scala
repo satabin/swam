@@ -56,8 +56,6 @@ class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax:
     buffer.getShort(idx)
 
   def unsafeWriteInt(idx: Int, v: Int) = {
-    if (idx == 68600)
-      println(v)
     buffer.putInt(idx, v)
   }
 

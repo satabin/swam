@@ -87,9 +87,8 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
     args.foreach(arg => {
       mem.writeInt(coffset, offset).unsafeRunSync()
       coffset += 4
-      val bytes = new Array[Byte](arg.length + 1)
       mem.writeBytes(offset, ByteBuffer.wrap(arg.getBytes())).unsafeRunSync()
-      offset += bytes.length
+      offset += arg.getBytes().length + 1
     })
     errnoEnum.`success`
   }
@@ -200,7 +199,7 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
   override def fd_fdstat_getImpl(fd: fd, stat: ptr): Types.errnoEnum.Value = {
 
     val st = checkRight(fd, 0)
-    //st.write(offset, mem)
+    st.write(stat, mem)
     Types.errnoEnum.`success`
   }
 
@@ -308,7 +307,7 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
         val dst = new Array[Byte](iov.`buf_len`)
         val read = stat.read(0, dst, iov.`buf_len`)
         if (read > 0)
-          mem.writeBytes(iov.offset, ByteBuffer.wrap(dst, 0, read)).unsafeRunSync()
+          mem.writeBytes(iov.buf.offset, ByteBuffer.wrap(dst, 0, read)).unsafeRunSync()
         read
       })
       .sum
@@ -367,7 +366,7 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
       iovs
         .map(iov => {
           val dst = new Array[Byte](iov.`buf_len`)
-          mem.readBytes(iov.offset, dst).unsafeRunSync()
+          mem.readBytes(iov.`buf`.offset, dst).unsafeRunSync()
           stat.write(dst)
           iov.`buf_len`
         })

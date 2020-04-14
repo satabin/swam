@@ -67,10 +67,15 @@ object Types {
         throw new WASIException(errnoEnum.`perm`)
 
       if (fd == 1) // stdout
-        System.out.write(bytes, 0, bytes.length)
-
+        {
+          System.out.write(bytes, 0, bytes.length)
+          return bytes.length
+        }
       if (fd == 0) // stderr
-        System.err.write(bytes, 0, bytes.length)
+        {
+          System.err.write(bytes, 0, bytes.length)
+          return bytes.length
+        }
 
       val file = Paths.get(path).toFile
 
@@ -95,8 +100,10 @@ object Types {
         throw new WASIException(errnoEnum.`perm`)
 
       if (fd == 0) // stdin
-        System.in.read(bytes, 0, len)
-
+        {
+          System.in.read(bytes, 0, len)
+          return len
+        }
       // Then is a file
 
       // Check protocol
