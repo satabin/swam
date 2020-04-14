@@ -22,7 +22,7 @@ object TypesParser {
     "u32" -> BasicType("u32", 4),
     "u64" -> BasicType("u64", 8),
     "s64" -> BasicType("s64", 8),
-    "u8" -> BasicType("u8", 2),
+    "u8" -> BasicType("u8", 1),
     "u16" -> BasicType("u16", 2),
     "string" -> BasicType("string", 4),
     "ptr" -> BasicType("ptr", 4)

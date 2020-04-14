@@ -10,9 +10,11 @@ import cats.effect.IO
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
 import swam.runtime.formats._
 import swam.runtime.formats.DefaultFormatters._
+import swam.runtime.imports.annotations.{effect, module}
 import swam.runtime.{Memory, pageSize}
 import swam.wasi.Types._
 import swam.wasi.TypesHeader._
+import cats.Applicative
 
 import scala.collection.immutable.HashMap
 
@@ -20,10 +22,8 @@ import scala.collection.immutable.HashMap
     @author Javier Cabrera-Arteaga on 2020-03-23
     Follow NodeJS implementation https://github.com/nodejs/wasi/tree/wasi/lib of WASI to implement this
   */
-class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extends Module {
-
-  type AsIIO[T] = AsInterface[T, IO]
-  type AsIsIO[T] = AsInstance[T, IO]
+class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[String])(implicit F: Applicative[F])
+    extends Module[F] {
 
   var fdMap: Map[Int, `fdstat`] = HashMap[Int, `fdstat`](
     0 -> `fdstat`(filetypeEnum.`character_device`.id.toByte, 0, STDIN_DEFAULT_RIGHTS, 0, fd = 0),
@@ -57,6 +57,8 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
     entry
   }
 
+  def getModule() = asInstanceOf[Module[F]]
+
   def checkRight(fd: fd, rights: Int): `fdstat` = {
     val stat = parseStats(fd)
 
@@ -78,61 +80,6 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
 
     -1
   }
-
-  def imports() = {
-    Imports[IO](
-      TCMap[String, AsIsIO](
-        "wasi_snapshot_preview1" -> TCMap[String, AsIIO](
-          "args_get" -> args_get _,
-          "args_sizes_get" -> args_sizes_get _,
-          "environ_get" -> environ_get _,
-          "environ_sizes_get" -> environ_sizes_get _,
-          "clock_res_get" -> clock_res_get _,
-          "clock_time_get" -> clock_time_get _,
-          "fd_advise" -> fd_advise _,
-          "fd_allocate" -> fd_allocate _,
-          "fd_close" -> fd_close _,
-          "fd_datasync" -> fd_datasync _,
-          "fd_fdstat_get" -> fd_fdstat_get _,
-          "fd_fdstat_set_flags" -> fd_fdstat_set_flags _,
-          "fd_fdstat_set_rights" -> fd_fdstat_set_rights _,
-          "fd_filestat_get" -> fd_filestat_get _,
-          "fd_filestat_set_size" -> fd_filestat_set_size _,
-          "fd_filestat_set_times" -> fd_filestat_set_times _,
-          "fd_pread" -> fd_pread _,
-          "fd_prestat_get" -> fd_prestat_get _,
-          "fd_prestat_dir_name" -> fd_prestat_dir_name _,
-          "fd_pwrite" -> fd_pwrite _,
-          "fd_read" -> fd_read _,
-          "fd_readdir" -> fd_readdir _,
-          "fd_renumber" -> fd_renumber _,
-          "fd_seek" -> fd_seek _,
-          "fd_sync" -> fd_sync _,
-          "fd_tell" -> fd_tell _,
-          "fd_write" -> fd_write _,
-          "path_create_directory" -> path_create_directory _,
-          "path_filestat_get" -> path_filestat_get _,
-          "path_filestat_set_times" -> path_filestat_set_times _,
-          "path_link" -> path_link _,
-          "path_open" -> path_open _,
-          "path_readlink" -> path_readlink _,
-          "path_remove_directory" -> path_remove_directory _,
-          "path_rename" -> path_rename _,
-          "path_symlink" -> path_symlink _,
-          "path_unlink_file" -> path_unlink_file _,
-          "poll_oneoff" -> poll_oneoff _,
-          "proc_exit" -> proc_exit _,
-          "proc_raise" -> proc_raise _,
-          "sched_yield" -> sched_yield _,
-          "random_get" -> random_get _,
-          "sock_recv" -> sock_recv _,
-          "sock_send" -> sock_send _,
-          "sock_shutdown" -> sock_shutdown _
-        )
-      )
-    )
-  }
-
   override def args_getImpl(argv: ptr, argv_buf: ptr): Types.errnoEnum.Value = {
     var coffset = argv
     var offset = argv_buf
@@ -153,9 +100,15 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
     errnoEnum.`success`
   }
 
-  override def environ_getImpl(environ: Pointer[Pointer[u8]], environ_buf: Pointer[u8]): Types.errnoEnum.Value = {
-    var coffset = environ.offset
-    var offset = environ_buf.offset
+  override def fd_pwriteImpl(fd: fd,
+                             iovs: ciovec_array,
+                             iovsLen: u32,
+                             offset: filesize,
+                             nwritten: ptr): errnoEnum.Value = errnoEnum.`noent`
+
+  override def environ_getImpl(environ: ptr, environ_buf: ptr): Types.errnoEnum.Value = {
+    var coffset = environ
+    var offset = environ_buf
 
     System.getenv().forEach {
       case (key, value) => {
@@ -244,10 +197,10 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
     f.close()
   }
 
-  override def fd_fdstat_getImpl(fd: fd, stat: Types.`fdstat`, offset: Int): Types.errnoEnum.Value = {
+  override def fd_fdstat_getImpl(fd: fd, stat: ptr): Types.errnoEnum.Value = {
 
     val st = checkRight(fd, 0)
-    st.write(offset, mem)
+    //st.write(offset, mem)
     Types.errnoEnum.`success`
   }
 
@@ -282,7 +235,7 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
 
   }
 
-  override def fd_filestat_getImpl(fd: fd, buf: Pointer[Types.`filestat`]): Types.errnoEnum.Value = {
+  override def fd_filestat_getImpl(fd: fd, buf: ptr): Types.errnoEnum.Value = {
 
     val stat = checkRight(fd, rightsFlags.fd_filestat_get.id)
     // val rstat = parseStats(fdMapFile(fd))
@@ -314,7 +267,7 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
                             iovs: iovec_array,
                             iovsLen: u32,
                             offset: filesize,
-                            nread: Pointer[size]): Types.errnoEnum.Value = {
+                            nread: ptr): Types.errnoEnum.Value = {
 
     /*val stats = checkRight(fd, rightsFlags.fd_read.id | rightsFlags.fd_write.id)
       var cumul = 0
@@ -366,10 +319,10 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
   }
 
   override def fd_readdirImpl(fd: fd,
-                              buf: Pointer[u8],
+                              buf: ptr,
                               buf_len: size,
                               cookie: dircookie,
-                              bufused: Pointer[size]): Types.errnoEnum.Value = {
+                              bufused: ptr): Types.errnoEnum.Value = {
     // TODO
 
     throw new Exception("Not implemented")
@@ -382,7 +335,7 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
   override def fd_seekImpl(fd: fd,
                            offset: filedelta,
                            whence: Types.whenceEnum.Value,
-                           newoffset: Pointer[filesize]): Types.errnoEnum.Value = {
+                           newoffset: ptr): Types.errnoEnum.Value = {
     val stats = checkRight(fd, rightsFlags.fd_seek.id)
 
     // TODO
@@ -398,7 +351,7 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
 
   }
 
-  override def fd_tellImpl(fd: fd, offset: Pointer[filesize]): Types.errnoEnum.Value = {
+  override def fd_tellImpl(fd: fd, offset: ptr): Types.errnoEnum.Value = {
     val stats = checkRight(fd, rightsFlags.fd_tell.id)
 
     // TODO
@@ -436,7 +389,7 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
   override def path_filestat_getImpl(fd: fd,
                                      flags: Types.lookupflagsFlags.Value,
                                      path: string,
-                                     buf: Pointer[Types.`filestat`]): Types.errnoEnum.Value = {
+                                     buf: ptr): Types.errnoEnum.Value = {
 
     val stats = checkRight(fd, rightsFlags.fd_filestat_get.id)
 
@@ -481,7 +434,7 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
                     fs_rights_base: Types.rightsFlags.Value,
                     fs_rights_inherting: Types.rightsFlags.Value,
                     fdflags: Types.fdflagsFlags.Value,
-                    opened_fd: Pointer[fd]): Types.errnoEnum.Value = {
+                    opened_fd: ptr): Types.errnoEnum.Value = {
 
     val stats = checkRight(fd, rightsFlags.path_open.id)
 
@@ -490,11 +443,7 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
 
   }
 
-  override def path_readlinkImpl(fd: fd,
-                                 path: string,
-                                 buf: Pointer[u8],
-                                 buf_len: size,
-                                 bufused: Pointer[size]): Types.errnoEnum.Value = {
+  override def path_readlinkImpl(fd: fd, path: string, buf: ptr, buf_len: size, bufused: ptr): Types.errnoEnum.Value = {
 
     val stats = checkRight(fd, rightsFlags.path_readlink.id)
 
@@ -542,10 +491,7 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
 
   }
 
-  override def poll_oneoffImpl(in: Pointer[Types.`subscription`],
-                               out: Pointer[Types.`event`],
-                               nsubscriptions: size,
-                               nevents: Pointer[size]): Types.errnoEnum.Value = {
+  override def poll_oneoffImpl(in: ptr, out: ptr, nsubscriptions: size, nevents: ptr): Types.errnoEnum.Value = {
 
     errnoEnum.`fault`
 
@@ -567,8 +513,8 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
     errnoEnum.`success`
   }
 
-  override def random_getImpl(buf: Pointer[u8], buf_len: size): Types.errnoEnum.Value = {
-    Range(0, buf_len).foreach(i => buf._set(i, (255 * Math.random()).toByte))
+  override def random_getImpl(buf: ptr, buf_len: size): Types.errnoEnum.Value = {
+    //Range(0, buf_len).foreach(i => buf._set(i, (255 * Math.random()).toByte))
     errnoEnum.`success`
   }
 
@@ -576,8 +522,8 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
                              ri_data: iovec_array,
                              ri_dataLen: u32,
                              ri_flags: Types.riflagsFlags.Value,
-                             ro_datalen: Pointer[size],
-                             ro_flags: Pointer[Types.roflagsFlags.Value]): Types.errnoEnum.Value = {
+                             ro_datalen: ptr,
+                             ro_flags: ptr): Types.errnoEnum.Value = {
     errnoEnum.`nosys`
   }
 
@@ -585,7 +531,7 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
                              si_data: ciovec_array,
                              si_dataLen: u32,
                              si_flags: siflags,
-                             so_datalen: Pointer[size]): Types.errnoEnum.Value = {
+                             so_datalen: ptr): Types.errnoEnum.Value = {
     errnoEnum.`nosys`
   }
 
@@ -695,11 +641,4 @@ class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extend
     errnoEnum.`success`
   }
 
-  override def fd_pwriteImpl(fd: fd,
-                             iovs: ciovec_array,
-                             iovsLen: u32,
-                             offset: filesize,
-                             nwritten: Pointer[size]): Types.errnoEnum.Value = {
-    errnoEnum.`badf`
-  }
 }

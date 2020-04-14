@@ -30,7 +30,8 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
       s"def ${f.id}Impl${f.params
         .map(f => s"${f.id}:${getVal(f.tpe)}")
         .mkString("(", ",", ")")}:${mapFieldsToTuple(f.results)}\n\n" +
-        s"def ${f.id}(${processParameters(f.params).mkString(",")}) = {\n${processAdaptor(f.params)} \n\n ${processResults(f)} \n}\n\n"
+        s"@effectful\ndef ${f.id}(${processParameters(f.params)
+          .mkString(",")}): F[${mapFieldsToScalaTuple(f.results)}] = F.pure({${processAdaptor(f.params)}\n${processResults(f)}})\n"
 
   }
 
@@ -49,7 +50,15 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
     // ${f.params.map(m => s"${m.id}:${mapTypeToWasm(m.tpe).from}").mkString(",")}
   }
 
-  def mapFieldsToTuple(fields: Seq[Field]) = fields.map(t => getVal(t.tpe)).mkString("(", ",", ")")
+  def mapFieldsToTuple(fields: Seq[Field]) =
+    if (fields.length > 1) fields.map(t => getVal(t.tpe)).mkString("(", ",", ")")
+    else if (fields.length == 1) getVal(fields.head.tpe)
+    else "Unit"
+
+  def mapFieldsToScalaTuple(fields: Seq[Field]) =
+    if (fields.length > 1) fields.map(t => mapTypeToWasm(t.tpe).from).mkString("(", ",", ")")
+    else if (fields.length == 1) mapTypeToWasm(fields.head.tpe).from
+    else "Unit"
 
   def processAdaptor(fields: Seq[Field]) = {
     fields
@@ -67,13 +76,6 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
     val adaptors = f.results
       .map(p => mapTypeToWasm(p.tpe))
 
-    val from = adaptors.map { x: Adapt =>
-      x.from
-    }
-    val to = adaptors.map { x: Adapt =>
-      x.to
-    }
-
     val args = f.params
       .map(t => (t.id, mapTypeToWasm(t.tpe)))
       .map {
@@ -83,20 +85,10 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
 
     println(s""""${f.id}" -> ${f.id} _,""")
 
-    /*try {
-      val st = checkRight(fd, 0)
-      st.write(offset, mem)
-      printMem()
-      Types.errnoEnum.`success`
-    } catch {
-      case x: WASIException => x.errno
-    }*/
-
-    s"IO( try {\n ${if (to.nonEmpty)
-      s"${f.id}Impl($args).id"
+    if (f.results.nonEmpty)
+      s"tryToExecute(${f.id}Impl($args))"
     else
-      s"${f.id}Impl($args)"} } catch {\n case x: WASIException => x.errno.id } )"
-
+      s"${f.id}Impl($args)"
   }
 
   def mapTypeToWasm(t: BaseWitxType): Adapt = t match {
@@ -107,7 +99,7 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
     case x: StructType => Adapt("Int", x.tpeName)
     case x: ArrayType  => Adapt("Int", x.tpeName)
     case x: UnionType  => Adapt("Int", x.tpeName)
-    case x: Pointer    => Adapt("Int", s"Pointer[${getVal(x.tpe)}]")
+    case x: Pointer    => Adapt("Int", s"Int")
     case x: Handle     => Adapt("Int", "Int")
   }
 
@@ -116,7 +108,7 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
     case x: BasicType  => x.tpeName
     case x: EnumType   => s"${x.tpeName}Enum.Value"
     case x: FlagsType  => s"${x.tpeName}Flags.Value"
-    case x: Pointer    => s"Pointer[${getVal(x.tpe)}]"
+    case x: Pointer    => s"ptr"
     case x: Handle     => x.tpeName
     case x: StructType => x.tpeName
     case x: UnionType  => x.tpeName
@@ -135,8 +127,31 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
 
   def mapAliasType(t: AliasType): Adapt = mapTypeToWasm(types(t.tpe.tpeName))
 
+  val header = s"""val name = "${module.id}"
+                  |
+                  |  def tryToExecute(a: => errnoEnum.Value) = {
+                  |      try a.id
+                  |      catch {
+                  |        case x: WASIException => x.errno.id
+                  |      }
+                  |  }""".stripMargin
+
+  val imports = s"""package swam
+                   |package wasi
+                   |
+                   |import Types._
+                   |import Header._
+                   |import cats.Applicative
+                   |import cats.effect._
+                   |import swam.runtime.formats._
+                   |import swam.runtime.formats.DefaultFormatters._
+                   |import cats.effect.IO
+                   |import swam.runtime.Memory
+                   |import swam.runtime.imports.annotations.{effect, effectful, module, pure}
+                   |""".stripMargin
+
   override def traverseAll(zero: String, compose: (String, String) => String) =
-    s"package swam\npackage wasi\nimport Types._\nimport Header._ \nimport cats.effect._\nimport cats.effect.IO \nimport swam.runtime.Memory\nimport swam.runtime.imports.annotations.module\n@module\n  trait Module { var mem: Memory[IO] = null \n\n val name = \"wasi_snapshot_preview1\" \n\n ${super
+    s"$imports\n @module\n abstract class Module[@effect F[_]](implicit F: Applicative[F]){\n var mem: Memory[IO] = null \n\n $header \n\n ${super
       .traverseAll(zero, compose)}\n }"
 
   class InitTypeEmitTraverser(name: String) extends TypesTraverser[String](types) {
@@ -144,13 +159,13 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
     override val basicTypeTraverser = {
       case (_, t: BasicType) =>
         t.name match {
-          case "u8"     => name
-          case "u16"    => name
-          case "u32"    => name
-          case "u64"    => name
-          case "s64"    => name
+          case "u8"     => s"$name.toByte"
+          case "u16"    => s"$name.toShort"
+          case "u16"    => s"$name.toInt"
+          case "u64"    => s"$name.toLong"
+          case "s64"    => s"$name.toLong"
           case "string" => s"getString(mem, $name, ${name}Len)"
-          case "ptr"    => name
+          case "ptr"    => s"$name.toInt"
         }
     }
 

@@ -130,8 +130,8 @@ object InterpreterApp extends IOApp {
 
   def prepareWASI(module: Module[IO], config: Config) =
     for {
-      wasi <- IO(new wasi.WASIImplementation(args = config.wasm.getName +: config.args.toSeq, dirs = config.dirs))
-      instance <- module.importing(wasi.imports()).instantiate
+      wasi <- IO(new wasi.WASIImplementation[IO](args = config.wasm.getName +: config.args.toSeq, dirs = config.dirs))
+      instance <- module.importing(wasi.name, wasi.getModule()).instantiate
       mem <- instance.exports.memory("memory")
       wrappMem <- IO(getMemory(mem, config.traceWasi))
       _ <- IO(wasi.mem = wrappMem)
