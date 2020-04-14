@@ -109,16 +109,6 @@ object InterpreterApp extends IOApp {
       .text(
         "Append args at the end of the memory before calling the function passing the address and offset as addresses")
 
-    opt[File]('l', "link")
-      .optional()
-      .action((f, c) => c.copy(linkJarPath = f))
-      .text("Links the imports inside the jar file to be append in the executed WASM")
-
-    opt[String]('c', "class-name")
-      .optional()
-      .action((f, c) => c.copy(className = f))
-      .text("Imports class name")
-
   }
 
   def getMemory(mem: Memory[IO], traceWasi: Boolean): Memory[IO] = {
@@ -135,14 +125,14 @@ object InterpreterApp extends IOApp {
       mem <- instance.exports.memory("memory")
       wrappMem <- IO(getMemory(mem, config.traceWasi))
       _ <- IO(wasi.mem = wrappMem)
-    } yield (instance, mem, wrappMem)
+    } yield (instance, wrappMem)
 
   def prepeareNonWASI(module: Module[IO], config: Config) =
     for {
       instance <- module.instantiate
       mem <- instance.exports.memory("memory")
       wrappMem <- IO(getMemory(mem, config.traceWasi))
-    } yield (instance, mem, wrappMem)
+    } yield (instance, wrappMem)
 
   def createInstance(blocker: Blocker, config: Config) = {
     for {
@@ -158,7 +148,7 @@ object InterpreterApp extends IOApp {
       else
         engine.compile(config.wasm.toPath, blocker, 4096)
 
-      (instance, mem, wrappMem) <- if (module.imports.collect { case x => x.moduleName.startsWith("wasi_") }.nonEmpty)
+      (instance, wrappMem) <- if (module.imports.collect { case x => x.moduleName.startsWith("wasi_") }.nonEmpty)
         prepareWASI(module, config)
       else
         prepeareNonWASI(module, config)
