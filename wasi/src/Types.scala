@@ -2,7 +2,9 @@ package swam
 package wasi
 import java.nio.channels.FileChannel
 import java.nio.charset.Charset
-import java.nio.file.{Files, OpenOption, Paths, StandardOpenOption}
+import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
+import java.nio.file.{Files, OpenOption, Path, Paths, StandardOpenOption}
+import java.util
 
 import cats.effect.IO
 import swam.runtime.Memory
@@ -92,7 +94,7 @@ object Types {
       bytes.length
     }
 
-    def read(offset: Int, bytes: Array[Byte], len: Int): Int = {
+    def read(offset: Int, bytes: Array[Byte], len: Int, updatePosition: Boolean = true): Int = {
 
       if (fd == 1) // stdout
         throw new WASIException(errnoEnum.`perm`)
@@ -125,7 +127,9 @@ object Types {
 
       if (read > 0) {
         chars.map(_.toByte).copyToArray(bytes)
-        position += read
+
+        if (updatePosition)
+          position += read
       }
       reader.close()
       Math.max(0, read)
@@ -135,6 +139,18 @@ object Types {
       val p = Paths.get(path)
       val fc = FileChannel.open(p, StandardOpenOption.WRITE)
       fc.truncate(size)
+    }
+
+    def changeTimestamps(atime: Long, mtime: Long) = {
+      val p = Paths.get(path)
+      Files
+        .getFileAttributeView(p, classOf[BasicFileAttributeView])
+        .setTimes(FileTime.fromMillis(mtime), FileTime.fromMillis(atime), null)
+    }
+
+    def readdir(): Array[Path] = {
+      val p = Paths.get(path)
+      Files.list(p).toArray(r => new Array[Path](r))
     }
 
     def write(offset: Int, mem: Memory[IO]) = {

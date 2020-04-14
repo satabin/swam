@@ -4,7 +4,7 @@ package wasi
 import java.io.{File, FileDescriptor, FileInputStream, FileOutputStream, PrintWriter}
 import java.nio.ByteBuffer
 import java.nio.file.attribute.{FileAttribute, PosixFilePermissions}
-import java.nio.file.{Files, NoSuchFileException, Paths}
+import java.nio.file.{Files, NoSuchFileException, Path, Paths}
 
 import cats.effect.IO
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
@@ -170,7 +170,6 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
 
   override def fd_closeImpl(fd: fd): Types.errnoEnum.Value = {
     checkRight(fd, rightsFlags.fd_datasync.id)
-    // TODO
     if (fdMap.contains(fd))
       throw new WASIException(errnoEnum.`badf`)
 
@@ -236,10 +235,17 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
                                          atim: timestamp,
                                          mtim: timestamp,
                                          fst_flags: Types.fstflagsFlags.Value): Types.errnoEnum.Value = {
+    val stat = checkRight(fd, rightsFlags.fd_filestat_set_times.id)
+    val n = now(clockidEnum.`realtime`)
 
-    // TODO
-    throw new Exception("Not implemented")
-    errnoEnum.`fault`
+    val atimNow = (fst_flags.id & WASI_FILESTAT_SET_ATIM_NOW) == WASI_FILESTAT_SET_ATIM_NOW
+    val mtimNow = (fst_flags.id & WASI_FILESTAT_SET_MTIM_NOW) == WASI_FILESTAT_SET_MTIM_NOW
+
+    val atime: Long = if (atimNow) n else atim
+    val mtime: Long = if (mtimNow) n else mtim
+
+    stat.changeTimestamps(atime, mtime)
+    errnoEnum.`success`
   }
 
   override def fd_preadImpl(fd: fd,
@@ -248,17 +254,21 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
                             offset: filesize,
                             nread: ptr): Types.errnoEnum.Value = {
 
-    /*val stats = checkRight(fd, rightsFlags.fd_read.id | rightsFlags.fd_write.id)
-      var cumul = 0
-      val reader = fdMapFile(fd)
-      iovs.foreach(iov => {
-        val arr = reader.read(0, iov.`buf_len`)
-        cumul += iov.`buf_len`
-        arr.zipWithIndex.foreach { case (va, i) => iov.`buf`._set(i, va) }
-      })
+    val stat = checkRight(fd, rightsFlags.fd_read.id | rightsFlags.fd_seek.id)
 
-      nread._set(0, cumul)*/
-    errnoEnum.`success`
+    val cumul = iovs
+      .map(iov => {
+        val dst = new Array[Byte](iov.`buf_len`)
+        val read = stat.read(0, dst, iov.`buf_len`, updatePosition = false) // seek
+        if (read > 0)
+          mem.writeBytes(iov.buf.offset, ByteBuffer.wrap(dst, 0, read)).unsafeRunSync()
+        read
+      })
+      .sum
+
+    //nread._set(0, 0)
+    mem.writeInt(nread, cumul).unsafeRunSync()
+    Types.errnoEnum.`success`
   }
 
   override def fd_prestat_getImpl(fd: fd, buf: ptr): Types.errnoEnum.Value = {
@@ -292,7 +302,6 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
       })
       .sum
 
-    //nread._set(0, 0)
     mem.writeInt(nread, cumul).unsafeRunSync()
     Types.errnoEnum.`success`
   }
@@ -302,9 +311,51 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
                               buf_len: size,
                               cookie: dircookie,
                               bufused: ptr): Types.errnoEnum.Value = {
-    // TODO
+    val stat = checkRight(fd, rightsFlags.fd_readdir.id)
 
-    throw new Exception("Not implemented")
+    val entries: Array[Path] = stat.readdir()
+
+    var bufPtr = buf
+    for (i <- cookie until entries.length) {
+      val entry = entries(i.toInt)
+      mem.writeLong(bufPtr, i + 1).unsafeRunSync()
+      bufPtr += 8
+
+      if (bufPtr - buf < buf_len) {
+        val resolve = Paths.get(stat.path).resolve(entry)
+        val name = resolve.getFileName.toString.getBytes
+        // TODO write ino
+        bufPtr += 8
+
+        if (bufPtr - buf < buf_len) {
+          mem.writeInt(bufPtr, name.length).unsafeRunSync()
+          bufPtr += 4
+          if (bufPtr - buf < buf_len) {
+            val fileType: filetypeEnum.Value = {
+              if (entry.toFile.isDirectory)
+                filetypeEnum.`directory`
+              if (entry.toFile.isFile)
+                filetypeEnum.`regular_file`
+              // TODO add other cases
+              filetypeEnum.`unknown`
+            }
+
+            mem.writeByte(bufPtr, fileType.id.toByte).unsafeRunSync
+
+            bufPtr += 1
+
+            bufPtr += 3 // padding
+
+            if (bufPtr - buf < buf_len) {
+              mem.writeBytes(bufPtr, ByteBuffer.wrap(name)).unsafeRunSync
+              bufPtr += name.length
+            }
+          }
+        }
+      }
+    }
+    mem.writeInt(bufused, Math.min(bufPtr - buf, buf_len)).unsafeRunSync
+    Types.errnoEnum.`success`
   }
 
   override def fd_renumberImpl(fd: fd, to: fd): Types.errnoEnum.Value = {
@@ -399,23 +450,6 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
 
     val ostats = checkRight(old_fd, rightsFlags.path_link_source.id)
     val nstats = checkRight(old_fd, rightsFlags.path_link_target.id)
-
-    // TODO
-    throw new Exception("Not implemented")
-
-  }
-
-  def path_openImpl(fd: fd,
-                    dirflags: Types.lookupflagsFlags.Value,
-                    path: string,
-                    pathLen: Int,
-                    oflags: Types.oflagsFlags.Value,
-                    fs_rights_base: Types.rightsFlags.Value,
-                    fs_rights_inherting: Types.rightsFlags.Value,
-                    fdflags: Types.fdflagsFlags.Value,
-                    opened_fd: ptr): Types.errnoEnum.Value = {
-
-    val stats = checkRight(fd, rightsFlags.path_open.id)
 
     // TODO
     throw new Exception("Not implemented")

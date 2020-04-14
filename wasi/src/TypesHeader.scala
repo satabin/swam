@@ -132,4 +132,8 @@ object TypesHeader {
   val WASI_FD_RSYNC = 8
   val WASI_FD_SYNC = 16
 
+  val WASI_FILESTAT_SET_ATIM = 1 << 0
+  val WASI_FILESTAT_SET_ATIM_NOW = 1 << 1
+  val WASI_FILESTAT_SET_MTIM = 1 << 2
+  val WASI_FILESTAT_SET_MTIM_NOW = 1 << 3
 }
