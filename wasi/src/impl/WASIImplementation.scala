@@ -3,7 +3,8 @@ package wasi
 
 import java.io.{File, FileDescriptor, FileInputStream, FileOutputStream, PrintWriter}
 import java.nio.ByteBuffer
-import java.nio.file.attribute.{FileAttribute, PosixFilePermissions}
+import java.nio.charset.Charset
+import java.nio.file.attribute.{BasicFileAttributeView, FileAttribute, FileTime, PosixFilePermissions}
 import java.nio.file.{Files, NoSuchFileException, Path, Paths}
 
 import cats.effect.IO
@@ -467,11 +468,22 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
                                            mtim: timestamp,
                                            fst_flags: Types.fstflagsFlags.Value): Types.errnoEnum.Value = {
 
-    val stats = checkRight(fd, rightsFlags.path_filestat_set_times.id)
+    val stat = checkRight(fd, rightsFlags.path_filestat_set_times.id)
+    val n = now(clockidEnum.`realtime`)
 
-    // TODO
-    throw new Exception("Not implemented")
+    val atimNow = (fst_flags.id & WASI_FILESTAT_SET_ATIM_NOW) == WASI_FILESTAT_SET_ATIM_NOW
+    val mtimNow = (fst_flags.id & WASI_FILESTAT_SET_MTIM_NOW) == WASI_FILESTAT_SET_MTIM_NOW
 
+    val atime: Long = if (atimNow) n else atim
+    val mtime: Long = if (mtimNow) n else mtim
+
+    val p = Paths.get(stat.path).resolve(path).toRealPath()
+
+    Files
+      .getFileAttributeView(p, classOf[BasicFileAttributeView])
+      .setTimes(FileTime.fromMillis(mtime), FileTime.fromMillis(atime), null)
+
+    Types.errnoEnum.`success`
   }
 
   override def path_linkImpl(old_fd: fd,
@@ -480,66 +492,86 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
                              new_fd: fd,
                              new_path: string): Types.errnoEnum.Value = {
 
-    val ostats = checkRight(old_fd, rightsFlags.path_link_source.id)
-    val nstats = checkRight(old_fd, rightsFlags.path_link_target.id)
+    val ostat = checkRight(old_fd, rightsFlags.path_link_source.id)
+    val nstat = checkRight(new_fd, rightsFlags.path_link_target.id)
 
-    // TODO
-    throw new Exception("Not implemented")
+    if (ostat.path.isEmpty || nstat.path.isEmpty)
+      throw new WASIException(errnoEnum.`inval`)
 
+    Files.createSymbolicLink(Paths.get(ostat.path).resolve(old_path), Paths.get(nstat.path).resolve(new_path))
+    Types.errnoEnum.`success`
   }
 
   override def path_readlinkImpl(fd: fd, path: string, buf: ptr, buf_len: size, bufused: ptr): Types.errnoEnum.Value = {
 
-    val stats = checkRight(fd, rightsFlags.path_readlink.id)
+    val stat = checkRight(fd, rightsFlags.path_readlink.id)
 
-    // TODO
-    throw new Exception("Not implemented")
+    val full = Paths.get(stat.path).resolve(path)
+    val r = Files.readSymbolicLink(full)
+    val dst = new Array[Char](buf_len)
 
+    val reader = Files.newBufferedReader(r, Charset.forName("UTF-8"))
+    val newL = reader.read(dst, 0, dst.length)
+
+    mem.writeBytes(buf, ByteBuffer.wrap(dst.map(_.toByte), 0, newL))
+    mem.writeInt(bufused, Math.min(newL, newL))
+    Types.errnoEnum.`success`
   }
 
   override def path_remove_directoryImpl(fd: fd, path: string): Types.errnoEnum.Value = {
 
-    val stats = checkRight(fd, rightsFlags.path_remove_directory.id)
+    val stat = checkRight(fd, rightsFlags.path_remove_directory.id)
 
-    // TODO
-    throw new Exception("Not implemented")
+    if (stat.path.isEmpty)
+      throw new WASIException(errnoEnum.`inval`)
 
+    Files.delete(Paths.get(stat.path).resolve(path).toRealPath())
+    Types.errnoEnum.`success`
   }
 
   override def path_renameImpl(fd: fd, old_path: string, new_fd: fd, new_path: string): Types.errnoEnum.Value = {
 
     val ostats = checkRight(fd, rightsFlags.path_rename_source.id)
-    val nstats = checkRight(fd, rightsFlags.path_rename_target.id)
+    val nstats = checkRight(new_fd, rightsFlags.path_rename_target.id)
 
-    // TODO
-    throw new Exception("Not implemented")
+    val oPath = Paths.get(ostats.path).resolve(old_path).toRealPath()
+    val nPath = Paths.get(nstats.path).resolve(new_path).toRealPath()
 
+    Files.move(oPath, nPath)
+    Types.errnoEnum.`success`
   }
 
   override def path_symlinkImpl(old_path: string, fd: fd, new_path: string): Types.errnoEnum.Value = {
 
-    val stats = checkRight(fd, rightsFlags.path_symlink.id)
+    val stat = checkRight(fd, rightsFlags.path_symlink.id)
 
-    // TODO
-    throw new Exception("Not implemented")
+    if (stat.path.isEmpty)
+      throw new WASIException(errnoEnum.`inval`)
 
-    errnoEnum.`fault`
+    val oPath = Paths.get(stat.path).resolve(old_path).toRealPath()
+    val nPath = Paths.get(stat.path).resolve(new_path).toRealPath()
 
+    Files.createSymbolicLink(oPath, nPath)
+    Types.errnoEnum.`success`
   }
 
   override def path_unlink_fileImpl(fd: fd, path: string): Types.errnoEnum.Value = {
 
-    val stats = checkRight(fd, rightsFlags.path_unlink_file.id)
+    val stat = checkRight(fd, rightsFlags.path_unlink_file.id)
 
-    // TODO
-    throw new Exception("Not implemented")
+    if (stat.path.isEmpty)
+      throw new WASIException(errnoEnum.`inval`)
 
+    val oPath = Paths.get(stat.path).resolve(path).toRealPath()
+
+    Files.delete(oPath)
+    Types.errnoEnum.`success`
   }
 
   override def poll_oneoffImpl(in: ptr, out: ptr, nsubscriptions: size, nevents: ptr): Types.errnoEnum.Value = {
 
+    // TODO
     errnoEnum.`fault`
-
   }
 
   override def proc_exitImpl(rval: exitcode): Unit = {
@@ -559,7 +591,8 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
   }
 
   override def random_getImpl(buf: ptr, buf_len: size): Types.errnoEnum.Value = {
-    //Range(0, buf_len).foreach(i => buf._set(i, (255 * Math.random()).toByte))
+    val random = Range(0, buf_len).map(_ => (255 * Math.random()).toByte).toArray
+    mem.writeBytes(buf, ByteBuffer.wrap(random)).unsafeRunSync
     errnoEnum.`success`
   }
 
