@@ -173,7 +173,7 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
     if (fdMap.contains(fd))
       throw new WASIException(errnoEnum.`badf`)
 
-    fdMap.updated(fd, None) // delete the entry
+    fdMap = fdMap.updated(fd, None) // delete the entry
 
     errnoEnum.`success`
   }
@@ -359,18 +359,31 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
   }
 
   override def fd_renumberImpl(fd: fd, to: fd): Types.errnoEnum.Value = {
-    throw new Exception("Not implemented")
+    val from = checkRight(fd, 0)
+    val toStat = checkRight(to, 0)
+
+    // TODO check close
+    fdMap = fdMap.updated(fd, fdMap(to))
+    fdMap = fdMap.updated(to, None)
+
+    Types.errnoEnum.`success`
   }
 
   override def fd_seekImpl(fd: fd,
                            offset: filedelta,
                            whence: Types.whenceEnum.Value,
                            newoffset: ptr): Types.errnoEnum.Value = {
-    val stats = checkRight(fd, rightsFlags.fd_seek.id)
+    val stat = checkRight(fd, rightsFlags.fd_seek.id)
 
-    // TODO
-    throw new Exception("Not implemented")
+    val newPos = whence match {
+      case whenceEnum.`cur` => stat.position
+      case whenceEnum.`end` => Paths.get(stat.path).toFile.length + stat.position
+      case whenceEnum.`set` => offset
+    }
 
+    stat.position = newPos.toInt
+    mem.writeLong(newoffset, newPos).unsafeRunSync()
+    Types.errnoEnum.`success`
   }
 
   override def fd_syncImpl(fd: fd): Types.errnoEnum.Value = {
@@ -378,6 +391,7 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
 
     // TODO
     throw new Exception("Not implemented")
+    Types.errnoEnum.`success`
 
   }
 
