@@ -10,7 +10,8 @@ import swam.runtime.Memory
 object Header {
   def getString(buffer: Memory[IO], offset: Int, length: Int) = {
     val results = new Array[Byte](length)
-    val str = String.valueOf(buffer.readBytes(offset, results).unsafeRunSync())
+    buffer.readBytes(offset, results).unsafeRunSync
+    val str = new String(results)
     str
   }
 }

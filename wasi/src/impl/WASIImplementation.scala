@@ -48,7 +48,7 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
     */
   def parseStats(fd: Int): `fdstat` = {
 
-    if (!fdMap.contains(fd))
+    if (!fdMap.contains(fd) || fdMap(fd) == null)
       throw new WASIException(errnoEnum.`badf`)
 
     val entry = fdMap(fd)
@@ -173,7 +173,7 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
     if (fdMap.contains(fd))
       throw new WASIException(errnoEnum.`badf`)
 
-    fdMap = fdMap.updated(fd, None) // delete the entry
+    fdMap = fdMap.updated(fd, null) // delete the entry
 
     errnoEnum.`success`
   }
@@ -306,6 +306,15 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
     Types.errnoEnum.`success`
   }
 
+  def getFileType(entry: Path) = {
+    if (entry.toFile.isDirectory)
+      filetypeEnum.`directory`
+    if (entry.toFile.isFile)
+      filetypeEnum.`regular_file`
+    // TODO add other cases
+    filetypeEnum.`unknown`
+  }
+
   override def fd_readdirImpl(fd: fd,
                               buf: ptr,
                               buf_len: size,
@@ -331,14 +340,7 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
           mem.writeInt(bufPtr, name.length).unsafeRunSync()
           bufPtr += 4
           if (bufPtr - buf < buf_len) {
-            val fileType: filetypeEnum.Value = {
-              if (entry.toFile.isDirectory)
-                filetypeEnum.`directory`
-              if (entry.toFile.isFile)
-                filetypeEnum.`regular_file`
-              // TODO add other cases
-              filetypeEnum.`unknown`
-            }
+            val fileType: filetypeEnum.Value = getFileType(entry)
 
             mem.writeByte(bufPtr, fileType.id.toByte).unsafeRunSync
 
@@ -364,7 +366,7 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
 
     // TODO check close
     fdMap = fdMap.updated(fd, fdMap(to))
-    fdMap = fdMap.updated(to, None)
+    fdMap = fdMap.updated(to, null)
 
     Types.errnoEnum.`success`
   }
@@ -375,8 +377,8 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
                            newoffset: ptr): Types.errnoEnum.Value = {
     val stat = checkRight(fd, rightsFlags.fd_seek.id)
 
-    val newPos = whence match {
-      case whenceEnum.`cur` => stat.position
+    val newPos: Long = whence match {
+      case whenceEnum.`cur` => stat.position // TODO check this case
       case whenceEnum.`end` => Paths.get(stat.path).toFile.length + stat.position
       case whenceEnum.`set` => offset
     }
@@ -387,20 +389,17 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
   }
 
   override def fd_syncImpl(fd: fd): Types.errnoEnum.Value = {
-    val stats = checkRight(fd, rightsFlags.fd_sync.id)
+    val stat = checkRight(fd, rightsFlags.fd_sync.id)
 
-    // TODO
-    throw new Exception("Not implemented")
+    // TODO check if we need to do so
     Types.errnoEnum.`success`
-
   }
 
   override def fd_tellImpl(fd: fd, offset: ptr): Types.errnoEnum.Value = {
-    val stats = checkRight(fd, rightsFlags.fd_tell.id)
+    val stat = checkRight(fd, rightsFlags.fd_tell.id)
 
-    // TODO
-    throw new Exception("Not implemented")
-
+    mem.writeLong(offset, stat.position).unsafeRunSync
+    Types.errnoEnum.`success`
   }
 
   override def fd_writeImpl(fd: fd, iovs: ciovec_array, iovsLen: u32, nwritten: Int): Types.errnoEnum.Value = {
@@ -418,16 +417,19 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
         .sum
     mem.writeInt(nwritten, cumul).unsafeRunSync()
 
-    //printMem()
     Types.errnoEnum.`success`
   }
 
   override def path_create_directoryImpl(fd: fd, path: string): Types.errnoEnum.Value = {
-    val stats = checkRight(fd, rightsFlags.path_create_directory.id)
+    val stat = checkRight(fd, rightsFlags.path_create_directory.id)
 
-    // TODO
-    throw new Exception("Not implemented")
+    if (stat.path.isEmpty)
+      throw new WASIException(errnoEnum.`inval`)
 
+    val p = Paths.get(path)
+    Files.createDirectory(p)
+
+    Types.errnoEnum.`success`
   }
 
   override def path_filestat_getImpl(fd: fd,
@@ -435,10 +437,26 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
                                      path: string,
                                      buf: ptr): Types.errnoEnum.Value = {
 
-    val stats = checkRight(fd, rightsFlags.fd_filestat_get.id)
+    val stat = checkRight(fd, rightsFlags.fd_filestat_get.id)
 
-    // TODO
-    throw new Exception("Not implemented")
+    if (stat.path.isEmpty)
+      throw new WASIException(errnoEnum.`inval`)
+
+    val resolved = Paths.get(stat.path).resolve(path)
+
+    try resolved.toRealPath()
+    catch {
+      case _: NoSuchFileException => throw new WASIException(errnoEnum.`inval`)
+    }
+
+    // mem.writeLong() // write dev
+    // mem.writeLong() // write dev
+    // buf + 16
+    // TODO posix format data
+
+    mem.writeByte(buf + 16, getFileType(resolved).id.toByte).unsafeRunSync
+
+    Types.errnoEnum.`success`
 
   }
 
