@@ -7,7 +7,7 @@ echo "Merge sort"
 mill cli.run $pw/merge_sort.wasm
 
 echo "Posix"
-mill cli.run $pw/posix.wasm m1.txt 1.txt
+mill cli.run -d ./wasi/test/resources $pw/posix.wasm test_all.sh copy.txt
 
 echo "Bitwise"
 mill cli.run $pw/bitwise.wasm

@@ -1,5 +1,6 @@
 package swam
 package wasi
+import java.io.RandomAccessFile
 import java.nio.channels.FileChannel
 import java.nio.charset.Charset
 import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
@@ -85,10 +86,12 @@ object Types {
       if (!file.canWrite)
         throw new WASIException(errnoEnum.`perm`)
 
-      val writer = Files.newBufferedWriter(Paths.get(path), StandardOpenOption.WRITE)
+      val writer = new RandomAccessFile(Paths.get(path).toString, "rw")
+      writer.seek(position)
 
       // TODO check for encoding
-      writer.write(bytes.map(_.toChar), 0, bytes.length)
+      writer.write(bytes, 0, bytes.length)
+      position += bytes.length
 
       writer.close()
       bytes.length

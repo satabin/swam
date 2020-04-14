@@ -20,7 +20,7 @@ import swam.runtime.internals.instance.MemoryInstance
     @author Javier Cabrera-Arteaga on 2020-03-12
   */
 case class Config(wasm: File = null,
-                  dirs: Vector[String] = Vector("./"), // current path
+                  dirs: Vector[String] = Vector("."), // current path
                   args: Vector[String] = Vector(),
                   main: String = "_start",
                   parse: Boolean = false,
