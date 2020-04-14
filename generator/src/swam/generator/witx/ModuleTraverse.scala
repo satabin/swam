@@ -136,7 +136,7 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
   def mapAliasType(t: AliasType): Adapt = mapTypeToWasm(types(t.tpe.tpeName))
 
   override def traverseAll(zero: String, compose: (String, String) => String) =
-    s"package swam\npackage wasi\nimport Types._\nimport Header._ \nimport cats.effect._\nimport cats.effect.IO \nimport swam.runtime.Memory\n  trait Module { var mem: Memory[IO] = null \n\n${super
+    s"package swam\npackage wasi\nimport Types._\nimport Header._ \nimport cats.effect._\nimport cats.effect.IO \nimport swam.runtime.Memory\nimport swam.runtime.imports.annotations.module\n@module\n  trait Module { var mem: Memory[IO] = null \n\n val name = \"wasi_snapshot_preview1\" \n\n ${super
       .traverseAll(zero, compose)}\n }"
 
   class InitTypeEmitTraverser(name: String) extends TypesTraverser[String](types) {

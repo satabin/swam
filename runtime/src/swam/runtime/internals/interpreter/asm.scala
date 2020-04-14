@@ -21,11 +21,11 @@ package interpreter
 
 import swam.{syntax => sy}
 import instance._
-
 import cats._
 import cats.implicits._
+import java.lang.{Double => JDouble, Float => JFloat, Integer => JInt, Long => JLong}
 
-import java.lang.{Integer => JInt, Long => JLong, Float => JFloat, Double => JDouble}
+import cats.effect.IO
 
 /** `Asm` is the interpreted language. It closely mirrors the WebAssembly bytecode with
   *  few differences:
@@ -45,6 +45,8 @@ import java.lang.{Integer => JInt, Long => JLong, Float => JFloat, Double => JDo
   */
 sealed trait AsmInst[F[_]] {
   def execute(t: Frame[F]): Continuation[F]
+
+  override def toString(): String = s"${getClass.getSimpleName}"
 }
 
 sealed trait Continuation[+F[_]]

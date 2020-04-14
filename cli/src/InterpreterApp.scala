@@ -20,6 +20,7 @@ import swam.runtime.internals.instance.MemoryInstance
     @author Javier Cabrera-Arteaga on 2020-03-12
   */
 case class Config(wasm: File = null,
+                  dirs: Vector[String] = Vector("./"), // current path
                   args: Vector[String] = Vector(),
                   main: String = "_start",
                   parse: Boolean = false,
@@ -60,6 +61,12 @@ object InterpreterApp extends IOApp {
       .minOccurs(0)
       .action((x, c) => c.copy(args = c.args :+ x))
       .text("Input arguments")
+
+    opt[String]('d', "dirs")
+      .unbounded()
+      .optional()
+      .action((x, c) => c.copy(dirs = c.dirs :+ x))
+      .text("Preopened POSIX dirs")
 
     opt[String]('m', "main")
       .optional()
@@ -123,7 +130,7 @@ object InterpreterApp extends IOApp {
 
   def prepareWASI(module: Module[IO], config: Config) =
     for {
-      wasi <- IO(new wasi.WASIImplementation(args = config.wasm.getName +: config.args.toSeq))
+      wasi <- IO(new wasi.WASIImplementation(args = config.wasm.getName +: config.args.toSeq, dirs = config.dirs))
       instance <- module.importing(wasi.imports()).instantiate
       mem <- instance.exports.memory("memory")
       wrappMem <- IO(getMemory(mem, config.traceWasi))

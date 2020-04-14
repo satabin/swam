@@ -5,8 +5,13 @@ import Header._
 import cats.effect._
 import cats.effect.IO
 import swam.runtime.Memory
+import swam.runtime.imports.annotations.module
+
+@module
 trait Module {
   var mem: Memory[IO] = null
+
+  val name = "wasi_snapshot_preview1"
 
   def tryToExecute(a: => errnoEnum.Value) = {
     IO(
@@ -19,6 +24,7 @@ trait Module {
 
   def args_getImpl(argv: ptr, argv_buf: ptr): (errnoEnum.Value)
 
+  @
   def args_get(argv: Int, argv_buf: Int) = {
     tryToExecute(args_getImpl(argv, argv_buf))
   }
@@ -228,28 +234,23 @@ trait Module {
     })
   }
 
-  def fd_prestat_getImpl(fd: fd, buf: Pointer[prestat]): (errnoEnum.Value)
+  def fd_prestat_getImpl(fd: fd, buf: ptr): (errnoEnum.Value)
 
   def fd_prestat_get(fd: Int, buf: Int) = {
-    val bufAdapted: Pointer[prestat] =
-      new Pointer[prestat](mem.readInt(buf).unsafeRunSync, (i) => prestat(mem, i), (i, r) => r.write(i, mem))
 
     IO(try {
-      fd_prestat_getImpl(fd, bufAdapted).id
+      fd_prestat_getImpl(fd, buf).id
     } catch {
       case x: WASIException => x.errno.id
     })
   }
 
-  def fd_prestat_dir_nameImpl(fd: fd, path: Pointer[u8], path_len: size): (errnoEnum.Value)
+  def fd_prestat_dir_nameImpl(fd: fd, path: ptr, path_len: size): (errnoEnum.Value)
 
   def fd_prestat_dir_name(fd: Int, path: Int, path_len: Int) = {
-    val pathAdapted: Pointer[u8] = new Pointer[u8](mem.readInt(path).unsafeRunSync,
-                                                   (i) => mem.readByte(i).unsafeRunSync(),
-                                                   (i, r) => mem.writeByte(i, `r`).unsafeRunSync)
 
     IO(try {
-      fd_prestat_dir_nameImpl(fd, pathAdapted, path_len).id
+      fd_prestat_dir_nameImpl(fd, path, path_len).id
     } catch {
       case x: WASIException => x.errno.id
     })
@@ -274,16 +275,13 @@ trait Module {
     })
   }
 
-  def fd_readImpl(fd: fd, iovs: iovec_array, iovsLen: u32, nread: Pointer[size]): (errnoEnum.Value)
+  def fd_readImpl(fd: fd, iovs: iovec_array, iovsLen: u32, nread: ptr): (errnoEnum.Value)
 
   def fd_read(fd: Int, iovs: Int, iovsLen: Int, nread: Int) = {
     val iovsAdapted: iovec_array = new ArrayInstance[iovec](iovs, iovsLen, 8, (i) => iovec(mem, i)).values
-    val nreadAdapted: Pointer[size] = new Pointer[size](mem.readInt(nread).unsafeRunSync,
-                                                        (i) => mem.readInt(i).unsafeRunSync,
-                                                        (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(try {
-      fd_readImpl(fd, iovsAdapted, iovsLen, nreadAdapted).id
+      fd_readImpl(fd, iovsAdapted, iovsLen, nread).id
     } catch {
       case x: WASIException => x.errno.id
     })
@@ -447,13 +445,14 @@ trait Module {
   }
 
   def path_openImpl(fd: fd,
-                    dirflags: lookupflagsFlags.Value,
-                    path: string,
-                    oflags: oflagsFlags.Value,
+                    dirflags: Int,
+                    path: ptr,
+                    pathLen: Int,
+                    oflags: Int,
                     fs_rights_base: Long,
                     fs_rights_inherting: Long,
-                    fdflags: fdflagsFlags.Value,
-                    opened_fd: Pointer[fd]): (errnoEnum.Value)
+                    fdflags: Int,
+                    opened_fd: ptr): (errnoEnum.Value)
 
   def path_open(fd: Int,
                 dirflags: Int,
@@ -464,23 +463,9 @@ trait Module {
                 fs_rights_inherting: Long,
                 fdflags: Int,
                 opened_fd: Int) = {
-    val dirflagsAdapted: lookupflagsFlags.Value = lookupflagsFlags(dirflags)
-    val pathAdapted: String = getString(mem, path, pathLen)
-    val oflagsAdapted: oflagsFlags.Value = oflagsFlags(oflags)
-    val fdflagsAdapted: fdflagsFlags.Value = fdflagsFlags(fdflags)
-    val opened_fdAdapted: Pointer[fd] = new Pointer[fd](mem.readInt(opened_fd).unsafeRunSync,
-                                                        (i) => mem.readInt(i).unsafeRunSync,
-                                                        (i, r) => mem.writeInt(i, `r`).unsafeRunSync)
 
     IO(try {
-      path_openImpl(fd,
-                    dirflagsAdapted,
-                    pathAdapted,
-                    oflagsAdapted,
-                    fs_rights_base,
-                    fs_rights_inherting,
-                    fdflagsAdapted,
-                    opened_fdAdapted).id
+      path_openImpl(fd, dirflags, path, pathLen, oflags, fs_rights_base, fs_rights_inherting, fdflags, opened_fd).id
     } catch {
       case x: WASIException => x.errno.id
     })

@@ -104,4 +104,32 @@ object TypesHeader {
     rightsFlags.fd_filestat_get.id |
     rightsFlags.poll_fd_readwrite.id
   val STDERR_DEFAULT_RIGHTS: Long = STDOUT_DEFAULT_RIGHTS
+
+  val WASI_PREOPENTYPE_DIR = 0
+  val WASI_DIRCOOKIE_START = 0
+
+  val O_RDWR = 2
+  val O_RDONLY = 1
+  val O_WRONLY = 0
+  val O_CREAT = 512
+  val O_DIRECTORY = 1048576
+  val O_EXCL = 2048
+  val O_TRUNC = 1024
+  val O_APPEND = 8
+  val O_DSYNC = 4194304
+  val O_SYNC = 128
+  val O_NON_BLOCK = 4
+  val O_RSYNC = 16
+
+  val WASI_O_CREAT = 1
+  val WASI_O_DIRECTORY = 2
+  val WASI_O_EXCL = 4
+  val WASI_O_TRUNC = 8
+
+  val WASI_FD_FLAG_APPEND = 1
+  val WASI_FD_FLAG_DSYNC = 2
+  val WASI_FD_FLAG_NONBLOCK = 4
+  val WASI_FD_RSYNC = 8
+  val WASI_FD_SYNC = 16
+
 }

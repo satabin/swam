@@ -55,8 +55,11 @@ class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax:
   def unsafeReadShort(idx: Int) =
     buffer.getShort(idx)
 
-  def unsafeWriteInt(idx: Int, v: Int) =
+  def unsafeWriteInt(idx: Int, v: Int) = {
+    if (idx == 68600)
+      println(v)
     buffer.putInt(idx, v)
+  }
 
   def unsafeReadInt(idx: Int) =
     buffer.getInt(idx)
@@ -108,10 +111,8 @@ class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: Boolean, hardMax:
     bytes.reset()
   }
 
-  def unsafeReadBytes(idx: GlobalIdx, dst: Array[Byte]): Unit = {
-    val old = buffer.position()
+  def unsafeReadBytes(idx: Int, dst: Array[Byte]): Unit = {
     buffer.position(idx)
     buffer.get(dst)
-    buffer.position(old)
   }
 }

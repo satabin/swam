@@ -3,6 +3,8 @@ package wasi
 
 import java.io.{File, FileDescriptor, FileInputStream, FileOutputStream, PrintWriter}
 import java.nio.ByteBuffer
+import java.nio.file.attribute.{FileAttribute, PosixFilePermissions}
+import java.nio.file.{Files, NoSuchFileException, Paths}
 
 import cats.effect.IO
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
@@ -18,17 +20,26 @@ import scala.collection.immutable.HashMap
     @author Javier Cabrera-Arteaga on 2020-03-23
     Follow NodeJS implementation https://github.com/nodejs/wasi/tree/wasi/lib of WASI to implement this
   */
-class WASIImplementation(val args: Seq[String]) extends Module {
+class WASIImplementation(val args: Seq[String], val dirs: Vector[String]) extends Module {
 
   type AsIIO[T] = AsInterface[T, IO]
   type AsIsIO[T] = AsInstance[T, IO]
 
-  val fdMap: Map[Int, `fdstat`] = HashMap[Int, `fdstat`](
-    0 -> `fdstat`(filetypeEnum.`character_device`.id.toByte, 0, STDIN_DEFAULT_RIGHTS, 0),
-    1 -> `fdstat`(filetypeEnum.`character_device`.id.toByte, 0, STDOUT_DEFAULT_RIGHTS, 0),
-    2 -> `fdstat`(filetypeEnum.`character_device`.id.toByte, 0, STDERR_DEFAULT_RIGHTS, 0)
-  )
-  //val posix: POSIX = new MacOSPOSIX(LibCWrapper.run()) // TODO create factor
+  var fdMap: Map[Int, `fdstat`] = HashMap[Int, `fdstat`](
+    0 -> `fdstat`(filetypeEnum.`character_device`.id.toByte, 0, STDIN_DEFAULT_RIGHTS, 0, fd = 0),
+    1 -> `fdstat`(filetypeEnum.`character_device`.id.toByte, 0, STDOUT_DEFAULT_RIGHTS, 0, fd = 1),
+    2 -> `fdstat`(filetypeEnum.`character_device`.id.toByte, 0, STDERR_DEFAULT_RIGHTS, 0, fd = 2)
+  ) ++ (3 until (3 + dirs.length)) // preopened fd
+    .map(
+      i =>
+        (i,
+         `fdstat`(filetypeEnum.`directory`.id.toByte,
+                  0,
+                  RIGHTS_DIRECTORY_BASE,
+                  RIGHTS_DIRECTORY_INHERITING,
+                  dirs(i - 3),
+                  fd = i)))
+    .toMap
 
   /**
     * Returns stat numbers: filetype rightsBase rightsInheriting
@@ -36,20 +47,7 @@ class WASIImplementation(val args: Seq[String]) extends Module {
     * @param fd
     */
   def parseStats(fd: Int): `fdstat` = {
-    /*if (fd.isBlockDev())
-      return (filetypeEnum.`block_device`, RIGHTS_ALL, RIGHTS_BLOCK_DEVICE_INHERITING)
-    if (fd.isCharDev())
-      return (filetypeEnum.`character_device`, RIGHTS_CHARACTER_DEVICE_BASE, RIGHTS_CHARACTER_DEVICE_INHERITING)
-    if (fd.isDirectory())
-      return (filetypeEnum.`directory`, RIGHTS_DIRECTORY_BASE, RIGHTS_DIRECTORY_INHERITING)
-    if (fd.isFifo())
-      return (filetypeEnum.`socket_stream`, RIGHTS_SOCKET_BASE, RIGHTS_SOCKET_INHERITING)
-    if (fd.isFile())
-      return (filetypeEnum.`regular_file`, RIGHTS_REGULAR_FILE_BASE, RIGHTS_REGULAR_FILE_INHERITING)
-    if (fd.isSocket())
-      return (filetypeEnum.`socket_stream`, RIGHTS_SOCKET_BASE, RIGHTS_SOCKET_INHERITING)
-    if (fd.isSymlink())
-      return (filetypeEnum.`symbolic_link`, 0, 0)*/
+
     if (!fdMap.contains(fd))
       throw new WASIException(errnoEnum.`badf`)
 
@@ -250,7 +248,6 @@ class WASIImplementation(val args: Seq[String]) extends Module {
 
     val st = checkRight(fd, 0)
     st.write(offset, mem)
-    printMem()
     Types.errnoEnum.`success`
   }
 
@@ -332,35 +329,39 @@ class WASIImplementation(val args: Seq[String]) extends Module {
     errnoEnum.`success`
   }
 
-  override def fd_prestat_getImpl(fd: fd, buf: Pointer[Types.`prestat`]): Types.errnoEnum.Value = {
+  override def fd_prestat_getImpl(fd: fd, buf: ptr): Types.errnoEnum.Value = {
 
     val stats = checkRight(fd, 0)
 
-    // TODO
-    throw new Exception("Not implemented")
+    mem.writeByte(buf, WASI_PREOPENTYPE_DIR.toByte).unsafeRunSync()
+    mem.writeInt(buf + 4, stats.path.getBytes.length).unsafeRunSync()
 
+    errnoEnum.`success`
   }
 
-  override def fd_prestat_dir_nameImpl(fd: fd, path: Pointer[u8], path_len: size): Types.errnoEnum.Value = {
+  override def fd_prestat_dir_nameImpl(fd: fd, path: ptr, path_len: size): Types.errnoEnum.Value = {
     val stats = checkRight(fd, 0)
 
-    // TODO
-    throw new Exception("Not implemented")
+    mem.writeBytes(path, ByteBuffer.wrap(stats.path.getBytes)).unsafeRunSync()
 
+    errnoEnum.`success`
   }
 
-  override def fd_readImpl(fd: fd, iovs: iovec_array, iovsLen: u32, nread: Pointer[size]): Types.errnoEnum.Value = {
-    /*checkRight(fd, rightsFlags.fd_read.id)
-      var cumul = 0
-      val reader = fdMapFile(fd)
-      iovs.foreach(iov => {
-        val arr = reader.read(0, iov.`buf_len`)
-        cumul += iov.`buf_len`
-        arr.zipWithIndex.foreach { case (va, i) => iov.`buf`._set(i, va) }
+  override def fd_readImpl(fd: fd, iovs: iovec_array, iovsLen: u32, nread: ptr): Types.errnoEnum.Value = {
+    val stat = checkRight(fd, rightsFlags.fd_read.id)
+
+    val cumul = iovs
+      .map(iov => {
+        val dst = new Array[Byte](iov.`buf_len`)
+        val read = stat.read(0, dst, iov.`buf_len`)
+        if (read > 0)
+          mem.writeBytes(iov.offset, ByteBuffer.wrap(dst, 0, read)).unsafeRunSync()
+        read
       })
+      .sum
 
-      nread._set(0, cumul)*/
-
+    //nread._set(0, 0)
+    mem.writeInt(nread, cumul).unsafeRunSync()
     Types.errnoEnum.`success`
   }
 
@@ -407,16 +408,14 @@ class WASIImplementation(val args: Seq[String]) extends Module {
 
   override def fd_writeImpl(fd: fd, iovs: ciovec_array, iovsLen: u32, nwritten: Int): Types.errnoEnum.Value = {
 
-    checkRight(fd, rightsFlags.fd_write.id)
+    val stat = checkRight(fd, rightsFlags.fd_write.id)
 
     val cumul =
       iovs
         .map(iov => {
-          //print(fd, (0 until iov.`buf_len`).map(i => iov.`buf`._get(i).toChar).mkString(""))
-          //print()
-          val s = (0 until iov.`buf_len`).map(i => iov.`buf`._get(i).toChar).mkString("")
-          System.out.print(s)
-          System.out.flush()
+          val dst = new Array[Byte](iov.`buf_len`)
+          mem.readBytes(iov.offset, dst).unsafeRunSync()
+          stat.write(dst)
           iov.`buf_len`
         })
         .sum
@@ -595,16 +594,105 @@ class WASIImplementation(val args: Seq[String]) extends Module {
   }
 
   override def path_openImpl(fd: fd,
-                             dirflags: Types.lookupflagsFlags.Value,
-                             path: string,
-                             oflags: Types.oflagsFlags.Value,
+                             dirflags: Int,
+                             path: ptr,
+                             pathLen: Int,
+                             oflags: Int,
                              fs_rights_base: Long,
                              fs_rights_inherting: Long,
-                             fdflags: Types.fdflagsFlags.Value,
-                             opened_fd: Pointer[fd]): Types.errnoEnum.Value = {
+                             fdflags: Int,
+                             opened_fd: ptr): Types.errnoEnum.Value = {
     val stat = checkRight(fd, rightsFlags.path_open.id)
 
-    throw new WASIException(errnoEnum.`success`)
+    val read = (fs_rights_base & (rightsFlags.fd_read.id | rightsFlags.fd_readdir.id)) != 0
+    val write = (fs_rights_base & (rightsFlags.fd_datasync.id | rightsFlags.fd_write.id | rightsFlags.fd_allocate.id | rightsFlags.path_filestat_set_size.id)) != 0
+
+    var noflags = {
+      if (write && read)
+        O_RDWR
+      else if (read)
+        O_RDONLY
+      else
+        O_WRONLY
+    }
+
+    var neededBase = fs_rights_base | rightsFlags.path_open.id
+    var neededInheriting = fs_rights_base | fs_rights_inherting
+
+    if ((oflags & WASI_O_CREAT) != 0) {
+      noflags |= O_CREAT
+      neededBase |= rightsFlags.path_create_file.id
+    }
+
+    if ((oflags & WASI_O_DIRECTORY) != 0) {
+      noflags |= O_DIRECTORY
+    }
+
+    if ((oflags & WASI_O_EXCL) != 0) {
+      noflags |= O_EXCL
+    }
+
+    if ((oflags & WASI_O_TRUNC) != 0) {
+      noflags |= O_TRUNC
+      neededBase |= rightsFlags.path_filestat_set_size.id
+    }
+
+    if ((fdflags & WASI_FD_FLAG_APPEND) != 0) {
+      noflags |= O_APPEND
+    }
+
+    if ((fdflags & WASI_FD_FLAG_DSYNC) != 0) {
+      // TODO check
+      noflags |= O_SYNC
+      neededInheriting |= rightsFlags.fd_datasync.id
+    }
+
+    if ((fdflags & WASI_FD_RSYNC) != 0) {
+      noflags |= O_SYNC
+      neededInheriting |= rightsFlags.fd_sync.id
+    }
+
+    if ((fdflags & WASI_FD_SYNC) != 0) {
+      noflags |= O_SYNC
+      neededInheriting |= rightsFlags.fd_sync.id
+    }
+
+    if (write && ((noflags & (O_APPEND | O_TRUNC)) == 0)) {
+      neededInheriting |= rightsFlags.fd_seek.id
+    }
+
+    val dst = new Array[Byte](pathLen)
+    mem.readBytes(path, dst).unsafeRunSync()
+    val str = new String(dst)
+
+    val relative = Paths.get(stat.path).resolve(str)
+
+    if (relative.startsWith("..")) {
+      throw new WASIException(errnoEnum.`notcapable`)
+    }
+
+    // TODO create posix file permissions
+
+    val absolute =
+      try {
+        relative.toRealPath()
+      } catch {
+        case _: NoSuchFileException =>
+          if (write)
+            Files.createFile(relative).toRealPath()
+          else
+            throw new WASIException(errnoEnum.`badf`)
+      }
+
+    val newFd = fdMap.size
+    fdMap = fdMap
+      .updated(newFd,
+               `fdstat`(filetypeEnum.`unknown`.id.toByte, 0, neededBase, neededInheriting, absolute.toString, newFd))
+
+    mem.writeInt(opened_fd, newFd).unsafeRunSync()
+    // get absolute path
+
+    errnoEnum.`success`
   }
 
   override def fd_pwriteImpl(fd: fd,

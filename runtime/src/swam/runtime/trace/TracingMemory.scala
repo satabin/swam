@@ -38,9 +38,6 @@ class TracingMemory[F[_]](val inner: Memory[F], tracer: Tracer)(implicit F: Mona
     inner.unsafeGrow(by)
   }
 
-  def unsafeWriteBytes(idx: Int, bytes: ByteBuffer): Unit =
-    inner.unsafeWriteBytes(idx, bytes)
-
   def unsafeWriteByte(idx: Int, v: Byte): Unit = {
     tracer.traceEvent(EventType.MWrite, List("i8", idx.toString, v.toString))
     inner.unsafeWriteByte(idx, v)
@@ -109,7 +106,12 @@ class TracingMemory[F[_]](val inner: Memory[F], tracer: Tracer)(implicit F: Mona
 
   override def unsafeReadBytes(idx: Int, dst: Array[Byte]): Unit = {
     val res = inner.unsafeReadBytes(idx, dst)
-    tracer.traceEvent(EventType.MRead, List("bytes", idx.toString, res.toString))
+    tracer.traceEvent(EventType.MRead, List("bytes", idx.toString, dst.mkString("(", ",", ")")))
+  }
+
+  override def unsafeWriteBytes(idx: Int, bytes: ByteBuffer) = {
+    inner.unsafeWriteBytes(idx, bytes)
+    tracer.traceEvent(EventType.MRead, List("bytes", idx.toString, bytes.array().mkString("(", ",", ")")))
   }
 }
 
