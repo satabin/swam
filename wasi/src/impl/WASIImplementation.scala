@@ -181,19 +181,8 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
 
   override def fd_datasyncImpl(fd: fd): Types.errnoEnum.Value = {
     checkRight(fd, rightsFlags.fd_datasync.id)
-
     // TODO
-    throw new Exception("Not implemented")
-    errnoEnum.`fault`
-  }
-
-  def printMem() = {
-    val f = new PrintWriter(new File("trace.mem"))
-
-    for (i <- 0 until mem.size)
-      f.write(s"${(mem.readByte(i).unsafeRunSync())}\n")
-
-    f.close()
+    errnoEnum.`success`
   }
 
   override def fd_fdstat_getImpl(fd: fd, stat: ptr): Types.errnoEnum.Value = {
@@ -223,33 +212,24 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
     if (nri > stat.`fs_rights_inheriting`)
       errnoEnum.`perm`
 
-    stat = stat.copy(`fs_rights_inheriting` = fs_rights_inheriting.id)
-    stat = stat.copy(`fs_rights_base` = fs_rights_base.id)
+    stat = stat.copy(`fs_rights_inheriting` = nrb)
+    stat = stat.copy(`fs_rights_base` = nri)
 
-    //fdMap = fdMap.updated(fd, stat)
-
-    // TODO
-
+    fdMap = fdMap.updated(fd, stat)
     errnoEnum.`success`
-
   }
 
   override def fd_filestat_getImpl(fd: fd, buf: ptr): Types.errnoEnum.Value = {
-
     val stat = checkRight(fd, rightsFlags.fd_filestat_get.id)
-    // val rstat = parseStats(fdMapFile(fd))
-
-    // TODO
-    throw new Exception("Not implemented")
-
+    // Since we are using the real fd we dont need to get it from fs
+    stat.write(buf, mem)
+    errnoEnum.`success`
   }
 
   override def fd_filestat_set_sizeImpl(fd: fd, size: filesize): Types.errnoEnum.Value = {
-    checkRight(fd, rightsFlags.fd_filestat_set_size.id)
-
-    // TODO
-    throw new Exception("Not implemented")
-    errnoEnum.`fault`
+    val stat = checkRight(fd, rightsFlags.fd_filestat_set_size.id)
+    stat.truncate(size)
+    errnoEnum.`success`
   }
 
   override def fd_filestat_set_timesImpl(fd: fd,

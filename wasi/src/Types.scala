@@ -1,5 +1,6 @@
 package swam
 package wasi
+import java.nio.channels.FileChannel
 import java.nio.charset.Charset
 import java.nio.file.{Files, OpenOption, Paths, StandardOpenOption}
 
@@ -128,6 +129,12 @@ object Types {
       }
       reader.close()
       Math.max(0, read)
+    }
+
+    def truncate(size: Long) = {
+      val p = Paths.get(path)
+      val fc = FileChannel.open(p, StandardOpenOption.WRITE)
+      fc.truncate(size)
     }
 
     def write(offset: Int, mem: Memory[IO]) = {
