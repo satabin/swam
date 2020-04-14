@@ -623,7 +623,7 @@ class WASIImplementation[@effect F[_]](val args: Seq[String], val dirs: Vector[S
         relative.toRealPath()
       } catch {
         case _: NoSuchFileException =>
-          if (write)
+          if ((noflags & O_CREAT) == O_CREAT)
             Files.createFile(relative).toRealPath()
           else
             throw new WASIException(errnoEnum.`badf`)

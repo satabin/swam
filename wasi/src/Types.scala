@@ -1,7 +1,7 @@
 package swam
 package wasi
 import java.nio.charset.Charset
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, OpenOption, Paths, StandardOpenOption}
 
 import cats.effect.IO
 import swam.runtime.Memory
@@ -82,7 +82,7 @@ object Types {
       if (!file.canWrite)
         throw new WASIException(errnoEnum.`perm`)
 
-      val writer = Files.newBufferedWriter(Paths.get(path))
+      val writer = Files.newBufferedWriter(Paths.get(path), StandardOpenOption.WRITE)
 
       // TODO check for encoding
       writer.write(bytes.map(_.toChar), 0, bytes.length)
