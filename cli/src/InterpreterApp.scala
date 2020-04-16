@@ -118,10 +118,10 @@ object InterpreterApp extends IOApp {
     }
   }
 
-  def prepareWASI(module: Module[IO], config: Config) =
+  def prepareWASI(name: String, module: Module[IO], config: Config) =
     for {
       wasi <- IO(new wasi.WASIImplementation[IO](args = config.wasm.getName +: config.args.toSeq, dirs = config.dirs))
-      instance <- module.importing(wasi.name, wasi.getModule()).instantiate
+      instance <- module.importing(name, wasi.getModule()).instantiate
       mem <- instance.exports.memory("memory")
       wrappMem <- IO(getMemory(mem, config.traceWasi))
       _ <- IO(wasi.mem = wrappMem)
@@ -149,7 +149,7 @@ object InterpreterApp extends IOApp {
         engine.compile(config.wasm.toPath, blocker, 4096)
 
       (instance, wrappMem) <- if (module.imports.collect { case x => x.moduleName.startsWith("wasi_") }.nonEmpty)
-        prepareWASI(module, config)
+        prepareWASI(module.imports.filter(x => x.moduleName.startsWith("wasi_")).head.moduleName, module, config)
       else
         prepeareNonWASI(module, config)
 
