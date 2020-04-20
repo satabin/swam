@@ -22,9 +22,9 @@ class ModuleParser[F[_]: Effect](val importContext: ImportContext[F],
       ws ~ deps
         .rep()
         .map(
-          t => t.reduce((t1, t2) => t1 ++ t2)
+          _.flatten
         )
-        .flatMap(types => module(types)) ~ ws ~ End)
+        .flatMap(types => module(types.toMap)) ~ ws ~ End)
 
   def module[_: P](types: Map[String, BaseWitxType]) =
     P(
