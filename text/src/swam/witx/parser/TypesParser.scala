@@ -21,13 +21,13 @@ object TypesParser {
   import text.parser.Lexical._
 
   private val declaredTypes = Map[String, BaseWitxType](
-    "u32" -> BasicType("u32", 4),
-    "u64" -> BasicType("u64", 8),
-    "s64" -> BasicType("s64", 8),
-    "u8" -> BasicType("u8", 1),
-    "u16" -> BasicType("u16", 2),
-    "string" -> BasicType("string", 4),
-    "ptr" -> BasicType("ptr", 4)
+    "u32" -> BasicType.u32,
+    "u64" -> BasicType.u64,
+    "s64" -> BasicType.s64,
+    "u8" -> BasicType.u8,
+    "u16" -> BasicType.u16,
+    "string" -> BasicType.string,
+    "ptr" -> BasicType.ptr
   )
 
   def file[_: P]: P[Map[String, BaseWitxType]] = {
