@@ -39,6 +39,7 @@ object WitParser extends TestSuite {
       })
       .unsafeRunSync()
 
+    println(types)
   }
 
   val tests = Tests {

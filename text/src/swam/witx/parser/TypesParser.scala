@@ -31,16 +31,19 @@ object TypesParser {
   )
 
   def file[_: P]: P[Map[String, BaseWitxType]] = {
-    P(ws ~ types(declaredTypes) ~ ws ~ End)
+    P(ws ~ _types(declaredTypes) ~ ws ~ End)
   }
 
-  def types[_: P](types: Map[String, BaseWitxType]): P[Map[String, BaseWitxType]] = {
+  def _types[_: P](types: Map[String, BaseWitxType]): P[Map[String, BaseWitxType]] = {
     P(
-      "(" ~ word("typename")
-        ~ id.flatMap(id => subtype(id, types)) ~ ")")
-      .map(t => HashMap[String, BaseWitxType](t.tpeName -> t))
-      .rep(1)
-      .map(kv => kv.fold(declaredTypes)((prev, curr) => curr ++ prev))
+      _type(types).flatMap(t => _types(t)) |
+        _type(types)
+    )
+  }
+
+  def _type[_: P](types: Map[String, BaseWitxType]): P[Map[String, BaseWitxType]] = {
+    P("(" ~ word("typename") ~ id.flatMap(id => subtype(id, types)) ~ ")")
+      .map(t => HashMap[String, BaseWitxType](t.tpeName -> t) ++ types)
   }
 
   def subtype[_: P](typeId: String, types: Map[String, BaseWitxType]): P[BaseWitxType] = {
