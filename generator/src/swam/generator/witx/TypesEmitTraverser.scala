@@ -25,14 +25,14 @@ class TypesEmitTraverser(types: Map[String, BaseWitxType]) extends TypesTraverse
 
   override val basicTypeTraverser = {
     case (_, t: BasicType) =>
-      t.name match {
-        case "u8"     => s"type ${t.tpeName} = Byte\n"
-        case "u16"    => s"type ${t.tpeName} = Short\n"
-        case "u32"    => s"type ${t.tpeName} = Int\n"
-        case "u64"    => s"type ${t.tpeName} = Long\n"
-        case "s64"    => s"type ${t.tpeName} = Long\n"
-        case "string" => s"type ${t.tpeName} = String\n"
-        case "ptr"    => s"type ${t.tpeName} = Int\n"
+      t match {
+        case BasicType.u8     => s"type ${t.tpeName} = Byte\n"
+        case BasicType.u16    => s"type ${t.tpeName} = Short\n"
+        case BasicType.u32    => s"type ${t.tpeName} = Int\n"
+        case BasicType.u64    => s"type ${t.tpeName} = Long\n"
+        case BasicType.s64    => s"type ${t.tpeName} = Long\n"
+        case BasicType.string => s"type ${t.tpeName} = String\n"
+        case BasicType.ptr    => s"type ${t.tpeName} = Int\n"
       }
   }
 

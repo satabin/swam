@@ -3,6 +3,7 @@ package generator
 
 import java.io
 import java.nio.file.Paths
+import org.fusesource.scalate.TemplateEngine
 
 import utest.{TestSuite, Tests, test}
 
@@ -42,8 +43,28 @@ object WitParser extends TestSuite {
     println(types)
   }
 
+  def runGenerator() = {
+    val wasi_snaphot = Paths.get("generator/resources/wasi_witx/wasi_snapshot_preview1.witx")
+
+    val parser = WitxParser[IO]
+    val ctx = ImportContext[IO]()
+
+    val (types, interface) = Blocker[IO]
+      .use(blocker => {
+        for {
+          (types, instruction) <- parser.parseModuleInterface(wasi_snaphot, blocker, ctx)
+        } yield (types, instruction)
+      })
+      .unsafeRunSync()
+
+    val te = new TemplateEngine()
+    te.boot()
+
+  }
+
   val tests = Tests {
     "parsing_witx" - runParse()
+    "generating_boilerplate_mustache" - runGenerator()
   }
 
 }

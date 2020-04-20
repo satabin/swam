@@ -115,14 +115,14 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
     case x: ArrayType  => x.tpeName
   }
 
-  def mapBasicType(t: BasicType): Adapt = t.name match {
-    case "u8"     => Adapt("Int", "Int")
-    case "u16"    => Adapt("Int", "Short")
-    case "u32"    => Adapt("Int", "Int")
-    case "u64"    => Adapt("Long", "Long")
-    case "s64"    => Adapt("Long", "Long")
-    case "string" => Adapt("Int", "String")
-    case "ptr"    => Adapt("Int", "Int")
+  def mapBasicType(t: BasicType): Adapt = t match {
+    case BasicType.u8     => Adapt("Int", "Int")
+    case BasicType.u16    => Adapt("Int", "Short")
+    case BasicType.u32    => Adapt("Int", "Int")
+    case BasicType.u64    => Adapt("Long", "Long")
+    case BasicType.s64    => Adapt("Long", "Long")
+    case BasicType.string => Adapt("Int", "String")
+    case BasicType.ptr    => Adapt("Int", "Int")
   }
 
   def mapAliasType(t: AliasType): Adapt = mapTypeToWasm(types(t.tpe.tpeName))
@@ -158,14 +158,14 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
 
     override val basicTypeTraverser = {
       case (_, t: BasicType) =>
-        t.name match {
-          case "u8"     => s"$name.toByte"
-          case "u16"    => s"$name.toShort"
-          case "u16"    => s"$name.toInt"
-          case "u64"    => s"$name.toLong"
-          case "s64"    => s"$name.toLong"
-          case "string" => s"getString(mem, $name, ${name}Len)"
-          case "ptr"    => s"$name.toInt"
+        t match {
+          case BasicType.u8     => s"$name.toByte"
+          case BasicType.u16    => s"$name.toShort"
+          case BasicType.u32    => s"$name.toInt"
+          case BasicType.u64    => s"$name.toLong"
+          case BasicType.s64    => s"$name.toLong"
+          case BasicType.string => s"getString(mem, $name, ${name}Len)"
+          case BasicType.ptr    => s"$name.toInt"
         }
     }
 
