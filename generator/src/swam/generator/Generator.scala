@@ -96,7 +96,8 @@ object Generator extends IOApp {
           (types, interface) <- parser.parseModuleInterface(witxFile.toPath, blocker, ctx)
           scalaTypesTemplate <- IO(new TypesEmitTraverser(types).traverseAll("", (s1, s2) => s1 + s2))
           scalaTraitTemplate <- IO(new ModuleTraverse(interface, types).traverseAll("", (s1, s2) => s1 + s2))
-          _ <- generator.createScalaProjectForImports(scalaTypesTemplate, scalaTraitTemplate, newPackagePath)
+          _ <- generator
+            .createScalaProjectForImports(interface.id, scalaTypesTemplate, scalaTraitTemplate, newPackagePath)
         } yield ()
       })
   }

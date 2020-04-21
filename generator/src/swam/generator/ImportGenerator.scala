@@ -25,6 +25,9 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
   val config = Paths.get(".scalafmt.conf")
   val defaultTemplate = getClass.getClassLoader.getResource("import_template.mustache").getFile
 
+  val defaultWitxModuleTemplate = getClass.getClassLoader.getResource("witx_module.mustache").getFile
+  val defaultWitxTypesTemplate = getClass.getClassLoader.getResource("witx_types.mustache").getFile
+
   /**
     * Map WASM to scala primitive types
     * @param v
@@ -120,8 +123,6 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
     Blocker[F]
       .use { blocker =>
         for {
-          // replace
-          _ <- io.file.delete(blocker, Paths.get(s"$projectName/src/$className.scala"))
           _ <- io.file.createDirectories[F](blocker, Paths.get(s"$projectName/src")) // Creates the module structure
           _ <- fs2
             .Stream(t)
@@ -157,11 +158,21 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
     * @param traitTemplate
     * @return
     */
-  def createScalaProjectForImports(typesTemplate: String, traitTemplate: String, projectName: String) = {
+  def createScalaProjectForImports(moduleName: String,
+                                   typesTemplate: String,
+                                   traitTemplate: String,
+                                   projectName: String) = {
+
+    val te = new TemplateEngine()
+    te.boot()
+
+    val traitText = formatText(
+      te.layout(defaultWitxModuleTemplate, Map("content" -> traitTemplate, "moduleName" -> moduleName)))
+    val typesText = formatText(te.layout(defaultWitxTypesTemplate, Map("content" -> typesTemplate)))
 
     for {
-      _ <- writeToFile(typesTemplate, projectName, "Types")
-      _ <- writeToFile(traitTemplate, projectName, "Module")
+      _ <- writeToFile(typesText, projectName, "Types")
+      _ <- writeToFile(traitText, projectName, "Module")
     } yield ()
 
   }

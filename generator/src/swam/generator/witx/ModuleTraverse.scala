@@ -127,33 +127,6 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
 
   def mapAliasType(t: AliasType): Adapt = mapTypeToWasm(types(t.tpe.tpeName))
 
-  val header = s"""val name = "${module.id}"
-                  |
-                  |  def tryToExecute(a: => errnoEnum.Value) = {
-                  |      try a.id
-                  |      catch {
-                  |        case x: WASIException => x.errno.id
-                  |      }
-                  |  }""".stripMargin
-
-  val imports = s"""package swam
-                   |package wasi
-                   |
-                   |import Types._
-                   |import Header._
-                   |import cats.Applicative
-                   |import cats.effect._
-                   |import swam.runtime.formats._
-                   |import swam.runtime.formats.DefaultFormatters._
-                   |import cats.effect.IO
-                   |import swam.runtime.Memory
-                   |import swam.runtime.imports.annotations.{effect, effectful, module, pure}
-                   |""".stripMargin
-
-  override def traverseAll(zero: String, compose: (String, String) => String) =
-    s"$imports\n @module\n abstract class Module[@effect F[_]](implicit F: Applicative[F]){\n var mem: Memory[IO] = null \n\n $header \n\n ${super
-      .traverseAll(zero, compose)}\n }"
-
   class InitTypeEmitTraverser(name: String) extends TypesTraverser[String](types) {
 
     override val basicTypeTraverser = {

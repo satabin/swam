@@ -1,0 +1,32 @@
+package swam
+package wasi
+
+import Types._
+import Header._
+import cats.Applicative
+import cats.effect._
+import swam.runtime.formats._
+import swam.runtime.formats.DefaultFormatters._
+import cats.effect.IO
+import swam.runtime.Memory
+import swam.runtime.imports.annotations.{effect, effectful, module, pure}
+
+
+
+@module
+abstract class Module[@effect F[_]](implicit F: Applicative[F])
+{
+    val name = "{{{moduleName}}}"
+
+    def tryToExecute(a: => errnoEnum.Value) = {
+    try a.id
+    catch {
+        case x: WASIException => x.errno.id
+        }
+    }
+
+
+    var mem: Memory[IO] = null
+
+    {{{content}}}
+}
