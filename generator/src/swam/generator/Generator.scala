@@ -14,13 +14,13 @@ import swam.witx.parser.ImportContext
 
 import scala.concurrent.ExecutionContext
 
-case class Config(wasms: Seq[File] = Seq(),
+case class Config(wasms: List[File] = List(),
                   printTemplateContext: Boolean = false,
                   createBoilerplate: String = "",
                   className: String = "GeneratedImports",
                   renderTemplate: File = null,
                   parseAsWitx: Boolean = false,
-                  includeWitxTypesPath: Seq[String] = Seq())
+                  includeWitxTypesPath: List[String] = List())
 
 /**
     @author Javier Cabrera-Arteaga on 2020-03-07
@@ -85,14 +85,14 @@ object Generator extends IOApp {
     wasms.map(w => getImports(w, blocker)).reduce((r, l) => r.combine(l))
   }
 
-  def parseWitx(witxFile: File, includes: Seq[String], newPackagePath: String) = {
+  def parseWitx(witxFile: File, includes: List[String], newPackagePath: String) = {
     if (newPackagePath.isEmpty)
       throw new Exception("You must provide the path to create the boilerplate (--create-boilerplate)")
     Blocker[IO]
       .use(blocker => {
         for {
           parser <- IO(WitxParser[IO])
-          ctx <- IO(ImportContext[IO]())
+          ctx <- IO(ImportContext[IO](includes))
           (types, interface) <- parser.parseModuleInterface(witxFile.toPath, blocker, ctx)
           scalaTypesTemplate <- IO(new TypesEmitTraverser(types).traverseAll("", (s1, s2) => s1 + s2))
           scalaTraitTemplate <- IO(new ModuleTraverse(interface, types).traverseAll("", (s1, s2) => s1 + s2))
