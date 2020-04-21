@@ -24,7 +24,7 @@ import internals.compiler._
 import scodec._
 import scodec.bits._
 
-import cats.effect._
+import cats._
 
 /** The runtime representation of a validated and compiled module.
   *
@@ -46,7 +46,7 @@ class Module[F[_]] private[runtime] (val exports: Vector[Export],
                                      private[runtime] val start: Option[Int],
                                      private[runtime] val functions: Vector[CompiledFunction[F]],
                                      private[runtime] val elems: Vector[CompiledElem[F]],
-                                     private[runtime] val data: Vector[CompiledData[F]])(implicit F: Effect[F]) {
+                                     private[runtime] val data: Vector[CompiledData[F]])(implicit F: MonadError[F, Throwable]) {
   self =>
 
   private lazy val names = {
