@@ -18,6 +18,8 @@ val engine = Engine[IO]()
 
 implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
 
+implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
+
 def instantiate(p: String): Instance[IO] =
   Blocker[IO].use { blocker =>
     for {
