@@ -131,12 +131,6 @@ object generator extends SwamModule with PublishModule {
       developers = Seq(swamDeveloper, swamContributor)
     )
 
-
-  object test extends Tests with ScalafmtModule {
-    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.1")
-    def testFrameworks = Seq("swam.util.Framework")
-    def moduleDeps = Seq(core,text, generator, util.test )
-  }
 }
 
 
