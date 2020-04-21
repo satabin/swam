@@ -101,10 +101,11 @@ object InterpreterApp extends IOApp {
 
   def createInstance(blocker: Blocker, config: Config): IO[Instance[IO]] = {
     for {
+      tracer <- IO(JULTracer(config.traceOutDir, config.tracePattern, NoTimestampFormatter, config.traceFilter))
       compiler <- Compiler[IO]
       engine <- if (config.trace)
         Engine[IO](
-          tracer = Option(JULTracer(config.traceOutDir, config.tracePattern, NoTimestampFormatter, config.traceFilter)))
+          tracer = Option(tracer)
       else
         Engine[IO]()
 

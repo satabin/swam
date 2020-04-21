@@ -139,10 +139,6 @@ object cli extends SwamModule{
 
   def moduleDeps = Seq(text, core, runtime)
 
-  def publishVersion = swamVersion
-
-  def artifactName = "swam-cli"
-
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
     ivy"com.github.scopt::scopt:3.7.1"
