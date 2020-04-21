@@ -7,12 +7,13 @@ import swam.witx.traverser.TypesTraverser
 /**
   *@author Javier Cabrera-Arteaga on 2020-03-18
   */
-abstract class BaseWitxType(val tpeName: String, val size: Int = 4)
+abstract class BaseWitxType(val tpeName: String, val size: Int = 4, val pad: Int = 0)
 
-sealed abstract class BasicType(name: String, override val size: Int) extends BaseWitxType(name, size)
+sealed abstract class BasicType(name: String, override val size: Int, override val pad: Int = 0)
+    extends BaseWitxType(name, size, pad)
 
 object BasicType {
-  case object u8 extends BasicType("u8", 1)
+  case object u8 extends BasicType("u8", 1, 1)
   case object u32 extends BasicType("u32", 4)
   case object u64 extends BasicType("u64", 8)
   case object u16 extends BasicType("u16", 2)
