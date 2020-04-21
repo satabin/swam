@@ -24,6 +24,7 @@ val swamLicense = License.`Apache-2.0`
 val swamUrl = "https://github.com/satabin/swam"
 
 val swamDeveloper = Developer("satabin", "Lucas Satabin", "https://github.com/satabin")
+val swamContributor = Developer("Jacarte", "Javier Cabrera-Arteaga", "https://github.com/Jacarte")
 
 val fs2Version = "2.0.1"
 
@@ -127,7 +128,7 @@ object generator extends SwamModule with PublishModule {
       url = swamUrl,
       licenses = Seq(swamLicense),
       versionControl = VersionControl.github("satabin", "swam"),
-      developers = Seq(swamDeveloper)
+      developers = Seq(swamDeveloper, swamContributor)
     )
 
 
