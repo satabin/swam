@@ -46,8 +46,6 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
         case _        => Seq(s"${head.id}:${adaptor.from}") ++ processParameters(fields.tail)
       }
     }
-
-    // ${f.params.map(m => s"${m.id}:${mapTypeToWasm(m.tpe).from}").mkString(",")}
   }
 
   def mapFieldsToTuple(fields: Seq[Field]) =
@@ -72,10 +70,6 @@ class ModuleTraverse(module: ModuleInterface, types: Map[String, BaseWitxType])
   }
 
   def processResults(f: FunctionExport) = {
-
-    val adaptors = f.results
-      .map(p => mapTypeToWasm(p.tpe))
-
     val args = f.params
       .map(t => (t.id, mapTypeToWasm(t.tpe)))
       .map {

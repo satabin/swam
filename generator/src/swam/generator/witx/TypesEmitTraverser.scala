@@ -68,59 +68,35 @@ class TypesEmitTraverser(types: Map[String, BaseWitxType]) extends TypesTraverse
     case x: UnionType  => x.tpeName
   }
 
-  override val structTypeTraverser = {
-
-    case (_, t: StructType) => {
-
-      s"""case class `${t.tpeName}`(mem: Memory[IO], offset: Int) {
-         |  ${t.fields.zipWithIndex
-           .map {
-             case (f, idx) =>
-               s"val `${f.id}` = ${new LoadTypeEmitTraverser(t.fields.map(t => t.tpe.size + t.tpe.pad).slice(0, idx).sum.toString, types, offset = "offset", mem = "mem")
-                 .traverse("", f.tpe)}"
-           }
-           .mkString("\n")}
+  def traverseUnionOrStruct(t: StructType) = {
+    s"""case class `${t.tpeName}`(mem: Memory[IO], offset: Int) {
+       |  ${t.fields.zipWithIndex
+         .map {
+           case (f, idx) =>
+             s"val `${f.id}` = ${new LoadTypeEmitTraverser(t.fields.map(t => t.tpe.size + t.tpe.pad).slice(0, idx).iterator.sum.toString, types, offset = "offset", mem = "mem")
+               .traverse("", f.tpe)}"
+         }
+         .mkString("\n")}
          
          def write(offset: Int, mem: Memory[IO]) = {
-         | ${t.fields.zipWithIndex
-           .map {
-             case (f, idx) =>
-               s"${new WriteTypeEmitTraverser(f.id, t.fields.map(t => t.tpe.size + t.tpe.pad).slice(0, idx).sum.toString, types, "offset", "mem")
-                 .traverse("", f.tpe)}"
+       | ${t.fields.zipWithIndex
+         .map {
+           case (f, idx) =>
+             s"${new WriteTypeEmitTraverser(f.id, t.fields.map(t => t.tpe.size + t.tpe.pad).slice(0, idx).iterator.sum.toString, types, "offset", "mem")
+               .traverse("", f.tpe)}"
 
-           }
-           .mkString("\n")}
-         |}
-         |}\n\n""".stripMargin
-    }
+         }
+         .mkString("\n")}
+       |}
+       |}\n\n""".stripMargin
+  }
 
+  override val structTypeTraverser = {
+    case (_, t: StructType) => traverseUnionOrStruct(t)
   }
 
   override val unionTypeTraverser = {
-    case (_, t: UnionType) => {
-
-      s"""case class `${t.tpeName}`(mem: Memory[IO], offset: Int) { // UNION
-         |  ${t.fields.zipWithIndex
-           .map {
-             case (f, idx) =>
-               s"val `${f.id}` = ${new LoadTypeEmitTraverser(t.fields.map(t => t.tpe.size).slice(0, idx).sum.toString, types, offset = "offset", mem = "mem")
-                 .traverse("", f.tpe)}"
-           }
-           .mkString("\n")}
-         
-         def write(offset: Int, mem: Memory[IO]) = {
-         | ${t.fields.zipWithIndex
-           .map {
-             case (f, idx) =>
-               s"${new WriteTypeEmitTraverser(f.id, t.fields.map(t => t.tpe.size).slice(0, idx).sum.toString, types, "offset", "mem")
-                 .traverse("", f.tpe)}"
-
-           }
-           .mkString("\n")}
-         |}
-         |}\n\n""".stripMargin
-    }
-
+    case (_, t: UnionType) => traverseUnionOrStruct(t)
   }
 
   override val handleTypeTraverser = {

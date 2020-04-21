@@ -60,7 +60,7 @@ object TypesParser {
 
   def struct[_: P](typeId: String, types: Map[String, BaseWitxType]): P[StructType] = {
     P("(" ~ word("struct") ~ field(types).rep(1) ~ ")").map { fields =>
-      StructType(typeId, fields)
+      new StructType(typeId, fields)
     }
   }
 
