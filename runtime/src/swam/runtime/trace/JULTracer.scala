@@ -50,7 +50,6 @@ class JULTracer(conf: TraceConfiguration, formatter: Formatter = PureFormatter) 
       case HandlerType.Socket =>
         new SocketHandler(conf.socketHandler.host, conf.socketHandler.port)
       case HandlerType.Custom =>
-        // The class must have an empty constructor
         Class.forName(conf.custom.className).newInstance().asInstanceOf[java.util.logging.Handler]
     }
 

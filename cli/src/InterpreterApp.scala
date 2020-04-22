@@ -18,7 +18,7 @@ import swam.runtime.formats.DefaultFormatters._
     @author Javier Cabrera-Arteaga on 2020-03-12
   */
 case class Config(wasm: File = null,
-                  args: Vector[String] = Vector(),
+                  args: List[String] = List(),
                   main: String = "",
                   parse: Boolean = false,
                   debugCompiler: Boolean = false,
