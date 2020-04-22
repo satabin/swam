@@ -24,7 +24,7 @@ import internals.compiler._
 import scodec._
 import scodec.bits._
 
-import cats.effect._
+import cats._
 
 /** The runtime representation of a validated and compiled module.
   *
@@ -35,18 +35,19 @@ import cats.effect._
   *                Custom sections may be used to implement extensions or get
   *                extra information about the module.
   */
-class Module[F[_]] private[runtime] (val exports: Vector[Export],
-                                     val imports: Vector[Import],
-                                     val customs: Vector[Custom],
-                                     private[runtime] val types: Vector[FuncType],
-                                     private[runtime] val engine: Engine[F],
-                                     private[runtime] val globals: Vector[CompiledGlobal[F]],
-                                     private[runtime] val tables: Vector[TableType],
-                                     private[runtime] val memories: Vector[MemType],
-                                     private[runtime] val start: Option[Int],
-                                     private[runtime] val functions: Vector[CompiledFunction[F]],
-                                     private[runtime] val elems: Vector[CompiledElem[F]],
-                                     private[runtime] val data: Vector[CompiledData[F]])(implicit F: Effect[F]) {
+class Module[F[_]] private[runtime] (
+    val exports: Vector[Export],
+    val imports: Vector[Import],
+    val customs: Vector[Custom],
+    private[runtime] val types: Vector[FuncType],
+    private[runtime] val engine: Engine[F],
+    private[runtime] val globals: Vector[CompiledGlobal[F]],
+    private[runtime] val tables: Vector[TableType],
+    private[runtime] val memories: Vector[MemType],
+    private[runtime] val start: Option[Int],
+    private[runtime] val functions: Vector[CompiledFunction[F]],
+    private[runtime] val elems: Vector[CompiledElem[F]],
+    private[runtime] val data: Vector[CompiledData[F]])(implicit F: MonadError[F, Throwable]) {
   self =>
 
   private lazy val names = {

@@ -23,7 +23,7 @@ import syntax._
 import interpreter._
 import config.ConfiguredByteOrder
 
-import cats.effect._
+import cats._
 
 import fs2._
 
@@ -122,7 +122,7 @@ object FunctionContext {
   * otherwise it will break or generate undefined assembly code.
   *
   */
-class Compiler[F[_]: Effect](engine: Engine[F], asm: Asm[F]) {
+class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, Throwable]) {
 
   private val dataOnHeap = engine.conf.data.onHeap
   private val byteOrder = engine.conf.compiler.byteOrder match {
