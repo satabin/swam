@@ -113,9 +113,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
       case MemType(limits) => new MemoryInstance[F](limits.min, limits.max, dataOnHeap, dataHardMax.bytes.toInt)
     }
     // trace memory acceses if tracer exists
-    engine.tracer.foreach { tracer =>
-      instance.memories = instance.memories.map(TracingMemory(_, tracer))
-    }
+    engine.tracer.foreach { tracer => instance.memories = instance.memories.map(TracingMemory(_, tracer)) }
     instance.exps = module.exports.map {
       case Export.Function(name, tpe, idx) => (name, instance.funcs(idx))
       case Export.Global(name, tpe, idx)   => (name, instance.globals(idx))

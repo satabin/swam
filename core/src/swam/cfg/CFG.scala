@@ -241,9 +241,7 @@ class DominatorTree private[cfg] (idoms: Vector[Int]) {
       case (acc, ((pair @ (parent, node)) :: siblings) :: rest, childrenDone) =>
         if (childrenDone.contains(node)) {
           // children were processed, so do this node and continue to siblings
-          f(acc, parent, node).map { acc =>
-            Left((acc, siblings :: rest, childrenDone))
-          }
+          f(acc, parent, node).map { acc => Left((acc, siblings :: rest, childrenDone)) }
         } else {
           // children were not processed yet, check if any at all
           byParent.get(Some(node)) match {
@@ -255,9 +253,7 @@ class DominatorTree private[cfg] (idoms: Vector[Int]) {
               F.pure(Left((acc, children :: List(pair) :: siblings :: rest, childrenDone + node)))
             case None =>
               // this is a leaf, process it, ad continue to siblings
-              f(acc, parent, node).map { acc =>
-                Left((acc, siblings :: rest, childrenDone))
-              }
+              f(acc, parent, node).map { acc => Left((acc, siblings :: rest, childrenDone)) }
           }
         }
       case (acc, Nil, _) =>

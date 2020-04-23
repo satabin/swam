@@ -87,13 +87,12 @@ object HandlerType extends Enum[HandlerType] {
 
   implicit object configReader extends ConfigReader[HandlerType] {
     def from(cur: ConfigCursor): ConfigReader.Result[HandlerType] =
-      cur.asString.flatMap(
-        s =>
-          HandlerType
-            .withNameOption(s)
-            .fold[ConfigReader.Result[HandlerType]](
-              Left(ConfigReaderFailures(ConvertFailure(CannotConvert(s, "HandlerType", "unknown handler type"), cur))))(
-              Right(_)))
+      cur.asString.flatMap(s =>
+        HandlerType
+          .withNameOption(s)
+          .fold[ConfigReader.Result[HandlerType]](
+            Left(ConfigReaderFailures(ConvertFailure(CannotConvert(s, "HandlerType", "unknown handler type"), cur))))(
+            Right(_)))
   }
 
 }

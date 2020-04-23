@@ -119,14 +119,16 @@ object ModuleParsers {
       }) ~ ")").map { case (idx, id, exports, f) => f(idx, id, exports) })
 
   private def memory[_: P]: P[Seq[Field]] =
-    P((Index ~ word("memory") ~/ id.? ~ inlineexport.rep ~ (memtype.map {
-      tpe => (idx: Int, id: Option[String], exports: Seq[String]) =>
-        {
-          val id1 = if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
-          exports
-            .map(Export(_, ExportDesc.Memory(Right(id1))(idx))(idx)) :+ Memory(id1, tpe)(idx)
-        }
-    }
+    P(
+      (Index ~ word("memory") ~/ id.? ~ inlineexport.rep ~ (memtype.map {
+        tpe => (idx: Int, id: Option[String], exports: Seq[String]) =>
+          {
+            val id1 = if (exports.isEmpty) makeId(id) else idOrFresh(id, idx)
+            exports
+              .map(Export(_, ExportDesc.Memory(Right(id1))(idx))(idx)) :+ Memory(id1, tpe)(idx)
+          }
+      }
+      // format: off
       | ("(" ~ word("data") ~/ bstring.rep.map(_.flatten.toArray) ~ ")").map {
         ds => (idx: Int, id: Option[String], exports: Seq[String]) =>
           {
@@ -139,6 +141,7 @@ object ModuleParsers {
                                                                                    ds)(idx))
           }
       }
+      // format: off
       | ("(" ~ word("import") ~/ string ~ string ~ ")" ~ memtype).map {
         case (name1, name2, tpe) =>
           (idx: Int, id: Option[String], exports: Seq[String]) => {

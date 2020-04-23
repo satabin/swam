@@ -2485,33 +2485,25 @@ object Transformer {
               second.blockPrepare
             else if (second.blockPrepare == fst)
               first.blockPrepare
-            else { (ctx: Ctx, t: Block) =>
-              first.blockPrepare(ctx, t).flatMap(second.blockPrepare(_, t))
-            }
+            else { (ctx: Ctx, t: Block) => first.blockPrepare(ctx, t).flatMap(second.blockPrepare(_, t)) }
           override val loopPrepare: (Ctx, Loop) => F[Ctx] =
             if (first.loopPrepare == fst)
               second.loopPrepare
             else if (second.loopPrepare == fst)
               first.loopPrepare
-            else { (ctx: Ctx, t: Loop) =>
-              first.loopPrepare(ctx, t).flatMap(second.loopPrepare(_, t))
-            }
+            else { (ctx: Ctx, t: Loop) => first.loopPrepare(ctx, t).flatMap(second.loopPrepare(_, t)) }
           override val ifPrepare: (Ctx, If) => F[Ctx] =
             if (first.ifPrepare == fst)
               second.ifPrepare
             else if (second.ifPrepare == fst)
               first.ifPrepare
-            else { (ctx: Ctx, t: If) =>
-              first.ifPrepare(ctx, t).flatMap(second.ifPrepare(_, t))
-            }
+            else { (ctx: Ctx, t: If) => first.ifPrepare(ctx, t).flatMap(second.ifPrepare(_, t)) }
           override val otherPrepare: (Ctx, Inst) => F[Ctx] =
             if (first.otherPrepare == fst)
               second.otherPrepare
             else if (second.otherPrepare == fst)
               first.otherPrepare
-            else { (ctx: Ctx, t: Inst) =>
-              first.otherPrepare(ctx, t).flatMap(second.otherPrepare(_, t))
-            }
+            else { (ctx: Ctx, t: Inst) => first.otherPrepare(ctx, t).flatMap(second.otherPrepare(_, t)) }
 
         }
     }

@@ -22,9 +22,7 @@ import fastparse._
 package object parser {
 
   object WastWhitespace {
-    implicit val whitespace = { implicit ctx: ParsingRun[_] =>
-      Lexical.ws
-    }
+    implicit val whitespace = { implicit ctx: ParsingRun[_] => Lexical.ws }
   }
 
 }

@@ -106,7 +106,8 @@ sealed trait Doc {
               }
             case Newline  => true
             case Group(d) => fitting((i, mode, d) +: rest, left)
-          } else
+          }
+        else
           false
     }
 

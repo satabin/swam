@@ -285,16 +285,12 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
   private def resolveBrTable(table: Vector[Index], lbl: Index, ctx: ResolverContext, pos: Int)(
       implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
     resolveIndices(table, pos, ctx.labels, "labels").flatMap { table =>
-      resolveIndex(lbl, pos, ctx.labels, "labels").map { lbl =>
-        (r.BrTable(table, lbl), ctx)
-      }
+      resolveIndex(lbl, pos, ctx.labels, "labels").map { lbl => (r.BrTable(table, lbl), ctx) }
     }
 
   private def resolveCall(lbl: Index, ctx: ResolverContext, pos: Int)(
       implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
-    resolveIndex(lbl, pos, ctx.funcs, "function").map { idx =>
-      (r.Call(idx), ctx)
-    }
+    resolveIndex(lbl, pos, ctx.funcs, "function").map { idx => (r.Call(idx), ctx) }
 
   private def resolveCallIndirect(tpe: Option[Index],
                                   params: Vector[Param],
@@ -330,7 +326,8 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                     F.pure((idx, ResolverContext(locals = nparams.map(Def(_, pos)))))
                   case _ =>
                     F.raiseError(new ResolutionException(f"Incompatible types", Seq(pos)))
-                } else
+                }
+            else
               F.raiseError(new ResolutionException(f"Unknown type $idx", Seq(pos)))
           }
         case None =>
@@ -340,7 +337,8 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
             F.pure((idx, ResolverContext(locals = nparams.map(Def(_, pos)))))
           else
             F.pure((ctx.typedefs.size, ResolverContext(locals = nparams.map(Def(_, pos)), typedefs = Vector(functype))))
-      } else {
+      }
+    else {
       F.raiseError(new ResolutionException(f"Duplicate parameter names", Seq(pos)))
     }
   }
@@ -461,7 +459,8 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                          fields,
                          resolved.copy(imports = resolved.imports :+ r.Import
                            .Global(n1, n2, gt)))))
-                } else
+                }
+              else
                 F.raiseError(new ResolutionException("imports are not allowed after definitions", Seq(fld.pos)))
             case Type(_, _, ft) =>
               F.pure(Left((ctx, fields, resolved.copy(types = resolved.types :+ ft))))

@@ -90,11 +90,11 @@ object Generator extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] = parser.parse(args, Config()) match {
     case Some(config) => {
-      for {
-        imports <- concatImports(config.wasms)
-        _ <- generate(config, imports)
-      } yield ()
-    }.as(ExitCode.Success)
+        for {
+          imports <- concatImports(config.wasms)
+          _ <- generate(config, imports)
+        } yield ()
+      }.as(ExitCode.Success)
     case None =>
       IO(parser.reportError("You must provide a WASM file")).as(ExitCode.Error)
     // arguments are bad, error message will have been displayed
