@@ -17,7 +17,7 @@ import fs2.{text, _}
   * @author Javier Cabrera-Arteaga on 2020-03-06
   * Generates the scala code with the template to use as Import in the WASM execution
   */
-class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
+class ImportGenerator[F[_]: Sync: ContextShift] {
 
   val f = "IO"
   val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
@@ -147,7 +147,7 @@ class ImportGenerator[F[_]: Effect](implicit cs: ContextShift[F]) {
 
 object ImportGenerator {
 
-  def apply[F[_]: Effect](implicit cs: ContextShift[F]): ImportGenerator[F] =
-    new ImportGenerator[F]()
+  def apply[F[_]: Sync: ContextShift]: ImportGenerator[F] =
+    new ImportGenerator[F]
 
 }

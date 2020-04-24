@@ -15,6 +15,7 @@
  */
 
 package swam
+
 package cli
 
 import decompilation._
@@ -31,13 +32,15 @@ import com.monovore.decline._
 import com.monovore.decline.effect._
 
 import io.odin._
+import io.odin.formatter.Formatter
+import io.odin.formatter.options.ThrowableFormat
 
 import fs2._
 
-import java.util.logging.{Formatter, LogRecord}
+import java.util.logging.{Formatter => JFormatter, LogRecord}
 import java.nio.file._
 
-private object NoTimestampFormatter extends Formatter {
+private object NoTimestampFormatter extends JFormatter {
   override def format(x: LogRecord): String =
     x.getMessage
 }
@@ -91,6 +94,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val debug =
     Opts.flag("debug", "Generate debug elements when compiling wat format (default false)", short = "d").orFalse
 
+  val dev =
+    Opts.flag("exceptions", "Print exceptions with stacktrace (default false)", short = "X").orFalse
+
   val textual =
     Opts.flag("wat", "Decompile in wat format (requires module to be valid) (default false)", short = "w").orFalse
 
@@ -109,14 +115,12 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   }
 
   val validateOpts: Opts[Options] = Opts.subcommand("validate", "Validate a wasm file") {
-    wasmFile.map(Validate(_))
+    (wasmFile, wat, dev).mapN(Validate(_, _, _))
   }
 
   val compileOpts: Opts[Options] = Opts.subcommand("compile", "Compile a wat file to wasm") {
     (wasmFile, out, debug).mapN(Compile(_, _, _))
   }
-
-  val logger = consoleLogger[IO]()
 
   def doRun(module: Module[IO],
             main: String,
@@ -125,10 +129,10 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
             wasi: Boolean,
             blocker: Blocker): IO[Unit] =
     if (wasi)
-      Wasi[IO](preopenedDirs, main :: args, logger, blocker).use { wasi =>
+      Wasi[IO](preopenedDirs, main :: args, consoleLogger[IO](), blocker).use { wasi =>
         for {
           instance <- module.importing("wasi_snapshot_preview1", wasi).instantiate
-          main <- instance.exports.typed.procedure0(main)
+          main <- instance.exports.typed.function0[Unit](main)
           memory <- instance.exports.memory("memory")
           _ <- wasi.mem.complete(memory)
           _ <- main()
@@ -137,7 +141,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     else
       for {
         instance <- module.instantiate
-        main <- instance.exports.typed.procedure0(main)
+        main <- instance.exports.typed.function0[Unit](main)
         _ <- main()
       } yield ()
 
@@ -177,16 +181,20 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 .compile
                 .drain
             } yield ExitCode.Success
-          case Validate(file) =>
+          case Validate(file, wat, dev) =>
+            val throwableFormat =
+              if (dev)
+                ThrowableFormat(ThrowableFormat.Depth.Full, ThrowableFormat.Indent.Fixed(2))
+              else
+                ThrowableFormat(ThrowableFormat.Depth.Fixed(0), ThrowableFormat.Indent.NoIndent)
+            val formatter = Formatter.create(throwableFormat, true)
+            val logger = consoleLogger[IO](formatter = formatter)
             for {
               engine <- Engine[IO](blocker)
-              res <- engine.validate(file, blocker).attempt
-              msg = res.fold(t => s"Module is invalid:\n${t.getMessage()}", _ => "Module is valid")
-              _ <- Stream
-                .emits(msg.getBytes("utf-8"))
-                .through(fs2.io.stdout[IO](blocker))
-                .compile
-                .drain
+              tcompiler <- swam.text.Compiler[IO](blocker)
+              module = if (wat) tcompiler.stream(file, false, blocker) else engine.sections(file, blocker)
+              res <- engine.validate(module).attempt
+              _ <- res.fold(t => logger.error("Module is invalid", t), _ => logger.info("Module is valid"))
             } yield ExitCode.Success
           case Compile(file, out, debug) =>
             for {

@@ -44,41 +44,19 @@ abstract class EFunction4[P1, P2, P3, P4, Ret, F[_]] private (f: Function[F], m:
 
 object EFunction4 {
 
-  def apply[P1, P2, P3, P4, F[_]](name: String, self: Instance[F])(
-      implicit F: MonadError[F, Throwable],
-      writer1: ValueWriter[F, P1],
-      writer2: ValueWriter[F, P2],
-      writer3: ValueWriter[F, P3],
-      writer4: ValueWriter[F, P4]): F[EFunction4[P1, P2, P3, P4, Unit, F]] =
-    self.exps.get(name) match {
-      case Some(f: Function[F]) =>
-        val expectedt =
-          FuncType(Vector(writer1.swamType, writer2.swamType, writer3.swamType, writer4.swamType), Vector())
-        if (f.tpe == expectedt)
-          F.pure(new EFunction4[P1, P2, P3, P4, Unit, F](f, self.memories.headOption) {
-            def wrap(res: Option[Value]): F[Unit] = EFunction.wrapUnit[F](res)
-          })
-        else
-          F.raiseError(new RuntimeException(s"invalid return type (expected $expectedt but got ${f.tpe}"))
-      case Some(fld) =>
-        F.raiseError(new RuntimeException(s"cannot get a function for type ${fld.tpe}"))
-      case None =>
-        F.raiseError(new RuntimeException(s"unknown function named $name"))
-    }
-
   def apply[P1, P2, P3, P4, Ret, F[_]](name: String, self: Instance[F])(
       implicit F: MonadError[F, Throwable],
       writer1: ValueWriter[F, P1],
       writer2: ValueWriter[F, P2],
       writer3: ValueWriter[F, P3],
       writer4: ValueWriter[F, P4],
-      reader: ValueReader[F, Ret]): F[EFunction4[P1, P2, P3, P4, Ret, F]] =
+      reader: FunctionReturnReader[F, Ret]): F[EFunction4[P1, P2, P3, P4, Ret, F]] =
     self.exps.get(name) match {
       case Some(f: Function[F]) =>
-        val expectedt = FuncType(Vector(writer1.swamType, writer2.swamType, writer3.swamType), Vector(reader.swamType))
+        val expectedt = FuncType(Vector(writer1.swamType, writer2.swamType, writer3.swamType), reader.swamTypes)
         if (f.tpe == expectedt)
           F.pure(new EFunction4[P1, P2, P3, P4, Ret, F](f, self.memories.headOption) {
-            def wrap(res: Option[Value]): F[Ret] = EFunction.wrap[F, Ret](res, self.memories.headOption)
+            def wrap(res: Vector[Value]): F[Ret] = reader.read(res, self.memories.headOption)
           })
         else
           F.raiseError(new RuntimeException(s"invalid return type (expected $expectedt but got ${f.tpe}"))

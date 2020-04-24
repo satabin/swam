@@ -116,11 +116,48 @@ case class Context[F[_]](types: Vector[FuncType],
   def markUnreachable: Context[F] =
     copy(operands = Nil, unreachable = true)
 
-  def enterContext(lbls: Vector[ResultType]): Context[F] =
-    copy(labels = lbls ++ labels, operands = Nil, unreachable = false, parent = Some(this))
+  private def extractType(bt: BlockType, loop: Boolean): F[(Vector[ValType], Int)] =
+    bt match {
+      case BlockType.NoType         => F.pure((Vector.empty, 0))
+      case BlockType.ValueType(tpe) => F.pure((Vector(tpe), 0))
+      case BlockType.FunctionType(tpeIdx) =>
+        types.lift(tpeIdx) match {
+          case Some(FuncType(params, results)) =>
+            if (loop)
+              F.pure((params, params.size))
+            else
+              F.pure((results, params.size))
+          case None => F.raiseError(new ValidationException(s"unknown func type $tpeIdx"))
+        }
+    }
 
-  def leaveContext: F[Context[F]] =
-    parent.liftTo[F](new ValidationException("no parent context"))
+  def enterContext(bt: BlockType, loop: Boolean): F[Context[F]] =
+    extractType(bt, loop).map {
+      case (lbls, nbInputs) =>
+        this
+          .copy(labels = ResultType(lbls) +: labels,
+                operands = operands.take(nbInputs),
+                unreachable = false,
+                parent = Some(this))
+    }
+
+  private def nbInputs(bt: BlockType): F[Int] =
+    bt match {
+      case BlockType.NoType         => F.pure(0)
+      case BlockType.ValueType(tpe) => F.pure(0)
+      case BlockType.FunctionType(tpeIdx) =>
+        types.lift(tpeIdx) match {
+          case Some(FuncType(params, results)) => F.pure(params.size)
+          case None                            => F.raiseError(new ValidationException(s"unknown func type $tpeIdx"))
+        }
+    }
+
+  def leaveContext(bt: BlockType, popInputs: Boolean): F[Context[F]] =
+    nbInputs(bt).flatMap { nbInputs =>
+      parent
+        .map(ctx => if (popInputs) ctx.copy(operands = ctx.operands.drop(nbInputs)) else ctx)
+        .liftTo[F](new ValidationException("no parent context"))
+    }
 
 }
 

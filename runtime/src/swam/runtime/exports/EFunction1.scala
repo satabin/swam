@@ -38,32 +38,16 @@ abstract class EFunction1[P1, Ret, F[_]] private (f: Function[F], m: Option[Memo
 
 object EFunction1 {
 
-  def apply[P1, F[_]](name: String, self: Instance[F])(implicit F: MonadError[F, Throwable],
-                                                       writer1: ValueWriter[F, P1]): F[EFunction1[P1, Unit, F]] =
+  def apply[P1, Ret, F[_]](name: String, self: Instance[F])(
+      implicit F: MonadError[F, Throwable],
+      writer1: ValueWriter[F, P1],
+      reader: FunctionReturnReader[F, Ret]): F[EFunction1[P1, Ret, F]] =
     self.exps.get(name) match {
       case Some(f: Function[F]) =>
-        val expectedt = FuncType(Vector(writer1.swamType), Vector())
-        if (f.tpe == expectedt)
-          F.pure(new EFunction1[P1, Unit, F](f, self.memories.headOption) {
-            def wrap(res: Option[Value]): F[Unit] = EFunction.wrapUnit[F](res)
-          })
-        else
-          F.raiseError(new RuntimeException(s"invalid return type (expected $expectedt but got ${f.tpe}"))
-      case Some(fld) =>
-        F.raiseError(new RuntimeException(s"cannot get a function for type ${fld.tpe}"))
-      case None =>
-        F.raiseError(new RuntimeException(s"unknown function named $name"))
-    }
-
-  def apply[P1, Ret, F[_]](name: String, self: Instance[F])(implicit F: MonadError[F, Throwable],
-                                                            writer1: ValueWriter[F, P1],
-                                                            reader: ValueReader[F, Ret]): F[EFunction1[P1, Ret, F]] =
-    self.exps.get(name) match {
-      case Some(f: Function[F]) =>
-        val expectedt = FuncType(Vector(writer1.swamType), Vector(reader.swamType))
+        val expectedt = FuncType(Vector(writer1.swamType), reader.swamTypes)
         if (f.tpe == expectedt)
           F.pure(new EFunction1[P1, Ret, F](f, self.memories.headOption) {
-            def wrap(res: Option[Value]): F[Ret] = EFunction.wrap[F, Ret](res, self.memories.headOption)
+            def wrap(res: Vector[Value]): F[Ret] = reader.read(res, self.memories.headOption)
           })
         else
           F.raiseError(new RuntimeException(s"invalid return type (expected $expectedt but got ${f.tpe}"))

@@ -36,11 +36,11 @@ object Instructions {
 
   private def blockinstr[_: P]: P[Int => Inst] =
     P(
-      (word("block") ~/ label ~ resulttype ~ instrs ~ word("end") ~ label)
+      (word("block") ~/ label ~ blocktype ~ instrs ~ word("end") ~ label)
         .map((Block.apply _).tupled)
-        | (word("loop") ~/ label ~ resulttype ~ instrs ~/ word("end") ~ label)
+        | (word("loop") ~/ label ~ blocktype ~ instrs ~/ word("end") ~ label)
           .map((Loop.apply _).tupled)
-        | (word("if") ~/ label ~ resulttype ~ instrs ~ (word("else") ~/ label ~ instrs).? ~ word("end") ~ label)
+        | (word("if") ~/ label ~ blocktype ~ instrs ~ (word("else") ~/ label ~ instrs).? ~ word("end") ~ label)
           .map {
             case (lbl, tpe, theni, Some((elselbl, elsei)), endlbl) =>
               If(lbl, tpe, theni, elselbl, elsei, endlbl) _
@@ -376,11 +376,11 @@ object Instructions {
   def foldedinstr[_: P]: P[Seq[Inst]] =
     P(
       ("(" ~/ (Index ~ (NoCut(plaininstr ~ foldedinstr.rep.map(_.flatten))
-        | ((word("block") ~/ label ~ resulttype ~ instrs)
+        | ((word("block") ~/ label ~ blocktype ~ instrs)
           .map { case (lbl, tpe, is) => Block(lbl, tpe, is, NoId) _ } ~ Pass(Seq.empty))
-        | ((word("loop") ~/ label ~ resulttype ~ instrs)
+        | ((word("loop") ~/ label ~ blocktype ~ instrs)
           .map { case (lbl, tpe, is) => Loop(lbl, tpe, is, NoId) _ } ~ Pass(Seq.empty))
-        | (word("if") ~/ label ~ resulttype ~ NoCut(foldedinstr).rep
+        | (word("if") ~/ label ~ blocktype ~ NoCut(foldedinstr).rep
           .map(_.flatten) ~ "(" ~ word("then") ~ instrs ~ ")" ~ ("(" ~ word("else") ~/ instrs ~ ")").?)
           .map {
             case (lbl, tpe, is, theni, Some(elsei)) =>

@@ -40,18 +40,26 @@ package object pretty {
   implicit object TypePretty extends Pretty[Type] {
     def pretty(tpe: Type): Doc =
       tpe match {
-        case ValType.I32         => str("i32")
-        case ValType.I64         => str("i64")
-        case ValType.F32         => str("f32")
-        case ValType.F64         => str("f64")
-        case ResultType(None)    => str("[]")
-        case ResultType(Some(t)) => str("[") ++ t.pretty ++ str("]")
+        case ValType.I32      => str("i32")
+        case ValType.I64      => str("i64")
+        case ValType.F32      => str("f32")
+        case ValType.F64      => str("f64")
+        case ResultType(tpes) => str("[") ++ seq(str(", "), tpes) ++ str("]")
         case FuncType(params, result) =>
           str("[") ++ seq(str(", "), params) ++ str("] → [") ++ seq(str(", "), result) ++ str("]")
         case TableType(tpe, limits) => limits.pretty ++ space ++ tpe.pretty
         case MemType(limits)        => limits.pretty
         case GlobalType(tpe, mut)   => mut.pretty ++ space ++ tpe.pretty
         case ElemType.FuncRef       => str("funcref")
+      }
+  }
+
+  implicit object BlockTypePretty extends Pretty[BlockType] {
+    def pretty(bt: BlockType): Doc =
+      bt match {
+        case BlockType.NoType            => empty
+        case BlockType.ValueType(tpe)    => tpe.pretty
+        case BlockType.FunctionType(idx) => str("@") ++ int(idx)
       }
   }
 

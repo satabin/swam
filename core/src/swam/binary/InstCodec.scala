@@ -31,13 +31,12 @@ trait InstCodec extends TypeCodec {
   private val end: Codec[Unit] =
     hex"0b"
 
-  private val block: Codec[(ResultType, Vector[Inst])] =
-    blockType.xmap[ResultType](ResultType(_), _.t) ~ lazily(expr)
+  private val block: Codec[(BlockType, Vector[Inst])] =
+    blockType ~ lazily(expr)
 
-  private val ifThenElse: Codec[ResultType ~ Vector[Inst] ~ Vector[Inst]] =
+  private val ifThenElse: Codec[BlockType ~ Vector[Inst] ~ Vector[Inst]] =
     "if" | lazily(
-      ("return type" | blockType
-        .xmap[ResultType](ResultType(_), _.t)) ~ ("then" | instructions) ~ withDefaultValue(
+      ("return type" | blockType) ~ ("then" | instructions) ~ withDefaultValue(
         optional(recover(hex"05"), "else" | instructions),
         Vector.empty
       ) <~ end

@@ -291,7 +291,7 @@
 (assert_return (invoke "type-first-i32") (i32.const 32))
 (assert_return (invoke "type-first-i64") (i64.const 64))
 (assert_return (invoke "type-first-f32") (f32.const 1.32))
-(assert_return (invoke "type-first-f64") (f64.const 1.64))
+
 
 (assert_return (invoke "type-second-i32") (i32.const 32))
 (assert_return (invoke "type-second-i64") (i64.const 64))

@@ -76,11 +76,19 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
         else
           globals(idx) match {
             case CompiledGlobal(tpe, init) =>
-              interpreter.interpretInit(tpe.tpe, init, inst).flatMap { ret =>
-                val i = new GlobalInstance[F](tpe)
-                i.rawset(ret.get)
-                F.pure(Left((idx + 1, acc :+ i)))
-              }
+              interpreter
+                .interpretInit(tpe.tpe, init, inst)
+                .flatMap[Long] {
+                  case Vector(res) => F.pure(res)
+                  case res =>
+                    F.raiseError(
+                      new LinkException(s"Global expression must return a single result but got ${res.size}"))
+                }
+                .flatMap { res =>
+                  val i = new GlobalInstance[F](tpe)
+                  i.rawset(res)
+                  F.pure(Left((idx + 1, acc :+ i)))
+                }
           }
     }
   }

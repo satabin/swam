@@ -18,32 +18,8 @@ package swam
 package runtime
 package exports
 
-import formats._
-
-import cats._
-
 trait EFunction[Ret, F[_]] {
 
-  protected def wrap(res: Option[Value]): F[Ret]
+  protected def wrap(res: Vector[Value]): F[Ret]
 
-}
-
-private[exports] object EFunction {
-
-  def wrapUnit[F[_]](res: Option[Value])(implicit F: MonadError[F, Throwable]): F[Unit] =
-    res match {
-      case None =>
-        F.pure(())
-      case Some(_) =>
-        throw new Exception("This is a bug")
-    }
-
-  def wrap[F[_], Ret](res: Option[Value], m: Option[Memory[F]])(implicit F: MonadError[F, Throwable],
-                                                                reader: ValueReader[F, Ret]): F[Ret] =
-    res match {
-      case Some(ret) =>
-        reader.read(ret, m)
-      case None =>
-        throw new Exception("This is a bug")
-    }
 }

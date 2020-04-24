@@ -43,14 +43,13 @@ object ValType {
   }
 }
 
-case class ResultType(t: Option[ValType]) extends Type {
+case class ResultType(t: Vector[ValType]) extends Type {
   def <:<(that: Type): Boolean =
     (this, that) match {
-      case (ResultType(Some(t1)), ResultType(Some(t2))) => t1 <:< t2
-      case (ResultType(None), ResultType(None))         => true
-      case _                                            => false
+      case (ResultType(ts1), ResultType(ts2)) => ts1.size == ts2.size && ts1.zip(ts2).forall(ts => ts._1 <:< ts._2)
+      case _                                  => false
     }
-  def arity = if (t.isDefined) 1 else 0
+  def arity = t.size
 }
 
 case class FuncType(params: Vector[ValType], t: Vector[ValType]) extends Type {
@@ -119,4 +118,25 @@ sealed abstract class Mut(private val level: Int) extends Ordered[Mut] {
 object Mut {
   case object Const extends Mut(1)
   case object Var extends Mut(0)
+}
+
+sealed trait BlockType {
+  def params(funcs: Vector[FuncType]): Option[Vector[ValType]]
+  def arity(funcs: Vector[FuncType]): Int
+}
+object BlockType {
+  case object NoType extends BlockType {
+    def params(funcs: Vector[FuncType]): Option[Vector[ValType]] = Some(Vector.empty)
+    def arity(funcs: Vector[FuncType]): Int = 0
+  }
+  case class ValueType(tpe: ValType) extends BlockType {
+    def params(funcs: Vector[FuncType]): Option[Vector[ValType]] = Some(Vector.empty)
+    def arity(funcs: Vector[FuncType]): Int = 1
+  }
+  case class FunctionType(tpe: TypeIdx) extends BlockType {
+    def params(funcs: Vector[FuncType]): Option[Vector[ValType]] =
+      funcs.lift(tpe).map(_.params)
+    def arity(funcs: Vector[FuncType]): Int =
+      funcs.lift(tpe).map(_.t.size).getOrElse(-1)
+  }
 }

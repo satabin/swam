@@ -109,51 +109,30 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
 
       /** Returns a function for given name and type. */
       def function0[Ret](name: String)(implicit F: MonadError[F, Throwable],
-                                       reader: ValueReader[F, Ret]): F[e.EFunction0[Ret, F]] =
+                                       reader: FunctionReturnReader[F, Ret]): F[e.EFunction0[Ret, F]] =
         e.EFunction0[Ret, F](name, self)
-
-      /** Returns a function for given name and type. */
-      def procedure0(name: String)(implicit F: MonadError[F, Throwable]): F[e.EFunction0[Unit, F]] =
-        e.EFunction0[F](name, self)
 
       /** Returns a function for given name and type. */
       def function1[P1, Ret](name: String)(implicit F: MonadError[F, Throwable],
                                            writer1: ValueWriter[F, P1],
-                                           reader: ValueReader[F, Ret]): F[e.EFunction1[P1, Ret, F]] =
+                                           reader: FunctionReturnReader[F, Ret]): F[e.EFunction1[P1, Ret, F]] =
         e.EFunction1(name, self)
-
-      /** Returns a function for given name and type. */
-      def procedure1[P1](name: String)(implicit F: MonadError[F, Throwable],
-                                       writer1: ValueWriter[F, P1]): F[e.EFunction1[P1, Unit, F]] =
-        e.EFunction1[P1, F](name, self)
 
       /** Returns a function for given name and type. */
       def function2[P1, P2, Ret](name: String)(implicit F: MonadError[F, Throwable],
                                                writer1: ValueWriter[F, P1],
                                                writer2: ValueWriter[F, P2],
-                                               reader: ValueReader[F, Ret]): F[e.EFunction2[P1, P2, Ret, F]] =
+                                               reader: FunctionReturnReader[F, Ret]): F[e.EFunction2[P1, P2, Ret, F]] =
         e.EFunction2(name, self)
 
       /** Returns a function for given name and type. */
-      def procedure2[P1, P2](name: String)(implicit F: MonadError[F, Throwable],
-                                           writer1: ValueWriter[F, P1],
-                                           writer2: ValueWriter[F, P2]): F[e.EFunction2[P1, P2, Unit, F]] =
-        e.EFunction2[P1, P2, F](name, self)
-
-      /** Returns a function for given name and type. */
-      def function3[P1, P2, P3, Ret](name: String)(implicit F: MonadError[F, Throwable],
-                                                   writer1: ValueWriter[F, P1],
-                                                   writer2: ValueWriter[F, P2],
-                                                   writer3: ValueWriter[F, P3],
-                                                   reader: ValueReader[F, Ret]): F[e.EFunction3[P1, P2, P3, Ret, F]] =
+      def function3[P1, P2, P3, Ret](name: String)(
+          implicit F: MonadError[F, Throwable],
+          writer1: ValueWriter[F, P1],
+          writer2: ValueWriter[F, P2],
+          writer3: ValueWriter[F, P3],
+          reader: FunctionReturnReader[F, Ret]): F[e.EFunction3[P1, P2, P3, Ret, F]] =
         e.EFunction3(name, self)
-
-      /** Returns a function for given name and type. */
-      def procedure3[P1, P2, P3](name: String)(implicit F: MonadError[F, Throwable],
-                                               writer1: ValueWriter[F, P1],
-                                               writer2: ValueWriter[F, P2],
-                                               writer3: ValueWriter[F, P3]): F[e.EFunction3[P1, P2, P3, Unit, F]] =
-        e.EFunction3[P1, P2, P3, F](name, self)
 
       /** Returns a function for given name and type. */
       def function4[P1, P2, P3, P4, Ret](name: String)(
@@ -162,17 +141,8 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
           writer2: ValueWriter[F, P2],
           writer3: ValueWriter[F, P3],
           writer4: ValueWriter[F, P4],
-          reader: ValueReader[F, Ret]): F[e.EFunction4[P1, P2, P3, P4, Ret, F]] =
+          reader: FunctionReturnReader[F, Ret]): F[e.EFunction4[P1, P2, P3, P4, Ret, F]] =
         e.EFunction4(name, self)
-
-      /** Returns a function for given name and type. */
-      def procedure4[P1, P2, P3, P4](name: String)(
-          implicit F: MonadError[F, Throwable],
-          writer1: ValueWriter[F, P1],
-          writer2: ValueWriter[F, P2],
-          writer3: ValueWriter[F, P3],
-          writer4: ValueWriter[F, P4]): F[e.EFunction4[P1, P2, P3, P4, Unit, F]] =
-        e.EFunction4[P1, P2, P3, P4, F](name, self)
 
     }
 
@@ -196,7 +166,12 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
             case CompiledElem(coffset, init) =>
               interpreter
                 .interpretInit(ValType.I32, coffset, self)
-                .flatMap(_.liftTo[F](new LinkException("Offset expression must return a result")))
+                .flatMap[Long] {
+                  case Vector(res) => F.pure(res)
+                  case res =>
+                    F.raiseError(
+                      new LinkException(s"Offset expression must return a single result but got ${res.size}"))
+                }
                 .flatMap { roffset =>
                   val offset = (roffset & 0X00000000FFFFFFFFL).toInt
                   if (offset < 0 || init.size + offset > tables(0).size) {
@@ -223,7 +198,12 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
             case CompiledData(coffset, init) =>
               interpreter
                 .interpretInit(ValType.I32, coffset, self)
-                .flatMap(_.liftTo[F](new LinkException("Offset expression must return a result")))
+                .flatMap[Long] {
+                  case Vector(res) => F.pure(res)
+                  case res =>
+                    F.raiseError(
+                      new LinkException(s"Offset expression must return a single result but got ${res.size}"))
+                }
                 .flatMap { roffset =>
                   val offset = (roffset & 0X00000000FFFFFFFFL).toInt
                   if (offset < 0 || init.capacity + offset > memories(0).size)

@@ -18,6 +18,11 @@ package swam
 package runtime
 package formats
 
+import cats.{ApplicativeError, MonadError}
+import cats.implicits._
+
+import shapeless._
+
 /** A reader is used to transform a web assembly value into a
   *  scala object.
   */
@@ -26,6 +31,77 @@ trait ValueReader[F[_], T] {
   def read(v: Value, m: Option[Memory[F]]): F[T]
 
   val swamType: ValType
+
+}
+
+trait FunctionReturnReader[F[_], T] {
+
+  def read(vs: Vector[Value], mem: Option[Memory[F]]): F[T]
+
+  def swamTypes: Vector[ValType]
+
+}
+
+object FunctionReturnReader {
+
+  def apply[F[_], T](implicit ev: FunctionReturnReader[F, T]): FunctionReturnReader[F, T] = ev
+
+  implicit def unitReturn[F[_]](implicit F: ApplicativeError[F, Throwable]): FunctionReturnReader[F, Unit] =
+    new FunctionReturnReader[F, Unit] {
+      def read(vs: Vector[Value], mem: Option[Memory[F]]): F[Unit] =
+        if (vs.isEmpty)
+          F.unit
+        else
+          F.raiseError(new ConversionException(s"expected no return value but got ${vs.size}"))
+
+      def swamTypes: Vector[ValType] =
+        Vector.empty
+    }
+
+  implicit def singleReturn[F[_], T](implicit F: ApplicativeError[F, Throwable],
+                                     T: ValueReader[F, T]): FunctionReturnReader[F, T] =
+    new FunctionReturnReader[F, T] {
+      def read(vs: Vector[Value], mem: Option[Memory[F]]): F[T] =
+        vs match {
+          case Vector(v) =>
+            T.read(v, mem)
+          case _ =>
+            F.raiseError(new ConversionException(s"expected a single value of type ${T.swamType} but got ${vs.size}"))
+        }
+
+      def swamTypes: Vector[ValType] =
+        Vector(T.swamType)
+    }
+
+  implicit def hnilReturn[F[_]](implicit F: ApplicativeError[F, Throwable]): FunctionReturnReader[F, HNil] =
+    new FunctionReturnReader[F, HNil] {
+      def read(vs: Vector[Value], mem: Option[Memory[F]]): F[HNil] =
+        vs match {
+          case Vector() => F.pure(HNil)
+          case _        => F.raiseError(new ConversionException("expected empty values"))
+        }
+
+      def swamTypes: Vector[ValType] =
+        Vector.empty
+    }
+
+  implicit def hconsReturn[F[_], Head, Tail <: HList](
+      implicit F: MonadError[F, Throwable],
+      Head: ValueReader[F, Head],
+      Tail: FunctionReturnReader[F, Tail]): FunctionReturnReader[F, Head :: Tail] =
+    new FunctionReturnReader[F, Head :: Tail] {
+      def read(vs: Vector[Value], mem: Option[Memory[F]]): F[Head :: Tail] =
+        if (vs.isEmpty)
+          F.raiseError(new ConversionException(s"expected element of type ${Head.swamType} but got none"))
+        else
+          for {
+            head <- Head.read(vs(0), mem)
+            tail <- Tail.read(vs.tail, mem)
+          } yield head :: tail
+
+      def swamTypes: Vector[ValType] =
+        Head.swamType +: Tail.swamTypes
+    }
 
 }
 

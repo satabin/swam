@@ -514,16 +514,20 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
       case Nop                => u.Nop()(-1)
       case Unreachable        => u.Unreachable()(-1)
       case Block(tpe, is) =>
-        u.Block(u.NoId, tpe, decompileExpr(is, fidx, functypes, functionNames, localNames), u.NoId)(-1)
+        u.Block(u.NoId, decompileBlockType(tpe), decompileExpr(is, fidx, functypes, functionNames, localNames), u.NoId)(
+          -1)
       case Loop(tpe, is) =>
-        u.Loop(u.NoId, tpe, decompileExpr(is, fidx, functypes, functionNames, localNames), u.NoId)(-1)
+        u.Loop(u.NoId, decompileBlockType(tpe), decompileExpr(is, fidx, functypes, functionNames, localNames), u.NoId)(
+          -1)
       case If(tpe, theni, elsei) =>
-        u.If(u.NoId,
-             tpe,
-             decompileExpr(theni, fidx, functypes, functionNames, localNames),
-             u.NoId,
-             decompileExpr(elsei, fidx, functypes, functionNames, localNames),
-             u.NoId)(-1)
+        u.If(
+          u.NoId,
+          decompileBlockType(tpe),
+          decompileExpr(theni, fidx, functypes, functionNames, localNames),
+          u.NoId,
+          decompileExpr(elsei, fidx, functypes, functionNames, localNames),
+          u.NoId
+        )(-1)
       case Br(label)           => u.Br(Left(label))(-1)
       case BrIf(label)         => u.BrIf(Left(label))(-1)
       case BrTable(table, lbl) => u.BrTable(table.map(Left(_)), Left(lbl))(-1)
@@ -537,6 +541,13 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
     }
 
   }
+
+  private def decompileBlockType(bt: BlockType): u.TypeUse =
+    bt match {
+      case BlockType.NoType            => u.TypeUse(None, Vector.empty, Vector.empty)
+      case BlockType.ValueType(tpe)    => u.TypeUse(None, Vector.empty, Vector(tpe))
+      case BlockType.FunctionType(tpe) => u.TypeUse(Some(Left(tpe)), Vector.empty, Vector.empty)
+    }
 }
 
 object TextDecompiler {

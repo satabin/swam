@@ -49,8 +49,8 @@ sealed trait AsmInst[F[_]] {
 
 sealed trait Continuation[+F[_]]
 case object Continue extends Continuation[Nothing]
-case class Suspend[F[_]](res: F[Option[Long]]) extends Continuation[F]
-case class Done(res: Option[Long]) extends Continuation[Nothing]
+case class Suspend[F[_]](res: F[Vector[Long]]) extends Continuation[F]
+case class Done(res: Vector[Long]) extends Continuation[Nothing]
 
 class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
 
@@ -1954,7 +1954,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val values = thread.popValues(thread.arity)
       // pop the thread to get the parent
       thread.popFrame()
-      Done(values.headOption)
+      Done(values.toVector)
     }
   }
 

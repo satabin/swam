@@ -23,28 +23,16 @@ import formats._
 import cats._
 import cats.implicits._
 
-class IFunction0[F[_], Ret](f: () => F[Ret])(implicit writer: ValueWriter[F, Ret], F: MonadError[F, Throwable])
+class IFunction0[F[_], Ret](f: () => F[Ret])(implicit writer: FunctionReturnWriter[F, Ret], F: MonadError[F, Throwable])
     extends Function[F] {
-  val tpe = FuncType(Vector(), Vector(writer.swamType))
-  def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Option[Value]] =
+  val tpe = FuncType(Vector(), writer.swamTypes)
+  def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Vector[Value]] =
     if (parameters.isEmpty)
       for {
         v <- f()
         v <- writer.write(v, m)
-      } yield Some(v)
+      } yield v
     else
       F.raiseError(new ConversionException(
         s"function expects ${tpe.params.mkString("(", ", ", ")")} but got ${parameters.map(_.tpe).mkString("(", ", ", ")")}"))
-}
-
-class IFunction0Unit[F[_]](f: () => F[Unit])(implicit F: MonadError[F, Throwable]) extends Function[F] {
-  val tpe = FuncType(Vector(), Vector())
-  def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Option[Value]] =
-    parameters match {
-      case Seq() =>
-        f().map(v => None)
-      case _ =>
-        F.raiseError(new ConversionException(
-          s"function expects ${tpe.params.mkString("(", ", ", ")")} but got ${parameters.map(_.tpe).mkString("(", ", ", ")")}"))
-    }
 }

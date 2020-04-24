@@ -33,9 +33,9 @@ private[runtime] case class FunctionInstance[F[_]](tpe: FuncType,
 
   var next: FunctionInstance[F] = _
 
-  def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Option[Value]] =
+  def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Vector[Value]] =
     instance.interpreter
       .interpret(this, parameters.map(Value.toRaw(_)), instance)
-      .map(_.map(Value.fromRaw(tpe.t.head, _)))
+      .map(_.zip(tpe.t).map { case (v, t) => Value.fromRaw(t, v) })
 
 }

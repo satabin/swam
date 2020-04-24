@@ -40,36 +40,17 @@ abstract class EFunction2[P1, P2, Ret, F[_]] private (f: Function[F], m: Option[
 
 object EFunction2 {
 
-  def apply[P1, P2, F[_]](name: String, self: Instance[F])(
-      implicit F: MonadError[F, Throwable],
-      writer1: ValueWriter[F, P1],
-      writer2: ValueWriter[F, P2]): F[EFunction2[P1, P2, Unit, F]] =
-    self.exps.get(name) match {
-      case Some(f: Function[F]) =>
-        val expectedt = FuncType(Vector(writer1.swamType, writer2.swamType), Vector())
-        if (f.tpe == expectedt)
-          F.pure(new EFunction2[P1, P2, Unit, F](f, self.memories.headOption) {
-            def wrap(res: Option[Value]): F[Unit] = EFunction.wrapUnit[F](res)
-          })
-        else
-          F.raiseError(new RuntimeException(s"invalid return type (expected $expectedt but got ${f.tpe}"))
-      case Some(fld) =>
-        F.raiseError(new RuntimeException(s"cannot get a function for type ${fld.tpe}"))
-      case None =>
-        F.raiseError(new RuntimeException(s"unknown function named $name"))
-    }
-
   def apply[P1, P2, Ret, F[_]](name: String, self: Instance[F])(
       implicit F: MonadError[F, Throwable],
       writer1: ValueWriter[F, P1],
       writer2: ValueWriter[F, P2],
-      reader: ValueReader[F, Ret]): F[EFunction2[P1, P2, Ret, F]] =
+      reader: FunctionReturnReader[F, Ret]): F[EFunction2[P1, P2, Ret, F]] =
     self.exps.get(name) match {
       case Some(f: Function[F]) =>
-        val expectedt = FuncType(Vector(writer1.swamType, writer2.swamType), Vector(reader.swamType))
+        val expectedt = FuncType(Vector(writer1.swamType, writer2.swamType), reader.swamTypes)
         if (f.tpe == expectedt)
           F.pure(new EFunction2[P1, P2, Ret, F](f, self.memories.headOption) {
-            def wrap(res: Option[Value]): F[Ret] = EFunction.wrap[F, Ret](res, self.memories.headOption)
+            def wrap(res: Vector[Value]): F[Ret] = reader.read(res, self.memories.headOption)
           })
         else
           F.raiseError(new RuntimeException(s"invalid return type (expected $expectedt but got ${f.tpe}"))

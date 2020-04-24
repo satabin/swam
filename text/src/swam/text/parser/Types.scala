@@ -36,7 +36,10 @@ object Types {
     )
 
   def resulttype[_: P]: P[ResultType] =
-    P(result.?.map(ResultType(_)))
+    P(result.rep.map(tpes => ResultType(tpes.toVector)))
+
+  def blocktype[_: P]: P[TypeUse] =
+    typeuse
 
   def functype[_: P]: P[(Vector[Id], FuncType)] =
     P(("(" ~ word("func") ~ params ~ results ~ ")").map {

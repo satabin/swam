@@ -56,8 +56,8 @@ package object pretty {
   implicit object ResultTypePretty extends Pretty[ResultType] {
     def pretty(tpe: ResultType): Doc =
       tpe match {
-        case ResultType(None)    => empty
-        case ResultType(Some(t)) => space ++ str("(result ") ++ t.pretty ++ str(")")
+        case ResultType(Vector()) => empty
+        case ResultType(ts)       => space ++ seq(space, ts.map(t => str("(result ") ++ t.pretty ++ str(")")))
       }
   }
 

@@ -52,7 +52,7 @@ val f =
       tcompiler <- Compiler[IO](blocker)
       mod <- engine.compile(tcompiler.stream(Paths.get("annotations.wat"), true, blocker))
       inst <- mod.importing("m", m).instantiate
-      f <- inst.exports.typed.procedure0("mutate")
+      f <- inst.exports.typed.function0[Unit]("mutate")
     } yield f
   }.unsafeRunSync()
 ```

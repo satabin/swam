@@ -19,6 +19,7 @@ package runtime
 package formats
 
 import cats._
+import cats.implicits._
 
 /** A writer is used to transform a scala value into a
   *  web assembly value.
@@ -32,6 +33,41 @@ trait ValueWriter[F[_], T] {
 }
 
 object ValueWriter extends DefaultWriters
+
+trait FunctionReturnWriter[F[_], T] {
+
+  def write(v: T, m: Option[Memory[F]]): F[Vector[Value]]
+
+  val swamTypes: Vector[ValType]
+
+}
+
+object FunctionReturnWriter {
+
+  def apply[F[_], T](implicit ev: FunctionReturnWriter[F, T]): FunctionReturnWriter[F, T] = ev
+
+  implicit def unitReturn[F[_]](implicit F: Applicative[F]): FunctionReturnWriter[F, Unit] =
+    new FunctionReturnWriter[F, Unit] {
+      def write(v: Unit, m: Option[Memory[F]]): F[Vector[Value]] =
+        F.pure(Vector.empty)
+
+      val swamTypes: Vector[ValType] =
+        Vector.empty
+
+    }
+
+  implicit def singleReturn[F[_], T](implicit F: Applicative[F],
+                                     writer: ValueWriter[F, T]): FunctionReturnWriter[F, T] =
+    new FunctionReturnWriter[F, T] {
+      def write(v: T, m: Option[Memory[F]]): F[Vector[Value]] =
+        writer.write(v, m).map(Vector(_))
+
+      val swamTypes: Vector[ValType] =
+        Vector(writer.swamType)
+
+    }
+
+}
 
 /** A writer is used to transform a scala value into a
   *  simple web assembly value. A simple value can be writter without memory instance.

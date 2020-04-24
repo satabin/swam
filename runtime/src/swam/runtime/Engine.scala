@@ -163,7 +163,7 @@ object Engine {
       conf <- ConfigSource.default.at("swam.runtime").loadF[F, EngineConfiguration](blocker)
     } yield new Engine[F](conf, validator, tracer)
 
-  def apply[F[_]: Effect](conf: EngineConfiguration, validator: Validator[F], tracer: Option[Tracer]): Engine[F] =
+  def apply[F[_]: Async](conf: EngineConfiguration, validator: Validator[F], tracer: Option[Tracer]): Engine[F] =
     new Engine[F](conf, validator, tracer)
 
 }

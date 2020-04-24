@@ -318,9 +318,9 @@ case class MemoryGrow()(val pos: Int) extends Inst
 
 case class Nop()(val pos: Int) extends Inst
 case class Unreachable()(val pos: Int) extends Inst
-case class Block(label: Id, tpe: ResultType, instr: Seq[Inst], endlabel: Id)(val pos: Int) extends Inst
-case class Loop(label: Id, tpe: ResultType, instr: Seq[Inst], endlabel: Id)(val pos: Int) extends Inst
-case class If(label: Id, tpe: ResultType, thenInstr: Seq[Inst], elselabel: Id, elseInstr: Seq[Inst], endlabel: Id)(
+case class Block(label: Id, tpe: TypeUse, instr: Seq[Inst], endlabel: Id)(val pos: Int) extends Inst
+case class Loop(label: Id, tpe: TypeUse, instr: Seq[Inst], endlabel: Id)(val pos: Int) extends Inst
+case class If(label: Id, tpe: TypeUse, thenInstr: Seq[Inst], elselabel: Id, elseInstr: Seq[Inst], endlabel: Id)(
     val pos: Int)
     extends Inst
 case class Br(lbl: Index)(val pos: Int) extends Inst

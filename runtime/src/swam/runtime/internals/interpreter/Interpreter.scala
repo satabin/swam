@@ -40,7 +40,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
     }
   }
 
-  def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {
+  def interpret(funcidx: Int, parameters: Vector[Long], instance: Instance[F]): F[Vector[Long]] = {
     // instantiate the top-level thread
     val thread = makeFrame(instance)
     // push the parameters in the stack
@@ -53,7 +53,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
     }
   }
 
-  def interpret(func: Function[F], parameters: Vector[Long], instance: Instance[F]): F[Option[Long]] = {
+  def interpret(func: Function[F], parameters: Vector[Long], instance: Instance[F]): F[Vector[Long]] = {
     // instantiate the top-level thread
     val thread = makeFrame(instance)
     // push the parameters in the stack
@@ -66,7 +66,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
     }
   }
 
-  def interpretInit(tpe: ValType, code: Array[AsmInst[F]], instance: Instance[F]): F[Option[Long]] = {
+  def interpretInit(tpe: ValType, code: Array[AsmInst[F]], instance: Instance[F]): F[Vector[Long]] = {
     // instantiate the top-level thread
     val thread = makeFrame(instance)
     // invoke the function
@@ -77,8 +77,8 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
     }
   }
 
-  private def run(thread: Frame[F]): F[Option[Long]] = {
-    def loop(): F[Option[Long]] = {
+  private def run(thread: Frame[F]): F[Vector[Long]] = {
+    def loop(): F[Vector[Long]] = {
       val inst = thread.fetch()
       inst.execute(thread) match {
         case Continue => loop()
