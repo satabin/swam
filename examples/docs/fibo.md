@@ -16,7 +16,6 @@ val tcompiler = Compiler[IO]
 
 val engine = Engine[IO]()
 
-implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
 
 implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
 
