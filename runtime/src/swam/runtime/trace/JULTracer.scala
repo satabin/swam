@@ -19,14 +19,23 @@ package runtime
 package trace
 
 import enumeratum._
-
-import pureconfig._
 import pureconfig.error._
-
 import java.util.logging._
 
+import cats.effect.Effect
+import swam.runtime.config.EngineConfiguration
+import swam.validation.Validator
+
+import cats.implicits._
+import cats.effect._
+
+import pureconfig._
+import pureconfig.generic.auto._
+import pureconfig.module.catseffect._
+import pureconfig.module.enumeratum._
+
 /** A tracer based on [[https://docs.oracle.com/en/java/javase/13/docs/api/java.logging/java/util/logging/package-summary.html java.util.logging]]. */
-class JULTracer(conf: TraceConfiguration) extends Tracer {
+class JULTracer(conf: TraceConfiguration, formatter: Formatter = PureFormatter) extends Tracer {
 
   val logger = Logger.getLogger("swam")
   logger.setLevel(Level.parse(conf.level))
@@ -41,18 +50,32 @@ class JULTracer(conf: TraceConfiguration) extends Tracer {
       case HandlerType.Socket =>
         new SocketHandler(conf.socketHandler.host, conf.socketHandler.port)
       case HandlerType.Custom =>
-        // The class must have an empty constructor
         Class.forName(conf.custom.className).newInstance().asInstanceOf[java.util.logging.Handler]
     }
 
   // TODO add other formatters support
-  handler.setFormatter(PureFormatter)
+  handler.setFormatter(formatter)
   logger.addHandler(handler)
 
   def traceEvent(tpe: EventType, args: List[String]): Unit =
     if (conf.filter.equals("*") || tpe.entryName.matches(conf.filter))
       logger.info(s"${tpe.entryName},${args.mkString(",")}${conf.separator}")
 
+}
+
+object JULTracer {
+  def apply[F[_]: Effect](traceFolder: String,
+                          traceNamePattern: String,
+                          formatter: Formatter = PureFormatter,
+                          filter: String = "*"): F[JULTracer] = {
+
+    for {
+      default <- ConfigSource.default.at("swam.runtime.tracer").loadF[F, TraceConfiguration]
+    } yield new JULTracer(
+      default.copy(filter = filter, fileHandler = default.fileHandler.copy(pattern = traceNamePattern)),
+      formatter)
+
+  }
 }
 
 private object PureFormatter extends Formatter {
