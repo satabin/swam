@@ -39,8 +39,12 @@ object SpecTests extends TestSuite {
   def run(wast: File) = {
     val positioner = new WastPositioner(wast.path)
     val script = parse(wast.contentAsString, TestScriptParser.script(_)).get.value
-    val engine = new ScriptEngine
-    engine.run(script, positioner).unsafeRunSync()
+    Blocker[IO]
+      .use { blocker =>
+        val engine = new ScriptEngine(blocker)
+        engine.run(script, positioner)
+      }
+      .unsafeRunSync()
   }
 
   val tests = testfiles("runtime/test/resources/spec-test", run _)

@@ -12,20 +12,14 @@ import util.pretty._
 import cats.effect._
 import java.nio.file.Paths
 
-val tcompiler = Compiler[IO]
-
-val rdecompiler = RawDecompiler[IO]
-
-val tdecompiler = TextDecompiler[IO]
-
 implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
 
 def compdec(p: String): (Doc, Doc) =
   Blocker[IO].use { blocker =>
     for {
-      tcompiler <- tcompiler
-      rdecompiler <- rdecompiler
-      tdecompiler <- tdecompiler
+      tcompiler <- Compiler[IO](blocker)
+      rdecompiler <-RawDecompiler[IO]
+      tdecompiler <- TextDecompiler[IO](blocker)
       rd <- rdecompiler.decompile(tcompiler.stream(Paths.get(p), true, blocker))
       td <- tdecompiler.decompile(tcompiler.stream(Paths.get(p), true, blocker))
     } yield (rd, td)

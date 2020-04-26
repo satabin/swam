@@ -29,7 +29,7 @@ import java.nio.file.Path
 
 /** Base class for anything that requires reading a module from stream or file.
   */
-class ModuleLoader[F[_]](implicit F: Effect[F]) {
+class ModuleLoader[F[_]](implicit F: Sync[F]) {
 
   /** Reads a binary module from the given path. */
   def sections(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): Stream[F, Section] =

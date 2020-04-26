@@ -26,7 +26,7 @@ import cats.implicits._
 
 import pureconfig._
 import pureconfig.generic.auto._
-import pureconfig.module.catseffect._
+import pureconfig.module.catseffect.syntax._
 
 import fs2._
 
@@ -48,8 +48,8 @@ object Validator {
     else
       new NoopValidator[F]
 
-  def apply[F[_]: Sync]: F[Validator[F]] =
+  def apply[F[_]: Sync: ContextShift](blocker: Blocker): F[Validator[F]] =
     for {
-      conf <- ConfigSource.default.at("swam.validation").loadF[F, ValidationConfiguration]
+      conf <- ConfigSource.default.at("swam.validation").loadF[F, ValidationConfiguration](blocker)
     } yield apply[F](conf)
 }

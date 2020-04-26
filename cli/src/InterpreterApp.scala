@@ -116,12 +116,16 @@ object InterpreterApp extends IOApp {
 
   def createInstance(blocker: Blocker, config: Config): IO[Instance[IO]] = {
     for {
-      tracer <- JULTracer[IO](config.traceOutDir, config.tracePattern, NoTimestampFormatter, config.traceFilter)
-      compiler <- Compiler[IO]
+      tracer <- JULTracer[IO](blocker,
+                              config.traceOutDir,
+                              config.tracePattern,
+                              NoTimestampFormatter,
+                              config.traceFilter)
+      compiler <- Compiler[IO](blocker)
       engine <- if (config.trace)
-        Engine[IO](tracer = Option(tracer))
+        Engine[IO](blocker, tracer = Option(tracer))
       else
-        Engine[IO]()
+        Engine[IO](blocker)
 
       module <- if (config.parse)
         engine.compile(compiler.stream(config.wasm.toPath, config.debugCompiler, blocker))

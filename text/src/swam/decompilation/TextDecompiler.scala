@@ -43,7 +43,7 @@ import scala.annotation.tailrec
   * This decompiler also takes advantage of the custom name section if present
   * to add identifier to the output.
   */
-class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Effect[F]) extends Decompiler[F] {
+class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]) extends Decompiler[F] {
 
   private val Valid = "^([0-9a-zA-Z!#$%&'*+-./:<=>?@\\^_`|~]+)$".r
 
@@ -536,12 +536,12 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Effect[
 }
 
 object TextDecompiler {
-  def apply[F[_]: Effect]: F[TextDecompiler[F]] =
+  def apply[F[_]: Sync: ContextShift](blocker: Blocker): F[TextDecompiler[F]] =
     for {
-      validator <- Validator[F]
+      validator <- Validator[F](blocker)
     } yield TextDecompiler[F](validator)
 
-  def apply[F[_]: Effect](validator: Validator[F]): TextDecompiler[F] =
+  def apply[F[_]: Sync](validator: Validator[F]): TextDecompiler[F] =
     new TextDecompiler[F](validator)
 }
 

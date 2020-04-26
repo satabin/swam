@@ -31,7 +31,7 @@ import fs2._
 
 import fastparse._
 
-class Compiler[F[_]] private (validator: Validator[F])(implicit val F: Effect[F]) {
+class Compiler[F[_]] private (validator: Validator[F])(implicit val F: Sync[F]) {
 
   private val resolver = new Resolver[F]
 
@@ -61,21 +61,19 @@ class Compiler[F[_]] private (validator: Validator[F])(implicit val F: Effect[F]
     } yield stream(unresolved, debug))
 
   private[swam] def parse(input: String): F[unresolved.Module] =
-    F.liftIO {
-      IO(fastparse.parse(input, ModuleParsers.file(_))).flatMap {
-        case Parsed.Success(m, _)          => IO.pure(m)
-        case f @ Parsed.Failure(_, idx, _) => IO.raiseError(new ParserException(f.msg, idx))
-      }
+    F.delay(fastparse.parse(input, ModuleParsers.file(_))).flatMap {
+      case Parsed.Success(m, _)          => F.pure(m)
+      case f @ Parsed.Failure(_, idx, _) => F.raiseError(new ParserException(f.msg, idx))
     }
 
 }
 
 object Compiler {
-  def apply[F[_]](implicit F: Effect[F]): F[Compiler[F]] =
+  def apply[F[_]: Sync: ContextShift](blocker: Blocker): F[Compiler[F]] =
     for {
-      validator <- Validator[F]
+      validator <- Validator[F](blocker)
     } yield Compiler[F](validator)
 
-  def apply[F[_]](validator: Validator[F])(implicit F: Effect[F]): Compiler[F] =
+  def apply[F[_]](validator: Validator[F])(implicit F: Sync[F]): Compiler[F] =
     new Compiler[F](validator)
 }

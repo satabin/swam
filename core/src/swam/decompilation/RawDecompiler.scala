@@ -30,7 +30,7 @@ import fs2._
   * This is a raw decompiler, not performing any validation, nor transforming
   * the binary format.
   */
-class RawDecompiler[F[_]] private (implicit F: Effect[F]) extends Decompiler[F] {
+class RawDecompiler[F[_]: Sync] extends Decompiler[F] {
 
   def decompile(sections: Stream[F, Section]): F[Doc] =
     sections.map(_.pretty).compile.toList.map(seq(newline, _))
@@ -38,6 +38,6 @@ class RawDecompiler[F[_]] private (implicit F: Effect[F]) extends Decompiler[F] 
 }
 
 object RawDecompiler {
-  def apply[F[_]](implicit F: Effect[F]): F[RawDecompiler[F]] =
+  def apply[F[_]](implicit F: Sync[F]): F[RawDecompiler[F]] =
     F.pure(new RawDecompiler[F])
 }

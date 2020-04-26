@@ -22,13 +22,12 @@ import enumeratum._
 import pureconfig.error._
 import java.util.logging._
 
-import cats.effect.Effect
 import cats.implicits._
 import cats.effect._
 
 import pureconfig._
 import pureconfig.generic.auto._
-import pureconfig.module.catseffect._
+import pureconfig.module.catseffect.syntax._
 import pureconfig.module.enumeratum._
 
 /** A tracer based on [[https://docs.oracle.com/en/java/javase/13/docs/api/java.logging/java/util/logging/package-summary.html java.util.logging]]. */
@@ -65,13 +64,14 @@ class JULTracer(conf: TraceConfiguration, formatter: Formatter = PureFormatter) 
 }
 
 object JULTracer {
-  def apply[F[_]: Effect](traceFolder: String,
-                          traceNamePattern: String,
-                          formatter: Formatter = PureFormatter,
-                          filter: String = "*"): F[JULTracer] = {
+  def apply[F[_]: Sync: ContextShift](blocker: Blocker,
+                                      traceFolder: String,
+                                      traceNamePattern: String,
+                                      formatter: Formatter = PureFormatter,
+                                      filter: String = "*"): F[JULTracer] = {
 
     for {
-      default <- ConfigSource.default.at("swam.runtime.tracer").loadF[F, TraceConfiguration]
+      default <- ConfigSource.default.at("swam.runtime.tracer").loadF[F, TraceConfiguration](blocker)
     } yield new JULTracer(
       default.copy(filter = filter, fileHandler = default.fileHandler.copy(pattern = traceNamePattern)),
       formatter)

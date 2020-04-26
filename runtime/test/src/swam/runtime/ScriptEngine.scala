@@ -20,10 +20,8 @@ package runtime
 import util._
 import text._
 import test._
-import config._
 import imports._
 import unresolved._
-import validation._
 
 import cats._
 import cats.implicits._
@@ -32,11 +30,6 @@ import cats.effect._
 import fs2._
 
 import java.lang.{Float => JFloat, Double => JDouble}
-
-import pureconfig._
-import pureconfig.generic.auto._
-import pureconfig.module.catseffect._
-import pureconfig.module.enumeratum._
 
 object Constant {
   def unapply(i: Inst): Option[Value] =
@@ -68,17 +61,13 @@ case class ExecutionContext(imports: Imports[IO], modules: Map[String, Instance[
 
 }
 
-class ScriptEngine {
+class ScriptEngine(blocker: Blocker)(implicit cs: ContextShift[IO]) {
 
   import ScriptEngine._
 
-  val engine =
-    for {
-      validator <- Validator[IO]
-      conf <- ConfigSource.default.at("swam.runtime").loadF[IO, EngineConfiguration]
-    } yield Engine[IO](conf, validator, None)
+  val engine = Engine[IO](blocker)
 
-  val tcompiler = Compiler[IO]
+  val tcompiler = Compiler[IO](blocker)
 
   def run(commands: Seq[Command], positioner: Positioner[TextFilePosition]): IO[Unit] =
     Effect[IO].tailRecM((commands, ExecutionContext(spectestlib, Map.empty, None))) {

@@ -12,18 +12,13 @@ import formats.DefaultFormatters._
 import cats.effect._
 import java.nio.file.Paths
 
-val tcompiler = Compiler[IO]
-
-val engine = Engine[IO]()
-
-
 implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
 
 def instantiate(p: String): Instance[IO] =
   Blocker[IO].use { blocker =>
     for {
-      engine <- engine
-      tcompiler <- tcompiler
+      engine <- Engine[IO](blocker)
+      tcompiler <- Compiler[IO](blocker)
       m <- engine.compile(tcompiler.stream(Paths.get(p), true, blocker))
       i <- m.instantiate
     } yield i

@@ -27,9 +27,9 @@ val swamUrl = "https://github.com/satabin/swam"
 
 val swamDeveloper = Developer("satabin", "Lucas Satabin", "https://github.com/satabin")
 
-val fs2Version = "2.0.1"
+val fs2Version = "2.3.0"
 
-val pureconfigVersion = "0.12.1"
+val pureconfigVersion = "0.12.3"
 
 trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
@@ -62,9 +62,9 @@ object core extends SwamModule with PublishModule {
       ivy"org.scodec::scodec-stream:2.0.0",
       ivy"com.github.pureconfig::pureconfig-generic:$pureconfigVersion",
       ivy"com.github.pureconfig::pureconfig-cats-effect:$pureconfigVersion",
-      ivy"org.scodec::scodec-core:1.11.4",
+      ivy"org.scodec::scodec-core:1.11.7",
       ivy"io.estatico::newtype:0.4.3",
-      ivy"org.scala-lang.modules::scala-collection-compat:2.1.2"
+      ivy"org.scala-lang.modules::scala-collection-compat:2.1.4"
     )
 
   def publishVersion = swamVersion

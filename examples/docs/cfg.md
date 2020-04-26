@@ -9,7 +9,6 @@ To perform analyses on WASM programs, it is possible to build a CFG of the funct
 A CFG is computed using a `Traverser`, for instance to compute CFGs for the [naive fibonacci function](/examples/fibo.wat), you can do this way
 
 ```scala mdoc:silent
-import swam._
 import swam.text._
 import swam.cfg._
 
@@ -17,14 +16,12 @@ import cats.effect._
 
 import java.nio.file.Paths
 
-val compiler = Compiler[IO]
-
 implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
 
 val cfg =
   Blocker[IO].use { blocker =>
     for {
-      compiler <- compiler
+      compiler <- Compiler[IO](blocker)
       naive <- compiler.compile(Paths.get("fibo.wat"), blocker).map(_.funcs(0))
       cfg <- CFGicator.buildCFG[IO](naive.body)
     } yield cfg

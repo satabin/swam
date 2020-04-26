@@ -58,7 +58,7 @@ object Generator extends IOApp {
 
   def getImports(w: File, blocker: Blocker) =
     for {
-      engine <- Engine[IO]()
+      engine <- Engine[IO](blocker)
       module <- engine.compile(w.toPath, blocker, 4096)
     } yield module.imports
 

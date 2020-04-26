@@ -24,7 +24,7 @@ import formats.DefaultFormatters._
 import cats.effect.IO
 
 import pureconfig.generic.auto._
-import pureconfig.module.catseffect._
+import pureconfig.module.catseffect.syntax._
 
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
@@ -64,8 +64,8 @@ class MandelbrotPerformances {
   @Setup
   def setup(): Unit = {
     mandelbrot = (for {
-      v <- Validator[IO]
-      conf <- ConfigSource.default.at("swam.runtime").loadF[IO, EngineConfiguration]
+      v <- Validator[IO](blocker)
+      conf <- ConfigSource.default.at("swam.runtime").loadF[IO, EngineConfiguration](blocker)
       e = Engine[IO](conf, v, None)
       m <- e.compile(Paths.get("../../../../benchmarks/resources/mandelbrot.wasm"), blocker)
       i <- m.instantiate

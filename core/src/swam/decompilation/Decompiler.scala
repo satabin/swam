@@ -29,7 +29,7 @@ import java.nio.file.Path
 /** Generic class to implement a decompiler. It takes a module in binary format
   * and outputs a formatted [[swam.util.pretty.Doc Doc]] out of it.
   */
-abstract class Decompiler[F[_]](implicit F: Effect[F]) extends ModuleLoader[F] {
+abstract class Decompiler[F[_]](implicit F: Sync[F]) extends ModuleLoader[F] {
 
   /** Returns a pretty-printed [[swam.util.pretty.Doc Doc]] resulting from decompiling
     * the module at the given path.

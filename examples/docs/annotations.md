@@ -39,24 +39,18 @@ val m = new MyModule
 Instance `m` can be used as an [import](/examples/annotations.wat) and `v3` can be mutated from a WebAssembly module.
 
 ```scala mdoc:silent
-import swam._
 import swam.text._
 import swam.runtime._
-import swam.runtime.imports._
 import cats.effect._
 import java.nio.file.Paths
-
-val tcompiler = Compiler[IO]
-
-val engine = Engine[IO]()
 
 implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
 
 val f =
   Blocker[IO].use { blocker =>
     for {
-      engine <- engine
-      tcompiler <- tcompiler
+      engine <- Engine[IO](blocker)
+      tcompiler <- Compiler[IO](blocker)
       mod <- engine.compile(tcompiler.stream(Paths.get("annotations.wat"), true, blocker))
       inst <- mod.importing("m", m).instantiate
       f <- inst.exports.typed.procedure0("mutate")
@@ -98,8 +92,8 @@ WebAssembly modules can now [import it, and call it](/examples/pure-annotations.
 val add42 =
   Blocker[IO].use { blocker =>
     for {
-      engine <- engine
-      tcompiler <- tcompiler
+      engine <- Engine[IO](blocker)
+      tcompiler <- Compiler[IO](blocker)
       mod <- engine.compile(tcompiler.stream(Paths.get("pure-annotations.wat"), true, blocker))
       inst <- mod.importing("m", pm).instantiate
       f <- inst.exports.typed.function0[Int]("f")
@@ -122,8 +116,6 @@ We can define a logging function in scala as follows, that simply prints to stdo
 ```scala mdoc:silent
 import cats._
 
-import scala.language.higherKinds
-
 @module
 class EffectfulModule[@effect F[_]](implicit F: Applicative[F]) {
 
@@ -141,8 +133,8 @@ Now, WebAssembly modules can [import that module and use the effectful function]
 val logged =
   Blocker[IO].use { blocker =>
     for {
-      engine <- engine
-      tcompiler <- tcompiler
+      engine <- Engine[IO](blocker)
+      tcompiler <- Compiler[IO](blocker)
       mod <- engine.compile(tcompiler.stream(Paths.get("effectful-annotations.wat"), true, blocker))
       inst <- mod.importing("console", mIO).instantiate
       f <- inst.exports.typed.function1[Int, Int]("add42")
