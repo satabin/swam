@@ -23,9 +23,6 @@ import pureconfig.error._
 import java.util.logging._
 
 import cats.effect.Effect
-import swam.runtime.config.EngineConfiguration
-import swam.validation.Validator
-
 import cats.implicits._
 import cats.effect._
 
@@ -50,7 +47,11 @@ class JULTracer(conf: TraceConfiguration, formatter: Formatter = PureFormatter) 
       case HandlerType.Socket =>
         new SocketHandler(conf.socketHandler.host, conf.socketHandler.port)
       case HandlerType.Custom =>
-        Class.forName(conf.custom.className).newInstance().asInstanceOf[java.util.logging.Handler]
+        Class
+          .forName(conf.custom.className)
+          .getDeclaredConstructor()
+          .newInstance()
+          .asInstanceOf[java.util.logging.Handler]
     }
 
   // TODO add other formatters support
