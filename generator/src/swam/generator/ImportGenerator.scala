@@ -9,7 +9,6 @@ import swam.runtime.Import
 import scala.reflect.runtime.universe._
 import org.scalafmt.interfaces.Scalafmt
 import org.fusesource.scalate.TemplateEngine
-import cats.effect.{Blocker, Effect, IO}
 import cats.implicits._
 import cats.effect._
 import fs2.{text, _}

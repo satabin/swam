@@ -28,7 +28,6 @@ import runtime.trace._
 import cats.effect.{Blocker, ExitCode, IO, IOApp}
 import swam.runtime.Engine
 import swam.runtime.imports.{AsInstance, AsInterface, Imports, TCMap}
-import swam.runtime.formats.DefaultFormatters._
 
 /**
     @author Javier Cabrera-Arteaga on 2020-03-12

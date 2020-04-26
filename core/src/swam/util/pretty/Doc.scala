@@ -39,7 +39,7 @@ sealed trait Doc {
   def render(width: Int): String = {
     val out = new StringBuilder
     def r(s: String): Unit =
-      out.append(s)
+      out.append(s): Unit
     render(width, r _)
     out.toString
   }

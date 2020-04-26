@@ -224,18 +224,18 @@ object AsInterface {
         def unsafeReadLong(idx: Int) = b.getLong(idx)
         def unsafeReadShort(idx: Int) = b.getShort(idx)
         def size = b.limit
-        def unsafeWriteByte(idx: Int, v: Byte) = b.put(idx, v)
+        def unsafeWriteByte(idx: Int, v: Byte) = b.put(idx, v): Unit
         def unsafeWriteBytes(idx: Int, bytes: ByteBuffer) = {
           bytes.mark()
           b.position(idx)
           b.put(bytes)
-          bytes.reset()
+          bytes.reset(): Unit
         }
-        def unsafeWriteDouble(idx: Int, v: Double) = b.putDouble(idx, v)
-        def unsafeWriteFloat(idx: Int, v: Float) = b.putFloat(idx, v)
-        def unsafeWriteInt(idx: Int, v: Int) = b.putInt(idx, v)
-        def unsafeWriteLong(idx: Int, v: Long) = b.putLong(idx, v)
-        def unsafeWriteShort(idx: Int, v: Short) = b.putShort(idx, v)
+        def unsafeWriteDouble(idx: Int, v: Double) = b.putDouble(idx, v): Unit
+        def unsafeWriteFloat(idx: Int, v: Float) = b.putFloat(idx, v): Unit
+        def unsafeWriteInt(idx: Int, v: Int) = b.putInt(idx, v): Unit
+        def unsafeWriteLong(idx: Int, v: Long) = b.putLong(idx, v): Unit
+        def unsafeWriteShort(idx: Int, v: Short) = b.putShort(idx, v): Unit
 
       }
     }

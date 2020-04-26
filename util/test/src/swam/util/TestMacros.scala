@@ -21,12 +21,14 @@ package util
 import better.files._
 
 import scala.reflect.macros.blackbox.Context
+import scala.annotation.unused
 
 object TestMacros {
 
   def listdir(c: Context)(name: c.Tree, fun: c.Tree): c.Tree = {
     import c.universe._
 
+    @unused
     implicit val lift = Liftable[File] { f =>
       val path = f.toString
       q"_root_.better.files.File($path)"

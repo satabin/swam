@@ -44,37 +44,37 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
   def size = buffer.capacity
 
   def unsafeWriteByte(idx: Int, v: Byte) =
-    buffer.put(idx, v)
+    buffer.put(idx, v): Unit
 
   def unsafeReadByte(idx: Int) =
     buffer.get(idx)
 
   def unsafeWriteShort(idx: Int, v: Short) =
-    buffer.putShort(idx, v)
+    buffer.putShort(idx, v): Unit
 
   def unsafeReadShort(idx: Int) =
     buffer.getShort(idx)
 
   def unsafeWriteInt(idx: Int, v: Int) =
-    buffer.putInt(idx, v)
+    buffer.putInt(idx, v): Unit
 
   def unsafeReadInt(idx: Int) =
     buffer.getInt(idx)
 
   def unsafeWriteLong(idx: Int, v: Long) =
-    buffer.putLong(idx, v)
+    buffer.putLong(idx, v): Unit
 
   def unsafeReadLong(idx: Int) =
     buffer.getLong(idx)
 
   def unsafeWriteFloat(idx: Int, v: Float) =
-    buffer.putFloat(idx, v)
+    buffer.putFloat(idx, v): Unit
 
   def unsafeReadFloat(idx: Int) =
     buffer.getFloat(idx)
 
   def unsafeWriteDouble(idx: Int, v: Double) =
-    buffer.putDouble(idx, v)
+    buffer.putDouble(idx, v): Unit
 
   def unsafeReadDouble(idx: Int) =
     buffer.getDouble(idx)
@@ -105,7 +105,7 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
     bytes.mark()
     buffer.position(idx)
     buffer.put(bytes)
-    bytes.reset()
+    bytes.reset(): Unit
   }
 
 }

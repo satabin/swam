@@ -36,7 +36,15 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
   def scalaVersion = "2.13.1"
 
   def scalacOptions =
-    Seq("-feature", "-deprecation", "-unchecked", "-Ypatmat-exhaust-depth", "off", "-Ywarn-unused:locals,imports", "-Ymacro-annotations")
+    Seq("-feature",
+        "-deprecation",
+        "-unchecked",
+        "-Ypatmat-exhaust-depth",
+        "off",
+        "-Ywarn-unused:locals,imports",
+        "-Ymacro-annotations",
+        "-Wvalue-discard",
+        "-Xfatal-warnings")
 
   def scalacPluginIvyDeps =
     Agg(ivy"org.typelevel:::kind-projector:0.11.0",
@@ -58,8 +66,6 @@ object core extends SwamModule with PublishModule {
       ivy"io.estatico::newtype:0.4.3",
       ivy"org.scala-lang.modules::scala-collection-compat:2.1.2"
     )
-
-
 
   def publishVersion = swamVersion
 
@@ -104,7 +110,6 @@ object text extends SwamModule with PublishModule {
 
 }
 
-
 object generator extends SwamModule with PublishModule {
 
   def moduleDeps = Seq(core, runtime)
@@ -132,8 +137,6 @@ object generator extends SwamModule with PublishModule {
       developers = Seq(swamDeveloper)
     )
 }
-
-
 
 object cli extends SwamModule{
 
