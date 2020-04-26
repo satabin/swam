@@ -1,15 +1,12 @@
 package swam.generator
 
 import java.io.File
-import java.util.concurrent.Executors
 
-import cats.effect.{Blocker, ExitCode, IO, IOApp, Resource, Sync}
+import cats.effect.{Blocker, ExitCode, IO, IOApp}
 import org.json4s.DefaultFormats
 import swam.runtime.{Engine, Import}
 import org.json4s.jackson.Serialization.writePretty
 import cats.implicits._
-
-import scala.concurrent.ExecutionContext
 
 case class Config(wasms: Seq[File] = Seq(),
                   printTemplateContext: Boolean = false,
