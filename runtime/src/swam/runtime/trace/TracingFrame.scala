@@ -46,114 +46,114 @@ private[runtime] class TracingFrame[F[_]](inner: Frame[F], tracer: Tracer) exten
   }
 
   def pushBool(b: Boolean): Unit = {
-    tracer.traceEvent(EventType.SPush, List("i32", if (b) "1" else "0"))
+    tracer.trace(EventType.SPush, List("i32", if (b) "1" else "0"), this)
     inner.pushBool(b)
   }
 
   def pushInt(i: Int): Unit = {
-    tracer.traceEvent(EventType.SPush, List("i32", i.toString))
+    tracer.trace(EventType.SPush, List("i32", i.toString), this)
     inner.pushInt(i)
   }
 
   def pushLong(l: Long): Unit = {
-    tracer.traceEvent(EventType.SPush, List("i64", l.toString))
+    tracer.trace(EventType.SPush, List("i64", l.toString), this)
     inner.pushLong(l)
   }
 
   def pushFloat(f: Float): Unit = {
-    tracer.traceEvent(EventType.SPush, List("f32", f.toString))
+    tracer.trace(EventType.SPush, List("f32", f.toString), this)
     inner.pushFloat(f)
   }
 
   def pushDouble(d: Double): Unit = {
-    tracer.traceEvent(EventType.SPush, List("f64", d.toString))
+    tracer.trace(EventType.SPush, List("f64", d.toString), this)
     inner.pushDouble(d)
   }
 
   def popBool(): Boolean = {
     val res = inner.popBool()
-    tracer.traceEvent(EventType.SPop, List("i32", if (res) "1" else "0"))
+    tracer.trace(EventType.SPop, List("i32", if (res) "1" else "0"), this)
     res
   }
 
   def popInt(): Int = {
     val res = inner.popInt()
-    tracer.traceEvent(EventType.SPop, List("i32", res.toString))
+    tracer.trace(EventType.SPop, List("i32", res.toString), this)
     res
   }
 
   def peekInt(): Int = {
     val res = inner.peekInt()
-    tracer.traceEvent(EventType.SPeek, List("i32", res.toString))
+    tracer.trace(EventType.SPeek, List("i32", res.toString), this)
     res
   }
 
   def popLong(): Long = {
     val res = inner.popLong()
-    tracer.traceEvent(EventType.SPop, List("i64", res.toString))
+    tracer.trace(EventType.SPop, List("i64", res.toString), this)
     res
   }
 
   def peekLong(): Long = {
     val res = inner.peekLong()
-    tracer.traceEvent(EventType.SPeek, List("i64", res.toString))
+    tracer.trace(EventType.SPeek, List("i64", res.toString), this)
     res
   }
 
   def popFloat(): Float = {
     val res = inner.popFloat()
-    tracer.traceEvent(EventType.SPop, List("f32", res.toString))
+    tracer.trace(EventType.SPop, List("f32", res.toString), this)
     res
   }
 
   def peekFloat(): Float = {
     val res = inner.peekFloat()
-    tracer.traceEvent(EventType.SPeek, List("f32", res.toString))
+    tracer.trace(EventType.SPeek, List("f32", res.toString), this)
     res
   }
 
   def popDouble(): Double = {
     val res = inner.popDouble()
-    tracer.traceEvent(EventType.SPop, List("f64", res.toString))
+    tracer.trace(EventType.SPop, List("f64", res.toString), this)
     res
   }
 
   def peekDouble(): Double = {
     val res = inner.peekDouble()
-    tracer.traceEvent(EventType.SPeek, List("f64", res.toString))
+    tracer.trace(EventType.SPeek, List("f64", res.toString), this)
     res
   }
 
   def drop(n: Int): Unit = {
-    tracer.traceEvent(EventType.SPop, List("i64", "drop", n.toString))
+    tracer.trace(EventType.SPop, List("i64", "drop", n.toString), this)
     inner.drop(n)
   }
 
   def popValue(): Long = {
     val res = inner.popValue()
-    tracer.traceEvent(EventType.SPop, List("i64", res.toString))
+    tracer.trace(EventType.SPop, List("i64", res.toString), this)
     res
   }
 
   def peekValue(): Long = {
     val res = inner.peekValue()
-    tracer.traceEvent(EventType.SPeek, List("i64", res.toString))
+    tracer.trace(EventType.SPeek, List("i64", res.toString), this)
     res
   }
 
   def popValues(n: Int): Seq[Long] = {
     val res = inner.popValues(n)
-    tracer.traceEvent(EventType.SPop, "i64" :: res.map(_.toString).toList)
+    tracer.trace(EventType.SPop, "i64" :: res.map(_.toString).toList, this)
     res
   }
 
   def pushValue(l: Long): Unit = {
-    tracer.traceEvent(EventType.SPush, List("i64", l.toString))
+    tracer.trace(EventType.SPush, List("i64", l.toString), this)
     inner.pushValue(l)
   }
 
   def pushValues(values: Seq[Long]): Unit = {
-    tracer.traceEvent(EventType.SPush, "i64" :: values.map(_.toString).toList)
+    tracer.trace(EventType.SPush, "i64" :: values.map(_.toString).toList, this)
     inner.pushValues(values)
   }
 
@@ -186,5 +186,11 @@ private[runtime] class TracingFrame[F[_]](inner: Frame[F], tracer: Tracer) exten
 
   def memoryOpt(idx: Int): Option[Memory[F]] =
     inner.memoryOpt(idx)
+
+  def functionName: Option[String] =
+    inner.functionName
+
+  def moduleName: Option[String] =
+    inner.moduleName
 
 }

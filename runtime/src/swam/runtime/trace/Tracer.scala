@@ -19,8 +19,24 @@ package runtime
 package trace
 
 /** Tracers must implement this interface. */
-trait Tracer {
+abstract class Tracer {
 
+  /** Filters whether the given event type should be traced in the
+    * current [[StackFrame]] context.
+    * By default, traces all evcents. Override to implement custom filtering
+    * logic.
+    */
+  def filter(tpe: EventType, args: List[String], frame: StackFrame): Boolean =
+    true
+
+  /** Actually perform the tracing of the event.
+    * Filtering has already be done before this method is called,
+    * so it does not need to check whether the event is worth tracing.
+    */
   def traceEvent(tpe: EventType, args: List[String]): Unit
+
+  private[runtime] final def trace(tpe: EventType, args: List[String], frame: StackFrame): Unit =
+    if (filter(tpe, args, frame))
+      traceEvent(tpe, args)
 
 }

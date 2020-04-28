@@ -178,7 +178,7 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
                                        ctx.functions,
                                        ctx.types)._1
                 val clocals = locals.flatMap(e => Vector.fill(e.count)(e.tpe))
-                compiler.Func.Compiled(CompiledFunction(tpe, clocals, compiled))
+                compiler.Func.Compiled(CompiledFunction(idx + shift, tpe, clocals, compiled))
             }
           ctx.copy(code = code)
         case (ctx, Section.Elements(elems)) =>

@@ -1961,7 +1961,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   sealed abstract class Invoking extends AsmInst[F] {
     protected def invoke(thread: Frame[F], f: Function[F]): Continuation[F] =
       f match {
-        case inst @ FunctionInstance(_, _, _, _) =>
+        case inst @ FunctionInstance(_, _, _, _, _) =>
           // parameters are on top of the stack
           thread.pushFrame(inst)
           Continue
