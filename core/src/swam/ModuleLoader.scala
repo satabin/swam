@@ -35,8 +35,6 @@ class ModuleLoader[F[_]](implicit F: Sync[F]) {
   def sections(path: Path, blocker: Blocker, chunkSize: Int = 1024)(implicit cs: ContextShift[F]): Stream[F, Section] =
     sections(io.file.readAll(path, blocker, chunkSize = chunkSize))
 
-  private val header = hex"0061736d01000000"
-
   /** Reads a binary module from the given bytes. */
   def sections(bytes: Stream[F, Byte]): Stream[F, Section] = {
     def go(s: Stream[F, Byte]): Pull[F, Section, Unit] =
@@ -50,7 +48,7 @@ class ModuleLoader[F[_]](implicit F: Sync[F]) {
       .flatMap {
         case Some((headerBytes, tl)) =>
           val bv = ByteVector(headerBytes.toArray)
-          if (bv == header)
+          if (bv == ModuleStream.header)
             Pull.pure(tl)
           else
             Pull.raiseError(new BinaryException(s"unexpected header ${bv.toHex(Bases.Alphabets.HexUppercase)}"))
