@@ -243,4 +243,10 @@ private[runtime] class ThreadFrame[F[_]](conf: StackConfiguration, baseInstance:
     else
       instance.instance.memories.lift(idx)
 
+  def functionName: Option[String] =
+    instance.name
+
+  def moduleName: Option[String] =
+    instance.instance.module.name
+
 }

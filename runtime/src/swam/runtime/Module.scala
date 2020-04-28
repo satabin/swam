@@ -50,7 +50,7 @@ class Module[F[_]] private[runtime] (
     private[runtime] val data: Vector[CompiledData[F]])(implicit F: MonadError[F, Throwable]) {
   self =>
 
-  private lazy val names = {
+  private[runtime] lazy val names = {
     val sec = customs.collectFirst {
       case Custom("name", payload) => payload
     }

@@ -70,7 +70,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
     // instantiate the top-level thread
     val thread = makeFrame(instance)
     // invoke the function
-    invoke(thread, new FunctionInstance(FuncType(Vector(), Vector(tpe)), Vector(), code, instance)) match {
+    invoke(thread, new FunctionInstance(FuncType(Vector(), Vector(tpe)), Vector(), code, instance, None)) match {
       case Continue     => run(thread)
       case Suspend(res) => res
       case Done(res)    => F.pure(res)
@@ -112,7 +112,7 @@ private[runtime] class Interpreter[F[_]](engine: Engine[F])(implicit F: MonadErr
 
   private def invoke(thread: Frame[F], f: Function[F]): Continuation[F] =
     f match {
-      case inst @ FunctionInstance(_, _, _, _) =>
+      case inst @ FunctionInstance(_, _, _, _, _) =>
         // parameters are on top of the stack
         thread.pushFrame(inst)
         Continue

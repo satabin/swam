@@ -21,4 +21,7 @@ package compiler
 
 import swam.runtime.internals.interpreter.AsmInst
 
-private[runtime] case class CompiledFunction[F[_]](tpe: FuncType, locals: Vector[ValType], code: Array[AsmInst[F]])
+private[runtime] case class CompiledFunction[F[_]](idx: Int,
+                                                   tpe: FuncType,
+                                                   locals: Vector[ValType],
+                                                   code: Array[AsmInst[F]])

@@ -25,6 +25,7 @@ import trace._
 
 import cats.effect._
 import cats.implicits._
+import swam.binary.custom.FunctionNames
 
 private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F]) {
 
@@ -102,8 +103,15 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
         (ifunctions, iglobals, itables, imemories :+ m)
     }
     instance.funcs = ifunctions ++ module.functions.map {
-      case CompiledFunction(tpe, locals, code) =>
-        new FunctionInstance[F](tpe, locals, code, instance)
+      case CompiledFunction(typeIndex, tpe, locals, code) =>
+        val functionName =
+          module.names.flatMap(_.subsections.collectFirstSome {
+            case FunctionNames(names) =>
+              names.get(typeIndex)
+            case _ =>
+              None
+          })
+        new FunctionInstance[F](tpe, locals, code, instance, functionName)
     }
     instance.globals = iglobals ++ globals
     instance.tables = itables ++ module.tables.map {

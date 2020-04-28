@@ -20,4 +20,10 @@ package runtime
 /** Interface of a stack frame, making it possible to create
   * a call stack on trap for reporting purpose.
   */
-trait StackFrame {}
+trait StackFrame {
+
+  def moduleName: Option[String]
+
+  def functionName: Option[String]
+
+}
