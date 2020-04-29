@@ -455,7 +455,7 @@ trait InstCodec extends TypeCodec {
           varuint32.encode(idx).map(BitVector.fromByte(inst.opcode.toByte) ++ _)
         case GlobalSet(idx) =>
           varuint32.encode(idx).map(BitVector.fromByte(inst.opcode.toByte) ++ _)
-        case MemoryInst(offset, align) =>
+        case MemoryInst(align, offset) =>
           memarg
             .encode(align -> offset)
             .map(BitVector.fromByte(inst.opcode.toByte) ++ _)
