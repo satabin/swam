@@ -8,4 +8,4 @@ gpg --import gpg_key
 
 rm gpg_key
 
-mill mill.scalalib.PublishModule/publishAll --sonatypeCreds "$SONATYPE_USER:$SONATYPE_PWD" --gpgPassphrase "$GPG_PASSPHRASE" --release true _.publishArtifacts --readTimeout 600000
+mill mill.scalalib.PublishModule/publishAll --sonatypeCreds "$SONATYPE_USER:$SONATYPE_PASSWORD" --gpgPassphrase "$GPG_PASSPHRASE" --release true _.publishArtifacts --readTimeout 600000
