@@ -22,7 +22,7 @@ jobs:
         - ./millw examples.mdoc
     - stage: deploy
       script: skip
-      if: branch = master AND tag IS present
+      if: type != pull_request AND tag IS present
       before_deploy:
         - gem install nanoc kramdown-parser-gfm rouge
         - git config --global user.email "$USER_EMAIL"
@@ -30,25 +30,16 @@ jobs:
       deploy:
         - provider: releases
           token: $GH_TOKEN
-          on:
-            branch: master
-            tags: true
           name: $TRAVIS_TAG
           edge: true
         - provider: script
           script: bash scripts/publish_github_pages.sh
           cleanup: true
           edge: true
-          on:
-            branch: master
-            tags: true
         - provider: script
           script: bash scripts/publish_maven.sh
           cleanup: true
           edge: true
-          on:
-            branch: master
-            tags: true
 
 cache:
   directories:
