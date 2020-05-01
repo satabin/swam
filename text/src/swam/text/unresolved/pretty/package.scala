@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     http:/_www.apache.org_licenses_LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -116,6 +116,8 @@ package object pretty {
               loop(rest, unop(op, d) :: restd)
             case (Seq(op @ Relop(_), rest @ _*), d2 :: d1 :: restd) =>
               loop(rest, binop(op, d1, d2) :: restd)
+            case (Seq(op @ Convertop(_, _), rest @ _*), d :: restd) =>
+              loop(rest, unop(op, d) :: restd)
             case (Seq(i @ If(_, _, _, _, _, _), rest @ _*), d :: restd) =>
               loop(rest, foldedif(i, d) :: restd)
             case (Seq(op @ BrIf(_), rest @ _*), d :: restd) =>
@@ -127,6 +129,8 @@ package object pretty {
             case (Seq(op @ GlobalSet(_), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
             case (Seq(op @ Store(_, _, _), rest @ _*), d2 :: d1 :: restd) =>
+              loop(rest, binop(op, d1, d2) :: restd)
+            case (Seq(op @ StoreN(_, _, _, _), rest @ _*), d2 :: d1 :: restd) =>
               loop(rest, binop(op, d1, d2) :: restd)
             case (Seq(op, rest @ _*), _) =>
               loop(rest, InstPretty.pretty(op) :: acc)
@@ -169,12 +173,12 @@ package object pretty {
         case i32.LeU()                  => str("i32.le_u")
         case i32.GeS()                  => str("i32.ge_s")
         case i32.GeU()                  => str("i32.ge_u")
-        case i32.WrapI64()              => str("i32.wrap/i64")
-        case i32.TruncSF32()            => str("i32.trunc_s/f32")
-        case i32.TruncUF32()            => str("i32.trunc_u/f32")
-        case i32.TruncSF64()            => str("i32.trunc_s/f64")
-        case i32.TruncUF64()            => str("i32.trunc_u/f64")
-        case i32.ReinterpretF32()       => str("i32.reinterpret/f32")
+        case i32.WrapI64()              => str("i32.wrap_i64")
+        case i32.TruncSF32()            => str("i32.trunc_f32_s")
+        case i32.TruncUF32()            => str("i32.trunc_f32_u")
+        case i32.TruncSF64()            => str("i32.trunc_f64_s")
+        case i32.TruncUF64()            => str("i32.trunc_f64_u")
+        case i32.ReinterpretF32()       => str("i32.reinterpret_f32")
         case i32.Load(align, offset)    => group(nest(2, str("i32.load") ++ memarg(align, offset, 2)))
         case i32.Store(align, offset)   => group(nest(2, str("i32.store") ++ memarg(align, offset, 2)))
         case i32.Load8S(align, offset)  => group(nest(2, str("i32.load8_s") ++ memarg(align, offset, 0)))
@@ -214,13 +218,13 @@ package object pretty {
         case i64.LeU()                  => str("i64.le_u")
         case i64.GeS()                  => str("i64.ge_s")
         case i64.GeU()                  => str("i64.ge_u")
-        case i64.ExtendSI32()           => str("i64.extend_s/i32")
-        case i64.ExtendUI32()           => str("i64.extend_u/i32")
-        case i64.TruncSF32()            => str("i64.trunc_s/f32")
-        case i64.TruncUF32()            => str("i64.trunc_u/f32")
-        case i64.TruncSF64()            => str("i64.trunc_s/f64")
-        case i64.TruncUF64()            => str("i64.trunc_u/f64")
-        case i64.ReinterpretF64()       => str("i64.reinterpret/f64")
+        case i64.ExtendSI32()           => str("i64.extend_i32_s")
+        case i64.ExtendUI32()           => str("i64.extend_i32_u")
+        case i64.TruncSF32()            => str("i64.trunc_f32_s")
+        case i64.TruncUF32()            => str("i64.trunc_f32_u")
+        case i64.TruncSF64()            => str("i64.trunc_f64_s")
+        case i64.TruncUF64()            => str("i64.trunc_f64_u")
+        case i64.ReinterpretF64()       => str("i64.reinterpret_f64")
         case i64.Load(align, offset)    => group(nest(2, str("i64.load") ++ memarg(align, offset, 4)))
         case i64.Store(align, offset)   => group(nest(2, str("i64.store") ++ memarg(align, offset, 4)))
         case i64.Load8S(align, offset)  => group(nest(2, str("i64.load8_s") ++ memarg(align, offset, 0)))
@@ -254,12 +258,12 @@ package object pretty {
         case f32.Gt()                 => str("f32.gt")
         case f32.Le()                 => str("f32.le")
         case f32.Ge()                 => str("f32.ge")
-        case f32.DemoteF64()          => str("f32.demote/f64")
-        case f32.ConvertSI32()        => str("f32.convert_s/i32")
-        case f32.ConvertUI32()        => str("f32.convert_u/i32")
-        case f32.ConvertSI64()        => str("f32.convert_s/i64")
-        case f32.ConvertUI64()        => str("f32.convert_u/i64")
-        case f32.ReinterpretI32()     => str("f32.reinterpret/i32")
+        case f32.DemoteF64()          => str("f32.demote_f64")
+        case f32.ConvertSI32()        => str("f32.convert_i32_s")
+        case f32.ConvertUI32()        => str("f32.convert_i32_u")
+        case f32.ConvertSI64()        => str("f32.convert_i64_s")
+        case f32.ConvertUI64()        => str("f32.convert_i64_u")
+        case f32.ReinterpretI32()     => str("f32.reinterpret_i32")
         case f32.Load(align, offset)  => group(nest(2, str("f32.load") ++ memarg(align, offset, 2)))
         case f32.Store(align, offset) => group(nest(2, str("f32.store") ++ memarg(align, offset, 2)))
 
@@ -284,12 +288,12 @@ package object pretty {
         case f64.Gt()                 => str("f64.gt")
         case f64.Le()                 => str("f64.le")
         case f64.Ge()                 => str("f64.ge")
-        case f64.PromoteF32()         => str("f64.promote/f32")
-        case f64.ConvertSI32()        => str("f64.convert_s/i32")
-        case f64.ConvertUI32()        => str("f64.convert_u/i32")
-        case f64.ConvertSI64()        => str("f64.convert_s/i64")
-        case f64.ConvertUI64()        => str("f64.convert_u/i64")
-        case f64.ReinterpretI64()     => str("f64.reinterpret/i64")
+        case f64.PromoteF32()         => str("f64.promote_f32")
+        case f64.ConvertSI32()        => str("f64.convert_i32_s")
+        case f64.ConvertUI32()        => str("f64.convert_i32_u")
+        case f64.ConvertSI64()        => str("f64.convert_i64_s")
+        case f64.ConvertUI64()        => str("f64.convert_i64_u")
+        case f64.ReinterpretI64()     => str("f64.reinterpret_i64")
         case f64.Load(align, offset)  => group(nest(2, str("f64.load") ++ memarg(align, offset, 4)))
         case f64.Store(align, offset) => group(nest(2, str("f64.store") ++ memarg(align, offset, 4)))
 
@@ -342,10 +346,24 @@ package object pretty {
     str(l.toString)
 
   private def float(f: Float): Doc =
-    str(f.toString)
+    if (f.isNaN)
+      str("nan")
+    else if (f.isNegInfinity)
+      str("-inf")
+    else if (f.isPosInfinity)
+      str("+inf")
+    else
+      str(f.toString)
 
   private def double(d: Double): Doc =
-    str(d.toString)
+    if (d.isNaN)
+      str("nan")
+    else if (d.isNegInfinity)
+      str("-inf")
+    else if (d.isPosInfinity)
+      str("+inf")
+    else
+      str(d.toString)
 
   private def memarg(align: Int, offset: Int, default: Int): Doc =
     (offset, align) match {
@@ -365,7 +383,10 @@ package object pretty {
     if (fst == empty)
       rest
     else if (rest == empty)
-      str("(") ++ fst ++ str(")")
+      if (fst.startsWith("("))
+        fst
+      else
+        str("(") ++ fst ++ str(")")
     else
       group(nest(2, str("(") ++ fst ++ line ++ rest ++ str(")")))
 

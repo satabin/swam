@@ -111,21 +111,41 @@ sealed trait Doc {
           false
     }
 
+  def startsWith(s: String): Boolean
+
 }
 
-private case object Empty extends Doc
+private case object Empty extends Doc {
+  def startsWith(s: String): Boolean = false
+}
 
-private case class Append(d1: Doc, d2: Doc) extends Doc
+private case class Append(d1: Doc, d2: Doc) extends Doc {
+  def startsWith(s: String): Boolean =
+    if (d1 == Empty)
+      d2.startsWith(s)
+    else
+      d1.startsWith(s)
+}
 
-private case class Nest(indent: Int, d: Doc) extends Doc
+private case class Nest(indent: Int, d: Doc) extends Doc {
+  def startsWith(s: String): Boolean = d.startsWith(s)
+}
 
-private case class Text(s: String) extends Doc
+private case class Text(text: String) extends Doc {
+  def startsWith(s: String): Boolean = text.startsWith(s)
+}
 
-private case class Break(sp: Int, off: Int) extends Doc
+private case class Break(sp: Int, off: Int) extends Doc {
+  def startsWith(s: String): Boolean = false
+}
 
-private case object Newline extends Doc
+private case object Newline extends Doc {
+  def startsWith(s: String): Boolean = false
+}
 
-private case class Group(d: Doc) extends Doc
+private case class Group(d: Doc) extends Doc {
+  def startsWith(s: String): Boolean = d.startsWith(s)
+}
 
 private sealed trait Mode
 private object Mode {

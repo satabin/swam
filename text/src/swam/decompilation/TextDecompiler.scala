@@ -64,6 +64,8 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
               loop(rest, unop(op, d) :: restd)
             case (Seq(op @ u.Relop(_), rest @ _*), d2 :: d1 :: restd) =>
               loop(rest, binop(op, d1, d2) :: restd)
+            case (Seq(op @ u.Convertop(_, _), rest @ _*), d :: restd) =>
+              loop(rest, unop(op, d) :: restd)
             case (Seq(i @ u.If(_, _, _, _, _, _), rest @ _*), d :: restd) =>
               loop(rest, foldedif(i, d) :: restd)
             case (Seq(i @ u.Call(_), rest @ _*), _) =>
@@ -77,6 +79,8 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
             case (Seq(op @ u.GlobalSet(_), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
             case (Seq(op @ u.Store(_, _, _), rest @ _*), d2 :: d1 :: restd) =>
+              loop(rest, binop(op, d1, d2) :: restd)
+            case (Seq(op @ u.StoreN(_, _, _, _), rest @ _*), d2 :: d1 :: restd) =>
               loop(rest, binop(op, d1, d2) :: restd)
             case (Seq(op, rest @ _*), _) =>
               loop(rest, op.pretty :: acc)
