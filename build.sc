@@ -242,7 +242,7 @@ def unidoc(ev: Evaluator) = T.command {
       case x: ScalaModule#Tests => true
       case _ =>
         val segments = x.millModuleBasePath.value.segments.toVector
-        segments.contains("util") || segments.contains("benchmarks") || segments.contains("examples")
+        segments.contains("util") || segments.contains("benchmarks") || segments.contains("examples") || segments.contains("cli")
     }
 
   val modules =
