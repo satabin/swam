@@ -20,6 +20,8 @@ package runtime
 import java.nio.ByteBuffer
 
 import cats._
+import swam.runtime.internals.instance.MemoryInstance
+import cats.effect.Async
 
 /** All elements that are part of the interface of an instance must implement
   * this interface.
@@ -216,5 +218,24 @@ abstract class Memory[F[_]](implicit F: MonadError[F, Throwable]) extends Interf
     *  $boundaries
     */
   def writeBytes(idx: Int, bytes: ByteBuffer): F[Unit] = F.catchNonFatal(unsafeWriteBytes(idx, bytes))
+  def writeBytes(idx: Int, bytes: Array[Byte]): F[Unit] = F.catchNonFatal(unsafeWriteBytes(idx, bytes))
+  def unsafeWriteBytes(idx: Int, bytes: Array[Byte]): Unit = unsafeWriteBytes(idx, ByteBuffer.wrap(bytes))
   def unsafeWriteBytes(idx: Int, bytes: ByteBuffer): Unit
+
+  /** Reads the bytes in the provided buffer at the given index in memory.
+    *
+    * This method is used by Swam to initialize the memory upon module
+    * instantiation and should not be used otherwise.
+    *
+    *  $boundaries
+    */
+  def readBytes(idx: Int, length: Int): F[Array[Byte]] = F.catchNonFatal(unsafeReadBytes(idx, length))
+  def unsafeReadBytes(idx: Int, length: Int): Array[Byte]
+}
+
+object Memory {
+
+  /** Creates a memory instance with the given min and max nuber of pages. */
+  def apply[F[_]](min: Int, max: Option[Int] = None)(implicit F: Async[F]): F[Memory[F]] =
+    F.delay(new MemoryInstance[F](min, max, true, 65536))
 }

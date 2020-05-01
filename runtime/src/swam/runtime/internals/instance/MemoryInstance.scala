@@ -108,4 +108,11 @@ private[runtime] class MemoryInstance[F[_]](min: Int, max: Option[Int], onHeap: 
     bytes.reset(): Unit
   }
 
+  def unsafeReadBytes(idx: Int, length: Int) = {
+    val res = Array.ofDim[Byte](length)
+    buffer.position(idx)
+    buffer.get(res, 0, length)
+    res
+  }
+
 }

@@ -231,12 +231,17 @@ object AsInterface {
           b.put(bytes)
           bytes.reset(): Unit
         }
+        def unsafeReadBytes(idx: Int, length: Int) = {
+          val res = Array.ofDim[Byte](length)
+          b.position(idx)
+          b.get(res, 0, length)
+          res
+        }
         def unsafeWriteDouble(idx: Int, v: Double) = b.putDouble(idx, v): Unit
         def unsafeWriteFloat(idx: Int, v: Float) = b.putFloat(idx, v): Unit
         def unsafeWriteInt(idx: Int, v: Int) = b.putInt(idx, v): Unit
         def unsafeWriteLong(idx: Int, v: Long) = b.putLong(idx, v): Unit
         def unsafeWriteShort(idx: Int, v: Short) = b.putShort(idx, v): Unit
-
       }
     }
 

@@ -36,19 +36,20 @@ trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
   def scalaVersion = "2.13.1"
 
   def scalacOptions =
-    Seq("-feature",
-        "-deprecation",
-        "-unchecked",
-        "-Ypatmat-exhaust-depth",
-        "off",
-        "-Ywarn-unused:locals,imports",
-        "-Ymacro-annotations",
-        "-Wvalue-discard",
-        "-Xfatal-warnings")
+    Seq(
+      "-feature",
+      "-deprecation",
+      "-unchecked",
+      "-Ypatmat-exhaust-depth",
+      "off",
+      "-Ywarn-unused:locals,imports",
+      "-Ymacro-annotations",
+      "-Wvalue-discard",
+      "-Xfatal-warnings"
+    )
 
   def scalacPluginIvyDeps =
-    Agg(ivy"org.typelevel:::kind-projector:0.11.0",
-        ivy"com.olegpy::better-monadic-for:0.3.1")
+    Agg(ivy"org.typelevel:::kind-projector:0.11.0", ivy"com.olegpy::better-monadic-for:0.3.1")
 
 }
 
@@ -56,7 +57,7 @@ object core extends SwamModule with PublishModule {
 
   def ivyDeps =
     Agg(
-      ivy"com.beachape::enumeratum:1.5.13",
+      ivy"com.beachape::enumeratum:1.5.15",
       ivy"co.fs2::fs2-core:$fs2Version",
       ivy"co.fs2::fs2-io:$fs2Version",
       ivy"org.scodec::scodec-stream:2.0.0",
@@ -64,7 +65,7 @@ object core extends SwamModule with PublishModule {
       ivy"com.github.pureconfig::pureconfig-cats-effect:$pureconfigVersion",
       ivy"org.scodec::scodec-core:1.11.7",
       ivy"io.estatico::newtype:0.4.3",
-      ivy"org.scala-lang.modules::scala-collection-compat:2.1.4"
+      ivy"org.scala-lang.modules::scala-collection-compat:2.1.5"
     )
 
   def publishVersion = swamVersion
@@ -82,7 +83,7 @@ object core extends SwamModule with PublishModule {
     )
 
   object test extends Tests with ScalafmtModule {
-    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.1")
+    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.4")
     def testFrameworks = Seq("swam.util.Framework")
     def moduleDeps = Seq(core, util.test)
   }
@@ -92,7 +93,7 @@ object core extends SwamModule with PublishModule {
 object text extends SwamModule with PublishModule {
   def moduleDeps = Seq(core)
 
-  def ivyDeps = Agg(ivy"com.lihaoyi::fastparse:2.1.3", ivy"co.fs2::fs2-io:$fs2Version")
+  def ivyDeps = Agg(ivy"com.lihaoyi::fastparse:2.2.4", ivy"co.fs2::fs2-io:$fs2Version")
 
   def publishVersion = swamVersion
 
@@ -121,10 +122,9 @@ object generator extends SwamModule with PublishModule {
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
     ivy"com.github.scopt::scopt:3.7.1",
-    ivy"org.scalameta::scalafmt-dynamic:2.4.0",
+    ivy"org.scalameta::scalafmt-dynamic:2.4.2",
     ivy"org.scalatra.scalate::scalate-core:1.9.5",
     ivy"org.json4s::json4s-jackson:3.7.0-M2"
-
   )
 
   def pomSettings =
@@ -138,13 +138,13 @@ object generator extends SwamModule with PublishModule {
     )
 }
 
-object cli extends SwamModule{
+object cli extends SwamModule {
 
-  def moduleDeps = Seq(text, core, runtime)
+  def moduleDeps = Seq(text, core, runtime, wasi)
 
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
-    ivy"com.github.scopt::scopt:3.7.1"
+    ivy"com.monovore::decline-effect:1.0.0"
   )
 
 }
@@ -171,7 +171,7 @@ object runtime extends SwamModule with PublishModule {
 
   object test extends Tests with ScalafmtModule {
     def ivyDeps =
-      Agg(ivy"com.lihaoyi::utest:0.7.1", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.5")
+      Agg(ivy"com.lihaoyi::utest:0.7.4", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.9")
 
     def moduleDeps = Seq(runtime, text, util.test)
 
@@ -182,6 +182,28 @@ object runtime extends SwamModule with PublishModule {
       def testFrameworks = Seq("swam.util.Framework")
     }
   }
+
+}
+
+object wasi extends SwamModule with PublishModule {
+
+  def moduleDeps = Seq(runtime)
+
+  def ivyDeps = Agg(ivy"com.github.valskalla::odin-core:0.7.0")
+
+  def publishVersion = swamVersion
+
+  def artifactName = "swam-wasi"
+
+  def pomSettings =
+    PomSettings(
+      description = "Swam WASI runtime library",
+      organization = "org.gnieh",
+      url = swamUrl,
+      licenses = Seq(swamLicense),
+      versionControl = VersionControl.github("satabin", "swam"),
+      developers = Seq(swamDeveloper)
+    )
 
 }
 
@@ -200,7 +222,7 @@ object examples extends SwamModule with MdocModule {
 object util extends SwamModule {
 
   object test extends SwamModule {
-    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.1", ivy"com.github.pathikrit::better-files:3.8.0")
+    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.4", ivy"com.github.pathikrit::better-files:3.8.0")
   }
 
 }

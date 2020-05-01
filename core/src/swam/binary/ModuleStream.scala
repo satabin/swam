@@ -19,6 +19,7 @@ package binary
 
 import syntax._
 
+import scodec.bits._
 import scodec.stream._
 
 /** The module streams expose way to encode and decode WebAssembly modules in
@@ -29,10 +30,12 @@ import scodec.stream._
   */
 object ModuleStream {
 
+  val header = hex"0061736d01000000"
+
   val decoder: StreamDecoder[Section] =
     StreamDecoder.many(WasmCodec.section)
 
-  def encoder: StreamEncoder[Section] =
+  val encoder: StreamEncoder[Section] =
     StreamEncoder.many(WasmCodec.section)
 
 }

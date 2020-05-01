@@ -3,7 +3,7 @@ import mill._, scalalib._, modules._
 
 trait Jmh extends ScalaModule {
 
-  def ivyDeps = super.ivyDeps() ++ Agg(ivy"org.openjdk.jmh:jmh-core:1.21")
+  def ivyDeps = super.ivyDeps() ++ Agg(ivy"org.openjdk.jmh:jmh-core:1.23")
 
   def runJmh(args: String*) = T.command {
     val (_, resources) = generateBenchmarkSources()

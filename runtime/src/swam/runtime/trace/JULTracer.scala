@@ -100,7 +100,7 @@ case class TracerFileHandlerCondiguration(var pattern: String, append: Boolean, 
 case class SocketHanndlerCondiguration(host: String, port: Int);
 case class CustomTracerConfiguration(className: String)
 
-sealed trait HandlerType extends EnumEntry
+sealed trait HandlerType extends EnumEntry with EnumEntry.Lowercase
 
 object HandlerType extends Enum[HandlerType] {
 
