@@ -22,6 +22,7 @@ jobs:
         - ./millw examples.mdoc
     - stage: deploy
       script: skip
+      if: branch = master AND tag IS present
       before_deploy:
         - gem install nanoc kramdown-parser-gfm rouge
         - git config --global user.email "$USER_EMAIL"
