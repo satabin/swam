@@ -112,7 +112,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     wasmFile.map(Validate(_))
   }
 
-  val compileOpts: Opts[Options] = Opts.subcommand("compile", "Compile a wat file to was") {
+  val compileOpts: Opts[Options] = Opts.subcommand("compile", "Compile a wat file to wasm") {
     (wasmFile, out, debug).mapN(Compile(_, _, _))
   }
 
