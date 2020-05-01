@@ -52,3 +52,4 @@ jdk:
 branches:
   only:
   - master
+  - /^\d+\.\d+\.\d+(-.*)?$/
