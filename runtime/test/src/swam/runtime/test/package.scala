@@ -23,8 +23,6 @@ import java.nio.ByteBuffer
 
 package object test {
 
-  import formats._
-  import DefaultFormatters._
   import imports._
 
   type AsIIO[T] = AsInterface[T, IO]

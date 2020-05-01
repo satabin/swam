@@ -20,7 +20,6 @@ package wasi
 
 import internal._
 import imports.annotations._
-import formats.DefaultFormatters._
 
 import cats.effect._
 import cats.effect.concurrent.Deferred

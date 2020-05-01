@@ -7,7 +7,6 @@ When a module is instantiated, it is possible to import functions or values from
 ```scala mdoc:silent
 import swam.text._
 import swam.runtime._
-import swam.runtime.formats.DefaultFormatters._
 import cats.effect._
 import java.nio.file.Paths
 

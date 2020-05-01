@@ -19,7 +19,6 @@ package runtime
 
 import config._
 import validation._
-import formats.DefaultFormatters._
 
 import cats.effect.IO
 

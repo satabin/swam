@@ -29,6 +29,8 @@ trait ValueReader[F[_], T] {
 
 }
 
+object ValueReader extends DefaultReaders
+
 /** A reader is used to transform a simple web assembly value into a
   *  scala object. A simple value van be read without memory instance.
   */

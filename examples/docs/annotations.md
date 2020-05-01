@@ -17,7 +17,6 @@ For instance, let’s define a simple class with three exported members.
 
 ```scala mdoc:silent
 import swam.runtime.imports.annotations._
-import swam.runtime.formats.DefaultFormatters._
 
 @module
 class MyModule {

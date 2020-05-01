@@ -24,7 +24,34 @@ import cats._
   */
 trait ValueFormatter[F[_], T] extends ValueReader[F, T] with ValueWriter[F, T]
 
+object ValueFormatter {
+
+  implicit def formatterWithBoth[F[_], T](implicit reader: ValueReader[F, T],
+                                          writer: ValueWriter[F, T]): ValueFormatter[F, T] =
+    new ValueFormatter[F, T] {
+      def read(v: Value, m: Option[Memory[F]]): F[T] = reader.read(v, m)
+      def write(v: T, m: Option[Memory[F]]): F[Value] = writer.write(v, m)
+      val swamType: ValType = reader.swamType
+
+    }
+
+}
+
 abstract class SimpleValueFormatter[F[_], T](implicit F: MonadError[F, Throwable])
     extends SimpleValueWriter[F, T]
     with SimpleValueReader[F, T]
     with ValueFormatter[F, T]
+
+object SimpleValueFormatter {
+
+  implicit def formatterWithBoth[F[_], T](implicit F: MonadError[F, Throwable],
+                                          reader: SimpleValueReader[F, T],
+                                          writer: SimpleValueWriter[F, T]): SimpleValueFormatter[F, T] =
+    new SimpleValueFormatter[F, T] {
+      def read(v: Value): F[T] = reader.read(v)
+      def write(v: T): Value = writer.write(v)
+      val swamType: ValType = reader.swamType
+
+    }
+
+}

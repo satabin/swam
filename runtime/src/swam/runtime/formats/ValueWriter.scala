@@ -31,6 +31,8 @@ trait ValueWriter[F[_], T] {
 
 }
 
+object ValueWriter extends DefaultWriters
+
 /** A writer is used to transform a scala value into a
   *  simple web assembly value. A simple value can be writter without memory instance.
   */

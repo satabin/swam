@@ -8,7 +8,6 @@ Recursive functions are allowed. For instance, having defined [functions to comp
 import swam._
 import text._
 import runtime._
-import formats.DefaultFormatters._
 import cats.effect._
 import java.nio.file.Paths
 
