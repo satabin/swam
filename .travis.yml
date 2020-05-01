@@ -35,10 +35,27 @@ branches:
 
 before_deploy:
   - gem install nanoc kramdown-parser-gfm rouge
+  - git config --global user.email "$USER_EMAIL"
+  - git config --global user.name "$USER_NAME"
 
 deploy:
+  - provider: releases
+    token: $GH_TOKEN
+    on:
+      branch: master
+      tags: true
+    name: $TRAVIS_TAG
+    edge: true
   - provider: script
-    script: bash site/publish_github_pages.sh
+    script: bash scripts/publish_github_pages.sh
+    cleanup: true
+    edge: true
+    on:
+      branch: master
+      tags: true
+  - provider: script
+    script: bash scripts/publish_maven.sh
+    cleanup: true
     edge: true
     on:
       branch: master

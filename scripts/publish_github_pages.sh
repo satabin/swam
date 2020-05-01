@@ -1,8 +1,5 @@
 #! /usr/bin/env bash
 
-git config --global user.email "$USER_EMAIL"
-git config --global user.name "$USER_NAME"
-
 ./millw unidoc
 ./millw examples.mdoc
 cd site
