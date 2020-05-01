@@ -126,8 +126,8 @@ package object pretty {
               loop(rest, unop(op, d) :: restd)
             case (Seq(op @ GlobalSet(_), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
-            case (Seq(op @ Store(_, _, _), rest @ _*), d :: restd) =>
-              loop(rest, unop(op, d) :: restd)
+            case (Seq(op @ Store(_, _, _), rest @ _*), d2 :: d1 :: restd) =>
+              loop(rest, binop(op, d1, d2) :: restd)
             case (Seq(op, rest @ _*), _) =>
               loop(rest, InstPretty.pretty(op) :: acc)
           }
@@ -471,15 +471,16 @@ package object pretty {
         case Function(id, tu, Seq(), is) =>
           group(nest(2, str("(func") ++ id.pretty ++ tu.pretty ++ line ++ is.pretty) ++ str(")"))
         case Function(id, tu, locals, is) =>
-          group(
-            nest(2, str("(func") ++ id.pretty ++ tu.pretty ++ line ++ seq(line, locals) ++ line ++ is.pretty) ++ str(
-              ")"))
+          group(nest(
+            2,
+            str("(func") ++ id.pretty ++ line ++ tu.pretty ++ line ++ seq(line, locals) ++ line ++ is.pretty) ++ str(
+            ")"))
         case Table(id, tpe) =>
-          group(nest(2, str("(table") ++ id.pretty ++ tpe.pretty) ++ str(")"))
+          group(nest(2, str("(table") ++ id.pretty ++ line ++ tpe.pretty) ++ str(")"))
         case Memory(id, tpe) =>
-          group(nest(2, str("(memory") ++ id.pretty ++ tpe.pretty) ++ str(")"))
+          group(nest(2, str("(memory") ++ id.pretty ++ line ++ tpe.pretty) ++ str(")"))
         case Global(id, tpe, init) =>
-          group(nest(2, str("(global") ++ id.pretty ++ tpe.pretty ++ line ++ init.pretty) ++ str(")"))
+          group(nest(2, str("(global") ++ id.pretty ++ line ++ tpe.pretty ++ line ++ init.pretty) ++ str(")"))
         case Export(name, desc) =>
           group(
             nest(2, str("(export") ++ line ++ str("\"") ++ str(name) ++ str("\"") ++ line ++ desc.pretty) ++ str(")"))
@@ -493,9 +494,11 @@ package object pretty {
               ")"))
         case Data(mem, offset, init) =>
           group(
-            nest(2,
-                 str("(data") ++ mem.pretty ++ line ++ group(nest(2, str("(offset") ++ line ++ offset.pretty) ++ str(
-                   ")")) ++ line ++ str("\"\\") ++ seq(str("\\"), init.toIndexedSeq)) ++ str("\"") ++ str(")"))
+            nest(
+              2,
+              str("(data") ++ mem.pretty ++ line ++ group(nest(2, str("(offset") ++ line ++ offset.pretty) ++ str(")")) ++ line ++ str(
+                "\"\\") ++ seq(str("\\"), init.toIndexedSeq.map(b => str(f"$b%02x")))
+            ) ++ str("\"") ++ str(")"))
       }
   }
 

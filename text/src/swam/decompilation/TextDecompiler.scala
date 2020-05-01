@@ -76,8 +76,8 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
               loop(rest, unop(op, d) :: restd)
             case (Seq(op @ u.GlobalSet(_), rest @ _*), d :: restd) =>
               loop(rest, unop(op, d) :: restd)
-            case (Seq(op @ u.Store(_, _, _), rest @ _*), d :: restd) =>
-              loop(rest, unop(op, d) :: restd)
+            case (Seq(op @ u.Store(_, _, _), rest @ _*), d2 :: d1 :: restd) =>
+              loop(rest, binop(op, d1, d2) :: restd)
             case (Seq(op, rest @ _*), _) =>
               loop(rest, op.pretty :: acc)
           }
@@ -88,7 +88,7 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
         val tpe = functypes(c.funcidx)
         val nbparams = tpe.params.size
         val (args, rest) = acc.splitAt(nbparams)
-        val pargs = seq(line, args.map(a => fold(a.pretty, empty)))
+        val pargs = seq(line, args.reverse.map(a => fold(a.pretty, empty)))
         group(nest(2, str("(") ++ c.pretty ++ line ++ pargs ++ str(")"))) :: rest
       }
     }
