@@ -79,6 +79,26 @@ object Convertop {
     Some(op.from -> op.to)
 }
 
+/** A miscellanous operator.
+  *
+  * @group Category
+  */
+sealed abstract class Miscop(val index: Byte) extends Inst(OpCode.MiscOp)
+object Miscop {
+  def unapply(op: Miscop): Option[Byte] =
+    Some(op.index)
+}
+
+/** A saturating conversion operator.
+  *
+  * @group Category
+  */
+sealed abstract class SatConvertop(val from: ValType, val to: ValType, index: Byte) extends Miscop(index)
+object SatConvertop {
+  def unapply(op: SatConvertop): Option[(ValType, ValType)] =
+    Some(op.from -> op.to)
+}
+
 /** A integer unary operator.
   *
   * @group Category
@@ -236,6 +256,11 @@ object i32 {
   case object TruncSF64 extends Convertop(ValType.F64, ValType.I32, OpCode.I32TruncSF64)
   case object TruncUF64 extends Convertop(ValType.F64, ValType.I32, OpCode.I32TruncUF64)
 
+  case object TruncSatSF32 extends SatConvertop(ValType.F32, ValType.I32, 0x00)
+  case object TruncSatUF32 extends SatConvertop(ValType.F32, ValType.I32, 0x01)
+  case object TruncSatSF64 extends SatConvertop(ValType.F64, ValType.I32, 0x02)
+  case object TruncSatUF64 extends SatConvertop(ValType.F64, ValType.I32, 0x03)
+
   case object ReinterpretF32 extends Convertop(ValType.F32, ValType.I32, OpCode.I32ReinterpretF32)
 
   case class Load(align: Int, offset: Int) extends LoadInst(ValType.I32, OpCode.I32Load)
@@ -299,6 +324,11 @@ object i64 {
   case object TruncUF32 extends Convertop(ValType.F32, ValType.I64, OpCode.I64TruncUF32)
   case object TruncSF64 extends Convertop(ValType.F64, ValType.I64, OpCode.I64TruncSF64)
   case object TruncUF64 extends Convertop(ValType.F64, ValType.I64, OpCode.I64TruncUF64)
+
+  case object TruncSatSF32 extends SatConvertop(ValType.F32, ValType.I64, 0x04)
+  case object TruncSatUF32 extends SatConvertop(ValType.F32, ValType.I64, 0x05)
+  case object TruncSatSF64 extends SatConvertop(ValType.F64, ValType.I64, 0x06)
+  case object TruncSatUF64 extends SatConvertop(ValType.F64, ValType.I64, 0x07)
 
   case object ReinterpretF64 extends Convertop(ValType.F64, ValType.I64, OpCode.I64ReinterpretF64)
 

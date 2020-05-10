@@ -376,6 +376,9 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
           case op @ Convertop(_, _) =>
             builder += asm.Convertop(op)
             loop(instIdx + 1, ctx.copy(offset = ctx.offset + 1), false)
+          case op @ SatConvertop(_, _) =>
+            builder += asm.SatConvertop(op)
+            loop(instIdx + 1, ctx.copy(offset = ctx.offset + 1), false)
           case op @ Load(_, _, _) =>
             builder += asm.Load(op)
             loop(instIdx + 1, ctx.copy(offset = ctx.offset + 1), false)

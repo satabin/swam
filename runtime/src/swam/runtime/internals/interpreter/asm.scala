@@ -207,6 +207,20 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       }
   }
 
+  object SatConvertop {
+    def apply(satconvertop: sy.SatConvertop): AsmInst[F] =
+      satconvertop match {
+        case sy.i32.TruncSatSF32 => I32TruncSatSF32
+        case sy.i32.TruncSatUF32 => I32TruncSatUF32
+        case sy.i32.TruncSatSF64 => I32TruncSatSF64
+        case sy.i32.TruncSatUF64 => I32TruncSatUF64
+        case sy.i64.TruncSatSF32 => I64TruncSatSF32
+        case sy.i64.TruncSatUF32 => I64TruncSatUF32
+        case sy.i64.TruncSatSF64 => I64TruncSatSF64
+        case sy.i64.TruncSatUF64 => I64TruncSatUF64
+      }
+  }
+
   object Load {
     def apply(load: sy.LoadInst): AsmInst[F] =
       load match {
@@ -1193,6 +1207,19 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
+  case object I32TruncSF32 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popFloat()
+      I32.truncSf32(f) match {
+        case Right(i) =>
+          thread.pushInt(i)
+          Continue
+        case Left(msg) =>
+          throw new TrapException(thread, msg)
+      }
+    }
+  }
+
   case object I32TruncUF32 extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popFloat()
@@ -1206,10 +1233,10 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
-  case object I32TruncSF32 extends AsmInst[F] {
+  case object I32TruncSF64 extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
-      val f = thread.popFloat()
-      I32.truncSf32(f) match {
+      val f = thread.popDouble()
+      I32.truncSf64(f) match {
         case Right(i) =>
           thread.pushInt(i)
           Continue
@@ -1232,16 +1259,39 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
-  case object I32TruncSF64 extends AsmInst[F] {
+  case object I32TruncSatSF32 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popFloat()
+      val i = I32.truncSatSf32(f)
+      thread.pushInt(i)
+      Continue
+    }
+  }
+
+  case object I32TruncSatUF64 extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popDouble()
-      I32.truncSf64(f) match {
-        case Right(i) =>
-          thread.pushInt(i)
-          Continue
-        case Left(msg) =>
-          throw new TrapException(thread, msg)
-      }
+      val i = I32.truncSatUf64(f)
+      thread.pushInt(i)
+      Continue
+    }
+  }
+
+  case object I32TruncSatSF64 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popDouble()
+      val i = I32.truncSatSf64(f)
+      thread.pushInt(i)
+      Continue
+    }
+  }
+
+  case object I32TruncSatUF32 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popFloat()
+      val i = I32.truncSatUf32(f)
+      thread.pushInt(i)
+      Continue
     }
   }
 
@@ -1294,6 +1344,42 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
         case Left(msg) =>
           throw new TrapException(thread, msg)
       }
+    }
+  }
+
+  case object I64TruncSatUF32 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popFloat()
+      val l = I64.truncSatUf32(f)
+      thread.pushLong(l)
+      Continue
+    }
+  }
+
+  case object I64TruncSatSF32 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popFloat()
+      val l = I64.truncSatSf32(f)
+      thread.pushLong(l)
+      Continue
+    }
+  }
+
+  case object I64TruncSatUF64 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popDouble()
+      val l = I64.truncSatUf64(f)
+      thread.pushLong(l)
+      Continue
+    }
+  }
+
+  case object I64TruncSatSF64 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popDouble()
+      val l = I64.truncSatSf64(f)
+      thread.pushLong(l)
+      Continue
     }
   }
 

@@ -51,6 +51,21 @@ trait InstCodec extends TypeCodec {
   private val memarg: Codec[(Int, Int)] =
     varuint32 ~ varuint32
 
+  private val misc: Codec[Miscop] =
+    mappedEnum(
+      byte,
+      Map[Miscop, Byte](
+        i32.TruncSatSF32 -> 0x00,
+        i32.TruncSatUF32 -> 0x01,
+        i32.TruncSatSF64 -> 0x02,
+        i32.TruncSatUF64 -> 0x03,
+        i64.TruncSatSF32 -> 0x04,
+        i64.TruncSatUF32 -> 0x05,
+        i64.TruncSatSF64 -> 0x06,
+        i64.TruncSatUF64 -> 0x07
+      )
+    )
+
   val opcode: Codec[OpCode] = new Codec[OpCode] {
     def decode(bits: BitVector): Attempt[DecodeResult[OpCode]] =
       if (bits.size < 8) {
@@ -403,6 +418,7 @@ trait InstCodec extends TypeCodec {
               Attempt.successful(DecodeResult(f32.ReinterpretI32, remainder))
             case OpCode.F64ReinterpretI64 =>
               Attempt.successful(DecodeResult(f64.ReinterpretI64, remainder))
+            case OpCode.MiscOp => misc.decode(remainder)
             case _ =>
               Attempt.Failure(Err(f"Unknown opcode 0x$opcode%02x"))
           }

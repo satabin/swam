@@ -109,6 +109,13 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
         } yield ctx.push(to)
     }
 
+    override val satConvertopTraverse = {
+      case (ctx, SatConvertop(from, to)) =>
+        for {
+          ctx <- ctx.pop(from)
+        } yield ctx.push(to)
+    }
+
     override val dropTraverse = {
       case (ctx, Drop) =>
         for {
