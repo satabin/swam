@@ -57,26 +57,31 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   object Unop {
     def apply(unop: sy.Unop): AsmInst[F] =
       unop match {
-        case sy.i32.Clz     => I32Clz
-        case sy.i32.Ctz     => I32Ctz
-        case sy.i32.Popcnt  => I32Popcnt
-        case sy.i64.Clz     => I64Clz
-        case sy.i64.Ctz     => I64Ctz
-        case sy.i64.Popcnt  => I64Popcnt
-        case sy.f32.Abs     => F32Abs
-        case sy.f32.Neg     => F32Neg
-        case sy.f32.Sqrt    => F32Sqrt
-        case sy.f32.Ceil    => F32Ceil
-        case sy.f32.Floor   => F32Floor
-        case sy.f32.Trunc   => F32Trunc
-        case sy.f32.Nearest => F32Nearest
-        case sy.f64.Abs     => F64Abs
-        case sy.f64.Neg     => F64Neg
-        case sy.f64.Sqrt    => F64Sqrt
-        case sy.f64.Ceil    => F64Ceil
-        case sy.f64.Floor   => F64Floor
-        case sy.f64.Trunc   => F64Trunc
-        case sy.f64.Nearest => F64Nearest
+        case sy.i32.Clz       => I32Clz
+        case sy.i32.Ctz       => I32Ctz
+        case sy.i32.Popcnt    => I32Popcnt
+        case sy.i32.Extend8S  => I32Extend8S
+        case sy.i32.Extend16S => I32Extend16S
+        case sy.i64.Clz       => I64Clz
+        case sy.i64.Ctz       => I64Ctz
+        case sy.i64.Popcnt    => I64Popcnt
+        case sy.i64.Extend8S  => I64Extend8S
+        case sy.i64.Extend16S => I64Extend16S
+        case sy.i64.Extend32S => I64Extend32S
+        case sy.f32.Abs       => F32Abs
+        case sy.f32.Neg       => F32Neg
+        case sy.f32.Sqrt      => F32Sqrt
+        case sy.f32.Ceil      => F32Ceil
+        case sy.f32.Floor     => F32Floor
+        case sy.f32.Trunc     => F32Trunc
+        case sy.f32.Nearest   => F32Nearest
+        case sy.f64.Abs       => F64Abs
+        case sy.f64.Neg       => F64Neg
+        case sy.f64.Sqrt      => F64Sqrt
+        case sy.f64.Ceil      => F64Ceil
+        case sy.f64.Floor     => F64Floor
+        case sy.f64.Trunc     => F64Trunc
+        case sy.f64.Nearest   => F64Nearest
       }
   }
 
@@ -317,6 +322,20 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
+  case object I32Extend8S extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      thread.pushInt(I32.extendS(8, thread.popInt()))
+      Continue
+    }
+  }
+
+  case object I32Extend16S extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      thread.pushInt(I32.extendS(16, thread.popInt()))
+      Continue
+    }
+  }
+
   case object I64Clz extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushLong(JLong.numberOfLeadingZeros(thread.popLong()))
@@ -334,6 +353,27 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   case object I64Popcnt extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushLong(JLong.bitCount(thread.popLong()))
+      Continue
+    }
+  }
+
+  case object I64Extend8S extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      thread.pushLong(I64.extendS(8, thread.popLong()))
+      Continue
+    }
+  }
+
+  case object I64Extend16S extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      thread.pushLong(I64.extendS(16, thread.popLong()))
+      Continue
+    }
+  }
+
+  case object I64Extend32S extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      thread.pushLong(I64.extendS(32, thread.popLong()))
       Continue
     }
   }

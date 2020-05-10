@@ -21,6 +21,11 @@ import java.lang.{Float => JFloat}
 
 object I32 {
 
+  def extendS(width: Int, l: Int): Int = {
+    val shift = 32 - width
+    (l << shift) >> shift
+  }
+
   def wrap(l: Long): Int =
     (l % (1L << 32)).toInt
 

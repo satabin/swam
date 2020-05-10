@@ -27,6 +27,11 @@ object I64 {
   def extendUi32(i: Int): Long =
     i & 0X00000000FFFFFFFFL
 
+  def extendS(width: Int, l: Long): Long = {
+    val shift = 64 - width
+    (l << shift) >> shift
+  }
+
   def truncSf32(f: Float): CanFail[Long] =
     if (f.isNaN)
       Left("invalid conversion to integer")

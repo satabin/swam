@@ -119,6 +119,8 @@ object i32 {
   case class Clz()(val pos: Int) extends IUnop(ValType.I32)
   case class Ctz()(val pos: Int) extends IUnop(ValType.I32)
   case class Popcnt()(val pos: Int) extends IUnop(ValType.I32)
+  case class Extend8S()(val pos: Int) extends IUnop(ValType.I32)
+  case class Extend16S()(val pos: Int) extends IUnop(ValType.I32)
 
   case class Add()(val pos: Int) extends IBinop(ValType.I32)
   case class Sub()(val pos: Int) extends IBinop(ValType.I32)
@@ -183,6 +185,9 @@ object i64 {
   case class Clz()(val pos: Int) extends IUnop(ValType.I64)
   case class Ctz()(val pos: Int) extends IUnop(ValType.I64)
   case class Popcnt()(val pos: Int) extends IUnop(ValType.I64)
+  case class Extend8S()(val pos: Int) extends IUnop(ValType.I64)
+  case class Extend16S()(val pos: Int) extends IUnop(ValType.I64)
+  case class Extend32S()(val pos: Int) extends IUnop(ValType.I64)
 
   case class Add()(val pos: Int) extends IBinop(ValType.I64)
   case class Sub()(val pos: Int) extends IBinop(ValType.I64)

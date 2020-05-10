@@ -219,6 +219,8 @@ object i32 {
   case object Clz extends IUnop(ValType.I32, OpCode.I32Clz)
   case object Ctz extends IUnop(ValType.I32, OpCode.I32Ctz)
   case object Popcnt extends IUnop(ValType.I32, OpCode.I32Popcnt)
+  case object Extend8S extends IUnop(ValType.I32, OpCode.I32Extend8S)
+  case object Extend16S extends IUnop(ValType.I32, OpCode.I32Extend16S)
 
   case object Add extends IBinop(ValType.I32, OpCode.I32Add)
   case object Sub extends IBinop(ValType.I32, OpCode.I32Sub)
@@ -287,6 +289,9 @@ object i64 {
   case object Clz extends IUnop(ValType.I64, OpCode.I64Clz)
   case object Ctz extends IUnop(ValType.I64, OpCode.I64Ctz)
   case object Popcnt extends IUnop(ValType.I64, OpCode.I64Popcnt)
+  case object Extend8S extends IUnop(ValType.I64, OpCode.I64Extend8S)
+  case object Extend16S extends IUnop(ValType.I64, OpCode.I64Extend16S)
+  case object Extend32S extends IUnop(ValType.I64, OpCode.I64Extend32S)
 
   case object Add extends IBinop(ValType.I64, OpCode.I64Add)
   case object Sub extends IBinop(ValType.I64, OpCode.I64Sub)

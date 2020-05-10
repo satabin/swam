@@ -418,6 +418,16 @@ trait InstCodec extends TypeCodec {
               Attempt.successful(DecodeResult(f32.ReinterpretI32, remainder))
             case OpCode.F64ReinterpretI64 =>
               Attempt.successful(DecodeResult(f64.ReinterpretI64, remainder))
+            case OpCode.I32Extend8S =>
+              Attempt.successful(DecodeResult(i32.Extend8S, remainder))
+            case OpCode.I32Extend16S =>
+              Attempt.successful(DecodeResult(i32.Extend16S, remainder))
+            case OpCode.I64Extend8S =>
+              Attempt.successful(DecodeResult(i64.Extend8S, remainder))
+            case OpCode.I64Extend16S =>
+              Attempt.successful(DecodeResult(i64.Extend16S, remainder))
+            case OpCode.I64Extend32S =>
+              Attempt.successful(DecodeResult(i64.Extend32S, remainder))
             case OpCode.MiscOp => misc.decode(remainder)
             case _ =>
               Attempt.Failure(Err(f"Unknown opcode 0x$opcode%02x"))
