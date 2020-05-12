@@ -21,8 +21,8 @@ package object dot {
                 .map(
                   _.pretty
                     .render(80)
-                    .replaceAllLiterally("{", "\\{")
-                    .replaceAllLiterally("}", "\\}"))
+                    .replace("{", "\\{")
+                    .replace("}", "\\}"))
                 .mkString("\\n")}}"]"""
           val edges = jump match {
             case Some(Jump.To(lbl)) => List(s"bb$id->bb$lbl")

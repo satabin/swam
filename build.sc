@@ -33,7 +33,7 @@ val pureconfigVersion = "0.12.3"
 
 trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
 
-  def scalaVersion = "2.13.1"
+  def scalaVersion = "2.13.2"
 
   def scalacOptions =
     Seq(
