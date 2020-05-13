@@ -68,6 +68,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val wasi =
     Opts.flag("wasi", "Program is using wasi (default false)", short = "W").orFalse
 
+  val time =
+    Opts.flag("time", "Measure execution time (default false)", short = "C").orFalse
+
   val trace =
     Opts.flag("trace", "Trace WASM execution channels (default false)", short = "t").orFalse
 
@@ -98,9 +101,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     .option[Path]("out", "Save decompiled result in the given file. Prints to stdout if not provider", short = "o")
 
   val runOpts: Opts[Options] = Opts.subcommand("run", "Run a WebAssembly file") {
-    (mainFun, wat, wasi, dirs, trace, traceFile, filter, debug, wasmFile, restArguments).mapN {
-      (main, wat, wasi, dirs, trace, traceFile, filter, debug, wasm, args) =>
-        Run(wasm, args, main, wat, wasi, trace, filter, traceFile, dirs, debug)
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments).mapN {
+      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args) =>
+        Run(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug)
     }
   }
 
@@ -118,11 +121,20 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
 
   val logger = consoleLogger[IO]()
 
+  def measureTime[T](t: => T): T = {
+    val start = System.nanoTime()
+    val res = t
+    val end = System.nanoTime()
+    System.err.println(s"${end - start}ns")
+    res
+  }
+
   def doRun(module: Module[IO],
             main: String,
             preopenedDirs: List[Path],
             args: List[String],
             wasi: Boolean,
+            time: Boolean,
             blocker: Blocker): IO[Unit] =
     if (wasi)
       Wasi[IO](preopenedDirs, main :: args, logger, blocker).use { wasi =>
@@ -131,14 +143,14 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
           main <- instance.exports.typed.procedure0(main)
           memory <- instance.exports.memory("memory")
           _ <- wasi.mem.complete(memory)
-          _ <- main()
+          _ <- if (time) measureTime(main()) else main()
         } yield ()
       }
     else
       for {
         instance <- module.instantiate
         main <- instance.exports.typed.procedure0(main)
-        _ <- main()
+        _ <- if (time) measureTime(main()) else main()
       } yield ()
 
   val outFileOptions = List(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
@@ -147,7 +159,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     runOpts.orElse(decompileOpts).orElse(validateOpts).orElse(compileOpts).map { opts =>
       Blocker[IO].use { blocker =>
         opts match {
-          case Run(file, args, main, wat, wasi, trace, filter, tracef, dirs, debug) =>
+          case Run(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug) =>
             for {
               tracer <- if (trace)
                 JULTracer[IO](blocker,
@@ -161,7 +173,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
               tcompiler <- swam.text.Compiler[IO](blocker)
               module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
               compiled <- engine.compile(module)
-              _ <- doRun(compiled, main, dirs, args, wasi, blocker)
+              _ <- doRun(compiled, main, dirs, args, wasi, time, blocker)
             } yield ExitCode.Success
           case Decompile(file, textual, out) =>
             for {
