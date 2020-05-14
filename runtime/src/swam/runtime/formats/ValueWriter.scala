@@ -21,6 +21,8 @@ package formats
 import cats._
 import cats.implicits._
 
+import shapeless._
+
 /** A writer is used to transform a scala value into a
   *  web assembly value.
   */
@@ -34,7 +36,7 @@ trait ValueWriter[F[_], T] {
 
 object ValueWriter extends DefaultWriters
 
-trait FunctionReturnWriter[F[_], T] {
+trait ValuesWriter[F[_], T] {
 
   def write(v: T, m: Option[Memory[F]]): F[Vector[Value]]
 
@@ -42,12 +44,20 @@ trait FunctionReturnWriter[F[_], T] {
 
 }
 
-object FunctionReturnWriter {
+object ValuesWriter {
 
-  def apply[F[_], T](implicit ev: FunctionReturnWriter[F, T]): FunctionReturnWriter[F, T] = ev
+  def apply[F[_], T](implicit ev: ValuesWriter[F, T]): ValuesWriter[F, T] = ev
 
-  implicit def unitReturn[F[_]](implicit F: Applicative[F]): FunctionReturnWriter[F, Unit] =
-    new FunctionReturnWriter[F, Unit] {
+  implicit def valuesWriterInstances[F[_]]: Contravariant[ValuesWriter[F, *]] = new Contravariant[ValuesWriter[F, *]] {
+    def contramap[A, B](fa: ValuesWriter[F, A])(f: B => A): ValuesWriter[F, B] =
+      new ValuesWriter[F, B] {
+        def write(v: B, m: Option[Memory[F]]): F[Vector[Value]] = fa.write(f(v), m)
+        val swamTypes: Vector[ValType] = fa.swamTypes
+      }
+  }
+
+  implicit def unitReturn[F[_]](implicit F: Applicative[F]): ValuesWriter[F, Unit] =
+    new ValuesWriter[F, Unit] {
       def write(v: Unit, m: Option[Memory[F]]): F[Vector[Value]] =
         F.pure(Vector.empty)
 
@@ -56,9 +66,8 @@ object FunctionReturnWriter {
 
     }
 
-  implicit def singleReturn[F[_], T](implicit F: Applicative[F],
-                                     writer: ValueWriter[F, T]): FunctionReturnWriter[F, T] =
-    new FunctionReturnWriter[F, T] {
+  implicit def singleReturn[F[_], T](implicit F: Functor[F], writer: ValueWriter[F, T]): ValuesWriter[F, T] =
+    new ValuesWriter[F, T] {
       def write(v: T, m: Option[Memory[F]]): F[Vector[Value]] =
         writer.write(v, m).map(Vector(_))
 
@@ -66,6 +75,29 @@ object FunctionReturnWriter {
         Vector(writer.swamType)
 
     }
+
+  implicit def hnilWriter[F[_]](implicit F: Applicative[F]): ValuesWriter[F, HNil] =
+    new ValuesWriter[F, HNil] {
+      def write(v: HNil, m: Option[Memory[F]]): F[Vector[Value]] = F.pure(Vector.empty)
+      val swamTypes: Vector[ValType] = Vector.empty
+    }
+
+  implicit def hconsWriter[F[_], Head, Tail <: HList](implicit F: Monad[F],
+                                                      head: ValueWriter[F, Head],
+                                                      tail: ValuesWriter[F, Tail]): ValuesWriter[F, Head :: Tail] =
+    new ValuesWriter[F, Head :: Tail] {
+      def write(v: Head :: Tail, m: Option[Memory[F]]): F[Vector[Value]] =
+        for {
+          head <- head.write(v.head, m)
+          tail <- tail.write(v.tail, m)
+        } yield head +: tail
+      val swamTypes: Vector[ValType] = head.swamType +: tail.swamTypes
+    }
+
+  implicit def productWriter[F[_], P <: Product, L <: HList](implicit F: Applicative[F],
+                                                             gen: Generic.Aux[P, L],
+                                                             writer: ValuesWriter[F, L]): ValuesWriter[F, P] =
+    writer.contramap(gen.to(_))
 
 }
 

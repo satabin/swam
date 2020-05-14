@@ -21,7 +21,7 @@ val f =
       tcompiler <- Compiler[IO](blocker)
       mod <- engine.compile(tcompiler.stream(Paths.get("logged.wat"), true, blocker))
       inst <- mod.importing("console", "log" -> log _).instantiate
-      f <- inst.exports.typed.function1[Int, Int]("add42")
+      f <- inst.exports.typed.function[Int, Int]("add42")
     } yield f
   }.unsafeRunSync()
 ```
@@ -42,7 +42,7 @@ Blocker[IO].use { blocker =>
     tcompiler <- Compiler[IO](blocker)
     mod <- engine.compile(tcompiler.stream(Paths.get("logged.wat"), true, blocker))
     inst <- mod.importing("console", "log" -> log _ :: "colors" -> 256 :: HNil).instantiate
-    f <- inst.exports.typed.function1[Int, Int]("add42")
+    f <- inst.exports.typed.function[Int, Int]("add42")
   } yield f
 }
 ```

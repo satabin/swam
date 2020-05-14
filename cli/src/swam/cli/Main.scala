@@ -132,7 +132,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
       Wasi[IO](preopenedDirs, main :: args, consoleLogger[IO](), blocker).use { wasi =>
         for {
           instance <- module.importing("wasi_snapshot_preview1", wasi).instantiate
-          main <- instance.exports.typed.function0[Unit](main)
+          main <- instance.exports.typed.function[Unit](main)
           memory <- instance.exports.memory("memory")
           _ <- wasi.mem.complete(memory)
           _ <- main()
@@ -141,7 +141,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     else
       for {
         instance <- module.instantiate
-        main <- instance.exports.typed.function0[Unit](main)
+        main <- instance.exports.typed.function[Unit](main)
         _ <- main()
       } yield ()
 

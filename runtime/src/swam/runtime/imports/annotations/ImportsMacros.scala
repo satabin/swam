@@ -134,7 +134,7 @@ private final class ImportsMacros(val c: blackbox.Context) {
             case t                       => t
           }
           val writer =
-            q"_root_.swam.runtime.formats.FunctionReturnWriter[$f, $writerType]"
+            q"_root_.swam.runtime.formats.ValuesWriter[$f, $writerType]"
           val values = readers.zipWithIndex.map {
             case ((name, _), idx) =>
               val vname = TermName(s"value$idx")

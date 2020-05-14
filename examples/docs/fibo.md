@@ -33,8 +33,8 @@ def time[T](t: => T): T = {
 
 val i = instantiate("fibo.wat")
 
-val naive = i.exports.typed.function1[Long, Long]("naive").unsafeRunSync()
-val clever = i.exports.typed.function1[Long, Long]("clever").unsafeRunSync()
+val naive = i.exports.typed.function[Long, Long]("naive").unsafeRunSync()
+val clever = i.exports.typed.function[Long, Long]("clever").unsafeRunSync()
 ```
 
 This would result in:

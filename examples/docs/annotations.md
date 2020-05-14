@@ -52,7 +52,7 @@ val f =
       tcompiler <- Compiler[IO](blocker)
       mod <- engine.compile(tcompiler.stream(Paths.get("annotations.wat"), true, blocker))
       inst <- mod.importing("m", m).instantiate
-      f <- inst.exports.typed.function0[Unit]("mutate")
+      f <- inst.exports.typed.function[Unit, Unit]("mutate")
     } yield f
   }.unsafeRunSync()
 ```
@@ -95,7 +95,7 @@ val add42 =
       tcompiler <- Compiler[IO](blocker)
       mod <- engine.compile(tcompiler.stream(Paths.get("pure-annotations.wat"), true, blocker))
       inst <- mod.importing("m", pm).instantiate
-      f <- inst.exports.typed.function0[Int]("f")
+      f <- inst.exports.typed.function[Unit, Int]("f")
     } yield f
   }.unsafeRunSync()
 ```
@@ -136,7 +136,7 @@ val logged =
       tcompiler <- Compiler[IO](blocker)
       mod <- engine.compile(tcompiler.stream(Paths.get("effectful-annotations.wat"), true, blocker))
       inst <- mod.importing("console", mIO).instantiate
-      f <- inst.exports.typed.function1[Int, Int]("add42")
+      f <- inst.exports.typed.function[Int, Int]("add42")
     } yield f
   }.unsafeRunSync()
 ```

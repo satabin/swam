@@ -18,7 +18,7 @@ package swam
 package runtime
 package formats
 
-import cats.{ApplicativeError, MonadError}
+import cats._
 import cats.implicits._
 
 import shapeless._
@@ -34,7 +34,7 @@ trait ValueReader[F[_], T] {
 
 }
 
-trait FunctionReturnReader[F[_], T] {
+trait ValuesReader[F[_], T] {
 
   def read(vs: Vector[Value], mem: Option[Memory[F]]): F[T]
 
@@ -42,12 +42,21 @@ trait FunctionReturnReader[F[_], T] {
 
 }
 
-object FunctionReturnReader {
+object ValuesReader {
 
-  def apply[F[_], T](implicit ev: FunctionReturnReader[F, T]): FunctionReturnReader[F, T] = ev
+  def apply[F[_], T](implicit ev: ValuesReader[F, T]): ValuesReader[F, T] = ev
 
-  implicit def unitReturn[F[_]](implicit F: ApplicativeError[F, Throwable]): FunctionReturnReader[F, Unit] =
-    new FunctionReturnReader[F, Unit] {
+  implicit def valuesReaderInstances[F[_]: Functor]: Functor[ValuesReader[F, *]] =
+    new Functor[ValuesReader[F, *]] {
+      def map[A, B](fa: ValuesReader[F, A])(f: A => B): ValuesReader[F, B] =
+        new ValuesReader[F, B] {
+          def read(vs: Vector[Value], mem: Option[Memory[F]]): F[B] = fa.read(vs, mem).map(f(_))
+          def swamTypes: Vector[ValType] = fa.swamTypes
+        }
+    }
+
+  implicit def unitReader[F[_]](implicit F: ApplicativeError[F, Throwable]): ValuesReader[F, Unit] =
+    new ValuesReader[F, Unit] {
       def read(vs: Vector[Value], mem: Option[Memory[F]]): F[Unit] =
         if (vs.isEmpty)
           F.unit
@@ -58,9 +67,9 @@ object FunctionReturnReader {
         Vector.empty
     }
 
-  implicit def singleReturn[F[_], T](implicit F: ApplicativeError[F, Throwable],
-                                     T: ValueReader[F, T]): FunctionReturnReader[F, T] =
-    new FunctionReturnReader[F, T] {
+  implicit def singleReader[F[_], T](implicit F: ApplicativeError[F, Throwable],
+                                     T: ValueReader[F, T]): ValuesReader[F, T] =
+    new ValuesReader[F, T] {
       def read(vs: Vector[Value], mem: Option[Memory[F]]): F[T] =
         vs match {
           case Vector(v) =>
@@ -73,8 +82,8 @@ object FunctionReturnReader {
         Vector(T.swamType)
     }
 
-  implicit def hnilReturn[F[_]](implicit F: ApplicativeError[F, Throwable]): FunctionReturnReader[F, HNil] =
-    new FunctionReturnReader[F, HNil] {
+  implicit def hnilReader[F[_]](implicit F: ApplicativeError[F, Throwable]): ValuesReader[F, HNil] =
+    new ValuesReader[F, HNil] {
       def read(vs: Vector[Value], mem: Option[Memory[F]]): F[HNil] =
         vs match {
           case Vector() => F.pure(HNil)
@@ -85,11 +94,10 @@ object FunctionReturnReader {
         Vector.empty
     }
 
-  implicit def hconsReturn[F[_], Head, Tail <: HList](
-      implicit F: MonadError[F, Throwable],
-      Head: ValueReader[F, Head],
-      Tail: FunctionReturnReader[F, Tail]): FunctionReturnReader[F, Head :: Tail] =
-    new FunctionReturnReader[F, Head :: Tail] {
+  implicit def hconsReader[F[_], Head, Tail <: HList](implicit F: MonadError[F, Throwable],
+                                                      Head: ValueReader[F, Head],
+                                                      Tail: ValuesReader[F, Tail]): ValuesReader[F, Head :: Tail] =
+    new ValuesReader[F, Head :: Tail] {
       def read(vs: Vector[Value], mem: Option[Memory[F]]): F[Head :: Tail] =
         if (vs.isEmpty)
           F.raiseError(new ConversionException(s"expected element of type ${Head.swamType} but got none"))
@@ -102,6 +110,11 @@ object FunctionReturnReader {
       def swamTypes: Vector[ValType] =
         Head.swamType +: Tail.swamTypes
     }
+
+  implicit def productReader[F[_], P <: Product, L <: HList](implicit F: Functor[F],
+                                                             gen: Generic.Aux[P, L],
+                                                             reader: ValuesReader[F, L]): ValuesReader[F, P] =
+    reader.map(gen.from(_))
 
 }
 
