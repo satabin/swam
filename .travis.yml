@@ -32,14 +32,23 @@ jobs:
           token: $GH_TOKEN
           name: $TRAVIS_TAG
           edge: true
+          on:
+            tags: true
+            all_branches: true
         - provider: script
           script: bash scripts/publish_github_pages.sh
           cleanup: true
           edge: true
+          on:
+            tags: true
+            all_branches: true
         - provider: script
           script: bash scripts/publish_maven.sh
           cleanup: true
           edge: true
+          on:
+            tags: true
+            all_branches: true
 
 cache:
   directories:
