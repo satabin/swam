@@ -121,13 +121,13 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
 
   val logger = consoleLogger[IO]()
 
-  def measureTime[T](t: => T): T = {
-    val start = System.nanoTime()
-    val res = t
-    val end = System.nanoTime()
-    System.err.println(s"${end - start}ns")
-    res
-  }
+  def measureTime[T](io: IO[T]): IO[T] =
+    for {
+      start <- Clock[IO].monotonic(TimeUnit.NANOSECONDS)
+      res <- io
+      end <- Clock[IO]monotonic(TimeUnit.NANOSECONDS)
+      _ <- logger.info(s"Execution took ${end - start}ns")
+    } yield res
 
   def doRun(module: Module[IO],
             main: String,
