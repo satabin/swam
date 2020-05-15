@@ -109,6 +109,8 @@ package object binary {
 
   val varint32: Codec[Int] = new Varint(32).exmap(l => Attempt.successful(l.toInt), i => Attempt.successful(i.toLong))
 
+  val varint33: Codec[Int] = new Varint(33).exmap(l => Attempt.successful(l.toInt), i => Attempt.successful(i.toLong))
+
   val varint64: Codec[Long] = new Varint(64)
 
 }

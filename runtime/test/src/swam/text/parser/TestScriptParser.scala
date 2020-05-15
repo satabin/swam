@@ -84,7 +84,7 @@ object TestScriptParser {
     P(
       ("(" ~ (word("f32.const") | word("f64.const")) ~ (word("nan:canonical").map(_ => Right(true)) | word(
         "nan:arithmetic")
-        .map(_ => Right(false))) ~ ")") | expr.filter(_.size <= 1).map(Left(_)))
+        .map(_ => Right(false))) ~ ")") | expr.map(Left(_)))
 
   def meta[_: P]: P[Meta] =
     P("(" ~ Index ~ ((word("script") ~/ id.? ~ script).map {

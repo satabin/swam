@@ -27,6 +27,11 @@ object I64 {
   def extendUi32(i: Int): Long =
     i & 0X00000000FFFFFFFFL
 
+  def extendS(width: Int, l: Long): Long = {
+    val shift = 64 - width
+    (l << shift) >> shift
+  }
+
   def truncSf32(f: Float): CanFail[Long] =
     if (f.isNaN)
       Left("invalid conversion to integer")
@@ -34,6 +39,16 @@ object I64 {
       Left("integer overflow")
     else
       Right(f.toLong)
+
+  def truncSatSf32(f: Float): Long =
+    if (f.isNaN)
+      0
+    else if (f >= -Long.MinValue.toFloat)
+      Long.MaxValue
+    else if (f < Long.MinValue.toFloat)
+      Long.MinValue
+    else
+      f.toLong
 
   def truncUf32(f: Float): CanFail[Long] =
     if (f.isNaN)
@@ -45,6 +60,18 @@ object I64 {
     else
       Right(f.toLong)
 
+  def truncSatUf32(f: Float): Long =
+    if (f.isNaN)
+      0
+    else if (f >= -Long.MinValue.toDouble * 2.0d)
+      -1
+    else if (f <= -1.0d)
+      0
+    else if (f >= -Long.MinValue.toDouble)
+      (f - 9223372036854775808.0f).toLong | Long.MinValue
+    else
+      f.toLong
+
   def truncSf64(d: Double): CanFail[Long] =
     if (d.isNaN)
       Left("invalid conversion to integer")
@@ -52,6 +79,16 @@ object I64 {
       Left("integer overflow")
     else
       Right(d.toLong)
+
+  def truncSatSf64(d: Double): Long =
+    if (d.isNaN)
+      0
+    else if (d >= -Long.MinValue.toDouble)
+      Long.MaxValue
+    else if (d < Long.MinValue.toDouble)
+      Long.MinValue
+    else
+      d.toLong
 
   def truncUf64(d: Double): CanFail[Long] =
     if (d.isNaN)
@@ -62,6 +99,18 @@ object I64 {
       Right((d - 9223372036854775808.0d).toLong | Long.MinValue)
     else
       Right(d.toLong)
+
+  def truncSatUf64(d: Double): Long =
+    if (d.isNaN)
+      0
+    else if (d >= -Long.MinValue.toDouble * 2.0d)
+      -1
+    else if (d < 0.0d)
+      0
+    else if (d >= -Long.MinValue.toDouble)
+      (d - 9223372036854775808.0d).toLong | Long.MinValue
+    else
+      d.toLong
 
   def reinterpret(d: Double): Long =
     JDouble.doubleToRawLongBits(d)

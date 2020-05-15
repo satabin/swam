@@ -253,54 +253,70 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
             // when entering a new block, push a label with the same
             // arity as the block and a target on break pointing right
             // after the block body.
-            val label = LabelStack(ctx.labels, ctx.nxt, tpe.arity, 0)
-            val (compiled, ctx1) = compile(nbLocals, is, ctx.copy(labels = label, nxt = ctx.nxt + 1), functions, types)
+            // block parameters are considered pushed inside the block
+            val nbParams = tpe.params(types).map(_.size).getOrElse(0)
+            val ctx1 = ctx.pop(nbParams)
+            val label =
+              LabelStack(ctx1.labels, ctx1.nxt, tpe.arity(types), nbParams)
+            val (compiled, ctx2) =
+              compile(nbLocals, is, ctx1.copy(labels = label, nxt = ctx1.nxt + 1), functions, types)
             builder ++= compiled
             // the label target is then the offset right after the body has been compiled
             loop(instIdx + 1,
-                 ctx1.copy(labels = ctx.labels, offsets = ctx1.offsets.updated(ctx.nxt, ctx1.offset)).push(tpe.arity),
+                 ctx2
+                   .copy(labels = ctx1.labels, offsets = ctx2.offsets.updated(ctx1.nxt, ctx2.offset))
+                   .push(tpe.arity(types)),
                  false)
           case Loop(tpe, is) =>
-            // when entering a new loop, push a label with arity 0
-            // and a target on break pointing at the loop body start
-            val label = LabelStack(ctx.labels, ctx.nxt, 0, 0)
-            val (compiled, ctx1) = compile(nbLocals, is, ctx.copy(labels = label, nxt = ctx.nxt + 1), functions, types)
+            // when entering a new loop, push a label with the same
+            // arity as the loop type and a target on break pointing
+            // at the loop body start
+            // loop parameters are considered pushed inside the loop
+            val nbParams = tpe.params(types).map(_.size).getOrElse(0)
+            val ctx1 = ctx.pop(nbParams)
+            val label = LabelStack(ctx1.labels, ctx1.nxt, nbParams, nbParams)
+            val (compiled, ctx2) =
+              compile(nbLocals, is, ctx1.copy(labels = label, nxt = ctx1.nxt + 1), functions, types)
             builder ++= compiled
             loop(instIdx + 1,
-                 ctx1.copy(labels = ctx.labels, offsets = ctx1.offsets.updated(ctx.nxt, ctx.offset)).push(tpe.arity),
+                 ctx2
+                   .copy(labels = ctx1.labels, offsets = ctx2.offsets.updated(ctx1.nxt, ctx1.offset))
+                   .push(tpe.arity(types)),
                  false)
           case If(tpe, tis, eis) =>
             // when entering a new if, push a label with the same
             // arity as the if and a target on break pointing right
             // after the end of the if body
             // add a conditional jump to the then part, the else part comes first
-            val ctx1 = ctx.pop(1 /* the if condition */ )
-            val label = LabelStack(ctx1.labels, ctx1.nxt, tpe.arity, 0)
-            val thenTarget = ctx1.nxt + 1
+            val nbParams = tpe.params(types).map(_.size).getOrElse(0)
+            val ctx1 = ctx.pop(nbParams)
+            val ctx2 = ctx1.pop(1 /* the if condition */ )
+            val label = LabelStack(ctx2.labels, ctx2.nxt, tpe.arity(types), nbParams)
+            val thenTarget = ctx2.nxt + 1
             val jumpif = new asm.JumpIf(-1)
             builder += jumpif
-            val (ecompiled, ctx2) =
+            val (ecompiled, ctx3) =
               compile(nbLocals,
                       eis,
-                      ctx1.copy(labels = label, nxt = ctx1.nxt + 2, offset = ctx1.offset + 1 /* jumpif */ ),
+                      ctx2.copy(labels = label, nxt = ctx2.nxt + 2, offset = ctx2.offset + 1 /* jumpif */ ),
                       functions,
                       types)
             builder ++= ecompiled
             // jump right after the then part in the end
             val jump = new asm.Jump(-1)
             builder += jump
-            val (tcompiled, ctx3) =
-              compile(nbLocals, tis, ctx2.copy(offset = ctx2.offset + 1, labels = label), functions, types)
+            val (tcompiled, ctx4) =
+              compile(nbLocals, tis, ctx3.copy(offset = ctx3.offset + 1, labels = label), functions, types)
             builder ++= tcompiled
             loop(
               instIdx + 1,
-              ctx3
+              ctx4
                 .copy(
-                  labels = ctx1.labels,
-                  errata = (thenTarget, jumpif.addr_= _) :: (ctx.nxt, jump.addr_= _) :: ctx3.errata,
-                  offsets = ctx3.offsets.updated(thenTarget, ctx2.offset + 1).updated(ctx.nxt, ctx3.offset)
+                  labels = ctx2.labels,
+                  errata = (thenTarget, jumpif.addr_= _) :: (ctx.nxt, jump.addr_= _) :: ctx4.errata,
+                  offsets = ctx4.offsets.updated(thenTarget, ctx3.offset + 1).updated(ctx.nxt, ctx4.offset)
                 )
-                .push(tpe.arity),
+                .push(tpe.arity(types)),
               false
             )
           case Br(lbll) =>
@@ -359,6 +375,9 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
             loop(instIdx + 1, ctx.pop(1 /* pop 2 and push 1 */ ).copy(offset = ctx.offset + 1), false)
           case op @ Convertop(_, _) =>
             builder += asm.Convertop(op)
+            loop(instIdx + 1, ctx.copy(offset = ctx.offset + 1), false)
+          case op @ SatConvertop(_, _) =>
+            builder += asm.SatConvertop(op)
             loop(instIdx + 1, ctx.copy(offset = ctx.offset + 1), false)
           case op @ Load(_, _, _) =>
             builder += asm.Load(op)

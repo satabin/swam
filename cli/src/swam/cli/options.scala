@@ -35,6 +35,6 @@ case class Run(file: Path,
 
 case class Decompile(file: Path, textual: Boolean, out: Option[Path]) extends Options
 
-case class Validate(file: Path) extends Options
+case class Validate(file: Path, wat: Boolean, dev: Boolean) extends Options
 
 case class Compile(file: Path, out: Path, debug: Boolean) extends Options

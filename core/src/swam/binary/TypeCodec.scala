@@ -26,13 +26,26 @@ trait TypeCodec {
     mappedEnum(byte,
                Map[ValType, Byte](ValType.I32 -> 0x7f, ValType.I64 -> 0x7e, ValType.F32 -> 0x7d, ValType.F64 -> 0x7c))
 
-  val blockType: Codec[Option[ValType]] =
-    mappedEnum(byte,
-               Map[Option[ValType], Byte](Some(ValType.I32) -> 0x7f,
-                                          Some(ValType.I64) -> 0x7e,
-                                          Some(ValType.F32) -> 0x7d,
-                                          Some(ValType.F64) -> 0x7c,
-                                          None -> 0x40))
+  val blockType: Codec[BlockType] =
+    fallback(
+      varint33,
+      mappedEnum(
+        byte,
+        Map[BlockType, Byte](
+          BlockType.ValueType(ValType.I32) -> 0x7f,
+          BlockType.ValueType(ValType.I64) -> 0x7e,
+          BlockType.ValueType(ValType.F32) -> 0x7d,
+          BlockType.ValueType(ValType.F64) -> 0x7c,
+          BlockType.NoType -> 0x40
+        )
+      )
+    ).xmap[BlockType]({
+      case Left(i)  => BlockType.FunctionType(i)
+      case Right(t) => t
+    }, {
+      case BlockType.FunctionType(idx) => Left(idx)
+      case t                           => Right(t)
+    })
 
   val elemType: Codec[ElemType] =
     mappedEnum(byte, Map[ElemType, Byte](ElemType.FuncRef -> 0x70))

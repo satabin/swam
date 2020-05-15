@@ -49,34 +49,39 @@ sealed trait AsmInst[F[_]] {
 
 sealed trait Continuation[+F[_]]
 case object Continue extends Continuation[Nothing]
-case class Suspend[F[_]](res: F[Option[Long]]) extends Continuation[F]
-case class Done(res: Option[Long]) extends Continuation[Nothing]
+case class Suspend[F[_]](res: F[Vector[Long]]) extends Continuation[F]
+case class Done(res: Vector[Long]) extends Continuation[Nothing]
 
 class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
 
   object Unop {
     def apply(unop: sy.Unop): AsmInst[F] =
       unop match {
-        case sy.i32.Clz     => I32Clz
-        case sy.i32.Ctz     => I32Ctz
-        case sy.i32.Popcnt  => I32Popcnt
-        case sy.i64.Clz     => I64Clz
-        case sy.i64.Ctz     => I64Ctz
-        case sy.i64.Popcnt  => I64Popcnt
-        case sy.f32.Abs     => F32Abs
-        case sy.f32.Neg     => F32Neg
-        case sy.f32.Sqrt    => F32Sqrt
-        case sy.f32.Ceil    => F32Ceil
-        case sy.f32.Floor   => F32Floor
-        case sy.f32.Trunc   => F32Trunc
-        case sy.f32.Nearest => F32Nearest
-        case sy.f64.Abs     => F64Abs
-        case sy.f64.Neg     => F64Neg
-        case sy.f64.Sqrt    => F64Sqrt
-        case sy.f64.Ceil    => F64Ceil
-        case sy.f64.Floor   => F64Floor
-        case sy.f64.Trunc   => F64Trunc
-        case sy.f64.Nearest => F64Nearest
+        case sy.i32.Clz       => I32Clz
+        case sy.i32.Ctz       => I32Ctz
+        case sy.i32.Popcnt    => I32Popcnt
+        case sy.i32.Extend8S  => I32Extend8S
+        case sy.i32.Extend16S => I32Extend16S
+        case sy.i64.Clz       => I64Clz
+        case sy.i64.Ctz       => I64Ctz
+        case sy.i64.Popcnt    => I64Popcnt
+        case sy.i64.Extend8S  => I64Extend8S
+        case sy.i64.Extend16S => I64Extend16S
+        case sy.i64.Extend32S => I64Extend32S
+        case sy.f32.Abs       => F32Abs
+        case sy.f32.Neg       => F32Neg
+        case sy.f32.Sqrt      => F32Sqrt
+        case sy.f32.Ceil      => F32Ceil
+        case sy.f32.Floor     => F32Floor
+        case sy.f32.Trunc     => F32Trunc
+        case sy.f32.Nearest   => F32Nearest
+        case sy.f64.Abs       => F64Abs
+        case sy.f64.Neg       => F64Neg
+        case sy.f64.Sqrt      => F64Sqrt
+        case sy.f64.Ceil      => F64Ceil
+        case sy.f64.Floor     => F64Floor
+        case sy.f64.Trunc     => F64Trunc
+        case sy.f64.Nearest   => F64Nearest
       }
   }
 
@@ -207,6 +212,20 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       }
   }
 
+  object SatConvertop {
+    def apply(satconvertop: sy.SatConvertop): AsmInst[F] =
+      satconvertop match {
+        case sy.i32.TruncSatSF32 => I32TruncSatSF32
+        case sy.i32.TruncSatUF32 => I32TruncSatUF32
+        case sy.i32.TruncSatSF64 => I32TruncSatSF64
+        case sy.i32.TruncSatUF64 => I32TruncSatUF64
+        case sy.i64.TruncSatSF32 => I64TruncSatSF32
+        case sy.i64.TruncSatUF32 => I64TruncSatUF32
+        case sy.i64.TruncSatSF64 => I64TruncSatSF64
+        case sy.i64.TruncSatUF64 => I64TruncSatUF64
+      }
+  }
+
   object Load {
     def apply(load: sy.LoadInst): AsmInst[F] =
       load match {
@@ -303,6 +322,20 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
+  case object I32Extend8S extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      thread.pushInt(I32.extendS(8, thread.popInt()))
+      Continue
+    }
+  }
+
+  case object I32Extend16S extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      thread.pushInt(I32.extendS(16, thread.popInt()))
+      Continue
+    }
+  }
+
   case object I64Clz extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushLong(JLong.numberOfLeadingZeros(thread.popLong()))
@@ -320,6 +353,27 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   case object I64Popcnt extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushLong(JLong.bitCount(thread.popLong()))
+      Continue
+    }
+  }
+
+  case object I64Extend8S extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      thread.pushLong(I64.extendS(8, thread.popLong()))
+      Continue
+    }
+  }
+
+  case object I64Extend16S extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      thread.pushLong(I64.extendS(16, thread.popLong()))
+      Continue
+    }
+  }
+
+  case object I64Extend32S extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      thread.pushLong(I64.extendS(32, thread.popLong()))
       Continue
     }
   }
@@ -1193,6 +1247,19 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
+  case object I32TruncSF32 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popFloat()
+      I32.truncSf32(f) match {
+        case Right(i) =>
+          thread.pushInt(i)
+          Continue
+        case Left(msg) =>
+          throw new TrapException(thread, msg)
+      }
+    }
+  }
+
   case object I32TruncUF32 extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popFloat()
@@ -1206,10 +1273,10 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
-  case object I32TruncSF32 extends AsmInst[F] {
+  case object I32TruncSF64 extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
-      val f = thread.popFloat()
-      I32.truncSf32(f) match {
+      val f = thread.popDouble()
+      I32.truncSf64(f) match {
         case Right(i) =>
           thread.pushInt(i)
           Continue
@@ -1232,16 +1299,39 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
-  case object I32TruncSF64 extends AsmInst[F] {
+  case object I32TruncSatSF32 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popFloat()
+      val i = I32.truncSatSf32(f)
+      thread.pushInt(i)
+      Continue
+    }
+  }
+
+  case object I32TruncSatUF64 extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.popDouble()
-      I32.truncSf64(f) match {
-        case Right(i) =>
-          thread.pushInt(i)
-          Continue
-        case Left(msg) =>
-          throw new TrapException(thread, msg)
-      }
+      val i = I32.truncSatUf64(f)
+      thread.pushInt(i)
+      Continue
+    }
+  }
+
+  case object I32TruncSatSF64 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popDouble()
+      val i = I32.truncSatSf64(f)
+      thread.pushInt(i)
+      Continue
+    }
+  }
+
+  case object I32TruncSatUF32 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popFloat()
+      val i = I32.truncSatUf32(f)
+      thread.pushInt(i)
+      Continue
     }
   }
 
@@ -1294,6 +1384,42 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
         case Left(msg) =>
           throw new TrapException(thread, msg)
       }
+    }
+  }
+
+  case object I64TruncSatUF32 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popFloat()
+      val l = I64.truncSatUf32(f)
+      thread.pushLong(l)
+      Continue
+    }
+  }
+
+  case object I64TruncSatSF32 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popFloat()
+      val l = I64.truncSatSf32(f)
+      thread.pushLong(l)
+      Continue
+    }
+  }
+
+  case object I64TruncSatUF64 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popDouble()
+      val l = I64.truncSatUf64(f)
+      thread.pushLong(l)
+      Continue
+    }
+  }
+
+  case object I64TruncSatSF64 extends AsmInst[F] {
+    def execute(thread: Frame[F]): Continuation[F] = {
+      val f = thread.popDouble()
+      val l = I64.truncSatSf64(f)
+      thread.pushLong(l)
+      Continue
     }
   }
 
@@ -1954,7 +2080,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val values = thread.popValues(thread.arity)
       // pop the thread to get the parent
       thread.popFrame()
-      Done(values.headOption)
+      Done(values.toVector)
     }
   }
 

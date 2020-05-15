@@ -43,26 +43,31 @@ class Traverser[F[_], Res](implicit F: Monad[F]) {
     case (res, c @ f64.Const(_)) => f64ConstTraverse(res, c)
   }
   val unopTraverse: (Res, Unop) => F[Res] = {
-    case (res, i32.Clz)     => i32ClzTraverse(res, i32.Clz)
-    case (res, i32.Ctz)     => i32CtzTraverse(res, i32.Ctz)
-    case (res, i32.Popcnt)  => i32PopcntTraverse(res, i32.Popcnt)
-    case (res, i64.Clz)     => i64ClzTraverse(res, i64.Clz)
-    case (res, i64.Ctz)     => i64CtzTraverse(res, i64.Ctz)
-    case (res, i64.Popcnt)  => i64PopcntTraverse(res, i64.Popcnt)
-    case (res, f32.Abs)     => f32AbsTraverse(res, f32.Abs)
-    case (res, f32.Neg)     => f32NegTraverse(res, f32.Neg)
-    case (res, f32.Sqrt)    => f32SqrtTraverse(res, f32.Sqrt)
-    case (res, f32.Ceil)    => f32CeilTraverse(res, f32.Ceil)
-    case (res, f32.Floor)   => f32FloorTraverse(res, f32.Floor)
-    case (res, f32.Trunc)   => f32TruncTraverse(res, f32.Trunc)
-    case (res, f32.Nearest) => f32NearestTraverse(res, f32.Nearest)
-    case (res, f64.Abs)     => f64AbsTraverse(res, f64.Abs)
-    case (res, f64.Neg)     => f64NegTraverse(res, f64.Neg)
-    case (res, f64.Sqrt)    => f64SqrtTraverse(res, f64.Sqrt)
-    case (res, f64.Ceil)    => f64CeilTraverse(res, f64.Ceil)
-    case (res, f64.Floor)   => f64FloorTraverse(res, f64.Floor)
-    case (res, f64.Trunc)   => f64TruncTraverse(res, f64.Trunc)
-    case (res, f64.Nearest) => f64NearestTraverse(res, f64.Nearest)
+    case (res, i32.Clz)       => i32ClzTraverse(res, i32.Clz)
+    case (res, i32.Ctz)       => i32CtzTraverse(res, i32.Ctz)
+    case (res, i32.Popcnt)    => i32PopcntTraverse(res, i32.Popcnt)
+    case (res, i32.Extend8S)  => i32Extend8STraverse(res, i32.Extend8S)
+    case (res, i32.Extend16S) => i32Extend16STraverse(res, i32.Extend16S)
+    case (res, i64.Clz)       => i64ClzTraverse(res, i64.Clz)
+    case (res, i64.Ctz)       => i64CtzTraverse(res, i64.Ctz)
+    case (res, i64.Popcnt)    => i64PopcntTraverse(res, i64.Popcnt)
+    case (res, i64.Extend8S)  => i64Extend8STraverse(res, i64.Extend8S)
+    case (res, i64.Extend16S) => i64Extend16STraverse(res, i64.Extend16S)
+    case (res, i64.Extend32S) => i64Extend32STraverse(res, i64.Extend32S)
+    case (res, f32.Abs)       => f32AbsTraverse(res, f32.Abs)
+    case (res, f32.Neg)       => f32NegTraverse(res, f32.Neg)
+    case (res, f32.Sqrt)      => f32SqrtTraverse(res, f32.Sqrt)
+    case (res, f32.Ceil)      => f32CeilTraverse(res, f32.Ceil)
+    case (res, f32.Floor)     => f32FloorTraverse(res, f32.Floor)
+    case (res, f32.Trunc)     => f32TruncTraverse(res, f32.Trunc)
+    case (res, f32.Nearest)   => f32NearestTraverse(res, f32.Nearest)
+    case (res, f64.Abs)       => f64AbsTraverse(res, f64.Abs)
+    case (res, f64.Neg)       => f64NegTraverse(res, f64.Neg)
+    case (res, f64.Sqrt)      => f64SqrtTraverse(res, f64.Sqrt)
+    case (res, f64.Ceil)      => f64CeilTraverse(res, f64.Ceil)
+    case (res, f64.Floor)     => f64FloorTraverse(res, f64.Floor)
+    case (res, f64.Trunc)     => f64TruncTraverse(res, f64.Trunc)
+    case (res, f64.Nearest)   => f64NearestTraverse(res, f64.Nearest)
   }
   val binopTraverse: (Res, Binop) => F[Res] = {
     case (res, i32.Add)      => i32AddTraverse(res, i32.Add)
@@ -140,6 +145,16 @@ class Traverser[F[_], Res](implicit F: Monad[F]) {
     case (res, f64.ConvertSI64)    => f64ConvertSI64Traverse(res, f64.ConvertSI64)
     case (res, f64.ConvertUI64)    => f64ConvertUI64Traverse(res, f64.ConvertUI64)
     case (res, f64.ReinterpretI64) => f64ReinterpretI64Traverse(res, f64.ReinterpretI64)
+  }
+  val satConvertopTraverse: (Res, SatConvertop) => F[Res] = {
+    case (res, i32.TruncSatSF32) => i32TruncSatSF32Traverse(res, i32.TruncSatSF32)
+    case (res, i32.TruncSatUF32) => i32TruncSatUF32Traverse(res, i32.TruncSatUF32)
+    case (res, i32.TruncSatSF64) => i32TruncSatSF64Traverse(res, i32.TruncSatSF64)
+    case (res, i32.TruncSatUF64) => i32TruncSatUF64Traverse(res, i32.TruncSatUF64)
+    case (res, i64.TruncSatSF32) => i64TruncSatSF32Traverse(res, i64.TruncSatSF32)
+    case (res, i64.TruncSatUF32) => i64TruncSatUF32Traverse(res, i64.TruncSatUF32)
+    case (res, i64.TruncSatSF64) => i64TruncSatSF64Traverse(res, i64.TruncSatSF64)
+    case (res, i64.TruncSatUF64) => i64TruncSatUF64Traverse(res, i64.TruncSatUF64)
   }
   val memoryInstTraverse: (Res, MemoryInst) => F[Res] = {
     case (res, m @ Load(_, _, _))      => loadInstTraverse(res, m)
@@ -223,6 +238,8 @@ class Traverser[F[_], Res](implicit F: Monad[F]) {
   val i32ClzTraverse: (Res, i32.Clz.type) => F[Res] = fst
   val i32CtzTraverse: (Res, i32.Ctz.type) => F[Res] = fst
   val i32PopcntTraverse: (Res, i32.Popcnt.type) => F[Res] = fst
+  val i32Extend8STraverse: (Res, i32.Extend8S.type) => F[Res] = fst
+  val i32Extend16STraverse: (Res, i32.Extend16S.type) => F[Res] = fst
   val i32AddTraverse: (Res, i32.Add.type) => F[Res] = fst
   val i32SubTraverse: (Res, i32.Sub.type) => F[Res] = fst
   val i32MulTraverse: (Res, i32.Mul.type) => F[Res] = fst
@@ -254,6 +271,10 @@ class Traverser[F[_], Res](implicit F: Monad[F]) {
   val i32TruncUF32Traverse: (Res, i32.TruncUF32.type) => F[Res] = fst
   val i32TruncSF64Traverse: (Res, i32.TruncSF64.type) => F[Res] = fst
   val i32TruncUF64Traverse: (Res, i32.TruncUF64.type) => F[Res] = fst
+  val i32TruncSatSF32Traverse: (Res, i32.TruncSatSF32.type) => F[Res] = fst
+  val i32TruncSatUF32Traverse: (Res, i32.TruncSatUF32.type) => F[Res] = fst
+  val i32TruncSatSF64Traverse: (Res, i32.TruncSatSF64.type) => F[Res] = fst
+  val i32TruncSatUF64Traverse: (Res, i32.TruncSatUF64.type) => F[Res] = fst
   val i32ReinterpretF32Traverse: (Res, i32.ReinterpretF32.type) => F[Res] = fst
   val i32LoadTraverse: (Res, i32.Load) => F[Res] = fst
   val i32StoreTraverse: (Res, i32.Store) => F[Res] = fst
@@ -267,6 +288,9 @@ class Traverser[F[_], Res](implicit F: Monad[F]) {
   val i64ClzTraverse: (Res, i64.Clz.type) => F[Res] = fst
   val i64CtzTraverse: (Res, i64.Ctz.type) => F[Res] = fst
   val i64PopcntTraverse: (Res, i64.Popcnt.type) => F[Res] = fst
+  val i64Extend8STraverse: (Res, i64.Extend8S.type) => F[Res] = fst
+  val i64Extend16STraverse: (Res, i64.Extend16S.type) => F[Res] = fst
+  val i64Extend32STraverse: (Res, i64.Extend32S.type) => F[Res] = fst
   val i64AddTraverse: (Res, i64.Add.type) => F[Res] = fst
   val i64SubTraverse: (Res, i64.Sub.type) => F[Res] = fst
   val i64MulTraverse: (Res, i64.Mul.type) => F[Res] = fst
@@ -299,6 +323,10 @@ class Traverser[F[_], Res](implicit F: Monad[F]) {
   val i64TruncUF32Traverse: (Res, i64.TruncUF32.type) => F[Res] = fst
   val i64TruncSF64Traverse: (Res, i64.TruncSF64.type) => F[Res] = fst
   val i64TruncUF64Traverse: (Res, i64.TruncUF64.type) => F[Res] = fst
+  val i64TruncSatSF32Traverse: (Res, i64.TruncSatSF32.type) => F[Res] = fst
+  val i64TruncSatUF32Traverse: (Res, i64.TruncSatUF32.type) => F[Res] = fst
+  val i64TruncSatSF64Traverse: (Res, i64.TruncSatSF64.type) => F[Res] = fst
+  val i64TruncSatUF64Traverse: (Res, i64.TruncSatUF64.type) => F[Res] = fst
   val i64ReinterpretF64Traverse: (Res, i64.ReinterpretF64.type) => F[Res] = fst
   val i64LoadTraverse: (Res, i64.Load) => F[Res] = fst
   val i64StoreTraverse: (Res, i64.Store) => F[Res] = fst
@@ -397,29 +425,30 @@ class Traverser[F[_], Res](implicit F: Monad[F]) {
   val otherPrepare: (Res, Inst) => F[Res] = fst
 
   final def traverse(zero: Res, inst: Inst): F[Res] = inst match {
-    case inst @ AConst(_)        => constTraverse(zero, inst)
-    case inst @ Unop(_)          => unopTraverse(zero, inst)
-    case inst @ Binop(_)         => binopTraverse(zero, inst)
-    case inst @ Testop(_)        => testopTraverse(zero, inst)
-    case inst @ Relop(_)         => relopTraverse(zero, inst)
-    case inst @ Convertop(_, _)  => convertopTraverse(zero, inst)
-    case inst @ MemoryInst(_, _) => memoryInstTraverse(zero, inst)
-    case Drop                    => dropTraverse(zero, Drop)
-    case Select                  => selectTraverse(zero, Select)
-    case inst @ VarInst(_)       => varInstTraverse(zero, inst)
-    case MemorySize              => memorySizeTraverse(zero, MemorySize)
-    case MemoryGrow              => memoryGrowTraverse(zero, MemoryGrow)
-    case Nop                     => nopTraverse(zero, Nop)
-    case Unreachable             => unreachableTraverse(zero, Unreachable)
-    case inst @ Block(_, _)      => blockTraverse(zero, inst)
-    case inst @ Loop(_, _)       => loopTraverse(zero, inst)
-    case inst @ If(_, _, _)      => ifTraverse(zero, inst)
-    case inst @ Br(_)            => brTraverse(zero, inst)
-    case inst @ BrIf(_)          => brIfTraverse(zero, inst)
-    case inst @ BrTable(_, _)    => brTableTraverse(zero, inst)
-    case Return                  => returnTraverse(zero, Return)
-    case inst @ Call(_)          => callTraverse(zero, inst)
-    case inst @ CallIndirect(_)  => callIndirectTraverse(zero, inst)
+    case inst @ AConst(_)          => constTraverse(zero, inst)
+    case inst @ Unop(_)            => unopTraverse(zero, inst)
+    case inst @ Binop(_)           => binopTraverse(zero, inst)
+    case inst @ Testop(_)          => testopTraverse(zero, inst)
+    case inst @ Relop(_)           => relopTraverse(zero, inst)
+    case inst @ Convertop(_, _)    => convertopTraverse(zero, inst)
+    case inst @ SatConvertop(_, _) => satConvertopTraverse(zero, inst)
+    case inst @ MemoryInst(_, _)   => memoryInstTraverse(zero, inst)
+    case Drop                      => dropTraverse(zero, Drop)
+    case Select                    => selectTraverse(zero, Select)
+    case inst @ VarInst(_)         => varInstTraverse(zero, inst)
+    case MemorySize                => memorySizeTraverse(zero, MemorySize)
+    case MemoryGrow                => memoryGrowTraverse(zero, MemoryGrow)
+    case Nop                       => nopTraverse(zero, Nop)
+    case Unreachable               => unreachableTraverse(zero, Unreachable)
+    case inst @ Block(_, _)        => blockTraverse(zero, inst)
+    case inst @ Loop(_, _)         => loopTraverse(zero, inst)
+    case inst @ If(_, _, _)        => ifTraverse(zero, inst)
+    case inst @ Br(_)              => brTraverse(zero, inst)
+    case inst @ BrIf(_)            => brIfTraverse(zero, inst)
+    case inst @ BrTable(_, _)      => brTableTraverse(zero, inst)
+    case Return                    => returnTraverse(zero, Return)
+    case inst @ Call(_)            => callTraverse(zero, inst)
+    case inst @ CallIndirect(_)    => callIndirectTraverse(zero, inst)
   }
 
   final def run(zero: Res, inst: Inst): F[Res] =

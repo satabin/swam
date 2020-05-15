@@ -177,9 +177,8 @@ private[runtime] class ThreadFrame[F[_]](conf: StackConfiguration, baseInstance:
   def peekDouble(): Double =
     JDouble.longBitsToDouble(peekLong())
 
-  def drop(n: Int): Unit = {
+  def drop(n: Int): Unit =
     tp -= n
-  }
 
   def popValue(): Long = {
     tp -= 1

@@ -52,6 +52,18 @@ object Convertop {
     Some(op.from -> op.to)
 }
 
+sealed abstract class Miscop(val index: Byte) extends Inst
+object Miscop {
+  def unapply(op: Miscop): Option[Byte] =
+    Some(op.index)
+}
+
+sealed abstract class SatConvertop(val from: ValType, val to: ValType, index: Byte) extends Miscop(index)
+object SatConvertop {
+  def unapply(op: SatConvertop): Option[(ValType, ValType)] =
+    Some(op.from -> op.to)
+}
+
 sealed abstract class IUnop(tpe: ValType) extends Unop(tpe)
 
 sealed abstract class IBinop(tpe: ValType) extends Binop(tpe)
@@ -107,6 +119,8 @@ object i32 {
   case class Clz()(val pos: Int) extends IUnop(ValType.I32)
   case class Ctz()(val pos: Int) extends IUnop(ValType.I32)
   case class Popcnt()(val pos: Int) extends IUnop(ValType.I32)
+  case class Extend8S()(val pos: Int) extends IUnop(ValType.I32)
+  case class Extend16S()(val pos: Int) extends IUnop(ValType.I32)
 
   case class Add()(val pos: Int) extends IBinop(ValType.I32)
   case class Sub()(val pos: Int) extends IBinop(ValType.I32)
@@ -144,6 +158,11 @@ object i32 {
   case class TruncSF64()(val pos: Int) extends Convertop(ValType.F64, ValType.I32)
   case class TruncUF64()(val pos: Int) extends Convertop(ValType.F64, ValType.I32)
 
+  case class TruncSatSF32()(val pos: Int) extends SatConvertop(ValType.F32, ValType.I32, 0x00)
+  case class TruncSatUF32()(val pos: Int) extends SatConvertop(ValType.F32, ValType.I32, 0x01)
+  case class TruncSatSF64()(val pos: Int) extends SatConvertop(ValType.F64, ValType.I32, 0x02)
+  case class TruncSatUF64()(val pos: Int) extends SatConvertop(ValType.F64, ValType.I32, 0x03)
+
   case class ReinterpretF32()(val pos: Int) extends Convertop(ValType.F32, ValType.I32)
 
   case class Load(align: Int, offset: Int)(val pos: Int) extends LoadInst(ValType.I32)
@@ -166,6 +185,9 @@ object i64 {
   case class Clz()(val pos: Int) extends IUnop(ValType.I64)
   case class Ctz()(val pos: Int) extends IUnop(ValType.I64)
   case class Popcnt()(val pos: Int) extends IUnop(ValType.I64)
+  case class Extend8S()(val pos: Int) extends IUnop(ValType.I64)
+  case class Extend16S()(val pos: Int) extends IUnop(ValType.I64)
+  case class Extend32S()(val pos: Int) extends IUnop(ValType.I64)
 
   case class Add()(val pos: Int) extends IBinop(ValType.I64)
   case class Sub()(val pos: Int) extends IBinop(ValType.I64)
@@ -203,6 +225,11 @@ object i64 {
   case class TruncUF32()(val pos: Int) extends Convertop(ValType.F32, ValType.I64)
   case class TruncSF64()(val pos: Int) extends Convertop(ValType.F64, ValType.I64)
   case class TruncUF64()(val pos: Int) extends Convertop(ValType.F64, ValType.I64)
+
+  case class TruncSatSF32()(val pos: Int) extends SatConvertop(ValType.F32, ValType.I64, 0x04)
+  case class TruncSatUF32()(val pos: Int) extends SatConvertop(ValType.F32, ValType.I64, 0x05)
+  case class TruncSatSF64()(val pos: Int) extends SatConvertop(ValType.F64, ValType.I64, 0x06)
+  case class TruncSatUF64()(val pos: Int) extends SatConvertop(ValType.F64, ValType.I64, 0x07)
 
   case class ReinterpretF64()(val pos: Int) extends Convertop(ValType.F64, ValType.I64)
 
@@ -318,9 +345,9 @@ case class MemoryGrow()(val pos: Int) extends Inst
 
 case class Nop()(val pos: Int) extends Inst
 case class Unreachable()(val pos: Int) extends Inst
-case class Block(label: Id, tpe: ResultType, instr: Seq[Inst], endlabel: Id)(val pos: Int) extends Inst
-case class Loop(label: Id, tpe: ResultType, instr: Seq[Inst], endlabel: Id)(val pos: Int) extends Inst
-case class If(label: Id, tpe: ResultType, thenInstr: Seq[Inst], elselabel: Id, elseInstr: Seq[Inst], endlabel: Id)(
+case class Block(label: Id, tpe: TypeUse, instr: Seq[Inst], endlabel: Id)(val pos: Int) extends Inst
+case class Loop(label: Id, tpe: TypeUse, instr: Seq[Inst], endlabel: Id)(val pos: Int) extends Inst
+case class If(label: Id, tpe: TypeUse, thenInstr: Seq[Inst], elselabel: Id, elseInstr: Seq[Inst], endlabel: Id)(
     val pos: Int)
     extends Inst
 case class Br(lbl: Index)(val pos: Int) extends Inst

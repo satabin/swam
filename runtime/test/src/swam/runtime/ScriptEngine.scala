@@ -108,7 +108,7 @@ class ScriptEngine(blocker: Blocker)(implicit cs: ContextShift[IO]) {
           case AssertReturn(action, result) =>
             for {
               actual <- execute(ctx, action)
-              expected <- value(cmd.pos, result.headOption)
+              expected <- value(cmd.pos, result)
               _ <- check(cmd.pos, actual, expected)
             } yield Left((rest, ctx))
           case AssertReturnCanonicalNaN(action) =>
@@ -174,35 +174,40 @@ class ScriptEngine(blocker: Blocker)(implicit cs: ContextShift[IO]) {
         IO.pure(Right(()))
     }
 
-  def check(pos: Int, actual: Option[Value], expected: Option[Value]): IO[Unit] =
+  def check(pos: Int, actual: Vector[Value], expected: Vector[Value]): IO[Unit] =
     cats.effect.IO(utest.assert(actual === expected))
 
-  def checkNaN(pos: Int, actual: Option[Value]): IO[Unit] =
-    cats.effect.IO {
-      actual match {
-        case Some(Value.Float32(v)) => utest.assert(v.isNaN)
-        case Some(Value.Float64(v)) => utest.assert(v.isNaN)
-        case _                      => utest.assert(false)
-      }
+  def checkNaN(pos: Int, actual: Vector[Value]): IO[Unit] =
+    actual.foldLeftM(()) {
+      case (_, Value.Float32(v)) => IO(utest.assert(v.isNaN))
+      case (_, Value.Float64(v)) => IO(utest.assert(v.isNaN))
+      case (_, _)                => IO(utest.assert(false))
     }
 
-  def value(pos: Int, i: Option[Inst]): IO[Option[Value]] =
-    i match {
-      case Some(Constant(v)) => IO.pure(Some(v))
-      case Some(_)           => IO.raiseError(new ScriptException(s"Expected constant but got $i", pos))
-      case None              => IO.pure(None)
+  def value(pos: Int, is: Vector[Inst]): IO[Vector[Value]] = {
+    val consts = is.collect {
+      case Constant(v) => v
     }
+    if (consts.size == is.size)
+      IO.pure(consts)
+    else
+      IO.raiseError(new ScriptException(s"Expected constants but got $is", pos))
+  }
 
-  def value(pos: Int, i: Inst): IO[Value] =
-    i match {
-      case Constant(v) => IO.pure(v)
-      case _           => IO.raiseError(new ScriptException(s"Expected constant but got $i", pos))
-    }
+  def value(pos: Int, is: Seq[Inst]): IO[Vector[Value]] = {
+    val consts = is.collect {
+      case Constant(v) => v
+    }.toVector
+    if (consts.size == is.size)
+      IO.pure(consts)
+    else
+      IO.raiseError(new ScriptException(s"Expected constants but got $is", pos))
+  }
 
-  def execute(ctx: ExecutionContext, action: Action): IO[Option[Value]] =
+  def execute(ctx: ExecutionContext, action: Action): IO[Vector[Value]] =
     action match {
       case Invoke(modid, name, params) => invoke(ctx, action.pos, modid, name, params)
-      case Get(modid, name)            => get(ctx, action.pos, modid, name).map(Some(_))
+      case Get(modid, name)            => get(ctx, action.pos, modid, name).map(Vector(_))
     }
 
   def get(ctx: ExecutionContext, pos: Int, modid: Option[String], name: String): IO[Value] =
@@ -215,12 +220,8 @@ class ScriptEngine(blocker: Blocker)(implicit cs: ContextShift[IO]) {
              pos: Int,
              modid: Option[String],
              export: String,
-             params: Expr): IO[Option[Value]] = {
-    val values =
-      Effect[IO].tailRecM((params, Seq.empty[Value])) {
-        case (Seq(), acc)             => IO.pure(Right(acc))
-        case (Seq(p, rest @ _*), acc) => value(pos, p).map(v => Left((rest, acc :+ v)))
-      }
+             params: Expr): IO[Vector[Value]] = {
+    val values = value(pos, params)
     for {
       i <- ctx.module(pos, modid)
       ps <- values

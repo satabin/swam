@@ -109,6 +109,13 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
         } yield ctx.push(to)
     }
 
+    override val satConvertopTraverse = {
+      case (ctx, SatConvertop(from, to)) =>
+        for {
+          ctx <- ctx.pop(from)
+        } yield ctx.push(to)
+    }
+
     override val dropTraverse = {
       case (ctx, Drop) =>
         for {
@@ -256,86 +263,130 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
     }
 
     override val blockPrepare = {
-      case (ctx, Block(rt, _)) =>
-        F.pure(ctx.enterContext(Vector(rt)))
+      case (ctx, Block(bt, _)) =>
+        for {
+          params <- bt.params(ctx.types).liftTo[F](new ValidationException(s"unknown block type $bt"))
+          _ <- ctx.pop(params)
+          ctx <- ctx.enterContext(bt, false)
+        } yield ctx
     }
 
     override val blockTraverse = {
-      case (ctx, Block(rt @ ResultType(Some(tpe)), instr)) =>
+      case (ctx, Block(bt @ BlockType.ValueType(tpe), instr)) =>
         for {
           ctx <- ctx.pop(tpe)
           _ <- ctx.emptyOperands
-          ctx <- ctx.leaveContext
+          ctx <- ctx.leaveContext(bt, true)
         } yield ctx.push(tpe)
-      case (ctx, Block(rt @ ResultType(None), instr)) =>
+      case (ctx, Block(bt @ BlockType.NoType, instr)) =>
         for {
           _ <- ctx.emptyOperands
-          ctx <- ctx.leaveContext
+          ctx <- ctx.leaveContext(bt, true)
         } yield ctx
+      case (ctx, Block(bt @ BlockType.FunctionType(fidx), instr)) =>
+        val tpes = ctx.types(fidx).t
+        for {
+          ctx <- ctx.pop(tpes)
+          _ <- ctx.emptyOperands
+          ctx <- ctx.leaveContext(bt, true)
+        } yield ctx.push(tpes)
     }
 
     override val loopPrepare = {
-      case (ctx, Loop(rt, _)) =>
-        F.pure(ctx.enterContext(Vector(ResultType(None))))
-    }
-
-    override val loopTraverse = {
-      case (ctx, Loop(rt @ ResultType(Some(tpe)), instr)) =>
+      case (ctx, Loop(bt, _)) =>
         for {
-          ctx <- ctx.pop(tpe)
-          _ <- ctx.emptyOperands
-          ctx <- ctx.leaveContext
-        } yield ctx.push(tpe)
-      case (ctx, Loop(rt @ ResultType(None), instr)) =>
-        for {
-          _ <- ctx.emptyOperands
-          ctx <- ctx.leaveContext
+          params <- bt.params(ctx.types).liftTo[F](new ValidationException(s"unknown loop type $bt"))
+          _ <- ctx.pop(params)
+          ctx <- ctx.enterContext(bt, true)
         } yield ctx
     }
 
+    override val loopTraverse = {
+      case (ctx, Loop(bt @ BlockType.ValueType(tpe), instr)) =>
+        for {
+          ctx <- ctx.pop(tpe)
+          _ <- ctx.emptyOperands
+          ctx <- ctx.leaveContext(bt, true)
+        } yield ctx.push(tpe)
+      case (ctx, Loop(bt @ BlockType.NoType, instr)) =>
+        for {
+          _ <- ctx.emptyOperands
+          ctx <- ctx.leaveContext(bt, true)
+        } yield ctx
+      case (ctx, Loop(bt @ BlockType.FunctionType(fidx), instr)) =>
+        val tpes = ctx.types(fidx).t
+        for {
+          ctx <- ctx.pop(tpes)
+          _ <- ctx.emptyOperands
+          ctx <- ctx.leaveContext(bt, true)
+        } yield ctx.push(tpes)
+    }
+
     override val thenPrepare = {
-      case (ctx, If(rt, _, _)) =>
+      case (ctx, If(bt, _, _)) =>
         for {
           ctx <- ctx.pop(ValType.I32)
-        } yield ctx.enterContext(Vector(rt))
+          params <- bt.params(ctx.types).liftTo[F](new ValidationException(s"unknown if type $bt"))
+          _ <- ctx.pop(params)
+          ctx <- ctx.enterContext(bt, false)
+        } yield ctx
     }
 
     // validate and leave the then context
     override val elsePrepare = {
-      case (ctx, If(rt @ ResultType(Some(tpe)), _, _)) =>
+      case (ctx, If(bt @ BlockType.ValueType(tpe), _, _)) =>
         for {
           ctx <- ctx.pop(tpe)
           _ <- ctx.emptyOperands
-          ctx <- ctx.leaveContext
-        } yield ctx.enterContext(Vector(rt))
-      case (ctx, If(rt @ ResultType(None), thenInst, elseInst)) =>
+          ctx <- ctx.leaveContext(bt, false)
+          // no need to revalidate the parameter types
+          ctx <- ctx.enterContext(bt, false)
+        } yield ctx
+      case (ctx, If(bt @ BlockType.NoType, thenInst, elseInst)) =>
         for {
           _ <- ctx.emptyOperands
-          ctx <- ctx.leaveContext
-        } yield ctx.enterContext(Vector(rt))
+          ctx <- ctx.leaveContext(bt, false)
+          // no need to revalidate the parameter types
+          ctx <- ctx.enterContext(bt, false)
+        } yield ctx
+      case (ctx, If(bt @ BlockType.FunctionType(fidx), thenInst, elseInst)) =>
+        val tpes = ctx.types(fidx).t
+        for {
+          ctx <- ctx.pop(tpes)
+          _ <- ctx.emptyOperands
+          ctx <- ctx.leaveContext(bt, false)
+          // no need to revalidate the parameter types
+          ctx <- ctx.enterContext(bt, false)
+        } yield ctx
     }
 
     // validate and leave the else context
     override val ifTraverse = {
-      case (ctx, If(rt @ ResultType(Some(tpe)), thenInst, elseInst)) =>
+      case (ctx, If(bt @ BlockType.ValueType(tpe), thenInst, elseInst)) =>
         for {
           ctx <- ctx.pop(tpe)
           _ <- ctx.emptyOperands
-          ctx <- ctx.leaveContext
+          ctx <- ctx.leaveContext(bt, true)
         } yield ctx.push(tpe)
-      case (ctx, If(rt @ ResultType(None), thenInst, elseInst)) =>
+      case (ctx, If(bt @ BlockType.NoType, thenInst, elseInst)) =>
         for {
           _ <- ctx.emptyOperands
-          ctx <- ctx.leaveContext
+          ctx <- ctx.leaveContext(bt, true)
         } yield ctx
+      case (ctx, If(bt @ BlockType.FunctionType(fidx), thenInst, elseInst)) =>
+        val tpes = ctx.types(fidx).t
+        for {
+          ctx <- ctx.pop(tpes)
+          _ <- ctx.emptyOperands
+          ctx <- ctx.leaveContext(bt, true)
+        } yield ctx.push(tpes)
     }
 
     override val brTraverse = {
       case (ctx, Br(l)) =>
         ctx.labels.lift(l) match {
-          case Some(ResultType(Some(tpe))) =>
-            for (ctx <- ctx.pop(tpe)) yield ctx.markUnreachable
-          case Some(ResultType(None)) => F.pure(ctx.markUnreachable)
+          case Some(ResultType(tpes)) =>
+            for (ctx <- ctx.pop(tpes)) yield ctx.markUnreachable
           case None =>
             F.raiseError(new ValidationException(s"unknown label $l."))
         }
@@ -344,15 +395,11 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
     override val brIfTraverse = {
       case (ctx, BrIf(l)) =>
         ctx.labels.lift(l) match {
-          case Some(ResultType(Some(tpe))) =>
+          case Some(ResultType(tpes)) =>
             for {
               ctx <- ctx.pop(ValType.I32)
-              ctx <- ctx.pop(tpe)
-            } yield ctx.push(tpe)
-          case Some(ResultType(None)) =>
-            for {
-              ctx <- ctx.pop(ValType.I32)
-            } yield ctx
+              ctx <- ctx.pop(tpes)
+            } yield ctx.push(tpes)
           case None =>
             F.raiseError(new ValidationException(s"unknown label $l."))
         }
@@ -361,21 +408,16 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
     override val brTableTraverse = {
       case (ctx, BrTable(table, lbl)) =>
         ctx.labels.lift(lbl) match {
-          case rt @ Some(ResultType(Some(tpe))) =>
+          case rt @ Some(ResultType(tpes)) =>
             if (table.forall(ctx.labels.lift(_) == rt))
               for {
                 ctx <- ctx.pop(ValType.I32)
-                ctx <- ctx.pop(tpe)
+                ctx <- ctx.pop(tpes)
               } yield ctx.markUnreachable
             else
-              F.raiseError(new ValidationException(s"all table labels must be of the same return type $tpe."))
-          case rt @ Some(ResultType(None)) =>
-            if (table.forall(ctx.labels.lift(_) == rt))
-              for {
-                ctx <- ctx.pop(ValType.I32)
-              } yield ctx.markUnreachable
-            else
-              F.raiseError(new ValidationException(s"all table labels must be of empty return type."))
+              F.raiseError(
+                new ValidationException(
+                  s"all table labels must be of the same return types ${tpes.mkString("[", ", ", "]")}."))
           case None =>
             F.raiseError(new ValidationException(s"unknown label $lbl."))
         }
@@ -384,10 +426,8 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
     override val returnTraverse = {
       case (ctx, Return) =>
         ctx.ret match {
-          case Some(ResultType(Some(tpe))) =>
-            for (ctx <- ctx.pop(tpe)) yield ctx.markUnreachable
-          case Some(ResultType(None)) =>
-            F.pure(ctx.markUnreachable)
+          case Some(ResultType(tpes)) =>
+            for (ctx <- ctx.pop(tpes)) yield ctx.markUnreachable
           case None =>
             F.raiseError(new ValidationException("return must occur in a function context."))
         }
@@ -427,10 +467,7 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
     // custom sections are not validated, so no override here for them
 
     def validateFuncType(tpe: FuncType): F[Unit] =
-      if (tpe.t.size > 1)
-        F.raiseError(new ValidationException("function type must have at most one return type."))
-      else
-        F.pure(())
+      F.pure(())
 
     def validateData(data: Data, ctx: Ctx): F[Unit] = {
       val Data(d, offset, init) = data
@@ -501,7 +538,7 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
     def validateLimits(limits: Limits): F[Unit] =
       limits match {
         case Limits(min, Some(max)) if max < min =>
-          F.raiseError(new ValidationException("limits minimum must be greater or equal to minimum."))
+          F.raiseError(new ValidationException(s"limits maximum must be greater or equal to minimum ($max > $min)."))
         case _ => F.pure(())
       }
 
@@ -537,27 +574,15 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
       val Func(tpe, locals, body) = func
       ctx.types.lift(tpe) match {
         case Some(FuncType(ins, out)) =>
-          out.headOption match {
-            case ret @ Some(tpe) =>
-              for {
-                ctxb <- validateExpr(ctx.copy[F](locals = ins ++ locals,
-                                                 labels = Vector(ResultType(ret)),
-                                                 ret = Some(ResultType(ret)),
-                                                 operands = Nil),
-                                     body)
-                ctxb <- ctxb.pop(tpe)
-                _ <- ctxb.emptyOperands
-              } yield ()
-            case None =>
-              for {
-                ctxb <- validateExpr(ctx.copy[F](locals = ins ++ locals,
-                                                 labels = Vector(ResultType(None)),
-                                                 ret = Some(ResultType(None)),
-                                                 operands = Nil),
-                                     body)
-                _ <- ctxb.emptyOperands
-              } yield ()
-          }
+          for {
+            ctxb <- validateExpr(ctx.copy[F](locals = ins ++ locals,
+                                             labels = Vector(ResultType(out)),
+                                             ret = Some(ResultType(out)),
+                                             operands = Nil),
+                                 body)
+            ctxb <- ctxb.pop(out)
+            _ <- ctxb.emptyOperands
+          } yield ()
         case None =>
           F.raiseError(new ValidationException(s"unknown type $tpe."))
       }

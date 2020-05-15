@@ -36,11 +36,11 @@ object Instructions {
 
   private def blockinstr[_: P]: P[Int => Inst] =
     P(
-      (word("block") ~/ label ~ resulttype ~ instrs ~ word("end") ~ label)
+      (word("block") ~/ label ~ blocktype ~ instrs ~ word("end") ~ label)
         .map((Block.apply _).tupled)
-        | (word("loop") ~/ label ~ resulttype ~ instrs ~/ word("end") ~ label)
+        | (word("loop") ~/ label ~ blocktype ~ instrs ~/ word("end") ~ label)
           .map((Loop.apply _).tupled)
-        | (word("if") ~/ label ~ resulttype ~ instrs ~ (word("else") ~/ label ~ instrs).? ~ word("end") ~ label)
+        | (word("if") ~/ label ~ blocktype ~ instrs ~ (word("else") ~/ label ~ instrs).? ~ word("end") ~ label)
           .map {
             case (lbl, tpe, theni, Some((elselbl, elsei)), endlbl) =>
               If(lbl, tpe, theni, elselbl, elsei, endlbl) _
@@ -61,6 +61,8 @@ object Instructions {
         "i32.clz",
         "i32.ctz",
         "i32.popcnt",
+        "i32.extend8_s",
+        "i32.extend16_s",
         "i32.add",
         "i32.sub",
         "i32.mul",
@@ -79,6 +81,9 @@ object Instructions {
         "i64.clz",
         "i64.ctz",
         "i64.popcnt",
+        "i64.extend8_s",
+        "i64.extend16_s",
+        "i64.extend32_s",
         "i64.add",
         "i64.sub",
         "i64.mul",
@@ -161,12 +166,20 @@ object Instructions {
         "i32.trunc_f32_u",
         "i32.trunc_f64_s",
         "i32.trunc_f64_u",
+        "i32.trunc_sat_f32_s",
+        "i32.trunc_sat_f32_u",
+        "i32.trunc_sat_f64_s",
+        "i32.trunc_sat_f64_u",
         "i64.extend_i32_s",
         "i64.extend_i32_u",
         "i64.trunc_f32_s",
         "i64.trunc_f32_u",
         "i64.trunc_f64_s",
         "i64.trunc_f64_u",
+        "i64.trunc_sat_f32_s",
+        "i64.trunc_sat_f32_u",
+        "i64.trunc_sat_f64_s",
+        "i64.trunc_sat_f64_u",
         "f32.convert_i32_s",
         "f32.convert_i32_u",
         "f32.convert_i64_s",
@@ -194,6 +207,8 @@ object Instructions {
     "i32.clz" -> i32.Clz() _,
     "i32.ctz" -> i32.Ctz() _,
     "i32.popcnt" -> i32.Popcnt() _,
+    "i32.extend8_s" -> i32.Extend8S() _,
+    "i32.extend16_s" -> i32.Extend16S() _,
     "i32.add" -> i32.Add() _,
     "i32.sub" -> i32.Sub() _,
     "i32.mul" -> i32.Mul() _,
@@ -212,6 +227,9 @@ object Instructions {
     "i64.clz" -> i64.Clz() _,
     "i64.ctz" -> i64.Ctz() _,
     "i64.popcnt" -> i64.Popcnt() _,
+    "i64.extend8_s" -> i64.Extend8S() _,
+    "i64.extend16_s" -> i64.Extend16S() _,
+    "i64.extend32_s" -> i64.Extend32S() _,
     "i64.add" -> i64.Add() _,
     "i64.sub" -> i64.Sub() _,
     "i64.mul" -> i64.Mul() _,
@@ -294,12 +312,20 @@ object Instructions {
     "i32.trunc_f32_u" -> i32.TruncUF32() _,
     "i32.trunc_f64_s" -> i32.TruncSF64() _,
     "i32.trunc_f64_u" -> i32.TruncUF64() _,
+    "i32.trunc_sat_f32_s" -> i32.TruncSatSF32() _,
+    "i32.trunc_sat_f32_u" -> i32.TruncSatUF32() _,
+    "i32.trunc_sat_f64_s" -> i32.TruncSatSF64() _,
+    "i32.trunc_sat_f64_u" -> i32.TruncSatUF64() _,
     "i64.extend_i32_s" -> i64.ExtendSI32() _,
     "i64.extend_i32_u" -> i64.ExtendUI32() _,
     "i64.trunc_f32_s" -> i64.TruncSF32() _,
     "i64.trunc_f32_u" -> i64.TruncUF32() _,
     "i64.trunc_f64_s" -> i64.TruncSF64() _,
     "i64.trunc_f64_u" -> i64.TruncUF64() _,
+    "i64.trunc_sat_f32_s" -> i64.TruncSatSF32() _,
+    "i64.trunc_sat_f32_u" -> i64.TruncSatUF32() _,
+    "i64.trunc_sat_f64_s" -> i64.TruncSatSF64() _,
+    "i64.trunc_sat_f64_u" -> i64.TruncSatUF64() _,
     "f32.convert_i32_s" -> f32.ConvertSI32() _,
     "f32.convert_i32_u" -> f32.ConvertUI32() _,
     "f32.convert_i64_s" -> f32.ConvertSI64() _,
@@ -376,11 +402,11 @@ object Instructions {
   def foldedinstr[_: P]: P[Seq[Inst]] =
     P(
       ("(" ~/ (Index ~ (NoCut(plaininstr ~ foldedinstr.rep.map(_.flatten))
-        | ((word("block") ~/ label ~ resulttype ~ instrs)
+        | ((word("block") ~/ label ~ blocktype ~ instrs)
           .map { case (lbl, tpe, is) => Block(lbl, tpe, is, NoId) _ } ~ Pass(Seq.empty))
-        | ((word("loop") ~/ label ~ resulttype ~ instrs)
+        | ((word("loop") ~/ label ~ blocktype ~ instrs)
           .map { case (lbl, tpe, is) => Loop(lbl, tpe, is, NoId) _ } ~ Pass(Seq.empty))
-        | (word("if") ~/ label ~ resulttype ~ NoCut(foldedinstr).rep
+        | (word("if") ~/ label ~ blocktype ~ NoCut(foldedinstr).rep
           .map(_.flatten) ~ "(" ~ word("then") ~ instrs ~ ")" ~ ("(" ~ word("else") ~/ instrs ~ ")").?)
           .map {
             case (lbl, tpe, is, theni, Some(elsei)) =>

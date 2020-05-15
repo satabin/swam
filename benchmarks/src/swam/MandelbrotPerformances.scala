@@ -53,7 +53,7 @@ class MandelbrotPerformances {
   @Param(Array("10000"))
   private var iterations: Int = _
 
-  private var mandelbrot: exports.EFunction4[Int, Double, Double, Double, Unit, IO] = _
+  private var mandelbrot: (Int, Double, Double, Double) => IO[Unit] = _
 
   private val executor = Executors.newCachedThreadPool()
   private val blocker = Blocker.liftExecutionContext(ExecutionContext.fromExecutor(executor))
@@ -68,7 +68,7 @@ class MandelbrotPerformances {
       e = Engine[IO](conf, v, None)
       m <- e.compile(Paths.get("../../../../benchmarks/resources/mandelbrot.wasm"), blocker)
       i <- m.instantiate
-      f <- i.exports.typed.procedure4[Int, Double, Double, Double]("mandelbrot")
+      f <- i.exports.typed.function[(Int, Double, Double, Double), Unit]("mandelbrot").map(Function.untupled(_))
     } yield f).unsafeRunSync()
   }
 

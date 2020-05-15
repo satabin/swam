@@ -56,8 +56,8 @@ package object pretty {
   implicit object ResultTypePretty extends Pretty[ResultType] {
     def pretty(tpe: ResultType): Doc =
       tpe match {
-        case ResultType(None)    => empty
-        case ResultType(Some(t)) => space ++ str("(result ") ++ t.pretty ++ str(")")
+        case ResultType(Vector()) => empty
+        case ResultType(ts)       => space ++ seq(space, ts.map(t => str("(result ") ++ t.pretty ++ str(")")))
       }
   }
 
@@ -147,6 +147,8 @@ package object pretty {
         case i32.Clz()                  => str("i32.clz")
         case i32.Ctz()                  => str("i32.ctz")
         case i32.Popcnt()               => str("i32.popcnt")
+        case i32.Extend8S()             => str("i32.extend8_s")
+        case i32.Extend16S()            => str("i32.extend16_s")
         case i32.Add()                  => str("i32.add")
         case i32.Sub()                  => str("i32.sub")
         case i32.Mul()                  => str("i32.mul")
@@ -178,6 +180,10 @@ package object pretty {
         case i32.TruncUF32()            => str("i32.trunc_f32_u")
         case i32.TruncSF64()            => str("i32.trunc_f64_s")
         case i32.TruncUF64()            => str("i32.trunc_f64_u")
+        case i32.TruncSatSF32()         => str("i32.trunc_sat_f32_s")
+        case i32.TruncSatUF32()         => str("i32.trunc_sat_f32_u")
+        case i32.TruncSatSF64()         => str("i32.trunc_sat_f64_s")
+        case i32.TruncSatUF64()         => str("i32.trunc_sat_f64_u")
         case i32.ReinterpretF32()       => str("i32.reinterpret_f32")
         case i32.Load(align, offset)    => group(nest(2, str("i32.load") ++ memarg(align, offset, 2)))
         case i32.Store(align, offset)   => group(nest(2, str("i32.store") ++ memarg(align, offset, 2)))
@@ -192,6 +198,9 @@ package object pretty {
         case i64.Clz()                  => str("i64.clz")
         case i64.Ctz()                  => str("i64.ctz")
         case i64.Popcnt()               => str("i64.popcnt")
+        case i64.Extend8S()             => str("i64.extend8_s")
+        case i64.Extend16S()            => str("i64.extend16_s")
+        case i64.Extend32S()            => str("i64.extend32_s")
         case i64.Add()                  => str("i64.add")
         case i64.Sub()                  => str("i64.sub")
         case i64.Mul()                  => str("i64.mul")
@@ -224,6 +233,10 @@ package object pretty {
         case i64.TruncUF32()            => str("i64.trunc_f32_u")
         case i64.TruncSF64()            => str("i64.trunc_f64_s")
         case i64.TruncUF64()            => str("i64.trunc_f64_u")
+        case i64.TruncSatSF32()         => str("i64.trunc_sat_f32_s")
+        case i64.TruncSatUF32()         => str("i64.trunc_sat_f32_u")
+        case i64.TruncSatSF64()         => str("i64.trunc_sat_f64_s")
+        case i64.TruncSatUF64()         => str("i64.trunc_sat_f64_u")
         case i64.ReinterpretF64()       => str("i64.reinterpret_f64")
         case i64.Load(align, offset)    => group(nest(2, str("i64.load") ++ memarg(align, offset, 4)))
         case i64.Store(align, offset)   => group(nest(2, str("i64.store") ++ memarg(align, offset, 4)))

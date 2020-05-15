@@ -22,8 +22,10 @@ import formats._
 
 import cats._
 import cats.effect._
+import cats.implicits._
 
 import shapeless._
+import shapeless.ops.function.FnToProduct
 
 import java.nio.{ByteBuffer, ByteOrder}
 
@@ -149,44 +151,40 @@ object AsInterface {
         }
     }
 
-  implicit def procedure0AsInterface[F[_]](implicit F: MonadError[F, Throwable]): AsInterface[() => F[Unit], F] =
-    new AsInterface[() => F[Unit], F] {
-      def view(f: () => F[Unit]) = new IFunction0Unit[F](f)
+  implicit def pureFunctionAsInterface[F[_], Fn, Params, Ret](implicit F: Monad[F],
+                                                              fn: FnToProduct.Aux[Fn, Params => Ret],
+                                                              params: ValuesReader[F, Params],
+                                                              ret: ValuesWriter[F, Ret]): AsInterface[Fn, F] =
+    new AsInterface[Fn, F] {
+      def view(f: Fn): Interface[F, Type] =
+        new Function[F] {
+          def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Vector[Value]] =
+            for {
+              params <- params.read(parameters, m)
+              rawRes <- F.pure(fn(f)(params))
+              res <- ret.write(rawRes, m)
+            } yield res
+          def tpe: FuncType =
+            FuncType(params.swamTypes, ret.swamTypes)
+        }
     }
 
-  implicit def function0AsInsterface[Ret, F[_]](implicit F: MonadError[F, Throwable],
-                                                writer: ValueWriter[F, Ret]): AsInterface[() => F[Ret], F] =
-    new AsInterface[() => F[Ret], F] {
-      def view(f: () => F[Ret]) = new IFunction0(f)
-    }
-
-  implicit def procedure1AsInterface[P1, F[_]](implicit F: MonadError[F, Throwable],
-                                               reader1: ValueReader[F, P1]): AsInterface[(P1) => F[Unit], F] =
-    new AsInterface[(P1) => F[Unit], F] {
-      def view(f: (P1) => F[Unit]) = new IFunction1Unit[F, P1](f)
-    }
-
-  implicit def function1AsInterface[P1, Ret, F[_]](implicit F: MonadError[F, Throwable],
-                                                   reader1: ValueReader[F, P1],
-                                                   writer: ValueWriter[F, Ret]): AsInterface[(P1) => F[Ret], F] =
-    new AsInterface[(P1) => F[Ret], F] {
-      def view(f: (P1) => F[Ret]) = new IFunction1[F, P1, Ret](f)
-    }
-
-  implicit def procedure2AsInterface[P1, P2, F[_]](implicit F: MonadError[F, Throwable],
-                                                   reader1: ValueReader[F, P1],
-                                                   reader2: ValueReader[F, P2]): AsInterface[(P1, P2) => F[Unit], F] =
-    new AsInterface[(P1, P2) => F[Unit], F] {
-      def view(f: (P1, P2) => F[Unit]) = new IFunction2Unit[F, P1, P2](f)
-    }
-
-  implicit def function2AsInterface[P1, P2, Ret, F[_]](
-      implicit F: MonadError[F, Throwable],
-      reader1: ValueReader[F, P1],
-      reader2: ValueReader[F, P2],
-      writer: ValueWriter[F, Ret]): AsInterface[(P1, P2) => F[Ret], F] =
-    new AsInterface[(P1, P2) => F[Ret], F] {
-      def view(f: (P1, P2) => F[Ret]) = new IFunction2[F, P1, P2, Ret](f)
+  implicit def functionAsInterface[F[_], Fn, Params, Ret](implicit F: Monad[F],
+                                                          fn: FnToProduct.Aux[Fn, Params => F[Ret]],
+                                                          params: ValuesReader[F, Params],
+                                                          ret: ValuesWriter[F, Ret]): AsInterface[Fn, F] =
+    new AsInterface[Fn, F] {
+      def view(f: Fn): Interface[F, Type] =
+        new Function[F] {
+          def invoke(parameters: Vector[Value], m: Option[Memory[F]]): F[Vector[Value]] =
+            for {
+              params <- params.read(parameters, m)
+              rawRes <- fn(f)(params)
+              res <- ret.write(rawRes, m)
+            } yield res
+          def tpe: FuncType =
+            FuncType(params.swamTypes, ret.swamTypes)
+        }
     }
 
   implicit def arrayAsInterface[F[_]]: AsInterface[Array[Function[F]], F] =

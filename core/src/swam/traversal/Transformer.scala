@@ -52,26 +52,31 @@ class Transformer[F[_], Ctx](implicit F: Monad[F]) {
   }
   val constTransform: (Ctx, AConst) => F[(Ctx, Inst)] = constTransformId
   protected[this] val unopTransformId: (Ctx, Unop) => F[(Ctx, Inst)] = {
-    case (ctx, u: i32.Clz.type)     => i32ClzTransform(ctx, u)
-    case (ctx, u: i32.Ctz.type)     => i32CtzTransform(ctx, u)
-    case (ctx, u: i32.Popcnt.type)  => i32PopcntTransform(ctx, u)
-    case (ctx, u: i64.Clz.type)     => i64ClzTransform(ctx, u)
-    case (ctx, u: i64.Ctz.type)     => i64CtzTransform(ctx, u)
-    case (ctx, u: i64.Popcnt.type)  => i64PopcntTransform(ctx, u)
-    case (ctx, u: f32.Abs.type)     => f32AbsTransform(ctx, u)
-    case (ctx, u: f32.Neg.type)     => f32NegTransform(ctx, u)
-    case (ctx, u: f32.Sqrt.type)    => f32SqrtTransform(ctx, u)
-    case (ctx, u: f32.Ceil.type)    => f32CeilTransform(ctx, u)
-    case (ctx, u: f32.Floor.type)   => f32FloorTransform(ctx, u)
-    case (ctx, u: f32.Trunc.type)   => f32TruncTransform(ctx, u)
-    case (ctx, u: f32.Nearest.type) => f32NearestTransform(ctx, u)
-    case (ctx, u: f64.Abs.type)     => f64AbsTransform(ctx, u)
-    case (ctx, u: f64.Neg.type)     => f64NegTransform(ctx, u)
-    case (ctx, u: f64.Sqrt.type)    => f64SqrtTransform(ctx, u)
-    case (ctx, u: f64.Ceil.type)    => f64CeilTransform(ctx, u)
-    case (ctx, u: f64.Floor.type)   => f64FloorTransform(ctx, u)
-    case (ctx, u: f64.Trunc.type)   => f64TruncTransform(ctx, u)
-    case (ctx, u: f64.Nearest.type) => f64NearestTransform(ctx, u)
+    case (ctx, u: i32.Clz.type)       => i32ClzTransform(ctx, u)
+    case (ctx, u: i32.Ctz.type)       => i32CtzTransform(ctx, u)
+    case (ctx, u: i32.Popcnt.type)    => i32PopcntTransform(ctx, u)
+    case (ctx, u: i32.Extend8S.type)  => i32Extend8STransform(ctx, u)
+    case (ctx, u: i32.Extend16S.type) => i32Extend16STransform(ctx, u)
+    case (ctx, u: i64.Clz.type)       => i64ClzTransform(ctx, u)
+    case (ctx, u: i64.Ctz.type)       => i64CtzTransform(ctx, u)
+    case (ctx, u: i64.Popcnt.type)    => i64PopcntTransform(ctx, u)
+    case (ctx, u: i64.Extend8S.type)  => i64Extend8STransform(ctx, u)
+    case (ctx, u: i64.Extend16S.type) => i64Extend16STransform(ctx, u)
+    case (ctx, u: i64.Extend32S.type) => i64Extend32STransform(ctx, u)
+    case (ctx, u: f32.Abs.type)       => f32AbsTransform(ctx, u)
+    case (ctx, u: f32.Neg.type)       => f32NegTransform(ctx, u)
+    case (ctx, u: f32.Sqrt.type)      => f32SqrtTransform(ctx, u)
+    case (ctx, u: f32.Ceil.type)      => f32CeilTransform(ctx, u)
+    case (ctx, u: f32.Floor.type)     => f32FloorTransform(ctx, u)
+    case (ctx, u: f32.Trunc.type)     => f32TruncTransform(ctx, u)
+    case (ctx, u: f32.Nearest.type)   => f32NearestTransform(ctx, u)
+    case (ctx, u: f64.Abs.type)       => f64AbsTransform(ctx, u)
+    case (ctx, u: f64.Neg.type)       => f64NegTransform(ctx, u)
+    case (ctx, u: f64.Sqrt.type)      => f64SqrtTransform(ctx, u)
+    case (ctx, u: f64.Ceil.type)      => f64CeilTransform(ctx, u)
+    case (ctx, u: f64.Floor.type)     => f64FloorTransform(ctx, u)
+    case (ctx, u: f64.Trunc.type)     => f64TruncTransform(ctx, u)
+    case (ctx, u: f64.Nearest.type)   => f64NearestTransform(ctx, u)
   }
   val unopTransform: (Ctx, Unop) => F[(Ctx, Inst)] = unopTransformId
   protected[this] val binopTransformId: (Ctx, Binop) => F[(Ctx, Inst)] = {
@@ -154,6 +159,17 @@ class Transformer[F[_], Ctx](implicit F: Monad[F]) {
     case (ctx, c: f64.ReinterpretI64.type) => f64ReinterpretI64Transform(ctx, c)
   }
   val convertopTransform: (Ctx, Convertop) => F[(Ctx, Inst)] = convertopTransformId
+  protected[this] val satConvertopTransformId: (Ctx, SatConvertop) => F[(Ctx, Inst)] = {
+    case (ctx, c: i32.TruncSatSF32.type) => i32TruncSatSF32Transform(ctx, c)
+    case (ctx, c: i32.TruncSatUF32.type) => i32TruncSatUF32Transform(ctx, c)
+    case (ctx, c: i32.TruncSatSF64.type) => i32TruncSatSF64Transform(ctx, c)
+    case (ctx, c: i32.TruncSatUF64.type) => i32TruncSatUF64Transform(ctx, c)
+    case (ctx, c: i64.TruncSatSF32.type) => i64TruncSatSF32Transform(ctx, c)
+    case (ctx, c: i64.TruncSatUF32.type) => i64TruncSatUF32Transform(ctx, c)
+    case (ctx, c: i64.TruncSatSF64.type) => i64TruncSatSF64Transform(ctx, c)
+    case (ctx, c: i64.TruncSatUF64.type) => i64TruncSatUF64Transform(ctx, c)
+  }
+  val satConvertopTransform: (Ctx, SatConvertop) => F[(Ctx, Inst)] = satConvertopTransformId
   protected[this] val memoryInstTransformId: (Ctx, MemoryInst) => F[(Ctx, Inst)] = {
     case (ctx, m @ Load(_, _, _))      => loadInstTransform(ctx, m)
     case (ctx, m @ LoadN(_, _, _, _))  => loadNInstTransform(ctx, m)
@@ -243,6 +259,8 @@ class Transformer[F[_], Ctx](implicit F: Monad[F]) {
   val i32ClzTransform: (Ctx, i32.Clz.type) => F[(Ctx, Inst)] = id
   val i32CtzTransform: (Ctx, i32.Ctz.type) => F[(Ctx, Inst)] = id
   val i32PopcntTransform: (Ctx, i32.Popcnt.type) => F[(Ctx, Inst)] = id
+  val i32Extend8STransform: (Ctx, i32.Extend8S.type) => F[(Ctx, Inst)] = id
+  val i32Extend16STransform: (Ctx, i32.Extend16S.type) => F[(Ctx, Inst)] = id
   val i32AddTransform: (Ctx, i32.Add.type) => F[(Ctx, Inst)] = id
   val i32SubTransform: (Ctx, i32.Sub.type) => F[(Ctx, Inst)] = id
   val i32MulTransform: (Ctx, i32.Mul.type) => F[(Ctx, Inst)] = id
@@ -274,6 +292,10 @@ class Transformer[F[_], Ctx](implicit F: Monad[F]) {
   val i32TruncUF32Transform: (Ctx, i32.TruncUF32.type) => F[(Ctx, Inst)] = id
   val i32TruncSF64Transform: (Ctx, i32.TruncSF64.type) => F[(Ctx, Inst)] = id
   val i32TruncUF64Transform: (Ctx, i32.TruncUF64.type) => F[(Ctx, Inst)] = id
+  val i32TruncSatSF32Transform: (Ctx, i32.TruncSatSF32.type) => F[(Ctx, Inst)] = id
+  val i32TruncSatUF32Transform: (Ctx, i32.TruncSatUF32.type) => F[(Ctx, Inst)] = id
+  val i32TruncSatSF64Transform: (Ctx, i32.TruncSatSF64.type) => F[(Ctx, Inst)] = id
+  val i32TruncSatUF64Transform: (Ctx, i32.TruncSatUF64.type) => F[(Ctx, Inst)] = id
   val i32ReinterpretF32Transform: (Ctx, i32.ReinterpretF32.type) => F[(Ctx, Inst)] = id
   val i32LoadTransform: (Ctx, i32.Load) => F[(Ctx, Inst)] = id
   val i32StoreTransform: (Ctx, i32.Store) => F[(Ctx, Inst)] = id
@@ -287,6 +309,9 @@ class Transformer[F[_], Ctx](implicit F: Monad[F]) {
   val i64ClzTransform: (Ctx, i64.Clz.type) => F[(Ctx, Inst)] = id
   val i64CtzTransform: (Ctx, i64.Ctz.type) => F[(Ctx, Inst)] = id
   val i64PopcntTransform: (Ctx, i64.Popcnt.type) => F[(Ctx, Inst)] = id
+  val i64Extend8STransform: (Ctx, i64.Extend8S.type) => F[(Ctx, Inst)] = id
+  val i64Extend16STransform: (Ctx, i64.Extend16S.type) => F[(Ctx, Inst)] = id
+  val i64Extend32STransform: (Ctx, i64.Extend32S.type) => F[(Ctx, Inst)] = id
   val i64AddTransform: (Ctx, i64.Add.type) => F[(Ctx, Inst)] = id
   val i64SubTransform: (Ctx, i64.Sub.type) => F[(Ctx, Inst)] = id
   val i64MulTransform: (Ctx, i64.Mul.type) => F[(Ctx, Inst)] = id
@@ -319,6 +344,10 @@ class Transformer[F[_], Ctx](implicit F: Monad[F]) {
   val i64TruncUF32Transform: (Ctx, i64.TruncUF32.type) => F[(Ctx, Inst)] = id
   val i64TruncSF64Transform: (Ctx, i64.TruncSF64.type) => F[(Ctx, Inst)] = id
   val i64TruncUF64Transform: (Ctx, i64.TruncUF64.type) => F[(Ctx, Inst)] = id
+  val i64TruncSatSF32Transform: (Ctx, i64.TruncSatSF32.type) => F[(Ctx, Inst)] = id
+  val i64TruncSatUF32Transform: (Ctx, i64.TruncSatUF32.type) => F[(Ctx, Inst)] = id
+  val i64TruncSatSF64Transform: (Ctx, i64.TruncSatSF64.type) => F[(Ctx, Inst)] = id
+  val i64TruncSatUF64Transform: (Ctx, i64.TruncSatUF64.type) => F[(Ctx, Inst)] = id
   val i64ReinterpretF64Transform: (Ctx, i64.ReinterpretF64.type) => F[(Ctx, Inst)] = id
   val i64LoadTransform: (Ctx, i64.Load) => F[(Ctx, Inst)] = id
   val i64StoreTransform: (Ctx, i64.Store) => F[(Ctx, Inst)] = id
@@ -416,29 +445,30 @@ class Transformer[F[_], Ctx](implicit F: Monad[F]) {
   val otherPrepare: (Ctx, Inst) => F[Ctx] = fst
 
   final def transform(ctx: Ctx, inst: Inst): F[(Ctx, Inst)] = inst match {
-    case inst @ AConst(_)        => constTransform(ctx, inst)
-    case inst @ Unop(_)          => unopTransform(ctx, inst)
-    case inst @ Binop(_)         => binopTransform(ctx, inst)
-    case inst @ Testop(_)        => testopTransform(ctx, inst)
-    case inst @ Relop(_)         => relopTransform(ctx, inst)
-    case inst @ Convertop(_, _)  => convertopTransform(ctx, inst)
-    case inst @ MemoryInst(_, _) => memoryInstTransform(ctx, inst)
-    case inst: Drop.type         => dropTransform(ctx, inst)
-    case inst: Select.type       => selectTransform(ctx, inst)
-    case inst @ VarInst(_)       => varInstTransform(ctx, inst)
-    case inst: MemorySize.type   => memorySizeTransform(ctx, inst)
-    case inst: MemoryGrow.type   => memoryGrowTransform(ctx, inst)
-    case inst: Nop.type          => nopTransform(ctx, inst)
-    case inst: Unreachable.type  => unreachableTransform(ctx, inst)
-    case inst @ Block(_, _)      => blockTransform(ctx, inst)
-    case inst @ Loop(_, _)       => loopTransform(ctx, inst)
-    case inst @ If(_, _, _)      => ifTransform(ctx, inst)
-    case inst @ Br(_)            => brTransform(ctx, inst)
-    case inst @ BrIf(_)          => brIfTransform(ctx, inst)
-    case inst @ BrTable(_, _)    => brTableTransform(ctx, inst)
-    case inst: Return.type       => returnTransform(ctx, inst)
-    case inst @ Call(_)          => callTransform(ctx, inst)
-    case inst @ CallIndirect(_)  => callIndirectTransform(ctx, inst)
+    case inst @ AConst(_)          => constTransform(ctx, inst)
+    case inst @ Unop(_)            => unopTransform(ctx, inst)
+    case inst @ Binop(_)           => binopTransform(ctx, inst)
+    case inst @ Testop(_)          => testopTransform(ctx, inst)
+    case inst @ Relop(_)           => relopTransform(ctx, inst)
+    case inst @ Convertop(_, _)    => convertopTransform(ctx, inst)
+    case inst @ SatConvertop(_, _) => satConvertopTransform(ctx, inst)
+    case inst @ MemoryInst(_, _)   => memoryInstTransform(ctx, inst)
+    case inst: Drop.type           => dropTransform(ctx, inst)
+    case inst: Select.type         => selectTransform(ctx, inst)
+    case inst @ VarInst(_)         => varInstTransform(ctx, inst)
+    case inst: MemorySize.type     => memorySizeTransform(ctx, inst)
+    case inst: MemoryGrow.type     => memoryGrowTransform(ctx, inst)
+    case inst: Nop.type            => nopTransform(ctx, inst)
+    case inst: Unreachable.type    => unreachableTransform(ctx, inst)
+    case inst @ Block(_, _)        => blockTransform(ctx, inst)
+    case inst @ Loop(_, _)         => loopTransform(ctx, inst)
+    case inst @ If(_, _, _)        => ifTransform(ctx, inst)
+    case inst @ Br(_)              => brTransform(ctx, inst)
+    case inst @ BrIf(_)            => brIfTransform(ctx, inst)
+    case inst @ BrTable(_, _)      => brTableTransform(ctx, inst)
+    case inst: Return.type         => returnTransform(ctx, inst)
+    case inst @ Call(_)            => callTransform(ctx, inst)
+    case inst @ CallIndirect(_)    => callIndirectTransform(ctx, inst)
   }
 
   final def run(ctx: Ctx, inst: Inst): F[(Ctx, Inst)] =
@@ -530,6 +560,17 @@ object Transformer {
               first.convertopTransform(ctx, t).flatMap {
                 case (ctx, t: Convertop) => second.convertopTransform(ctx, t)
                 case (ctx, t)            => second.transform(ctx, t)
+              }
+            }
+          override val satConvertopTransform: (Ctx, SatConvertop) => F[(Ctx, Inst)] =
+            if (first.satConvertopTransform == satConvertopTransformId)
+              second.satConvertopTransform
+            else if (second.satConvertopTransform == satConvertopTransformId)
+              first.satConvertopTransform
+            else { (ctx: Ctx, t: SatConvertop) =>
+              first.satConvertopTransform(ctx, t).flatMap {
+                case (ctx, t: SatConvertop) => second.satConvertopTransform(ctx, t)
+                case (ctx, t)               => second.transform(ctx, t)
               }
             }
           override val memoryInstTransform: (Ctx, MemoryInst) => F[(Ctx, Inst)] =
@@ -640,6 +681,28 @@ object Transformer {
               first.i32CtzTransform(ctx, t).flatMap {
                 case (ctx, t: i32.Ctz.type) => second.i32CtzTransform(ctx, t)
                 case (ctx, t)               => second.transform(ctx, t)
+              }
+            }
+          override val i32Extend8STransform: (Ctx, i32.Extend8S.type) => F[(Ctx, Inst)] =
+            if (first.i32Extend8STransform == id)
+              second.i32Extend8STransform
+            else if (second.i32Extend8STransform == id)
+              first.i32Extend8STransform
+            else { (ctx: Ctx, t: i32.Extend8S.type) =>
+              first.i32Extend8STransform(ctx, t).flatMap {
+                case (ctx, t: i32.Extend8S.type) => second.i32Extend8STransform(ctx, t)
+                case (ctx, t)                    => second.transform(ctx, t)
+              }
+            }
+          override val i32Extend16STransform: (Ctx, i32.Extend16S.type) => F[(Ctx, Inst)] =
+            if (first.i32Extend16STransform == id)
+              second.i32Extend16STransform
+            else if (second.i32Extend16STransform == id)
+              first.i32Extend16STransform
+            else { (ctx: Ctx, t: i32.Extend16S.type) =>
+              first.i32Extend16STransform(ctx, t).flatMap {
+                case (ctx, t: i32.Extend16S.type) => second.i32Extend16STransform(ctx, t)
+                case (ctx, t)                     => second.transform(ctx, t)
               }
             }
           override val i32PopcntTransform: (Ctx, i32.Popcnt.type) => F[(Ctx, Inst)] =
@@ -994,6 +1057,50 @@ object Transformer {
                 case (ctx, t)                     => second.transform(ctx, t)
               }
             }
+          override val i32TruncSatSF32Transform: (Ctx, i32.TruncSatSF32.type) => F[(Ctx, Inst)] =
+            if (first.i32TruncSatSF32Transform == id)
+              second.i32TruncSatSF32Transform
+            else if (second.i32TruncSatSF32Transform == id)
+              first.i32TruncSatSF32Transform
+            else { (ctx: Ctx, t: i32.TruncSatSF32.type) =>
+              first.i32TruncSatSF32Transform(ctx, t).flatMap {
+                case (ctx, t: i32.TruncSatSF32.type) => second.i32TruncSatSF32Transform(ctx, t)
+                case (ctx, t)                        => second.transform(ctx, t)
+              }
+            }
+          override val i32TruncSatUF32Transform: (Ctx, i32.TruncSatUF32.type) => F[(Ctx, Inst)] =
+            if (first.i32TruncSatUF32Transform == id)
+              second.i32TruncSatUF32Transform
+            else if (second.i32TruncSatUF32Transform == id)
+              first.i32TruncSatUF32Transform
+            else { (ctx: Ctx, t: i32.TruncSatUF32.type) =>
+              first.i32TruncSatUF32Transform(ctx, t).flatMap {
+                case (ctx, t: i32.TruncSatUF32.type) => second.i32TruncSatUF32Transform(ctx, t)
+                case (ctx, t)                        => second.transform(ctx, t)
+              }
+            }
+          override val i32TruncSatSF64Transform: (Ctx, i32.TruncSatSF64.type) => F[(Ctx, Inst)] =
+            if (first.i32TruncSatSF64Transform == id)
+              second.i32TruncSatSF64Transform
+            else if (second.i32TruncSatSF64Transform == id)
+              first.i32TruncSatSF64Transform
+            else { (ctx: Ctx, t: i32.TruncSatSF64.type) =>
+              first.i32TruncSatSF64Transform(ctx, t).flatMap {
+                case (ctx, t: i32.TruncSatSF64.type) => second.i32TruncSatSF64Transform(ctx, t)
+                case (ctx, t)                        => second.transform(ctx, t)
+              }
+            }
+          override val i32TruncSatUF64Transform: (Ctx, i32.TruncSatUF64.type) => F[(Ctx, Inst)] =
+            if (first.i32TruncSatUF64Transform == id)
+              second.i32TruncSatUF64Transform
+            else if (second.i32TruncSatUF64Transform == id)
+              first.i32TruncSatUF64Transform
+            else { (ctx: Ctx, t: i32.TruncSatUF64.type) =>
+              first.i32TruncSatUF64Transform(ctx, t).flatMap {
+                case (ctx, t: i32.TruncSatUF64.type) => second.i32TruncSatUF64Transform(ctx, t)
+                case (ctx, t)                        => second.transform(ctx, t)
+              }
+            }
           override val i32ReinterpretF32Transform: (Ctx, i32.ReinterpretF32.type) => F[(Ctx, Inst)] =
             if (first.i32ReinterpretF32Transform == id)
               second.i32ReinterpretF32Transform
@@ -1135,6 +1242,39 @@ object Transformer {
               first.i64PopcntTransform(ctx, t).flatMap {
                 case (ctx, t: i64.Popcnt.type) => second.i64PopcntTransform(ctx, t)
                 case (ctx, t)                  => second.transform(ctx, t)
+              }
+            }
+          override val i64Extend8STransform: (Ctx, i64.Extend8S.type) => F[(Ctx, Inst)] =
+            if (first.i64Extend8STransform == id)
+              second.i64Extend8STransform
+            else if (second.i64Extend8STransform == id)
+              first.i64Extend8STransform
+            else { (ctx: Ctx, t: i64.Extend8S.type) =>
+              first.i64Extend8STransform(ctx, t).flatMap {
+                case (ctx, t: i64.Extend8S.type) => second.i64Extend8STransform(ctx, t)
+                case (ctx, t)                    => second.transform(ctx, t)
+              }
+            }
+          override val i64Extend16STransform: (Ctx, i64.Extend16S.type) => F[(Ctx, Inst)] =
+            if (first.i64Extend16STransform == id)
+              second.i64Extend16STransform
+            else if (second.i64Extend16STransform == id)
+              first.i64Extend16STransform
+            else { (ctx: Ctx, t: i64.Extend16S.type) =>
+              first.i64Extend16STransform(ctx, t).flatMap {
+                case (ctx, t: i64.Extend16S.type) => second.i64Extend16STransform(ctx, t)
+                case (ctx, t)                     => second.transform(ctx, t)
+              }
+            }
+          override val i64Extend32STransform: (Ctx, i64.Extend32S.type) => F[(Ctx, Inst)] =
+            if (first.i64Extend32STransform == id)
+              second.i64Extend32STransform
+            else if (second.i64Extend32STransform == id)
+              first.i64Extend32STransform
+            else { (ctx: Ctx, t: i64.Extend32S.type) =>
+              first.i64Extend32STransform(ctx, t).flatMap {
+                case (ctx, t: i64.Extend32S.type) => second.i64Extend32STransform(ctx, t)
+                case (ctx, t)                     => second.transform(ctx, t)
               }
             }
           override val i64AddTransform: (Ctx, i64.Add.type) => F[(Ctx, Inst)] =
@@ -1487,6 +1627,50 @@ object Transformer {
               first.i64TruncUF64Transform(ctx, t).flatMap {
                 case (ctx, t: i64.TruncUF64.type) => second.i64TruncUF64Transform(ctx, t)
                 case (ctx, t)                     => second.transform(ctx, t)
+              }
+            }
+          override val i64TruncSatSF32Transform: (Ctx, i64.TruncSatSF32.type) => F[(Ctx, Inst)] =
+            if (first.i64TruncSatSF32Transform == id)
+              second.i64TruncSatSF32Transform
+            else if (second.i64TruncSatSF32Transform == id)
+              first.i64TruncSatSF32Transform
+            else { (ctx: Ctx, t: i64.TruncSatSF32.type) =>
+              first.i64TruncSatSF32Transform(ctx, t).flatMap {
+                case (ctx, t: i64.TruncSatSF32.type) => second.i64TruncSatSF32Transform(ctx, t)
+                case (ctx, t)                        => second.transform(ctx, t)
+              }
+            }
+          override val i64TruncSatUF32Transform: (Ctx, i64.TruncSatUF32.type) => F[(Ctx, Inst)] =
+            if (first.i64TruncSatUF32Transform == id)
+              second.i64TruncSatUF32Transform
+            else if (second.i64TruncSatUF32Transform == id)
+              first.i64TruncSatUF32Transform
+            else { (ctx: Ctx, t: i64.TruncSatUF32.type) =>
+              first.i64TruncSatUF32Transform(ctx, t).flatMap {
+                case (ctx, t: i64.TruncSatUF32.type) => second.i64TruncSatUF32Transform(ctx, t)
+                case (ctx, t)                        => second.transform(ctx, t)
+              }
+            }
+          override val i64TruncSatSF64Transform: (Ctx, i64.TruncSatSF64.type) => F[(Ctx, Inst)] =
+            if (first.i64TruncSatSF64Transform == id)
+              second.i64TruncSatSF64Transform
+            else if (second.i64TruncSatSF64Transform == id)
+              first.i64TruncSatSF64Transform
+            else { (ctx: Ctx, t: i64.TruncSatSF64.type) =>
+              first.i64TruncSatSF64Transform(ctx, t).flatMap {
+                case (ctx, t: i64.TruncSatSF64.type) => second.i64TruncSatSF64Transform(ctx, t)
+                case (ctx, t)                        => second.transform(ctx, t)
+              }
+            }
+          override val i64TruncSatUF64Transform: (Ctx, i64.TruncSatUF64.type) => F[(Ctx, Inst)] =
+            if (first.i64TruncSatUF64Transform == id)
+              second.i64TruncSatUF64Transform
+            else if (second.i64TruncSatUF64Transform == id)
+              first.i64TruncSatUF64Transform
+            else { (ctx: Ctx, t: i64.TruncSatUF64.type) =>
+              first.i64TruncSatUF64Transform(ctx, t).flatMap {
+                case (ctx, t: i64.TruncSatUF64.type) => second.i64TruncSatUF64Transform(ctx, t)
+                case (ctx, t)                        => second.transform(ctx, t)
               }
             }
           override val i64ReinterpretF64Transform: (Ctx, i64.ReinterpretF64.type) => F[(Ctx, Inst)] =

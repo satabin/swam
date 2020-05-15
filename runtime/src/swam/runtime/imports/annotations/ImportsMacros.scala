@@ -128,19 +128,13 @@ private final class ImportsMacros(val c: blackbox.Context) {
               case _ => c.abort(dd.pos, "Only functions with one parameter lists can be exported")
             }
 
-          val hasResult =
-            dd.tpt match {
-              case tq"$f[Unit]" if effectful => false
-              case tq"Unit"                  => false
-              case _                         => true
-            }
           val writerName = TermName("writer")
           val writerType = dd.tpt match {
             case tq"$f[$t]" if effectful => t
             case t                       => t
           }
           val writer =
-            q"implicitly[_root_.swam.runtime.formats.ValueWriter[$f, $writerType]]"
+            q"_root_.swam.runtime.formats.ValuesWriter[$f, $writerType]"
           val values = readers.zipWithIndex.map {
             case ((name, _), idx) =>
               val vname = TermName(s"value$idx")
@@ -148,24 +142,19 @@ private final class ImportsMacros(val c: blackbox.Context) {
           }
           val res =
             if (effectful)
-              if (hasResult)
-                Seq(fq"raw <- t.${dd.name.toTermName}(..${values.map(_._1)})", fq"res <- $writerName.write(raw, m)")
-              else
-                Seq(fq"_ <- t.${dd.name.toTermName}(..${values.map(_._1)})")
-            else if (hasResult)
-              Seq(fq"res <- $writerName.write(t.${dd.name.toTermName}(..${values.map(_._1)}), m)")
+              Seq(fq"raw <- t.${dd.name.toTermName}(..${values.map(_._1)})", fq"res <- $writerName.write(raw, m)")
             else
-              Seq(fq"_ <- t.${dd.name.toTermName}(..${values.map(_._1)})")
+              Seq(fq"res <- $writerName.write(t.${dd.name.toTermName}(..${values.map(_._1)}), m)")
 
           q"""F.pure(new _root_.swam.runtime.Function[$f] {
             ..${readers.map(_._2)}
-            ${if (hasResult) q"val $writerName = $writer" else q""}
+            val $writerName = $writer
             val tpe = _root_.swam.FuncType(Vector(..${readers
-            .map(p => q"${p._1}.swamType")}), Vector(..${if (hasResult) q"$writerName.swamType" else q""}))
-            def invoke(parameters: Vector[_root_.swam.runtime.Value], m: _root_.scala.Option[_root_.swam.runtime.Memory[$f]]): $f[_root_.scala.Option[_root_.swam.runtime.Value]] = for(
+            .map(p => q"${p._1}.swamType")}), $writerName.swamTypes)
+            def invoke(parameters: Vector[_root_.swam.runtime.Value], m: _root_.scala.Option[_root_.swam.runtime.Memory[$f]]): $f[_root_.scala.Vector[_root_.swam.runtime.Value]] = for(
               ..${values.map(_._2)};
               ..$res
-          ) yield ${if (hasResult) q"_root_.scala.Some(res)" else q"_root_.scala.None"}
+          ) yield res
           })"""
         }
 

@@ -356,6 +356,8 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
       case i32.Clz            => u.i32.Clz()(-1)
       case i32.Ctz            => u.i32.Ctz()(-1)
       case i32.Popcnt         => u.i32.Popcnt()(-1)
+      case i32.Extend8S       => u.i32.Extend8S()(-1)
+      case i32.Extend16S      => u.i32.Extend16S()(-1)
       case i32.Add            => u.i32.Add()(-1)
       case i32.Sub            => u.i32.Sub()(-1)
       case i32.Mul            => u.i32.Mul()(-1)
@@ -387,6 +389,10 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
       case i32.TruncUF32      => u.i32.TruncUF32()(-1)
       case i32.TruncSF64      => u.i32.TruncSF64()(-1)
       case i32.TruncUF64      => u.i32.TruncUF64()(-1)
+      case i32.TruncSatSF32   => u.i32.TruncSatSF32()(-1)
+      case i32.TruncSatUF32   => u.i32.TruncSatUF32()(-1)
+      case i32.TruncSatSF64   => u.i32.TruncSatSF64()(-1)
+      case i32.TruncSatUF64   => u.i32.TruncSatUF64()(-1)
       case i32.ReinterpretF32 => u.i32.ReinterpretF32()(-1)
       case i32.Load(a, o)     => u.i32.Load(a, o)(-1)
       case i32.Store(a, o)    => u.i32.Store(a, o)(-1)
@@ -400,6 +406,9 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
       case i64.Clz            => u.i64.Clz()(-1)
       case i64.Ctz            => u.i64.Ctz()(-1)
       case i64.Popcnt         => u.i64.Popcnt()(-1)
+      case i64.Extend8S       => u.i64.Extend8S()(-1)
+      case i64.Extend16S      => u.i64.Extend16S()(-1)
+      case i64.Extend32S      => u.i64.Extend32S()(-1)
       case i64.Add            => u.i64.Add()(-1)
       case i64.Sub            => u.i64.Sub()(-1)
       case i64.Mul            => u.i64.Mul()(-1)
@@ -432,6 +441,10 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
       case i64.TruncUF32      => u.i64.TruncUF32()(-1)
       case i64.TruncSF64      => u.i64.TruncSF64()(-1)
       case i64.TruncUF64      => u.i64.TruncUF64()(-1)
+      case i64.TruncSatSF32   => u.i64.TruncSatSF32()(-1)
+      case i64.TruncSatUF32   => u.i64.TruncSatUF32()(-1)
+      case i64.TruncSatSF64   => u.i64.TruncSatSF64()(-1)
+      case i64.TruncSatUF64   => u.i64.TruncSatUF64()(-1)
       case i64.ReinterpretF64 => u.i64.ReinterpretF64()(-1)
       case i64.Load(a, o)     => u.i64.Load(a, o)(-1)
       case i64.Store(a, o)    => u.i64.Store(a, o)(-1)
@@ -514,16 +527,20 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
       case Nop                => u.Nop()(-1)
       case Unreachable        => u.Unreachable()(-1)
       case Block(tpe, is) =>
-        u.Block(u.NoId, tpe, decompileExpr(is, fidx, functypes, functionNames, localNames), u.NoId)(-1)
+        u.Block(u.NoId, decompileBlockType(tpe), decompileExpr(is, fidx, functypes, functionNames, localNames), u.NoId)(
+          -1)
       case Loop(tpe, is) =>
-        u.Loop(u.NoId, tpe, decompileExpr(is, fidx, functypes, functionNames, localNames), u.NoId)(-1)
+        u.Loop(u.NoId, decompileBlockType(tpe), decompileExpr(is, fidx, functypes, functionNames, localNames), u.NoId)(
+          -1)
       case If(tpe, theni, elsei) =>
-        u.If(u.NoId,
-             tpe,
-             decompileExpr(theni, fidx, functypes, functionNames, localNames),
-             u.NoId,
-             decompileExpr(elsei, fidx, functypes, functionNames, localNames),
-             u.NoId)(-1)
+        u.If(
+          u.NoId,
+          decompileBlockType(tpe),
+          decompileExpr(theni, fidx, functypes, functionNames, localNames),
+          u.NoId,
+          decompileExpr(elsei, fidx, functypes, functionNames, localNames),
+          u.NoId
+        )(-1)
       case Br(label)           => u.Br(Left(label))(-1)
       case BrIf(label)         => u.BrIf(Left(label))(-1)
       case BrTable(table, lbl) => u.BrTable(table.map(Left(_)), Left(lbl))(-1)
@@ -537,6 +554,13 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
     }
 
   }
+
+  private def decompileBlockType(bt: BlockType): u.TypeUse =
+    bt match {
+      case BlockType.NoType            => u.TypeUse(None, Vector.empty, Vector.empty)
+      case BlockType.ValueType(tpe)    => u.TypeUse(None, Vector.empty, Vector(tpe))
+      case BlockType.FunctionType(tpe) => u.TypeUse(Some(Left(tpe)), Vector.empty, Vector.empty)
+    }
 }
 
 object TextDecompiler {

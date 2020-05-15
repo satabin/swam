@@ -40,18 +40,26 @@ package object pretty {
   implicit object TypePretty extends Pretty[Type] {
     def pretty(tpe: Type): Doc =
       tpe match {
-        case ValType.I32         => str("i32")
-        case ValType.I64         => str("i64")
-        case ValType.F32         => str("f32")
-        case ValType.F64         => str("f64")
-        case ResultType(None)    => str("[]")
-        case ResultType(Some(t)) => str("[") ++ t.pretty ++ str("]")
+        case ValType.I32      => str("i32")
+        case ValType.I64      => str("i64")
+        case ValType.F32      => str("f32")
+        case ValType.F64      => str("f64")
+        case ResultType(tpes) => str("[") ++ seq(str(", "), tpes) ++ str("]")
         case FuncType(params, result) =>
           str("[") ++ seq(str(", "), params) ++ str("] → [") ++ seq(str(", "), result) ++ str("]")
         case TableType(tpe, limits) => limits.pretty ++ space ++ tpe.pretty
         case MemType(limits)        => limits.pretty
         case GlobalType(tpe, mut)   => mut.pretty ++ space ++ tpe.pretty
         case ElemType.FuncRef       => str("funcref")
+      }
+  }
+
+  implicit object BlockTypePretty extends Pretty[BlockType] {
+    def pretty(bt: BlockType): Doc =
+      bt match {
+        case BlockType.NoType            => empty
+        case BlockType.ValueType(tpe)    => tpe.pretty
+        case BlockType.FunctionType(idx) => str("@") ++ int(idx)
       }
   }
 
@@ -89,12 +97,18 @@ package object pretty {
         case i32.LeU                    => str("i32.le_u")
         case i32.GeS                    => str("i32.ge_s")
         case i32.GeU                    => str("i32.ge_u")
-        case i32.WrapI64                => str("i32.wrap/i64")
-        case i32.TruncSF32              => str("i32.trunc_s/f32")
-        case i32.TruncUF32              => str("i32.trunc_u/f32")
-        case i32.TruncSF64              => str("i32.trunc_s/f64")
-        case i32.TruncUF64              => str("i32.trunc_u/f64")
-        case i32.ReinterpretF32         => str("i32.reinterpret/f32")
+        case i32.WrapI64                => str("i32.wrap_i64")
+        case i32.TruncSF32              => str("i32.trunc_f32_s")
+        case i32.TruncUF32              => str("i32.trunc_f32_u")
+        case i32.TruncSF64              => str("i32.trunc_f64_s")
+        case i32.TruncUF64              => str("i32.trunc_f64_u")
+        case i32.TruncSatSF32           => str("i32.trunc_sat_f32_s")
+        case i32.TruncSatUF32           => str("i32.trunc_sat_f32_u")
+        case i32.TruncSatSF64           => str("i32.trunc_sat_f64_s")
+        case i32.TruncSatUF64           => str("i32.trunc_sat_f64_u")
+        case i32.ReinterpretF32         => str("i32.reinterpret_f32")
+        case i32.Extend8S               => str("i32.extend8_s")
+        case i32.Extend16S              => str("i32.extend16_s")
         case i32.Load(offset, align)    => str(s"i32.load {offset $offset, align $align}")
         case i32.Store(offset, align)   => str(s"i32.store {offset $offset, align $align}")
         case i32.Load8S(offset, align)  => str(s"i32.load8_s {offset $offset, align $align}")
@@ -134,13 +148,20 @@ package object pretty {
         case i64.LeU                    => str("i64.le_u")
         case i64.GeS                    => str("i64.ge_s")
         case i64.GeU                    => str("i64.ge_u")
-        case i64.ExtendSI32             => str("i64.extends/i32")
-        case i64.ExtendUI32             => str("i64.extendu/i32")
-        case i64.TruncSF32              => str("i64.trunc_s/f32")
-        case i64.TruncUF32              => str("i64.trunc_u/f32")
-        case i64.TruncSF64              => str("i64.trunc_s/f64")
-        case i64.TruncUF64              => str("i64.trunc_u/f64")
-        case i64.ReinterpretF64         => str("i64.reinterpret/f64")
+        case i64.ExtendSI32             => str("i64.extends_i32")
+        case i64.ExtendUI32             => str("i64.extendu_i32")
+        case i64.TruncSF32              => str("i64.trunc_f32_s")
+        case i64.TruncUF32              => str("i64.trunc_f32_u")
+        case i64.TruncSF64              => str("i64.trunc_f64_s")
+        case i64.TruncUF64              => str("i64.trunc_f64_u")
+        case i64.TruncSatSF32           => str("i64.trunc_sat_f32_s")
+        case i64.TruncSatUF32           => str("i64.trunc_sat_f32_u")
+        case i64.TruncSatSF64           => str("i64.trunc_sat_f64_s")
+        case i64.TruncSatUF64           => str("i64.trunc_sat_f64_u")
+        case i64.ReinterpretF64         => str("i64.reinterpret_f64")
+        case i64.Extend8S               => str("i64.extend8_s")
+        case i64.Extend16S              => str("i64.extend16_s")
+        case i64.Extend32S              => str("i64.extend32_s")
         case i64.Load(offset, align)    => str(s"i64.load {offset $offset, align $align}")
         case i64.Store(offset, align)   => str(s"i64.store {offset $offset, align $align}")
         case i64.Load8S(offset, align)  => str(s"i64.load8_s {offset $offset, align $align}")
@@ -174,12 +195,12 @@ package object pretty {
         case f32.Gt                   => str("f32.gt")
         case f32.Le                   => str("f32.le")
         case f32.Ge                   => str("f32.ge")
-        case f32.DemoteF64            => str("f32.demote/f64")
-        case f32.ConvertSI32          => str("f32.convert_s/i32")
-        case f32.ConvertUI32          => str("f32.convert_u/i32")
-        case f32.ConvertSI64          => str("f32.convert_s/i64")
-        case f32.ConvertUI64          => str("f32.convert_u/i64")
-        case f32.ReinterpretI32       => str("f32.reinterpret/i32")
+        case f32.DemoteF64            => str("f32.demote_f64")
+        case f32.ConvertSI32          => str("f32.convert_i32_s")
+        case f32.ConvertUI32          => str("f32.convert_i32_u")
+        case f32.ConvertSI64          => str("f32.convert_i64_s")
+        case f32.ConvertUI64          => str("f32.convert_i64_u")
+        case f32.ReinterpretI32       => str("f32.reinterpret_i32")
         case f32.Load(offset, align)  => str(s"f32.load {offset $offset, align $align}")
         case f32.Store(offset, align) => str(s"f32.store {offset $offset, align $align}")
 
@@ -204,12 +225,12 @@ package object pretty {
         case f64.Gt                   => str("f64.gt")
         case f64.Le                   => str("f64.le")
         case f64.Ge                   => str("f64.ge")
-        case f64.PromoteF32           => str("f64.promote/f32")
-        case f64.ConvertSI32          => str("f64.convert_s/i32")
-        case f64.ConvertUI32          => str("f64.convert_u/i32")
-        case f64.ConvertSI64          => str("f64.convert_s/i64")
-        case f64.ConvertUI64          => str("f64.convert_u/i64")
-        case f64.ReinterpretI64       => str("f64.reinterpret/i64")
+        case f64.PromoteF32           => str("f64.promote_f32")
+        case f64.ConvertSI32          => str("f64.convert_i32_s")
+        case f64.ConvertUI32          => str("f64.convert_i32_u")
+        case f64.ConvertSI64          => str("f64.convert_i64_s")
+        case f64.ConvertUI64          => str("f64.convert_i64_u")
+        case f64.ReinterpretI64       => str("f64.reinterpret_i64")
         case f64.Load(offset, align)  => str(s"f64.load {offset $offset, align $align}")
         case f64.Store(offset, align) => str(s"f64.store {offset $offset, align $align}")
 
