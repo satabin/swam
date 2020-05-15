@@ -11,8 +11,6 @@ import coursier.maven.MavenRepository
 
 import $file.jmh
 import jmh.Jmh
-import $file.headers
-import headers.Headers
 
 import $file.mdoc
 import mdoc.MdocModule
@@ -31,7 +29,7 @@ val fs2Version = "2.3.0"
 
 val pureconfigVersion = "0.12.3"
 
-trait SwamModule extends ScalaModule with ScalafmtModule with Headers {
+trait SwamModule extends ScalaModule with ScalafmtModule {
 
   def scalaVersion = "2.13.2"
 
