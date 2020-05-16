@@ -1609,7 +1609,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 4 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadInt(ea)
@@ -1626,7 +1626,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 1 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 1 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadByte(ea)
@@ -1642,7 +1642,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 1 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 1 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadByte(ea)
@@ -1658,7 +1658,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 2 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 2 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadShort(ea)
@@ -1674,7 +1674,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 2 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 2 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadShort(ea)
@@ -1690,7 +1690,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 8 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 8 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadLong(ea)
@@ -1706,7 +1706,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 1 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 1 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadByte(ea)
@@ -1722,7 +1722,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 1 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 1 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadByte(ea)
@@ -1738,7 +1738,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 2 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 2 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadShort(ea)
@@ -1754,7 +1754,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 2 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 2 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadShort(ea)
@@ -1770,7 +1770,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 4 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadInt(ea)
@@ -1786,7 +1786,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 4 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadInt(ea)
@@ -1802,7 +1802,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 4 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadFloat(ea)
@@ -1818,7 +1818,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val mem = thread.memory(0)
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 8 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 8 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c = mem.unsafeReadDouble(ea)
@@ -1835,7 +1835,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val c = thread.popInt()
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 4 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         mem.unsafeWriteInt(ea, c)
@@ -1851,7 +1851,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val c = thread.popInt()
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 1 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 1 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c1 = (c % (1 << 8)).toByte
@@ -1868,7 +1868,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val c = thread.popInt()
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 2 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 2 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c1 = (c % (1 << 16)).toShort
@@ -1885,7 +1885,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val c = thread.popLong()
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 8 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 8 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         mem.unsafeWriteLong(ea, c)
@@ -1901,7 +1901,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val c = thread.popLong()
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 1 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 1 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c1 = (c % (1L << 8)).toByte
@@ -1918,7 +1918,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val c = thread.popLong()
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 2 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 2 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c1 = (c % (1L << 16)).toShort
@@ -1935,7 +1935,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val c = thread.popLong()
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 4 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         val c1 = (c % (1L << 32)).toInt
@@ -1952,7 +1952,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val c = thread.popFloat()
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 4 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 4 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         mem.unsafeWriteFloat(ea, c)
@@ -1968,7 +1968,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       val c = thread.popDouble()
       val i = thread.popInt()
       val ea = i + offset
-      if (offset < 0 || ea < 0 || ea + 8 > mem.size) {
+      if (i < 0 || offset < 0 || ea < 0 || ea + 8 > mem.size) {
         throw new TrapException(thread, "out of bounds memory access")
       } else {
         mem.unsafeWriteDouble(ea, c)
