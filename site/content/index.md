@@ -31,6 +31,7 @@ Artefacts are published on maven, use your favorite build tool to bring it into 
  - The `core` module: [![Core module on Maven Central][core-image]][core-maven]
  - The `runtime` module: [![Runtime module on Maven Central][runtime-image]][runtime-maven]
  - The `text` module: [![Text module on Maven Central][text-image]][text-maven]
+ - The `wasi` module: [![Text module on Maven Central][wasi-image]][wasi-maven]
 
 [webassembly]: https://webassembly.org/
 [text-format]: https://webassembly.org/docs/text-format/
@@ -46,4 +47,6 @@ Artefacts are published on maven, use your favorite build tool to bring it into 
 [runtime-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-runtime_2.13
 [text-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-text_2.13.svg
 [text-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-text_2.13
+[wasi-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-wasi_2.13.svg
+[wasi-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-wasi_2.13
 [wasi]: https://wasi.dev/
