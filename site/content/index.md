@@ -41,6 +41,7 @@ Artefacts are published on maven, use your favorite build tool to bring it into 
 [cli]: /cli/
 [cats-friendly-logo]: https://typelevel.org/cats/img/cats-badge-tiny.png
 [cats]: https://typelevel.org/cats
+[cats-effect]: https://typelevel.org/cats-effect
 [core-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-core_2.13.svg
 [core-maven]: https://maven-badges.herokuapp.com/maven-central/org.gnieh/swam-core_2.13
 [runtime-image]: https://img.shields.io/maven-central/v/org.gnieh/swam-runtime_2.13.svg
