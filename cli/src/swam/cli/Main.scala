@@ -23,19 +23,15 @@ import binary.ModuleStream
 import runtime.imports._
 import runtime.trace._
 import runtime.wasi.Wasi
-
 import cats.effect._
 import cats.implicits._
-
 import com.monovore.decline._
 import com.monovore.decline.effect._
-
 import io.odin._
-
 import fs2._
-
 import java.util.logging.{Formatter, LogRecord}
 import java.nio.file._
+import java.util.concurrent.TimeUnit
 
 private object NoTimestampFormatter extends Formatter {
   override def format(x: LogRecord): String =
@@ -121,13 +117,13 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
 
   val logger = consoleLogger[IO]()
 
-  def measureTime[T](t: => T): T = {
-    val start = System.nanoTime()
-    val res = t
-    val end = System.nanoTime()
-    System.err.println(s"${end - start}ns")
-    res
-  }
+  def measureTime[T](io: IO[T]): IO[T] =
+    for {
+      start <- Clock[IO].monotonic(TimeUnit.NANOSECONDS)
+      res <- io
+      end <- Clock[IO].monotonic(TimeUnit.NANOSECONDS)
+      _ <- logger.info(s"Execution took ${end - start}ns")
+    } yield res
 
   def doRun(module: Module[IO],
             main: String,
