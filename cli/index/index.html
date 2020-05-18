@@ -1,0 +1,134 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Swam - CLI</title>
+    <link rel="stylesheet" href="/css/stylesheet.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="/css/materialize.min.css" media="screen,projection"/>
+    <style>body{font-family: overpass, sans-serif; }</style>
+
+    <meta name="generator" content="Nanoc 4.11.16">
+  </head>
+  <body>
+    <header>
+      <div class="navbar-fixed">
+        <ul id='examples' class='dropdown-content'>
+          
+          <li><a href="/examples/string/">Strings</a></li>
+          
+          <li><a href="/examples/fibo/">Recursion</a></li>
+          
+          <li><a href="/examples/cfg/">CFG Construction and Manipulation</a></li>
+          
+          <li><a href="/examples/logged/">Imports</a></li>
+          
+          <li><a href="/examples/annotations/">Annotations</a></li>
+          
+          <li><a href="/examples/decompiler/">Decompilers</a></li>
+          
+        </ul>
+        <nav class="blue-grey darken-2">
+          <a href="#!" class="brand-logo">Swam</a>
+          <a href="#" data-target="collapsed" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+          <div class="nav-wrapper">
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+              <li><a href="/">Home</a></li>
+              <li><a href="/cli/">CLI</a></li>
+              <li><a class="dropdown-trigger" href="#!" data-target="examples">Examples<i class="material-icons right">arrow_drop_down</i></a></li>
+              <li><a href="https://github.com/satabin/swam">Github</a></li>
+              <li><a href="/api/">Scaladoc</a></li>
+            </ul>
+          </div>
+          <div class="nav-content">
+          </div>
+        </nav>
+      </div>
+
+    </header>
+
+    <ul class="sidenav" id="collapsed">
+      <ul id='examples-collapsed' class='dropdown-content'>
+        
+        <li><a href="/examples/string/">Strings</a></li>
+        
+        <li><a href="/examples/fibo/">Recursion</a></li>
+        
+        <li><a href="/examples/cfg/">CFG Construction and Manipulation</a></li>
+        
+        <li><a href="/examples/logged/">Imports</a></li>
+        
+        <li><a href="/examples/annotations/">Annotations</a></li>
+        
+        <li><a href="/examples/decompiler/">Decompilers</a></li>
+        
+      </ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/cli/">CLI</a></li>
+      <li><a class="dropdown-trigger" href="#!" data-target="examples-collapsed">Examples<i class="material-icons right">arrow_drop_down</i></a></li>
+      <li><a href="https://github.com/satabin/swam">Github</a></li>
+      <li><a href="/api/">Scaladoc</a></li>
+    </ul>
+
+    <main>
+      <div class="container">
+        <p>Swam comes with a Command Line Interface (<em>CLI</em>). In the remainder of this section, we assume you have downloaded the CLI jar file as file <code>swam-cli.jar</code>. If you don’t have it yet, you can download it from the <a href="https://github.com/satabin/swam/releases/latest/">latest release page</a>.</p>
+
+<p>The CLI consists of several tools available through commands. To get the list of commands, you can run:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>java <span class="nt">-jar</span> swam-cli.jar <span class="nt">--help</span>
+
+Usage:
+    swam-cli run
+    swam-cli decompile
+    swam-cli validate
+    swam-cli compile
+
+Swam from the <span class="nb">command </span>line
+
+Options and flags:
+    <span class="nt">--help</span>
+        Display this <span class="nb">help </span>text.
+
+Subcommands:
+    run
+        Run a WebAssembly file
+    decompile
+        Decompile a wasm file
+    validate
+        Validate a wasm file
+    compile
+        Compile a wat file to wasm
+</code></pre></div></div>
+
+
+      </div>
+    </main>
+
+    <footer class="page-footer blue-grey lighten-2">
+      <div class="footer-copyright blue-grey darken-2">
+        <div class="container">
+          Copyright © 2019 <a class="grey-text text-lighten-4" href="https://twitter.com/lucassatabin">@lucassatabin</a>
+          <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" class="grey-text text-lighten-4 right" /></a>
+        </div>
+      </div>
+    </footer>
+
+    <script type="text/javascript" src="/js/materialize.min.js"></script>
+    <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.sidenav');
+      var instances = M.Sidenav.init(elems, {});
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.dropdown-trigger');
+      var instances = M.Dropdown.init(elems, {});
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.materialboxed');
+      var instances = M.Materialbox.init(elems, {});
+    });
+    </script>
+  </body>
+</html>

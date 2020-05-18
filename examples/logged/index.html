@@ -1,0 +1,149 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Swam - Imports</title>
+    <link rel="stylesheet" href="/css/stylesheet.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="/css/materialize.min.css" media="screen,projection"/>
+    <style>body{font-family: overpass, sans-serif; }</style>
+
+    <meta name="generator" content="Nanoc 4.11.16">
+  </head>
+  <body>
+    <header>
+      <div class="navbar-fixed">
+        <ul id='examples' class='dropdown-content'>
+          
+          <li><a href="/examples/string/">Strings</a></li>
+          
+          <li><a href="/examples/fibo/">Recursion</a></li>
+          
+          <li><a href="/examples/cfg/">CFG Construction and Manipulation</a></li>
+          
+          <li><a href="/examples/logged/">Imports</a></li>
+          
+          <li><a href="/examples/annotations/">Annotations</a></li>
+          
+          <li><a href="/examples/decompiler/">Decompilers</a></li>
+          
+        </ul>
+        <nav class="blue-grey darken-2">
+          <a href="#!" class="brand-logo">Swam</a>
+          <a href="#" data-target="collapsed" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+          <div class="nav-wrapper">
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+              <li><a href="/">Home</a></li>
+              <li><a href="/cli/">CLI</a></li>
+              <li><a class="dropdown-trigger" href="#!" data-target="examples">Examples<i class="material-icons right">arrow_drop_down</i></a></li>
+              <li><a href="https://github.com/satabin/swam">Github</a></li>
+              <li><a href="/api/">Scaladoc</a></li>
+            </ul>
+          </div>
+          <div class="nav-content">
+          </div>
+        </nav>
+      </div>
+
+    </header>
+
+    <ul class="sidenav" id="collapsed">
+      <ul id='examples-collapsed' class='dropdown-content'>
+        
+        <li><a href="/examples/string/">Strings</a></li>
+        
+        <li><a href="/examples/fibo/">Recursion</a></li>
+        
+        <li><a href="/examples/cfg/">CFG Construction and Manipulation</a></li>
+        
+        <li><a href="/examples/logged/">Imports</a></li>
+        
+        <li><a href="/examples/annotations/">Annotations</a></li>
+        
+        <li><a href="/examples/decompiler/">Decompilers</a></li>
+        
+      </ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/cli/">CLI</a></li>
+      <li><a class="dropdown-trigger" href="#!" data-target="examples-collapsed">Examples<i class="material-icons right">arrow_drop_down</i></a></li>
+      <li><a href="https://github.com/satabin/swam">Github</a></li>
+      <li><a href="/api/">Scaladoc</a></li>
+    </ul>
+
+    <main>
+      <div class="container">
+        <p>When a module is instantiated, it is possible to import functions or values from Scala into the module. For instance, let’s assume we defined a function that prints its parameter on the console, and a <a href="/examples/logged.wat">simple WebAssembly module that imports and calls it</a>.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">swam.text._</span>
+<span class="k">import</span> <span class="nn">swam.runtime._</span>
+<span class="k">import</span> <span class="nn">cats.effect._</span>
+<span class="k">import</span> <span class="nn">java.nio.file.Paths</span>
+
+<span class="k">implicit</span> <span class="k">val</span> <span class="nv">cs</span> <span class="k">=</span> <span class="nv">IO</span><span class="o">.</span><span class="py">contextShift</span><span class="o">(</span><span class="nv">scala</span><span class="o">.</span><span class="py">concurrent</span><span class="o">.</span><span class="py">ExecutionContext</span><span class="o">.</span><span class="py">global</span><span class="o">)</span>
+
+<span class="k">def</span> <span class="nf">log</span><span class="o">(</span><span class="n">i</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span> <span class="nc">IO</span><span class="o">(</span><span class="nf">println</span><span class="o">(</span><span class="n">s</span><span class="s">"got $i"</span><span class="o">))</span>
+
+<span class="k">val</span> <span class="nv">f</span> <span class="k">=</span>
+  <span class="nc">Blocker</span><span class="o">[</span><span class="kt">IO</span><span class="o">].</span><span class="py">use</span> <span class="o">{</span> <span class="n">blocker</span> <span class="k">=&gt;</span>
+    <span class="k">for</span> <span class="o">{</span>
+      <span class="n">engine</span> <span class="k">&lt;-</span> <span class="nc">Engine</span><span class="o">[</span><span class="kt">IO</span><span class="o">](</span><span class="n">blocker</span><span class="o">)</span>
+      <span class="n">tcompiler</span> <span class="k">&lt;-</span> <span class="nc">Compiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">](</span><span class="n">blocker</span><span class="o">)</span>
+      <span class="n">mod</span> <span class="k">&lt;-</span> <span class="nv">engine</span><span class="o">.</span><span class="py">compile</span><span class="o">(</span><span class="nv">tcompiler</span><span class="o">.</span><span class="py">stream</span><span class="o">(</span><span class="nv">Paths</span><span class="o">.</span><span class="py">get</span><span class="o">(</span><span class="s">"logged.wat"</span><span class="o">),</span> <span class="kc">true</span><span class="o">,</span> <span class="n">blocker</span><span class="o">))</span>
+      <span class="n">inst</span> <span class="k">&lt;-</span> <span class="nv">mod</span><span class="o">.</span><span class="py">importing</span><span class="o">(</span><span class="s">"console"</span><span class="o">,</span> <span class="s">"log"</span> <span class="o">-&gt;</span> <span class="n">log</span> <span class="k">_</span><span class="o">).</span><span class="py">instantiate</span>
+      <span class="n">f</span> <span class="k">&lt;-</span> <span class="nv">inst</span><span class="o">.</span><span class="py">exports</span><span class="o">.</span><span class="py">typed</span><span class="o">.</span><span class="py">function</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">Int</span><span class="o">](</span><span class="s">"add42"</span><span class="o">)</span>
+    <span class="o">}</span> <span class="k">yield</span> <span class="n">f</span>
+  <span class="o">}.</span><span class="py">unsafeRunSync</span><span class="o">()</span>
+</code></pre></div></div>
+
+<p>running function <code>f</code> logs the parameter.</p>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">f</span><span class="o">(</span><span class="mi">4</span><span class="o">).</span><span class="py">unsafeRunSync</span><span class="o">()</span>
+<span class="c1">// got 4</span>
+<span class="c1">// res0: Int = 46</span>
+</code></pre></div></div>
+
+<p>It is also possible to use <a href="https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-2.0.0#heterogenous-lists"><code>HList</code>s</a> to represent imported modules with several exposed fields. For instance, let’s import the <code>console</code> module with an extra <code>colors</code> field exposed.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">shapeless._</span>
+
+<span class="nc">Blocker</span><span class="o">[</span><span class="kt">IO</span><span class="o">].</span><span class="py">use</span> <span class="o">{</span> <span class="n">blocker</span> <span class="k">=&gt;</span>
+  <span class="k">for</span> <span class="o">{</span>
+    <span class="n">engine</span> <span class="k">&lt;-</span> <span class="nc">Engine</span><span class="o">[</span><span class="kt">IO</span><span class="o">](</span><span class="n">blocker</span><span class="o">)</span>
+    <span class="n">tcompiler</span> <span class="k">&lt;-</span> <span class="nc">Compiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">](</span><span class="n">blocker</span><span class="o">)</span>
+    <span class="n">mod</span> <span class="k">&lt;-</span> <span class="nv">engine</span><span class="o">.</span><span class="py">compile</span><span class="o">(</span><span class="nv">tcompiler</span><span class="o">.</span><span class="py">stream</span><span class="o">(</span><span class="nv">Paths</span><span class="o">.</span><span class="py">get</span><span class="o">(</span><span class="s">"logged.wat"</span><span class="o">),</span> <span class="kc">true</span><span class="o">,</span> <span class="n">blocker</span><span class="o">))</span>
+    <span class="n">inst</span> <span class="k">&lt;-</span> <span class="nv">mod</span><span class="o">.</span><span class="py">importing</span><span class="o">(</span><span class="s">"console"</span><span class="o">,</span> <span class="s">"log"</span> <span class="o">-&gt;</span> <span class="n">log</span> <span class="k">_</span> <span class="o">::</span> <span class="s">"colors"</span> <span class="o">-&gt;</span> <span class="mi">256</span> <span class="o">::</span> <span class="nc">HNil</span><span class="o">).</span><span class="py">instantiate</span>
+    <span class="n">f</span> <span class="k">&lt;-</span> <span class="nv">inst</span><span class="o">.</span><span class="py">exports</span><span class="o">.</span><span class="py">typed</span><span class="o">.</span><span class="py">function</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">Int</span><span class="o">](</span><span class="s">"add42"</span><span class="o">)</span>
+  <span class="o">}</span> <span class="k">yield</span> <span class="n">f</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+
+      </div>
+    </main>
+
+    <footer class="page-footer blue-grey lighten-2">
+      <div class="footer-copyright blue-grey darken-2">
+        <div class="container">
+          Copyright © 2019 <a class="grey-text text-lighten-4" href="https://twitter.com/lucassatabin">@lucassatabin</a>
+          <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" class="grey-text text-lighten-4 right" /></a>
+        </div>
+      </div>
+    </footer>
+
+    <script type="text/javascript" src="/js/materialize.min.js"></script>
+    <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.sidenav');
+      var instances = M.Sidenav.init(elems, {});
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.dropdown-trigger');
+      var instances = M.Dropdown.init(elems, {});
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.materialboxed');
+      var instances = M.Materialbox.init(elems, {});
+    });
+    </script>
+  </body>
+</html>

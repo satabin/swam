@@ -1,0 +1,190 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Swam - CFG Construction and Manipulation</title>
+    <link rel="stylesheet" href="/css/stylesheet.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="/css/materialize.min.css" media="screen,projection"/>
+    <style>body{font-family: overpass, sans-serif; }</style>
+
+    <meta name="generator" content="Nanoc 4.11.16">
+  </head>
+  <body>
+    <header>
+      <div class="navbar-fixed">
+        <ul id='examples' class='dropdown-content'>
+          
+          <li><a href="/examples/string/">Strings</a></li>
+          
+          <li><a href="/examples/fibo/">Recursion</a></li>
+          
+          <li><a href="/examples/cfg/">CFG Construction and Manipulation</a></li>
+          
+          <li><a href="/examples/logged/">Imports</a></li>
+          
+          <li><a href="/examples/annotations/">Annotations</a></li>
+          
+          <li><a href="/examples/decompiler/">Decompilers</a></li>
+          
+        </ul>
+        <nav class="blue-grey darken-2">
+          <a href="#!" class="brand-logo">Swam</a>
+          <a href="#" data-target="collapsed" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+          <div class="nav-wrapper">
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+              <li><a href="/">Home</a></li>
+              <li><a href="/cli/">CLI</a></li>
+              <li><a class="dropdown-trigger" href="#!" data-target="examples">Examples<i class="material-icons right">arrow_drop_down</i></a></li>
+              <li><a href="https://github.com/satabin/swam">Github</a></li>
+              <li><a href="/api/">Scaladoc</a></li>
+            </ul>
+          </div>
+          <div class="nav-content">
+          </div>
+        </nav>
+      </div>
+
+    </header>
+
+    <ul class="sidenav" id="collapsed">
+      <ul id='examples-collapsed' class='dropdown-content'>
+        
+        <li><a href="/examples/string/">Strings</a></li>
+        
+        <li><a href="/examples/fibo/">Recursion</a></li>
+        
+        <li><a href="/examples/cfg/">CFG Construction and Manipulation</a></li>
+        
+        <li><a href="/examples/logged/">Imports</a></li>
+        
+        <li><a href="/examples/annotations/">Annotations</a></li>
+        
+        <li><a href="/examples/decompiler/">Decompilers</a></li>
+        
+      </ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/cli/">CLI</a></li>
+      <li><a class="dropdown-trigger" href="#!" data-target="examples-collapsed">Examples<i class="material-icons right">arrow_drop_down</i></a></li>
+      <li><a href="https://github.com/satabin/swam">Github</a></li>
+      <li><a href="/api/">Scaladoc</a></li>
+    </ul>
+
+    <main>
+      <div class="container">
+        <p>To perform analyses on WASM programs, it is possible to build a CFG of the function bodies.</p>
+
+<h2 id="computation">Computation</h2>
+
+<p>A CFG is computed using a <code>Traverser</code>, for instance to compute CFGs for the <a href="/examples/fibo.wat">naive fibonacci function</a>, you can do this way</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">swam.text._</span>
+<span class="k">import</span> <span class="nn">swam.cfg._</span>
+
+<span class="k">import</span> <span class="nn">cats.effect._</span>
+
+<span class="k">import</span> <span class="nn">java.nio.file.Paths</span>
+
+<span class="k">implicit</span> <span class="k">val</span> <span class="nv">cs</span> <span class="k">=</span> <span class="nv">IO</span><span class="o">.</span><span class="py">contextShift</span><span class="o">(</span><span class="nv">scala</span><span class="o">.</span><span class="py">concurrent</span><span class="o">.</span><span class="py">ExecutionContext</span><span class="o">.</span><span class="py">global</span><span class="o">)</span>
+
+<span class="k">val</span> <span class="nv">cfg</span> <span class="k">=</span>
+  <span class="nc">Blocker</span><span class="o">[</span><span class="kt">IO</span><span class="o">].</span><span class="py">use</span> <span class="o">{</span> <span class="n">blocker</span> <span class="k">=&gt;</span>
+    <span class="k">for</span> <span class="o">{</span>
+      <span class="n">compiler</span> <span class="k">&lt;-</span> <span class="nc">Compiler</span><span class="o">[</span><span class="kt">IO</span><span class="o">](</span><span class="n">blocker</span><span class="o">)</span>
+      <span class="n">naive</span> <span class="k">&lt;-</span> <span class="nv">compiler</span><span class="o">.</span><span class="py">compile</span><span class="o">(</span><span class="nv">Paths</span><span class="o">.</span><span class="py">get</span><span class="o">(</span><span class="s">"fibo.wat"</span><span class="o">),</span> <span class="n">blocker</span><span class="o">).</span><span class="py">map</span><span class="o">(</span><span class="nv">_</span><span class="o">.</span><span class="py">funcs</span><span class="o">(</span><span class="mi">0</span><span class="o">))</span>
+      <span class="n">cfg</span> <span class="k">&lt;-</span> <span class="nv">CFGicator</span><span class="o">.</span><span class="py">buildCFG</span><span class="o">[</span><span class="kt">IO</span><span class="o">](</span><span class="nv">naive</span><span class="o">.</span><span class="py">body</span><span class="o">)</span>
+    <span class="o">}</span> <span class="k">yield</span> <span class="n">cfg</span>
+  <span class="o">}.</span><span class="py">unsafeRunSync</span><span class="o">()</span>
+</code></pre></div></div>
+
+<p>The CFG can be traversed in postorder (depth first) using the <code>CFG.postorder</code> function, that makes it possible to compute a value by accumulation.</p>
+
+<p>For instance, to build the list of nodes in reverse postorder, one can do:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">reversePostorder</span> <span class="k">=</span> <span class="nv">cfg</span><span class="o">.</span><span class="py">postorder</span><span class="o">(</span><span class="nv">List</span><span class="o">.</span><span class="py">empty</span><span class="o">[</span><span class="kt">BasicBlock</span><span class="o">])((</span><span class="n">acc</span><span class="o">,</span> <span class="n">block</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">block</span> <span class="o">::</span> <span class="n">acc</span><span class="o">)</span>
+<span class="c1">// reversePostorder: List[BasicBlock] = List(</span>
+<span class="c1">//   BasicBlock(4, "entry", List(LocalGet(0), Const(2L), LtS), Some(If(2, 3))),</span>
+<span class="c1">//   BasicBlock(</span>
+<span class="c1">//     3,</span>
+<span class="c1">//     "else",</span>
+<span class="c1">//     List(</span>
+<span class="c1">//       LocalGet(0),</span>
+<span class="c1">//       Const(2L),</span>
+<span class="c1">//       Sub,</span>
+<span class="c1">//       Call(0),</span>
+<span class="c1">//       LocalGet(0),</span>
+<span class="c1">//       Const(1L),</span>
+<span class="c1">//       Sub,</span>
+<span class="c1">//       Call(0),</span>
+<span class="c1">//       Add</span>
+<span class="c1">//     ),</span>
+<span class="c1">//     Some(To(1))</span>
+<span class="c1">//   ),</span>
+<span class="c1">//   BasicBlock(2, "then", List(Const(1L)), Some(To(1))),</span>
+<span class="c1">//   BasicBlock(1, "next_if", List(), Some(To(0))),</span>
+<span class="c1">//   BasicBlock(0, "exit", List(), None)</span>
+<span class="c1">// )</span>
+</code></pre></div></div>
+
+<p>This is a common ordering when working with CFG, and is available through the <code>CFG.reversePostorder</code> method.</p>
+
+<h2 id="pretty-printing">Pretty Printing</h2>
+
+<p>For debugging or documentation purpose, it might be handy to pretty-print the CFGs.<br />
+Swam provides a <a href="https://typelevel.org/cats/typeclasses/show.html">Show</a> instance that prints the CFG to a <a href="https://www.graphviz.org/">dot</a> graph.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">swam.cfg.dot._</span>
+
+<span class="k">import</span> <span class="nn">cats.implicits._</span>
+
+<span class="nf">println</span><span class="o">(</span><span class="nv">cfg</span><span class="o">.</span><span class="py">show</span><span class="o">)</span>
+<span class="c1">// digraph {</span>
+<span class="c1">//         rankdir=TB;</span>
+<span class="c1">//         node[shape=record];</span>
+<span class="c1">//         bb0[label="exit: 0"];</span>
+<span class="c1">// bb1[label="next_if: 1"];</span>
+<span class="c1">// bb1-&gt;bb0;</span>
+<span class="c1">// bb2[label="{then: 2|i64.const 1}"];</span>
+<span class="c1">// bb2-&gt;bb1;</span>
+<span class="c1">// bb3[label="{else: 3|local.get 0\ni64.const 2\ni64.sub\ncall 0\nlocal.get 0\ni64.const 1\ni64.sub\ncall 0\ni64.add}"];</span>
+<span class="c1">// bb3-&gt;bb1;</span>
+<span class="c1">// bb4[label="{entry: 4|local.get 0\ni64.const 2\ni64.lt_s}"];</span>
+<span class="c1">// bb4-&gt;bb2[label="true"];</span>
+<span class="c1">// bb4-&gt;bb3[label="false"]</span>
+<span class="c1">//       }</span>
+</code></pre></div></div>
+
+<p>The generated code can be compiled to get an image of it. In this example, it renders as:</p>
+
+<p><img src="/examples/fibo-naive.png" alt="Naive fibonacci CFG" /></p>
+
+      </div>
+    </main>
+
+    <footer class="page-footer blue-grey lighten-2">
+      <div class="footer-copyright blue-grey darken-2">
+        <div class="container">
+          Copyright © 2019 <a class="grey-text text-lighten-4" href="https://twitter.com/lucassatabin">@lucassatabin</a>
+          <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" class="grey-text text-lighten-4 right" /></a>
+        </div>
+      </div>
+    </footer>
+
+    <script type="text/javascript" src="/js/materialize.min.js"></script>
+    <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.sidenav');
+      var instances = M.Sidenav.init(elems, {});
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.dropdown-trigger');
+      var instances = M.Dropdown.init(elems, {});
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.materialboxed');
+      var instances = M.Materialbox.init(elems, {});
+    });
+    </script>
+  </body>
+</html>
