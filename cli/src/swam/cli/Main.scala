@@ -15,7 +15,6 @@
  */
 
 package swam
-
 package cli
 
 import decompilation._
@@ -39,6 +38,7 @@ import fs2._
 
 import java.util.logging.{Formatter => JFormatter, LogRecord}
 import java.nio.file._
+import java.util.concurrent.TimeUnit
 
 private object NoTimestampFormatter extends JFormatter {
   override def format(x: LogRecord): String =
@@ -70,6 +70,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
 
   val wasi =
     Opts.flag("wasi", "Program is using wasi (default false)", short = "W").orFalse
+
+  val time =
+    Opts.flag("time", "Measure execution time (default false)", short = "C").orFalse
 
   val trace =
     Opts.flag("trace", "Trace WASM execution channels (default false)", short = "t").orFalse
@@ -104,9 +107,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     .option[Path]("out", "Save decompiled result in the given file. Prints to stdout if not provider", short = "o")
 
   val runOpts: Opts[Options] = Opts.subcommand("run", "Run a WebAssembly file") {
-    (mainFun, wat, wasi, dirs, trace, traceFile, filter, debug, wasmFile, restArguments).mapN {
-      (main, wat, wasi, dirs, trace, traceFile, filter, debug, wasm, args) =>
-        Run(wasm, args, main, wat, wasi, trace, filter, traceFile, dirs, debug)
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments).mapN {
+      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args) =>
+        Run(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug)
     }
   }
 
@@ -122,28 +125,39 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     (wasmFile, out, debug).mapN(Compile(_, _, _))
   }
 
+  def measureTime[T](logger: Logger[IO], io: IO[T]): IO[T] =
+    for {
+      start <- Clock[IO].monotonic(TimeUnit.NANOSECONDS)
+      res <- io
+      end <- Clock[IO].monotonic(TimeUnit.NANOSECONDS)
+      _ <- logger.info(s"Execution took ${end - start}ns")
+    } yield res
+
   def doRun(module: Module[IO],
             main: String,
             preopenedDirs: List[Path],
             args: List[String],
             wasi: Boolean,
-            blocker: Blocker): IO[Unit] =
+            time: Boolean,
+            blocker: Blocker): IO[Unit] = {
+    val logger = consoleLogger[IO]()
     if (wasi)
-      Wasi[IO](preopenedDirs, main :: args, consoleLogger[IO](), blocker).use { wasi =>
+      Wasi[IO](preopenedDirs, main :: args, logger, blocker).use { wasi =>
         for {
           instance <- module.importing("wasi_snapshot_preview1", wasi).instantiate
           main <- instance.exports.typed.function[Unit](main)
           memory <- instance.exports.memory("memory")
           _ <- wasi.mem.complete(memory)
-          _ <- main()
+          _ <- if (time) measureTime(logger, main()) else main()
         } yield ()
       }
     else
       for {
         instance <- module.instantiate
         main <- instance.exports.typed.function[Unit](main)
-        _ <- main()
+        _ <- if (time) measureTime(logger, main()) else main()
       } yield ()
+  }
 
   val outFileOptions = List(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
 
@@ -151,7 +165,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     runOpts.orElse(decompileOpts).orElse(validateOpts).orElse(compileOpts).map { opts =>
       Blocker[IO].use { blocker =>
         opts match {
-          case Run(file, args, main, wat, wasi, trace, filter, tracef, dirs, debug) =>
+          case Run(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug) =>
             for {
               tracer <- if (trace)
                 JULTracer[IO](blocker,
@@ -165,7 +179,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
               tcompiler <- swam.text.Compiler[IO](blocker)
               module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
               compiled <- engine.compile(module)
-              _ <- doRun(compiled, main, dirs, args, wasi, blocker)
+              _ <- doRun(compiled, main, dirs, args, wasi, time, blocker)
             } yield ExitCode.Success
           case Decompile(file, textual, out) =>
             for {
