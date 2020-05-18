@@ -32,4 +32,4 @@ Subcommands:
         Compile a wat file to wasm
 ```
 
-[releases]: https://github.com/satabin/swam/releases/latest/
+[releases]: https://github.com/satabin/swam/releases/
