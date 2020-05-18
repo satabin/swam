@@ -23,12 +23,17 @@ import binary.ModuleStream
 import runtime.imports._
 import runtime.trace._
 import runtime.wasi.Wasi
+
 import cats.effect._
 import cats.implicits._
+
 import com.monovore.decline._
 import com.monovore.decline.effect._
+
 import io.odin._
+
 import fs2._
+
 import java.util.logging.{Formatter, LogRecord}
 import java.nio.file._
 import java.util.concurrent.TimeUnit
