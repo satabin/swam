@@ -19,6 +19,7 @@ package runtime
 
 import formats._
 import internals.interpreter._
+import util.Untupler
 
 import cats._
 import cats.implicits._
@@ -105,31 +106,14 @@ class Instance[F[_]] private[runtime] (val module: Module[F], private[runtime] v
             F.raiseError(new LinkException(s"unknown global named $name"))
         }
 
-      /** Returns a function for given name and type. */
-      def function[Ret](name: String)(implicit F: MonadError[F, Throwable],
-                                      ret: ValuesReader[F, Ret]): F[() => F[Ret]] =
-        exps.get(name).liftTo[F](new RuntimeException(s"unknown exported function name $name")).flatMap {
-          case f: Function[F] =>
-            if (f.tpe.params.isEmpty && f.tpe.t == ret.swamTypes)
-              F.pure({ () =>
-                for {
-                  rawRes <- f.invoke(Vector.empty, memories.headOption)
-                  res <- ret.read(rawRes, memories.headOption)
-                } yield res
-              })
-            else
-              F.raiseError(new RuntimeException(s"invalid function type (expected () => Unit but got ${f.tpe})"))
-          case fld =>
-            F.raiseError(new RuntimeException(s"cannot get a function for type ${fld.tpe}"))
-        }
-
       def function[Params, Ret](name: String)(implicit F: MonadError[F, Throwable],
                                               params: ValuesWriter[F, Params],
-                                              ret: ValuesReader[F, Ret]): F[Params => F[Ret]] =
+                                              ret: ValuesReader[F, Ret],
+                                              untupler: Untupler[Params => F[Ret]]): F[untupler.Out] =
         exps.get(name).liftTo[F](new RuntimeException(s"unknown exported function name $name")).flatMap {
           case f: Function[F] =>
             if (f.tpe.params == params.swamTypes && f.tpe.t == ret.swamTypes)
-              F.pure({ (parameters: Params) =>
+              F.pure(untupler.untuple { (parameters: Params) =>
                 for {
                   params <- params.write(parameters, memories.headOption)
                   rawRes <- f.invoke(params, memories.headOption)
