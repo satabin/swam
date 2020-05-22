@@ -22,10 +22,16 @@ sealed trait Id {
   def toOption: Option[String]
 }
 object Id {
+  private val Valid = "^([0-9a-zA-Z!#$%&'*+-./:<=>?@\\^_`|~]+)$".r
   def fromOption(o: Option[String]): Id =
     o match {
-      case Some(n) => SomeId(n)
-      case None    => NoId
+      case Some(Valid(n)) => SomeId(n)
+      case _              => NoId
+    }
+  def fromOptionOrElse(o: Option[String], dflt: Int): Either[Int, Id] =
+    o match {
+      case Some(Valid(n)) => Right(SomeId(n))
+      case _              => Left(dflt)
     }
 }
 case class SomeId(id: String) extends Id {
