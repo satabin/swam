@@ -10,9 +10,7 @@ jobs:
     - stage: formatting
       if: type = pull_request
       script:
-        - ./millw __.reformat
-        - git diff --exit-code --name-status
-        - if [[ $(git diff --exit-code --name-status) ]]; then echo 'Your code is not formatted correctly, please format it, check it and push formatted code'; exit 1; fi
+        - ./millw __.checkFormat
     - stage: test
       script:
         - ./millw runtime.compile
