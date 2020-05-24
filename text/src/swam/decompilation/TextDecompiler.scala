@@ -641,11 +641,12 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
           decompileExpr(lblidx1 + 1, elsei, fidx, functypes, functionNames, localNames, labelNames)
         val id = getLabelId(lblidx)
         (lblidx2, u.If(id, decompileBlockType(tpe, functypes), theni1, id, elsei1, id)(-1))
-      case Br(label)           => (lblidx, u.Br(getLabelIdOrIdx(label))(-1))
-      case BrIf(label)         => (lblidx, u.BrIf(getLabelIdOrIdx(label))(-1))
-      case BrTable(table, lbl) => (lblidx, u.BrTable(table.map(getLabelIdOrIdx(_)), getLabelIdOrIdx(lbl))(-1))
-      case Return              => (lblidx, u.Return()(-1))
-      case Call(lbl)           => (lblidx, u.Call(getFunId(lbl))(-1))
+      case Br(label)   => (lblidx, u.Br(getLabelIdOrIdx(lblidx - 1 - label))(-1))
+      case BrIf(label) => (lblidx, u.BrIf(getLabelIdOrIdx(lblidx - 1 - label))(-1))
+      case BrTable(table, lbl) =>
+        (lblidx, u.BrTable(table.map(lbl => getLabelIdOrIdx(lblidx - 1 - lbl)), getLabelIdOrIdx(lblidx - 1 - lbl))(-1))
+      case Return    => (lblidx, u.Return()(-1))
+      case Call(lbl) => (lblidx, u.Call(getFunId(lbl))(-1))
       case CallIndirect(idx) =>
         val ftpe = functypes(idx)
         val params = ftpe.params.map(u.NoId -> _)
