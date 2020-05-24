@@ -35,6 +35,7 @@ val i = instantiate("fibo.wat")
 
 val naive = i.exports.typed.function[Long, Long]("naive").unsafeRunSync()
 val clever = i.exports.typed.function[Long, Long]("clever").unsafeRunSync()
+val loop = i.exports.typed.function[Long, Long]("loop").unsafeRunSync()
 ```
 
 This would result in:
@@ -42,4 +43,5 @@ This would result in:
 ```scala mdoc
 time(naive(30).unsafeRunSync())
 time(clever(30).unsafeRunSync())
+time(loop(30).unsafeRunSync())
 ```
