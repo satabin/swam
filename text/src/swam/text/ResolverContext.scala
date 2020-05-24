@@ -31,7 +31,9 @@ case class ResolverContext(name: Id = NoId,
                            labels: Vector[Def] = Vector.empty,
                            typedefs: Vector[FuncType] = Vector.empty,
                            localNames: Vector[Vector[Id]] = Vector.empty,
-                           importAllowed: Boolean = true) {
+                           labelNames: Vector[Vector[Id]] = Vector.empty,
+                           importAllowed: Boolean = true,
+                           inFunction: Boolean = false) {
 
   def noImport: ResolverContext =
     if (importAllowed) copy(importAllowed = false) else this
@@ -42,11 +44,23 @@ case class ResolverContext(name: Id = NoId,
     else
       this
 
+  def withLabelNames(debug: Boolean): ResolverContext =
+    if (debug)
+      copy(labelNames = labelNames :+ Vector.empty)
+    else
+      this
+
   def isEmpty: Boolean =
     types.isEmpty && funcs.isEmpty && tables.isEmpty && mems.isEmpty && globals.isEmpty && locals.isEmpty && labels.isEmpty && typedefs.isEmpty
 
-  def pushLabel(lbl: Id, pos: Int): ResolverContext =
-    copy(labels = Def(lbl, pos) +: labels)
+  def pushLabel(lbl: Id, pos: Int, debug: Boolean): ResolverContext = {
+    val labelNames1 =
+      if (inFunction && debug)
+        labelNames.init :+ (labelNames.last :+ lbl)
+      else
+        labelNames
+    copy(labels = Def(lbl, pos) +: labels, labelNames = labelNames1)
+  }
 
   def popLabel: ResolverContext =
     copy(labels = labels.tail)
