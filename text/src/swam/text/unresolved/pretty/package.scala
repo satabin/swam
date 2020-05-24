@@ -66,7 +66,7 @@ package object pretty {
       tu match {
         case TypeUse(None, params, results) => functype(params, results)
         case TypeUse(Some(tpe), params, results) =>
-          line ++ group(nest(2, str("(type") ++ line ++ tpe.pretty ++ functype(params, results)))
+          line ++ group(nest(2, str("(type") ++ line ++ tpe.pretty ++ functype(params, results) ++ str(")")))
       }
   }
 
@@ -455,7 +455,7 @@ package object pretty {
     def pretty(gt: GlobalType): Doc =
       gt.mut match {
         case Mut.Const => gt.tpe.pretty
-        case Mut.Var   => str("(mut ") ++ gt.tpe.pretty
+        case Mut.Var   => str("(mut ") ++ gt.tpe.pretty ++ str(")")
       }
   }
 

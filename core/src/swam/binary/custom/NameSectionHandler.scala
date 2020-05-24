@@ -27,6 +27,11 @@ sealed trait NameSubsection
 case class ModuleName(name: String) extends NameSubsection
 case class FunctionNames(names: Map[Int, String]) extends NameSubsection
 case class LocalNames(names: Map[Int, Map[Int, String]]) extends NameSubsection
+case class LabelNames(names: Map[Int, Map[Int, String]]) extends NameSubsection
+case class TypeNames(names: Map[Int, String]) extends NameSubsection
+case class TableNames(names: Map[Int, String]) extends NameSubsection
+case class MemoryNames(names: Map[Int, String]) extends NameSubsection
+case class GlobalNames(names: Map[Int, String]) extends NameSubsection
 
 /** Handles the custom name section as defined in the specification.
   *  This may be used to help debug webassembly code.
@@ -48,6 +53,12 @@ object NameSectionHandler extends CustomSectionHandler[Names] {
       .|(1) { case FunctionNames(ns) => ns.toVector }(v => FunctionNames(v.toMap))(namemap)
       .|(2) { case LocalNames(ns) => ns.view.mapValues(_.toVector).toVector }(v =>
         LocalNames(v.map { case (k, v) => (k, v.toMap) }.toMap))(indirectnamemap)
+      .|(3) { case LabelNames(ns) => ns.view.mapValues(_.toVector).toVector }(v =>
+        LabelNames(v.map { case (k, v) => (k, v.toMap) }.toMap))(indirectnamemap)
+      .|(4) { case TypeNames(ns) => ns.toVector }(v => TypeNames(v.toMap))(namemap)
+      .|(5) { case TableNames(ns) => ns.toVector }(v => TableNames(v.toMap))(namemap)
+      .|(6) { case MemoryNames(ns) => ns.toVector }(v => MemoryNames(v.toMap))(namemap)
+      .|(7) { case GlobalNames(ns) => ns.toVector }(v => GlobalNames(v.toMap))(namemap)
 
   val codec: Codec[Names] = vector(subsection).as[Names]
 

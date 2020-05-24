@@ -39,18 +39,20 @@ import scala.collection.immutable.VectorBuilder
   */
 class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
 
-  private def resolveAll(instrs: Seq[Inst], ctx: ResolverContext): F[(Vector[r.Inst], ResolverContext)] =
+  private def resolveAll(instrs: Seq[Inst],
+                         ctx: ResolverContext,
+                         debug: Boolean): F[(Vector[r.Inst], ResolverContext)] =
     F.tailRecM((instrs, ctx, new VectorBuilder[r.Inst])) {
       case (Seq(), ctx, acc) => F.pure(Right((acc.result, ctx)))
       case (Seq(i, rest @ _*), ctx, acc) =>
-        resolve(i, ctx).map { case (i, ctx) => Left((rest, ctx, acc += i)) }
+        resolve(i, ctx, debug).map { case (i, ctx) => Left((rest, ctx, acc += i)) }
     }
 
   /** Resolves an instruction.
     *  The references to all declared elements are replaced by their index
     *  in the module.
     */
-  def resolve(instr: Inst, ctx: ResolverContext): F[(r.Inst, ResolverContext)] =
+  def resolve(instr: Inst, ctx: ResolverContext, debug: Boolean): F[(r.Inst, ResolverContext)] =
     instr match {
       case i32.Const(v: Int)          => F.pure((r.i32.Const(v), ctx))
       case i32.Clz()                  => F.pure((r.i32.Clz, ctx))
@@ -234,7 +236,8 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                          is,
                          endlabel,
                          ctx.copy(typedefs = ctx.typedefs ++ ctx1.typedefs),
-                         instr.pos)
+                         instr.pos,
+                         debug)
         }
       case Loop(label, tu @ TypeUse(tpe, params, result), is, endlabel) =>
         resolveTypeUse(tpe, params, result, ctx, instr.pos).flatMap {
@@ -244,7 +247,8 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                         is,
                         endlabel,
                         ctx.copy(typedefs = ctx.typedefs ++ ctx1.typedefs),
-                        instr.pos)
+                        instr.pos,
+                        debug)
         }
       case If(label, TypeUse(tpe, params, result), theni, elselabel, elsei, endlabel) =>
         resolveTypeUse(tpe, params, result, ctx, instr.pos).flatMap {
@@ -256,7 +260,8 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                       elsei,
                       endlabel,
                       ctx.copy(typedefs = ctx.typedefs ++ ctx1.typedefs),
-                      instr.pos)
+                      instr.pos,
+                      debug)
         }
       case Br(label)                                   => resolveIndex(label, instr.pos, ctx.labels, "label").map(idx => (r.Br(idx), ctx))
       case BrIf(label)                                 => resolveIndex(label, instr.pos, ctx.labels, "label").map(idx => (r.BrIf(idx), ctx))
@@ -287,18 +292,29 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
           F.raiseError(new ResolutionException(f"Unknown $kind with name $id", Seq(pos)))
     }
 
-  private def resolveBlock(label: Id, tpe: BlockType, is: Seq[Inst], endlabel: Id, ctx: ResolverContext, pos: Int)(
-      implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
+  private def resolveBlock(label: Id,
+                           tpe: BlockType,
+                           is: Seq[Inst],
+                           endlabel: Id,
+                           ctx: ResolverContext,
+                           pos: Int,
+                           debug: Boolean)(implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
     checkLabels(label, endlabel, pos).flatMap { _ =>
-      resolveAll(is, ctx.pushLabel(label, pos)).map {
-        case (is, ctx) => (r.Block(tpe, is), ctx.popLabel)
+      resolveAll(is, ctx.pushLabel(label, pos, debug), debug).map {
+        case (is, ctx) =>
+          (r.Block(tpe, is), ctx.popLabel)
       }
     }
 
-  private def resolveLoop(label: Id, tpe: BlockType, is: Seq[Inst], endlabel: Id, ctx: ResolverContext, pos: Int)(
-      implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
+  private def resolveLoop(label: Id,
+                          tpe: BlockType,
+                          is: Seq[Inst],
+                          endlabel: Id,
+                          ctx: ResolverContext,
+                          pos: Int,
+                          debug: Boolean)(implicit F: MonadError[F, Throwable]): F[(r.Inst, ResolverContext)] =
     checkLabels(label, endlabel, pos).flatMap { _ =>
-      resolveAll(is, ctx.pushLabel(label, pos)).map {
+      resolveAll(is, ctx.pushLabel(label, pos, debug), debug).map {
         case (is, ctx) => (r.Loop(tpe, is), ctx.popLabel)
       }
     }
@@ -310,12 +326,13 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                         elsei: Seq[Inst],
                         endlabel: Id,
                         ctx: ResolverContext,
-                        pos: Int): F[(r.Inst, ResolverContext)] =
+                        pos: Int,
+                        debug: Boolean): F[(r.Inst, ResolverContext)] =
     checkLabels(label, elselabel, pos).flatMap { _ =>
       checkLabels(label, endlabel, pos).flatMap { _ =>
-        resolveAll(theni, ctx.pushLabel(label, pos)).flatMap {
+        resolveAll(theni, ctx.pushLabel(label, pos, debug), debug).flatMap {
           case (theni, ctx) =>
-            resolveAll(elsei, ctx).map {
+            resolveAll(elsei, ctx, debug).map {
               case (elsei, ctx) =>
                 (r.If(tpe, theni, elsei), ctx.popLabel)
             }
@@ -474,7 +491,10 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                     for {
                       (idx, ctx1) <- resolveTypeUse(tpe, params, results, ctx, fld.pos)
                     } yield Left(
-                      (ctx.copy(typedefs = ctx.typedefs ++ ctx1.typedefs).withLocalNames(Vector(), debug),
+                      (ctx
+                         .copy(typedefs = ctx.typedefs ++ ctx1.typedefs)
+                         .withLabelNames(debug)
+                         .withLocalNames(Vector(), debug),
                        fields,
                        resolved.copy(imports = resolved.imports :+ r.Import
                          .Function(n1, n2, idx))))
@@ -507,9 +527,14 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
             case Function(_, TypeUse(tpe, params, results), locals, insts) =>
               for {
                 (idx, ctx1) <- resolveTypeUse(tpe, params, results, ctx, fld.pos)
-                ctx2 = ctx.copy(typedefs = ctx.typedefs ++ ctx1.typedefs,
-                                locals = ctx1.locals ++ locals.map(l => Def(l.id, l.pos)).toVector)
-                isctx <- resolveAll(insts, ctx2)
+                ctx2 = ctx
+                  .copy(
+                    typedefs = ctx.typedefs ++ ctx1.typedefs,
+                    locals = ctx1.locals ++ locals.map(l => Def(l.id, l.pos)).toVector,
+                    inFunction = true
+                  )
+                  .withLabelNames(debug)
+                isctx <- resolveAll(insts, ctx2, debug)
                 (insts, ctx3) = isctx
               } yield Left(
                 (ctx3.copy(locals = Vector.empty).noImport.withLocalNames(ctx2.locals, debug),
@@ -522,7 +547,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
               F.pure(Left((ctx.noImport, fields, resolved.copy(mems = resolved.mems :+ mt))))
             case Global(_, gt, init) =>
               for {
-                isctx <- resolveAll(init, ctx)
+                isctx <- resolveAll(init, ctx.copy(inFunction = false), debug)
                 (init, ctx) = isctx
               } yield Left((ctx.noImport, fields, resolved.copy(globals = resolved.globals :+ r.Global(gt, init))))
             case Export(n, desc) =>
@@ -568,13 +593,13 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
               for {
                 tidx <- resolveIndex(tidx, fld.pos, ctx.tables, "table")
                 init <- resolveIndices(init, fld.pos, ctx.funcs, "function")
-                isctx <- resolveAll(offset, ctx)
+                isctx <- resolveAll(offset, ctx.copy(inFunction = false), debug)
                 (offset, ctx) = isctx
               } yield Left((ctx, fields, resolved.copy(elem = resolved.elem :+ r.Elem(tidx, offset, init))))
             case Data(midx, offset, data) =>
               for {
                 midx <- resolveIndex(midx, fld.pos, ctx.mems, "memory")
-                isctx <- resolveAll(offset, ctx)
+                isctx <- resolveAll(offset, ctx.copy(inFunction = false), debug)
                 (offset, ctx) = isctx
               } yield Left(
                 (ctx,
@@ -619,6 +644,22 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
       case (Def(SomeId(n), _), idx) => Some(idx -> n)
       case _                        => None
     }.toMap))
+    val typeNames = Some(TypeNames(ctx.types.zipWithIndex.flatMap {
+      case (Def(SomeId(n), _), idx) => Some(idx -> n)
+      case _                        => None
+    }.toMap))
+    val tableNames = Some(TableNames(ctx.tables.zipWithIndex.flatMap {
+      case (Def(SomeId(n), _), idx) => Some(idx -> n)
+      case _                        => None
+    }.toMap))
+    val memNames = Some(MemoryNames(ctx.mems.zipWithIndex.flatMap {
+      case (Def(SomeId(n), _), idx) => Some(idx -> n)
+      case _                        => None
+    }.toMap))
+    val globalNames = Some(GlobalNames(ctx.globals.zipWithIndex.flatMap {
+      case (Def(SomeId(n), _), idx) => Some(idx -> n)
+      case _                        => None
+    }.toMap))
     val localNames = Some(LocalNames(ctx.localNames.zipWithIndex.map {
       case (locals, fidx) =>
         (fidx, locals.zipWithIndex.flatMap {
@@ -626,7 +667,15 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
           case _                => None
         }.toMap)
     }.toMap))
-    val names = Names(Vector(moduleName, funcNames, localNames).flatten)
+    val labelNames = Some(LabelNames(ctx.labelNames.zipWithIndex.map {
+      case (labels, fidx) =>
+        (fidx, labels.zipWithIndex.flatMap {
+          case (SomeId(n), idx) => Some(idx -> n)
+          case _                => None
+        }.toMap)
+    }.toMap))
+    val names = Names(
+      Vector(moduleName, funcNames, typeNames, tableNames, memNames, globalNames, localNames, labelNames).flatten)
     NameSectionHandler.codec.encode(names) match {
       case Attempt.Successful(bv) => F.pure(r.Section.Custom("name", bv))
       case Attempt.Failure(err)   => F.raiseError(new TextCompilerException(err.messageWithContext, Seq()))
