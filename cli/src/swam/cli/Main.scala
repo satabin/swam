@@ -1,19 +1,3 @@
-/*
- * Copyright 2020 Lucas Satabin
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package swam
 package cli
 
@@ -39,6 +23,8 @@ import fs2._
 import java.util.logging.{Formatter => JFormatter, LogRecord}
 import java.nio.file._
 import java.util.concurrent.TimeUnit
+
+import runtime.coverage._
 
 private object NoTimestampFormatter extends JFormatter {
   override def format(x: LogRecord): String =
@@ -77,6 +63,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val trace =
     Opts.flag("trace", "Trace WASM execution channels (default false)", short = "t").orFalse
 
+  val cov =
+    Opts.flag("instcov", "Run the WebAssembly module and gets coverage.", short = "v").orFalse
+
   val filter =
     Opts
       .option[String](
@@ -110,6 +99,13 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments).mapN {
       (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args) =>
         Run(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug)
+    }
+  }
+
+  val covOpts: Opts[Options] = Opts.subcommand("coverage", "Run a WebAssembly file") {
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments,cov).mapN {
+      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args,cov) =>
+        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug,cov)
     }
   }
 
@@ -159,20 +155,48 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
       } yield ()
   }
 
+  def doRunCov(module: Module[IO],
+            main: String,
+            preopenedDirs: List[Path],
+            args: List[String],
+            wasi: Boolean,
+            time: Boolean,
+            blocker: Blocker) = {
+    val logger = consoleLogger[IO]()
+    if (wasi)
+      Wasi[IO](preopenedDirs, main :: args, logger, blocker).use { wasi =>
+        for {
+          instance <- module.importing("wasi_snapshot_preview1", wasi).instantiate
+          main <- instance.exports.typed.function[Unit, Unit](main)
+          memory <- instance.exports.memory("memory")
+          _ <- wasi.mem.complete(memory)
+          //_ <- if (time) measureTime(logger, main()) else main()
+          r <- main()
+        } yield instance
+      }
+    else
+      for {
+        instance <- module.instantiate
+        main <- instance.exports.typed.function[Unit, Unit](main)
+        //_ <- if (time) measureTime(logger, main()) else main()
+        r <- main()
+      } yield instance
+  }
+
   val outFileOptions = List(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
 
   def main: Opts[IO[ExitCode]] =
-    runOpts.orElse(decompileOpts).orElse(validateOpts).orElse(compileOpts).map { opts =>
+    runOpts.orElse(covOpts).orElse(decompileOpts).orElse(validateOpts).orElse(compileOpts).map { opts =>
       Blocker[IO].use { blocker =>
         opts match {
           case Run(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug) =>
             for {
               tracer <- if (trace)
                 JULTracer[IO](blocker,
-                              traceFolder = ".",
-                              traceNamePattern = tracef.toAbsolutePath().toString(),
-                              filter = filter,
-                              formatter = NoTimestampFormatter).map(Some(_))
+                  traceFolder = ".",
+                  traceNamePattern = tracef.toAbsolutePath().toString(),
+                  filter = filter,
+                  formatter = NoTimestampFormatter).map(Some(_))
               else
                 IO(None)
               engine <- Engine[IO](blocker, tracer)
@@ -194,6 +218,23 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 .through(outPipe)
                 .compile
                 .drain
+            } yield ExitCode.Success
+          case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug,coverage) =>
+            for {
+              tracer <- if (trace)
+                JULTracer[IO](blocker,
+                  traceFolder = ".",
+                  traceNamePattern = tracef.toAbsolutePath().toString(),
+                  filter = filter,
+                  formatter = NoTimestampFormatter).map(Some(_))
+              else
+                IO(None)
+              engine <- Engine[IO](blocker, tracer)
+              tcompiler <- swam.text.Compiler[IO](blocker)
+              module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
+              compiled <- engine.compile(module)
+              instance <- doRunCov(compiled, main, dirs, args, wasi, time, blocker)
+              _ <- if(coverage) IO(CoverageType.instCoverage(file,instance)) else IO(None)
             } yield ExitCode.Success
           case Validate(file, wat, dev) =>
             val throwableFormat =
@@ -224,5 +265,4 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
         }
       }
     }
-
 }
