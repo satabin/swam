@@ -102,10 +102,10 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     }
   }
 
-  val covOpts: Opts[Options] = Opts.subcommand("coverage", "Run a WebAssembly file") {
-    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments,cov).mapN {
-      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args,cov) =>
-        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug,cov)
+  val covOpts: Opts[Options] = Opts.subcommand("coverage", "Run a WebAssembly file and generate coverage report") {
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments,cov,out).mapN {
+      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args,cov, out) =>
+        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug,cov,out)
     }
   }
 
@@ -219,7 +219,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 .compile
                 .drain
             } yield ExitCode.Success
-          case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug,coverage) =>
+          case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug,coverage,out) =>
             for {
               tracer <- if (trace)
                 JULTracer[IO](blocker,
@@ -234,7 +234,8 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
               module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
               compiled <- engine.compile(module)
               instance <- doRunCov(compiled, main, dirs, args, wasi, time, blocker)
-              _ <- if(coverage) IO(CoverageType.instCoverage(file,instance)) else IO(None)
+              //_ <- if(coverage) IO(CoverageType.instCoverage(file,instance)) else IO(None)
+              _ <- if(coverage) IO(CoverageType.instCoverage_updated(Option(out),file,instance,coverage)) else IO(None)
             } yield ExitCode.Success
           case Validate(file, wat, dev) =>
             val throwableFormat =
