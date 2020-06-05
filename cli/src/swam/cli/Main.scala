@@ -235,7 +235,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
               compiled <- engine.compile(module)
               instance <- doRunCov(compiled, main, dirs, args, wasi, time, blocker)
               //_ <- if(coverage) IO(CoverageType.instCoverage(file,instance)) else IO(None)
-              _ <- if(coverage) IO(CoverageType.instCoverage_updated(Option(out),file,instance,coverage)) else IO(None)
+              _ <- if(coverage) IO(CoverageType.instCoverage(Option(out),file,instance,coverage)) else IO(None)
             } yield ExitCode.Success
           case Validate(file, wat, dev) =>
             val throwableFormat =
