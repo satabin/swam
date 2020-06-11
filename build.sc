@@ -188,6 +188,29 @@ object runtime extends SwamModule with PublishModule {
 
 }
 
+
+object optin extends SwamModule with PublishModule {
+
+  def moduleDeps = Seq(core, runtime)
+
+  def ivyDeps = Agg(ivy"com.github.valskalla::odin-core:0.7.0")
+
+  def publishVersion = swamVersion
+
+  def artifactName = "swam-wasi"
+
+  def pomSettings =
+    PomSettings(
+      description = "Swam opt-in library",
+      organization = "org.gnieh",
+      url = swamUrl,
+      licenses = Seq(swamLicense),
+      versionControl = VersionControl.github("satabin", "swam"),
+      developers = Seq(swamDeveloper)
+    )
+
+}
+
 object wasi extends SwamModule with PublishModule {
 
   def moduleDeps = Seq(runtime)
