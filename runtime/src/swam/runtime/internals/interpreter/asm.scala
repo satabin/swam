@@ -49,11 +49,12 @@ sealed trait AsmInst[F[_]] {
   def execute(t: Frame[F]): Continuation[F]
 }
 
-class InstructionWrapper[F[_]](val inner: AsmInst[F], val listener: InstructionListener[F])(
-    implicit F: MonadError[F, Throwable])
+class InstructionWrapper[F[_]](val inner: AsmInst[F],
+                               val listener: InstructionListener[F],
+                               val functionName: Option[String])(implicit F: MonadError[F, Throwable])
     extends AsmInst[F] {
 
-  listener.init(inner)
+  listener.init(inner, functionName)
 
   override def execute(t: Frame[F]): Continuation[F] = {
     listener.before(inner, t)

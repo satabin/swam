@@ -7,24 +7,20 @@ import binary.ModuleStream
 import runtime.imports._
 import runtime.trace._
 import runtime.wasi.Wasi
-
 import cats.effect._
 import cats.implicits._
-
 import com.monovore.decline._
 import com.monovore.decline.effect._
-
 import io.odin._
 import io.odin.formatter.Formatter
 import io.odin.formatter.options.ThrowableFormat
-
 import fs2._
-
-import java.util.logging.{Formatter => JFormatter, LogRecord}
+import java.util.logging.{LogRecord, Formatter => JFormatter}
 import java.nio.file._
 import java.util.concurrent.TimeUnit
 
-import runtime.coverage._
+import optin.coverage._
+import swam.optin.coverage.{CoverageListener, CoverageReporter}
 
 private object NoTimestampFormatter extends JFormatter {
   override def format(x: LogRecord): String =
@@ -103,9 +99,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   }
 
   val covOpts: Opts[Options] = Opts.subcommand("coverage", "Run a WebAssembly file and generate coverage report") {
-    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments,cov,out).mapN {
-      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args,cov, out) =>
-        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug,cov,out)
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, cov, out).mapN {
+      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, cov, out) =>
+        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, cov, out)
     }
   }
 
@@ -156,12 +152,12 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   }
 
   def doRunCov(module: Module[IO],
-            main: String,
-            preopenedDirs: List[Path],
-            args: List[String],
-            wasi: Boolean,
-            time: Boolean,
-            blocker: Blocker) = {
+               main: String,
+               preopenedDirs: List[Path],
+               args: List[String],
+               wasi: Boolean,
+               time: Boolean,
+               blocker: Blocker) = {
     val logger = consoleLogger[IO]()
     if (wasi)
       Wasi[IO](preopenedDirs, main :: args, logger, blocker).use { wasi =>
@@ -193,10 +189,10 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
             for {
               tracer <- if (trace)
                 JULTracer[IO](blocker,
-                  traceFolder = ".",
-                  traceNamePattern = tracef.toAbsolutePath().toString(),
-                  filter = filter,
-                  formatter = NoTimestampFormatter).map(Some(_))
+                              traceFolder = ".",
+                              traceNamePattern = tracef.toAbsolutePath().toString(),
+                              filter = filter,
+                              formatter = NoTimestampFormatter).map(Some(_))
               else
                 IO(None)
               engine <- Engine[IO](blocker, tracer)
@@ -219,23 +215,25 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 .compile
                 .drain
             } yield ExitCode.Success
-          case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug,coverage,out) =>
+          case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug, coverage, out) =>
             for {
               tracer <- if (trace)
                 JULTracer[IO](blocker,
-                  traceFolder = ".",
-                  traceNamePattern = tracef.toAbsolutePath().toString(),
-                  filter = filter,
-                  formatter = NoTimestampFormatter).map(Some(_))
+                              traceFolder = ".",
+                              traceNamePattern = tracef.toAbsolutePath().toString(),
+                              filter = filter,
+                              formatter = NoTimestampFormatter).map(Some(_))
               else
                 IO(None)
-              engine <- Engine[IO](blocker, tracer)
+              coverageListener = CoverageListener[IO]()
+              engine <- Engine[IO](blocker, tracer, listener = Option(coverageListener))
               tcompiler <- swam.text.Compiler[IO](blocker)
               module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
               compiled <- engine.compile(module)
               instance <- doRunCov(compiled, main, dirs, args, wasi, time, blocker)
               //_ <- if(coverage) IO(CoverageType.instCoverage(file,instance)) else IO(None)
-              _ <- if(coverage) IO(CoverageType.instCoverage(Option(out),file,instance,coverage)) else IO(None)
+              _ <- if (coverage) IO(CoverageReporter.instCoverage(Option(out), file, coverageListener, coverage))
+              else IO(None)
             } yield ExitCode.Success
           case Validate(file, wat, dev) =>
             val throwableFormat =

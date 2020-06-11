@@ -44,7 +44,7 @@ object CoverageTests extends TestSuite {
     for (l <- list) {
       val ModuleCoverageInfo(m, c, t) = l
       if (m == "add")
-        assert(c == 3, t == 3) // 100 % percent covered
+        assert(c == 4, t == 4) // 100 % percent covered
     }
   }
 

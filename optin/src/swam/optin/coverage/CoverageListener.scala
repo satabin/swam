@@ -16,15 +16,14 @@ class CoverageListener[F[_]: Async] extends InstructionListener[F] {
   override def before(inner: AsmInst[F], frame: Frame[F]): Unit = {}
 
   override def after(inner: AsmInst[F], frame: Frame[F], result: Continuation[F]): Continuation[F] = {
-    if (!frame.isToplevel)
-      coverageMap = coverageMap.updated(inner, (frame.functionName.getOrElse("N/A"), 1))
-    else
-      coverageMap = coverageMap.updated(inner, ("N/A", 1))
+    val prev = coverageMap(inner)
+    coverageMap = coverageMap.updated(inner, (prev._1, 1))
+
     result
   }
 
-  override def init(inner: AsmInst[F]): Unit = {
-    coverageMap = coverageMap.updated(inner, ("N/A", 0))
+  override def init(inner: AsmInst[F], functionName: Option[String]): Unit = {
+    coverageMap = coverageMap.updated(inner, (functionName.getOrElse("N/A"), 0))
   }
 }
 

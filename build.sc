@@ -134,7 +134,7 @@ object generator extends SwamModule with PublishModule {
 
 object cli extends SwamModule {
 
-  def moduleDeps = Seq(text, core, runtime, wasi)
+  def moduleDeps = Seq(text, core, runtime, wasi, optin)
 
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
