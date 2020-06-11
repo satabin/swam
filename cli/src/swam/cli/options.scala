@@ -41,15 +41,16 @@ case class Validate(file: Path, wat: Boolean, dev: Boolean) extends Options
 case class Compile(file: Path, out: Path, debug: Boolean) extends Options
 
 case class WasmCov(file: Path,
-               args: List[String],
-               main: String,
-               wat: Boolean,
-               wasi: Boolean,
-               time: Boolean,
-               trace: Boolean,
-               traceFilter: String,
-               traceFile: Path,
-               dirs: List[Path],
-               debug: Boolean,
-               coverage:Boolean, out: Path)
-  extends Options
+                   args: List[String],
+                   main: String,
+                   wat: Boolean,
+                   wasi: Boolean,
+                   time: Boolean,
+                   trace: Boolean,
+                   traceFilter: String,
+                   traceFile: Path,
+                   dirs: List[Path],
+                   debug: Boolean,
+                   coverage: Boolean,
+                   out: Path)
+    extends Options
