@@ -31,36 +31,7 @@ case class ModuleCoverageInfo(methodName: String, coveredInst: Long, totalInst: 
 
 object CoverageType {
 
-  def buildCoverage(instance: Instance[IO]): ListBuffer[ModuleCoverageInfo] = {
-    val covList = new ListBuffer[ModuleCoverageInfo]();
-    instance.module.functions.foreach(f => {
-      val count = f.code
-        .collect {
-          case x: Coverage[IO] => {
-            x
-          }
-        }
-        .count(x => x.hitCount > 0)
-      instance.module.names.flatMap(_.subsections.collectFirstSome {
-        case FunctionNames(names) =>
-          //println(names.get(f.idx))
-          names.get(f.idx) match {
-            case Some(x) => {
-              val cc = ModuleCoverageInfo(x.toString, count, f.code.length)
-              covList += cc
-            }
-            case _ => {
-              val cc = ModuleCoverageInfo("N/A", count, f.code.length)
-              covList += cc
-            }
-          }
-          names.get(f.idx)
-        case _ =>
-          None
-      })
-    })
-    covList
-  }
+  def buildCoverage(instance: Instance[IO]): Unit = {}
 
   private def logCoverage(dir: Any, watOrWasm: Path, list: ListBuffer[ModuleCoverageInfo]): Unit = {
 
@@ -92,8 +63,8 @@ object CoverageType {
     *  @param instance the compiled webassembly functions in the Instance[F] form.
     */
   def instCoverage(dir: Any, watOrWasm: Path, instance: Instance[IO], logOrNot: Boolean) = {
-    val list = buildCoverage(instance)
-    if (logOrNot)
-      logCoverage(dir, watOrWasm, list)
+    //val list = buildCoverage(instance)
+
+    {}
   }
 }

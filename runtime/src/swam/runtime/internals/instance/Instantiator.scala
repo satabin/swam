@@ -26,8 +26,7 @@ import trace._
 import cats.effect._
 import cats.implicits._
 import swam.binary.custom.FunctionNames
-import swam.runtime.internals.interpreter.{AsmInst, Coverage}
-
+import swam.runtime.internals.interpreter.{AsmInst, InstructionListener, InstructionWrapper}
 
 private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F]) {
 
@@ -121,9 +120,11 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
             case _ =>
               None
           })
-        val toCover = code.map(c => new Coverage[F](c).asInstanceOf[AsmInst[F]])
-        new FunctionInstance[F](tpe, locals, toCover, instance, functionName)
-        //new FunctionInstance[F](tpe, locals, code, instance, functionName)
+        val toWrap = engine.instructionListener match {
+          case Some(listener) => code.map(c => new InstructionWrapper[F](c, listener).asInstanceOf[AsmInst[F]])
+          case None           => code
+        }
+        new FunctionInstance[F](tpe, locals, toWrap, instance, functionName)
     }
     instance.globals = iglobals ++ globals
     instance.tables = itables ++ module.tables.map {

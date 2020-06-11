@@ -49,13 +49,23 @@ sealed trait AsmInst[F[_]] {
   def execute(t: Frame[F]): Continuation[F]
 }
 
-class Coverage[F[_]](val inner: AsmInst[F])(implicit F: MonadError[F, Throwable]) extends AsmInst[F] {
-  var hitCount: Int = 0
+class InstructionWrapper[F[_]](val inner: AsmInst[F], val listener: InstructionListener[F])(
+    implicit F: MonadError[F, Throwable])
+    extends AsmInst[F] {
+
+  listener.init(inner)
+
   override def execute(t: Frame[F]): Continuation[F] = {
-    hitCount += 1
-    inner.execute(t)
+    listener.before(inner, t)
+    val result = inner.execute(t)
+    listener.after(inner, t, result)
   }
 }
+
+/*
+hitCount += 1
+    inner.execute(t)
+ */
 
 sealed trait Continuation[+F[_]]
 case object Continue extends Continuation[Nothing]

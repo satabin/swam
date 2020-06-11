@@ -21,7 +21,7 @@ package interpreter
 
 import instance.FunctionInstance
 
-private[runtime] trait Frame[F[_]] extends StackFrame {
+trait Frame[F[_]] extends StackFrame {
 
   def instance: FunctionInstance[F]
 
