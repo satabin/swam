@@ -50,26 +50,12 @@ sealed trait AsmInst[F[_]] {
 }
 
 class Coverage[F[_]](val inner: AsmInst[F])(implicit F: MonadError[F, Throwable]) extends AsmInst[F] {
-  var hitCount:Int = 0
+  var hitCount: Int = 0
   override def execute(t: Frame[F]): Continuation[F] = {
     hitCount += 1
     inner.execute(t)
-  }  
+  }
 }
-
-/*class BranchCoverage[F[_]](val inner: AsmInst[F])(implicit F: MonadError[F, Throwable]) extends AsmInst[F] {
-  var hitCount:Int = 0
-  override def execute(t: Frame[F]): Continuation[F] = {
-    if(t.fetch.getClass match {
-      case Some(x) => x.takeRight(4)
-      case _ => "no branches"
-      } == Jump)
-      hitCount += 1
-      inner.execute(t)
-  }  
-}*/
-
-
 
 sealed trait Continuation[+F[_]]
 case object Continue extends Continuation[Nothing]

@@ -3,19 +3,15 @@ import mill.eval._
 import mill.scalalib._
 import mill.scalalib.publish._
 import mill.scalalib.scalafmt._
-
 import ammonite.ops._
 import mill.modules.Jvm.runSubprocess
-
 import coursier.maven.MavenRepository
-
 import $file.jmh
 import jmh.Jmh
-
 import $file.mdoc
 import mdoc.MdocModule
-
 import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
+import runtime.ivy
 
 val swamVersion = "0.6.0-RC3"
 
@@ -155,7 +151,7 @@ object runtime extends SwamModule with PublishModule {
 
   def artifactName = "swam-runtime"
 
-  def ivyDeps = Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion", ivy"com.nrinaudo::kantan.csv:0.6.1")
+  def ivyDeps = Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion")
 
   def pomSettings =
     PomSettings(
@@ -179,11 +175,6 @@ object runtime extends SwamModule with PublishModule {
       def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
       def testFrameworks = Seq("swam.util.Framework")
     }
-
-    object coverage extends Tests with ScalafmtModule {
-      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
-      def testFrameworks = Seq("swam.util.Framework")
-    }
   }
 
 }
@@ -193,11 +184,11 @@ object optin extends SwamModule with PublishModule {
 
   def moduleDeps = Seq(core, runtime)
 
-  def ivyDeps = Agg(ivy"com.github.valskalla::odin-core:0.7.0")
+  def ivyDeps = Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion", ivy"com.nrinaudo::kantan.csv:0.6.1")
 
   def publishVersion = swamVersion
 
-  def artifactName = "swam-wasi"
+  def artifactName = "swam-optin"
 
   def pomSettings =
     PomSettings(
@@ -209,6 +200,17 @@ object optin extends SwamModule with PublishModule {
       developers = Seq(swamDeveloper)
     )
 
+
+  object test extends Tests with ScalafmtModule {
+
+    def testFrameworks = Seq("swam.util.Framework")
+
+    def ivyDeps =
+      Agg(ivy"com.lihaoyi::utest:0.7.4", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.9")
+
+    def moduleDeps = Seq(optin, text, util.test)
+
+  }
 }
 
 object wasi extends SwamModule with PublishModule {

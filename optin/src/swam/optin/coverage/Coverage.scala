@@ -1,15 +1,15 @@
 package swam
-package runtime
+package optin
 package coverage
 
 /**
- * Provides classes for dealing with Coverage information of WebAssembly information.
- *
- *  ==Overview==
- *
- * */
-import kantan.csv._ 
-import kantan.csv.ops._  
+  * Provides classes for dealing with Coverage information of WebAssembly information.
+  *
+  *  ==Overview==
+  *
+  * */
+import kantan.csv._
+import kantan.csv.ops._
 
 import scala.collection.mutable.ListBuffer
 
@@ -27,14 +27,12 @@ import java.util.logging._
 import java.nio.file.Path
 import java.io.File
 
-case class ModuleCoverageInfo(methodName: String, coveredInst : Long, totalInst : Long)  
+case class ModuleCoverageInfo(methodName: String, coveredInst: Long, totalInst: Long)
 
-/** Factory for [[swam.runtime.coverage.CoverageType]] instances. */
-object CoverageType{
+object CoverageType {
 
-  def buildCoverage(instance : Instance[IO]) : ListBuffer[ModuleCoverageInfo]= {
+  def buildCoverage(instance: Instance[IO]): ListBuffer[ModuleCoverageInfo] = {
     val covList = new ListBuffer[ModuleCoverageInfo]();
-    //println(instance.module.functions.foreach(f=>println(f)))
     instance.module.functions.foreach(f => {
       val count = f.code
         .collect {
@@ -48,11 +46,11 @@ object CoverageType{
           //println(names.get(f.idx))
           names.get(f.idx) match {
             case Some(x) => {
-              val cc= ModuleCoverageInfo(x.toString, count, f.code.length)              
+              val cc = ModuleCoverageInfo(x.toString, count, f.code.length)
               covList += cc
             }
             case _ => {
-              val cc= ModuleCoverageInfo("N/A", count, f.code.length)
+              val cc = ModuleCoverageInfo("N/A", count, f.code.length)
               covList += cc
             }
           }
@@ -64,28 +62,22 @@ object CoverageType{
     covList
   }
 
-  
-  private def logCoverage(dir: Any, watOrWasm: Path, list: ListBuffer[ModuleCoverageInfo]) : Unit = {
+  private def logCoverage(dir: Any, watOrWasm: Path, list: ListBuffer[ModuleCoverageInfo]): Unit = {
 
-    implicit val modEncoder: HeaderEncoder[ModuleCoverageInfo] = 
+    implicit val modEncoder: HeaderEncoder[ModuleCoverageInfo] =
       HeaderEncoder.caseEncoder("Method Name", "Covered Instruction", "Total Instruction")(ModuleCoverageInfo.unapply _)
 
     val fn = watOrWasm.getFileName.toString
     val index = fn.lastIndexOf('.')
-    val mn : String = fn.substring(0, index)
-    val logger:String = dir match {
-      case Some(x) => x.toString + "/" + mn +".ic.csv"
-      case _ => mn +".ic.csv"
+    val mn: String = fn.substring(0, index)
+    val logger: String = dir match {
+      case Some(x) => x.toString + "/" + mn + ".ic.csv"
+      case _       => mn + ".ic.csv"
     }
 
     val out = new File(logger)
 
     val writer = out.asCsvWriter[ModuleCoverageInfo](rfc.withHeader)
-
-    /*for (l <- list) {
-      val ModuleCoverageInfo(methodName, coveredInst, totalInst) = l
-      logger.println(s"${methodName}, ${coveredInst}, ${totalInst}")  
-    }*/
 
     list.map(f => {
       val ModuleCoverageInfo(m, c, t) = f
@@ -96,12 +88,12 @@ object CoverageType{
   }
 
   /** Creates a person with a given name and age.
-   *  @param watOrWasm the filename with absolute path
-   *  @param instance the compiled webassembly functions in the Instance[F] form.
-   */
-  def instCoverage(dir: Any, watOrWasm: Path,instance : Instance[IO], logOrNot: Boolean) = {
+    *  @param watOrWasm the filename with absolute path
+    *  @param instance the compiled webassembly functions in the Instance[F] form.
+    */
+  def instCoverage(dir: Any, watOrWasm: Path, instance: Instance[IO], logOrNot: Boolean) = {
     val list = buildCoverage(instance)
-    if(logOrNot)
+    if (logOrNot)
       logCoverage(dir, watOrWasm, list)
   }
 }
