@@ -463,7 +463,8 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
         ctx1.copy(labels = ctx1.labels.parent)
       }
 
-    val instrs = builder.result()
+    val instrs = builder.result().map(c => new Coverage[F](c).asInstanceOf[AsmInst[F]])
+    
     if (ctx.isToplevel) {
       // fixup the targets
       for ((target, fix) <- ctx2.errata)

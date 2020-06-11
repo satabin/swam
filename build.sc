@@ -155,7 +155,7 @@ object runtime extends SwamModule with PublishModule {
 
   def artifactName = "swam-runtime"
 
-  def ivyDeps = Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion")
+  def ivyDeps = Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion", ivy"com.nrinaudo::kantan.csv:0.6.1")
 
   def pomSettings =
     PomSettings(
@@ -176,6 +176,11 @@ object runtime extends SwamModule with PublishModule {
     def testFrameworks = Seq("swam.util.Framework")
 
     object trace extends Tests with ScalafmtModule {
+      def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
+      def testFrameworks = Seq("swam.util.Framework")
+    }
+
+    object coverage extends Tests with ScalafmtModule {
       def moduleDeps = super.moduleDeps ++ Seq(runtime.test)
       def testFrameworks = Seq("swam.util.Framework")
     }

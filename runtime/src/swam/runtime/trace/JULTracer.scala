@@ -62,7 +62,6 @@ class JULTracer(conf: TraceConfiguration, formatter: Formatter = PureFormatter) 
 
   def traceEvent(tpe: EventType, args: List[String]): Unit =
     logger.info(s"${tpe.entryName},${args.mkString(",")}${conf.separator}")
-
 }
 
 object JULTracer {
