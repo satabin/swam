@@ -122,6 +122,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
           })
         val toWrap = engine.instructionListener match {
           case Some(listener) =>
+            // TODO change functionName to some kind of "debugging" class
             code.map(c => new InstructionWrapper[F](c, listener, functionName).asInstanceOf[AsmInst[F]])
           case None => code
         }
