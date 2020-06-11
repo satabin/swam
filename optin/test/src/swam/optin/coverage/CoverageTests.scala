@@ -5,7 +5,7 @@ package coverage
 import java.nio.file.Paths
 
 import cats.effect.{Blocker, IO}
-import swam.runtime.{Engine, Instance}
+import swam.runtime.{Engine, Instance, Value}
 import swam.text.Compiler
 import utest._
 
@@ -16,46 +16,36 @@ import scala.collection.mutable.ListBuffer
   */
 object CoverageTests extends TestSuite {
 
-  def runCoverage(wasmFile: String): Instance[IO] = {
+  def runCoverage(wasmFile: String, main: String): CoverageListener[IO] = {
     implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
+    val coverageListener = CoverageListener[IO]()
 
-    val instance: Instance[IO] =
-      Blocker[IO]
-        .use { blocker =>
-          for {
-            engine <- Engine[IO](blocker, listener = Option(CoverageListener[IO]()))
-            tcompiler <- Compiler[IO](blocker)
-            m <- engine.compile(tcompiler.stream(Paths.get(wasmFile), true, blocker))
-            i <- m.instantiate
-          } yield i
-        }
-        .unsafeRunSync()
-    instance
+    Blocker[IO]
+      .use { blocker =>
+        for {
+          engine <- Engine[IO](blocker, listener = Option(coverageListener))
+          tcompiler <- Compiler[IO](blocker)
+          m <- engine.compile(tcompiler.stream(Paths.get(wasmFile), true, blocker))
+          i <- m.instantiate
+          f <- i.exports.function(main) // Calling function
+          _ <- f.invoke(Vector(Value.Int32(10), Value.Int32(10)), None)
+        } yield {}
+      }
+      .unsafeRunSync()
+    coverageListener
   }
 
   def test1(wasmFile: String) = {
 
-    runCoverage(wasmFile)
-    /*val list: ListBuffer[ModuleCoverageInfo] = CoverageType.buildCoverage(instance)
+    val listener = runCoverage(wasmFile, "add")
+
+    val list = CoverageReporter.buildCoverage(listener)
 
     for (l <- list) {
       val ModuleCoverageInfo(m, c, t) = l
-      assert(m == "add", c == 0, t == 4)
-    }*/
-  }
-
-  def test2(wasmFile: String) = {
-
-    runCoverage(wasmFile)
-    /*val add = instance.exports.typed.function[(Int, Int), Int]("add").unsafeRunSync()
-    add(1, 2).unsafeRunSync()
-    val list: ListBuffer[ModuleCoverageInfo] = CoverageType.buildCoverage(instance)
-
-    for (l <- list) {
-      val ModuleCoverageInfo(m, c, t) = l
-      assert(m == "add", c == 4, t == 4)
-    }*/
-
+      if (m == "add")
+        assert(c == 3, t == 3) // 100 % percent covered
+    }
   }
 
   val tests = Tests {
@@ -65,6 +55,5 @@ object CoverageTests extends TestSuite {
       */
     //"inst1" - runCoverage("runtime/test/resources/coverage-test/1_inst.wasm")
     "add" - test1("optin/test/resources/coverage-test/add.wat")
-    "addWithCov" - test2("optin/test/resources/coverage-test/add.wat")
   }
 }

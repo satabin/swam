@@ -29,11 +29,23 @@ import java.io.File
 
 case class ModuleCoverageInfo(methodName: String, coveredInst: Long, totalInst: Long)
 
-object CoverageType {
+object CoverageReporter {
 
-  def buildCoverage(instance: Instance[IO]): Unit = {}
+  def buildCoverage(listener: CoverageListener[IO]): List[ModuleCoverageInfo] = {
 
-  private def logCoverage(dir: Any, watOrWasm: Path, list: ListBuffer[ModuleCoverageInfo]): Unit = {
+    val covList = listener.coverageMap
+      .groupBy {
+        case (_, (name, _)) => name
+      }
+      .toList
+      .map {
+        case (name, map) => ModuleCoverageInfo(name, map.count(t => t._2._2 > 0), map.size)
+      }
+
+    covList
+  }
+
+  private def logCoverage(dir: Any, watOrWasm: Path, list: List[ModuleCoverageInfo]): Unit = {
 
     implicit val modEncoder: HeaderEncoder[ModuleCoverageInfo] =
       HeaderEncoder.caseEncoder("Method Name", "Covered Instruction", "Total Instruction")(ModuleCoverageInfo.unapply _)
@@ -62,9 +74,9 @@ object CoverageType {
     *  @param watOrWasm the filename with absolute path
     *  @param instance the compiled webassembly functions in the Instance[F] form.
     */
-  def instCoverage(dir: Any, watOrWasm: Path, instance: Instance[IO], logOrNot: Boolean) = {
-    //val list = buildCoverage(instance)
-
-    {}
+  def instCoverage(dir: Any, watOrWasm: Path, instance: CoverageListener[IO], logOrNot: Boolean) = {
+    val list = buildCoverage(instance)
+    if (logOrNot)
+      logCoverage(dir, watOrWasm, list)
   }
 }

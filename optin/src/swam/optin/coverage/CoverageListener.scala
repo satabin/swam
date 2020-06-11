@@ -11,14 +11,20 @@ import cats._
   */
 class CoverageListener[F[_]: Async] extends InstructionListener[F] {
 
-  var coverageMap = Map[AsmInst[F], Int]()
+  var coverageMap = Map[AsmInst[F], (String, Int)]()
 
   override def before(inner: AsmInst[F], frame: Frame[F]): Unit = {}
 
-  override def after(inner: AsmInst[F], frame: Frame[F], result: Continuation[F]): Continuation[F] = result
+  override def after(inner: AsmInst[F], frame: Frame[F], result: Continuation[F]): Continuation[F] = {
+    if (!frame.isToplevel)
+      coverageMap = coverageMap.updated(inner, (frame.functionName.getOrElse("N/A"), 1))
+    else
+      coverageMap = coverageMap.updated(inner, ("N/A", 1))
+    result
+  }
 
   override def init(inner: AsmInst[F]): Unit = {
-    coverageMap = coverageMap.updated(inner, 0)
+    coverageMap = coverageMap.updated(inner, ("N/A", 0))
   }
 }
 

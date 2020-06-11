@@ -463,6 +463,11 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
         ctx1.copy(labels = ctx1.labels.parent)
       }
 
+    if (ctx.isToplevel) {
+      // fixup the targets
+      for ((target, fix) <- ctx2.errata)
+        fix(ctx2.offsets(target))
+    }
     (builder.result(), ctx2)
   }
 
