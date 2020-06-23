@@ -24,11 +24,11 @@ import interpreter._
 import cats._
 import cats.implicits._
 
-private[runtime] case class FunctionInstance[F[_]](tpe: FuncType,
-                                                   locals: Vector[ValType],
-                                                   code: Array[AsmInst[F]],
-                                                   instance: Instance[F],
-                                                   name: Option[String])(implicit F: MonadError[F, Throwable])
+case class FunctionInstance[F[_]](tpe: FuncType,
+                                  locals: Vector[ValType],
+                                  code: Array[AsmInst[F]],
+                                  instance: Instance[F],
+                                  name: Option[String])(implicit F: MonadError[F, Throwable])
     extends Function[F] {
 
   var next: FunctionInstance[F] = _

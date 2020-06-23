@@ -63,11 +63,6 @@ class InstructionWrapper[F[_]](val inner: AsmInst[F],
   }
 }
 
-/*
-hitCount += 1
-    inner.execute(t)
- */
-
 sealed trait Continuation[+F[_]]
 case object Continue extends Continuation[Nothing]
 case class Suspend[F[_]](res: F[Vector[Long]]) extends Continuation[F]
@@ -294,7 +289,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       }
   }
 
-  class I32Const(v: Int) extends AsmInst[F] {
+  class I32Const(val v: Int) extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushInt(v)
       Continue
@@ -1576,7 +1571,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
-  class LocalGet(idx: Int) extends AsmInst[F] {
+  class LocalGet(val idx: Int) extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushValue(thread.local(idx))
       Continue
