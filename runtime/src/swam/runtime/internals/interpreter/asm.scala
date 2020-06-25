@@ -296,7 +296,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
-  class I64Const(v: Long) extends AsmInst[F] {
+  class I64Const(val v: Long) extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushLong(v)
       Continue
@@ -1551,7 +1551,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
-  class Drop(n: Int) extends AsmInst[F] {
+  class Drop(val n: Int) extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       thread.drop(n)
       Continue
@@ -2119,7 +2119,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       }
   }
 
-  class Call(fidx: Int) extends Invoking {
+  class Call(val fidx: Int) extends Invoking {
     def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.func(fidx)
       invoke(thread, f)

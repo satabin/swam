@@ -2,6 +2,7 @@ package swam
 package optin
 package simplifier
 
+import java.io.File
 import java.nio.file.Paths
 
 import cats.effect.{Blocker, IO}
@@ -12,6 +13,8 @@ import swam.runtime.{Engine, Instance, Value}
 import swam.text.Compiler
 import utest._
 
+import sys.process._
+import scala.language.postfixOps
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -31,16 +34,18 @@ object SimplifierTest extends TestSuite {
           m <- engine.compile(tcompiler.stream(Paths.get(wasmFile), true, blocker))
           i <- m.instantiate
           f <- i.exports.function(main) // Calling function
-          _ <- IO(extractor.symbolicEval(f.asInstanceOf[FunctionInstance[IO]]))
+          graph <- IO(extractor.symbolicEval(f.asInstanceOf[FunctionInstance[IO]]))
+          _ <- IO(println((s"echo '$graph'" #> new File(s"$wasmFile.dot")).!))
+          _ <- IO(println((s"dot -Tpng $wasmFile.dot -o $wasmFile.png").!))
         } yield {}
       }
       .unsafeRunSync()
     None
   }
 
-  def test1(wasmFile: String) = {
+  def test1(wasmFile: String, main: String = "add") = {
 
-    runCoverage(wasmFile, "add")
+    runCoverage(wasmFile, main)
 
   }
 
@@ -53,5 +58,6 @@ object SimplifierTest extends TestSuite {
     "add" - test1("optin/test/resources/coverage-test/add.wat")
     "add2" - test1("optin/test/resources/coverage-test/add2.wat")
     "add3" - test1("optin/test/resources/coverage-test/add3.wat")
+    "multi" - test1("optin/test/resources/coverage-test/if-nested.wat", "nested")
   }
 }
