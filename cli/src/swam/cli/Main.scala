@@ -123,47 +123,6 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
         RunServer(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, cov, out)
     }
   }
-
-  def measureTime[T](logger: Logger[IO], io: IO[T]): IO[T] =
-    for {
-      start <- Clock[IO].monotonic(TimeUnit.NANOSECONDS)
-      res <- io
-      end <- Clock[IO].monotonic(TimeUnit.NANOSECONDS)
-      _ <- logger.info(s"Execution took ${end - start}ns")
-    } yield res
-
-    def prepareFunction(module: Module[IO],
-            function_name: String,
-            preopenedDirs: List[Path],
-            args: List[String],
-            useWasi: Boolean,
-            blocker: Blocker): IO[() => IO[Unit]] = {
-        val logger = consoleLogger[IO]()
-        if (useWasi) {
-            Wasi[IO](preopenedDirs, function_name :: args, logger, blocker).use { wasi =>
-                for {
-                    instance <- module.importing("wasi_snapshot_preview1", wasi).instantiate
-                    exportedFunc <- instance.exports.typed.function[Unit, Unit](function_name)
-                    memory <- instance.exports.memory("memory")
-                    _ <- wasi.mem.complete(memory)
-                } yield exportedFunc
-            }
-        } else {
-            for {
-                instance <- module.instantiate
-                exportedFunc <- instance.exports.typed.function[Unit, Unit](function_name)
-            } yield exportedFunc
-        }
-    }
-
-  def executeFunction(preparedFunction: () => IO[Unit], time: Boolean): IO[Unit] = {
-    val logger = consoleLogger[IO]()
-    if (time)
-      measureTime(logger, preparedFunction())
-    else
-      preparedFunction()
-  }
-
   val outFileOptions = List(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
 
   def main: Opts[IO[ExitCode]] =
@@ -277,4 +236,44 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
         }
       }
     }
+
+    def prepareFunction(module: Module[IO],
+            function_name: String,
+            preopenedDirs: List[Path],
+            args: List[String],
+            useWasi: Boolean,
+            blocker: Blocker): IO[() => IO[Unit]] = {
+        val logger = consoleLogger[IO]()
+        if (useWasi) {
+          Wasi[IO](preopenedDirs, function_name :: args, logger, blocker).use { wasi =>
+            for {
+                instance <- module.importing("wasi_snapshot_preview1", wasi).instantiate
+                exportedFunc <- instance.exports.typed.function[Unit, Unit](function_name)
+                memory <- instance.exports.memory("memory")
+                _ <- wasi.mem.complete(memory)
+            } yield exportedFunc
+          }
+        } else {
+            for {
+                instance <- module.instantiate
+                exportedFunc <- instance.exports.typed.function[Unit, Unit](function_name)
+            } yield exportedFunc
+        }
+    }
+
+  def executeFunction(preparedFunction: () => IO[Unit], time: Boolean): IO[Unit] = {
+    val logger = consoleLogger[IO]()
+    if (time)
+      measureTime(logger, preparedFunction())
+    else
+      preparedFunction()
+  }
+
+  def measureTime[T](logger: Logger[IO], io: IO[T]): IO[T] =
+    for {
+      start <- Clock[IO].monotonic(TimeUnit.NANOSECONDS)
+      res <- io
+      end <- Clock[IO].monotonic(TimeUnit.NANOSECONDS)
+      _ <- logger.info(s"Execution took ${end - start}ns")
+    } yield res
 }
