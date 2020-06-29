@@ -7,8 +7,8 @@ import java.util.logging.{LogRecord, Formatter => JFormatter}
 
 import cats.effect._
 import cats.implicits._
-import com.monovore.decline._
-import com.monovore.decline.effect._
+import com.monovore.decline.{Opts}
+import com.monovore.decline.effect.{CommandIOApp}
 import io.odin._
 import io.odin.formatter.Formatter
 import io.odin.formatter.options.ThrowableFormat
@@ -147,7 +147,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 compiled <- engine.compile(module)
 
                 preparedFunction <- prepareFunction(compiled, main, dirs, args, wasi, blocker)
-                _ <- executeFunction(preparedFunction, time)
+                _ <- IO(executeFunction(preparedFunction, time))
               } yield ExitCode.Success
 
             // TODO: Delete this and make Option(coverageListener) in .instCoverage()
@@ -167,7 +167,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
                 compiled <- engine.compile(module)
                 preparedFunction <- prepareFunction(compiled, main, dirs, args, wasi, blocker)
-                _ <- executeFunction(preparedFunction, time)
+                _ <- IO(executeFunction(preparedFunction, time))
                 _ <- if (coverage) IO(CoverageReporter.instCoverage(Option(out), file, coverageListener, coverage))
                 else IO(None)
               } yield ExitCode.Success
@@ -264,12 +264,15 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     }
   }
 
-  def executeFunction(preparedFunction: () => IO[Unit], time: Boolean): IO[Unit] = {
+  def executeFunction(preparedFunction: () => IO[Unit], time: Boolean): Unit = {
     val logger = consoleLogger[IO]()
-    if (time)
-      measureTime(logger, preparedFunction())
-    else
-      preparedFunction()
+    Blocker[IO]
+      .use { _ =>
+        for {
+          res <- if (time) measureTime(logger, preparedFunction()) else preparedFunction()
+        } yield res
+      }
+      .unsafeRunSync()
   }
 
   def measureTime[T](logger: Logger[IO], io: IO[T]): IO[T] =
