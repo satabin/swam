@@ -68,3 +68,5 @@ log.txt
 *.lck
 
 *.log
+
+*.dat
