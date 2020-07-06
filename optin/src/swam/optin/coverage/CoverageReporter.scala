@@ -47,6 +47,7 @@ object CoverageReporter {
 
   private def logCoverage(dir: Any, watOrWasm: Path, list: List[ModuleCoverageInfo]): Unit = {
 
+    println("Covering")
     implicit val modEncoder: HeaderEncoder[ModuleCoverageInfo] =
       HeaderEncoder.caseEncoder("Method Name", "Covered Instruction", "Total Instruction")(ModuleCoverageInfo.unapply _)
 
@@ -60,6 +61,7 @@ object CoverageReporter {
 
     val out = new File(logger)
 
+    println(out)
     val writer = out.asCsvWriter[ModuleCoverageInfo](rfc.withHeader)
 
     list.map(f => {
@@ -76,7 +78,8 @@ object CoverageReporter {
     */
   def instCoverage(dir: Any, watOrWasm: Path, instance: CoverageListener[IO], logOrNot: Boolean) = {
     val list = buildCoverage(instance)
-    if (logOrNot)
-      logCoverage(dir, watOrWasm, list)
+    //if (logOrNot)
+    println("Reporting")
+    logCoverage(dir, watOrWasm, list)
   }
 }

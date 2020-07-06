@@ -53,7 +53,9 @@ private[wasi] trait FileOps[F[_]] extends WasiBase[F] {
       }
     }
 
-  def fdFdstatGet(fd: Fd, ptr: Pointer): F[Errno] =
+  def fdFdstatGet(fd: Fd, ptr: Pointer): F[Errno] = {
+    //println(fd)
+
     manager.getHandle(fd, 0) { handle =>
       (for {
         mem <- mem.get
@@ -63,6 +65,7 @@ private[wasi] trait FileOps[F[_]] extends WasiBase[F] {
         _ <- mem.writeLong(ptr + 1 + 2 + 8, handle.rightsInheriting)
       } yield success).handleErrorWith(t => logger.error("unable to write fd stat", t).as(io))
     }
+  }
 
   def fdFdstatSetFlags(fd: Fd, flags: FdFlags): F[Errno] =
     unimplemented("fd_fdstat_set_flags")
@@ -196,7 +199,8 @@ private[wasi] trait FileOps[F[_]] extends WasiBase[F] {
         }
     }
 
-  def fdRead(fd: Fd, iovs: Pointer, iovsSize: Size, nread: Pointer): F[Errno] =
+  def fdRead(fd: Fd, iovs: Pointer, iovsSize: Size, nread: Pointer): F[Errno] = {
+
     manager.getHandle(fd, Rights.FdRead) {
       case Handle(_, _, rights, _, path, channel) =>
         channel match {
@@ -232,8 +236,10 @@ private[wasi] trait FileOps[F[_]] extends WasiBase[F] {
             F.pure(isdir)
         }
     }
+  }
 
-  def fdReaddir(fd: Fd, buf: Pointer, bufLen: Size, dircookie: Dircookie, bufused: Pointer): F[Errno] =
+  def fdReaddir(fd: Fd, buf: Pointer, bufLen: Size, dircookie: Dircookie, bufused: Pointer): F[Errno] = {
+    println(s"$fd reading")
     manager.getHandle(fd, Rights.FdReaddir) { handle =>
       handle.filetype match {
         case Filetype.Directory =>
@@ -242,30 +248,33 @@ private[wasi] trait FileOps[F[_]] extends WasiBase[F] {
               F.delay(stream.skip(dircookie).toArray(Array.ofDim[Path](_)))
             })
             .flatMap { entries =>
-              mem.get.flatMap { mem =>
-                F.tailRecM((0, 0, buf, bufLen)) {
-                  case (idx, buf, bufused, bufLen) =>
-                    if (idx >= entries.length || bufLen == 0) {
-                      mem.writeInt(bufused, bufused).as(success.asRight[(Int, Int, Int, Int)])
-                    } else {
-                      val entry = entries(idx)
-                      val nameBytes = entry.getFileName().toString.getBytes("UTF-8").take(bufLen)
-                      val inode = blocker.delay(
-                        Option(Files.getAttribute(entry, "unix:ino").asInstanceOf[java.lang.Long]).map(_.longValue()))
-                      for {
-                        _ <- mem.writeLong(buf, dircookie + idx + 1)
-                        _ <- inode.flatMap {
-                          case Some(inode) => mem.writeLong(buf + 8, inode)
-                          case None        => F.unit
-                        }
-                        _ <- mem.writeInt(buf + 16, nameBytes.length)
-                        _ <- mem.writeByte(buf + 20, handle.filetype.value)
-                        _ <- mem.writeBytes(buf + 21, nameBytes)
-                      } yield (idx + 1,
-                               buf + 21 + nameBytes.length,
-                               bufused + 21 + nameBytes.length,
-                               bufLen - nameBytes.length).asLeft[Errno]
-                    }
+              {
+                println(entries)
+                mem.get.flatMap { mem =>
+                  F.tailRecM((0, 0, buf, bufLen)) {
+                    case (idx, buf, bufused, bufLen) =>
+                      if (idx >= entries.length || bufLen == 0) {
+                        mem.writeInt(bufused, bufused).as(success.asRight[(Int, Int, Int, Int)])
+                      } else {
+                        val entry = entries(idx)
+                        val nameBytes = entry.getFileName().toString.getBytes("UTF-8").take(bufLen)
+                        val inode = blocker.delay(
+                          Option(Files.getAttribute(entry, "unix:ino").asInstanceOf[java.lang.Long]).map(_.longValue()))
+                        for {
+                          _ <- mem.writeLong(buf, dircookie + idx + 1)
+                          _ <- inode.flatMap {
+                            case Some(inode) => mem.writeLong(buf + 8, inode)
+                            case None        => F.unit
+                          }
+                          _ <- mem.writeInt(buf + 16, nameBytes.length)
+                          _ <- mem.writeByte(buf + 20, handle.filetype.value)
+                          _ <- mem.writeBytes(buf + 21, nameBytes)
+                        } yield (idx + 1,
+                                 buf + 21 + nameBytes.length,
+                                 bufused + 21 + nameBytes.length,
+                                 bufLen - nameBytes.length).asLeft[Errno]
+                      }
+                  }
                 }
               }
             }
@@ -274,6 +283,7 @@ private[wasi] trait FileOps[F[_]] extends WasiBase[F] {
           F.pure(notdir)
       }
     }
+  }
 
   def fdRenumber(fd: Fd, to: Fd): F[Errno] =
     manager.handles
@@ -354,7 +364,7 @@ private[wasi] trait FileOps[F[_]] extends WasiBase[F] {
       }
     }
 
-  def fdWrite(fd: Fd, iovs: Pointer, iovsSize: Size, nwritten: Pointer): F[Errno] =
+  def fdWrite(fd: Fd, iovs: Pointer, iovsSize: Size, nwritten: Pointer): F[Errno] = {
     manager.getHandle(fd, Rights.FdWrite) {
       case Handle(_, _, rights, _, path, channel) =>
         channel match {
@@ -365,7 +375,8 @@ private[wasi] trait FileOps[F[_]] extends WasiBase[F] {
               written <- blocker.delay(channel.write(buffers))
               _ <- mem.writeInt(nwritten, written.toInt)
             } yield success).handleErrorWith(t => logger.error(s"could not write to file $path", t).as(io))
-          case Some(channel: WritableByteChannel) =>
+          case Some(channel: WritableByteChannel) => {
+
             // lets emulate the behavior of a gathering channel
             (for {
               mem <- mem.get
@@ -375,11 +386,14 @@ private[wasi] trait FileOps[F[_]] extends WasiBase[F] {
               }
               _ <- mem.writeInt(nwritten, written.toInt)
             } yield success).handleErrorWith(t => logger.error(s"could not write to file $path", t).as(io))
-          case Some(_) =>
+          }
+          case Some(_) => {
             F.raiseError(new WasiException(s"fd $path should be writable. This is a bug"))
+          }
           case None =>
             F.pure(isdir)
         }
     }
+  }
 
 }

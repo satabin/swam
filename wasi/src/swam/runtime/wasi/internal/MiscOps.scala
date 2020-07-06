@@ -20,8 +20,9 @@ package wasi
 package internal
 
 import cats.implicits._
-
 import java.security.SecureRandom
+
+import cats.effect.ExitCode
 
 private[wasi] trait MiscOps[F[_]] extends WasiBase[F] {
 

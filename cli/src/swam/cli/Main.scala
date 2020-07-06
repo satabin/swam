@@ -137,17 +137,18 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
       Wasi[IO](preopenedDirs, main :: args, logger, blocker).use { wasi =>
         for {
           instance <- module.importing("wasi_snapshot_preview1", wasi).instantiate
-          main <- instance.exports.typed.function[Unit, Unit](main)
+          main <- instance.exports.function(main)
           memory <- instance.exports.memory("memory")
           _ <- wasi.mem.complete(memory)
-          _ <- if (time) measureTime(logger, main()) else main()
+          _ <- if (time) measureTime(logger, main.invoke(Vector(), Option(memory)))
+          else main.invoke(Vector(), Option(memory))
         } yield ()
       }
     else
       for {
         instance <- module.instantiate
-        main <- instance.exports.typed.function[Unit, Unit](main)
-        _ <- if (time) measureTime(logger, main()) else main()
+        main <- instance.exports.function(main)
+        _ <- if (time) measureTime(logger, main.invoke(Vector(), None)) else main.invoke(Vector(), None)
       } yield ()
   }
 
@@ -163,19 +164,20 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
       Wasi[IO](preopenedDirs, main :: args, logger, blocker).use { wasi =>
         for {
           instance <- module.importing("wasi_snapshot_preview1", wasi).instantiate
-          main <- instance.exports.typed.function[Unit, Unit](main)
+          main <- instance.exports.function(main)
           memory <- instance.exports.memory("memory")
           _ <- wasi.mem.complete(memory)
-          //_ <- if (time) measureTime(logger, main()) else main()
-          r <- main()
+          _ <- if (time) measureTime(logger, main.invoke(Vector(), Option(memory)))
+          else main.invoke(Vector(), Option(memory))
+          //r <- main()
         } yield instance
       }
     else
       for {
         instance <- module.instantiate
-        main <- instance.exports.typed.function[Unit, Unit](main)
+        main <- instance.exports.function(main)
         //_ <- if (time) measureTime(logger, main()) else main()
-        r <- main()
+        r <- main.invoke(Vector(), None)
       } yield instance
   }
 
@@ -230,10 +232,13 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
               tcompiler <- swam.text.Compiler[IO](blocker)
               module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
               compiled <- engine.compile(module)
-              instance <- doRunCov(compiled, main, dirs, args, wasi, time, blocker)
+              _ <- try {
+                doRunCov(compiled, main, dirs, args, wasi, time, blocker)
+              } catch {
+                case _: Exception => IO(println("Error"))
+              }
               //_ <- if(coverage) IO(CoverageType.instCoverage(file,instance)) else IO(None)
-              _ <- if (coverage) IO(CoverageReporter.instCoverage(Option(out), file, coverageListener, coverage))
-              else IO(None)
+              _ <- IO(CoverageReporter.instCoverage(Option(out), file, coverageListener, coverage))
             } yield ExitCode.Success
           case Validate(file, wat, dev) =>
             val throwableFormat =

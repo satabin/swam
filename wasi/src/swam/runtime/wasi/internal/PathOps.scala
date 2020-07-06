@@ -163,12 +163,7 @@ private[wasi] trait PathOps[F[_]] extends WasiBase[F] {
                 ).flatten
 
               blocker.delay[F, Handle](
-                Handle(Filetype.RegularFile,
-                       fdflags,
-                       parent.rightsInheriting,
-                       fsRightsInheriting,
-                       child,
-                       Some(FileChannel.open(child, ooptions: _*))))
+                Handle(Filetype.RegularFile, fdflags, 0, 0, child, Some(FileChannel.open(child, ooptions: _*))))
             }
 
           (for {
