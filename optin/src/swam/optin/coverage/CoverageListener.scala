@@ -38,23 +38,6 @@ class CoverageListener[F[_]: Async] extends InstructionListener[F] {
   override def after(inner: AsmInst[F], frame: Frame[F], result: Continuation[F]): Continuation[F] = {
     val prev = coverageMap(inner)
     coverageMap = coverageMap.updated(inner, (prev._1, 1))
-    /*
-    implicit val modEncoder: HeaderEncoder[ModuleCoverageInfo] =
-      HeaderEncoder.caseEncoder("Method Name", "Covered Instruction", "Total Instruction")(ModuleCoverageInfo.unapply _)
-
-    val logger: String = "test" + ".ic.csv"
-
-    val out = new File(logger)
-
-    val list = buildCoverage()
-    val writer = out.asCsvWriter[ModuleCoverageInfo](rfc.withHeader)
-
-    list.map(f => {
-      val ModuleCoverageInfo(m, c, t) = f
-      writer.write(ModuleCoverageInfo(m, c, t))
-    })
-
-    writer.close()*/
 
     result
   }

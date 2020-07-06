@@ -51,7 +51,7 @@ object CoverageReporter {
       HeaderEncoder.caseEncoder("Method Name", "Covered Instruction", "Total Instruction")(ModuleCoverageInfo.unapply _)
 
     val fn = watOrWasm.getFileName.toString
-    val index = fn.lastIndexOf('.')
+    val index = if (fn.lastIndexOf('.') > -1) fn.lastIndexOf('.') else fn.length
     val mn: String = fn.substring(0, index)
     val logger: String = dir match {
       case Some(x) => x.toString + "/" + mn + ".ic.csv"
