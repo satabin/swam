@@ -42,18 +42,25 @@ object Server {
       val argsParsed = parseMessage(receivedMessage, wasmArgTypes, bufferSize)
       println("Parsed arguments: " + argsParsed)
 
-      val result = Main.executeFunction(preparedFunction, argsParsed, time)
-      println(s"Result of calculation: $result")
-      if (logOrNot) {
-        println("Logging now")
-        CoverageReporter.instCoverage(coverage_out, watOrWasm, coverageListener, logOrNot)
+      // TODO: Forward exit code in return message as byte
+      try {
+        val result = Main.executeFunction(preparedFunction, argsParsed, time)
+        println(s"Result of calculation: $result")
+        if (logOrNot) {
+          println("Logging now")
+          CoverageReporter.instCoverage(coverage_out, watOrWasm, coverageListener, logOrNot)
+        }
+        writeSocket(clientSocket, "Calculation successful! Result: " + result)
+        println("Sent back message!")
+      } catch {
+        // case e: swam.runtime.StackOverflowException => println(e)
+        case e: Exception => {
+          println(e)
+          writeSocket(clientSocket, "Error: " + e)
+        }
+      } finally {
+        clientSocket.close()
       }
-
-      writeSocket(clientSocket, "Got the message!")
-
-      println("Sent back message!")
-
-      clientSocket.close()
     }
   }
 
