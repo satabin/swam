@@ -36,8 +36,9 @@ object Server {
       val clientSocket = server.accept()
       println("Connection accepted!")
 
-      val receivedMessage = readSocket(clientSocket)
+      val receivedMessage = readSocket(clientSocket, bufferSize)
       println("Received message!")
+      println(receivedMessage.mkString(" "))
 
       val argsParsed = parseMessage(receivedMessage, wasmArgTypes, bufferSize)
       println("Parsed arguments: " + argsParsed)
@@ -64,35 +65,8 @@ object Server {
     }
   }
 
-  def readSocket(socket: Socket): Array[Byte] = {
-
-    // Read Strings:
-    val reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"))
-    val line = reader.readLine() // reads a line of text
-    line.toCharArray.map(_.toByte)
-
-    // Does not recognise new line / EOF
-    // LazyList.continually(socket.getInputStream().read).takeWhile(_ != -1).map(_.toByte).toArray
-
-    // Does not recognise new line / EOF
-    // socket.getInputStream().readAllBytes()
-
-    // val bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream))
-    // var request = ""
-    // var line = ""
-    // do {
-    //   println("line: " + line)
-    //   line = bufferedReader.readLine()
-    //   println("line: " + line)
-    //   if (line == null) {
-    //     println("Stream terminated")
-    //     println("request: " + request)
-    //     return request
-    //   }
-    //   request += line + "\n"
-    // } while (line != "")
-    // println("request: " + request)
-    // request
+  def readSocket(socket: Socket, byteLength: Int): Array[Byte] = {
+     socket.getInputStream().readNBytes(byteLength)
   }
 
   def writeSocket(socket: Socket, string: String): Unit = {
