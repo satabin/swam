@@ -32,17 +32,18 @@ object Server {
     println(s"In listen! Required bufferSize: $bufferSize bytes")
 
     while (true) {
+      println("Waiting for connection!")
       val clientSocket = server.accept()
-      println("Accepted!")
+      println("Connection accepted!")
 
       val receivedMessage = readSocket(clientSocket)
-      println("receivedMessage: " + receivedMessage)
+      println("Received message!")
 
       val argsParsed = parseMessage(receivedMessage, wasmArgTypes, bufferSize)
-      println("argsParsed: " + argsParsed)
+      println("Parsed arguments: " + argsParsed)
 
       val result = Main.executeFunction(preparedFunction, argsParsed, time)
-      println(s"result: $result")
+      println(s"Result of calculation: $result")
       if (logOrNot) {
         println("Logging now")
         CoverageReporter.instCoverage(coverage_out, watOrWasm, coverageListener, logOrNot)
@@ -50,7 +51,7 @@ object Server {
 
       writeSocket(clientSocket, "Got the message!")
 
-      println("Finished writeSocket")
+      println("Sent back message!")
 
       clientSocket.close()
     }
@@ -61,7 +62,6 @@ object Server {
     // Read Strings:
     val reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"))
     val line = reader.readLine() // reads a line of text
-    println(s"line: $line")
     line.toCharArray.map(_.toByte)
 
     // Does not recognise new line / EOF
@@ -105,9 +105,10 @@ object Server {
     val parameterList = new ListBuffer[Value]()
     var byteIndex = 0
 
-    println(s"Before padding: ${new String(input.map(_.toChar))}; length: ${input.length}")
+    // Just in case message does not have required size:
+    println(s"Length before padding: ${input.length}")
     val paddedInput = input.padTo(requiredBufferSize, 0.toByte)
-    println(s"After padding: ${new String(paddedInput.map(_.toChar))}; length: ${paddedInput.length}")
+    println(s"Length after padding: ${paddedInput.length}")
 
     for (argType <- argsTypes) {
       argType match {
@@ -116,9 +117,7 @@ object Server {
           byteIndex += 4
         }
         case "Int64" => {
-          println(s"Sliced: ${new String(paddedInput.slice(byteIndex, byteIndex + 8).map(_.toChar))}")
           parameterList += Value.Int64(ByteBuffer.wrap(paddedInput.slice(byteIndex, byteIndex + 8)).getLong)
-          println("Updated parameterList: " + parameterList)
           byteIndex += 8
         }
         case "Float32" => {
