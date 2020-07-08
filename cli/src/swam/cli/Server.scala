@@ -43,7 +43,7 @@ object Server {
       val argsParsed = parseMessage(receivedMessage, wasmArgTypes, bufferSize)
       println("Parsed arguments: " + argsParsed)
 
-      // TODO: Forward exit code in return message as byte
+      var exitCode = 0
       try {
         val result = Main.executeFunction(preparedFunction, argsParsed, time)
         println(s"Result of calculation: $result")
@@ -51,33 +51,26 @@ object Server {
           println("Logging now")
           CoverageReporter.instCoverage(coverage_out, watOrWasm, coverageListener, logOrNot)
         }
-        writeSocket(clientSocket, "Calculation successful! Result: " + result)
-        println("Sent back message!")
+        // writeSocket(clientSocket, "Calculation successful! Result: " + result)
       } catch {
         // case e: swam.runtime.StackOverflowException => println(e)
         case e: Exception => {
+          // writeSocket(clientSocket, "Error: " + e)
           println(e)
-          writeSocket(clientSocket, "Error: " + e)
+          exitCode = 1
         }
-      } finally {
-        clientSocket.close()
       }
+      val emptyCoverage = new Array[Byte](65536)  // Blank coverage every run (better when concurrent?)
+      val filledCoverage = randomCoverageFiller(emptyCoverage)
+      val message = serializeMessage(exitCode, filledCoverage)
+      writeSocket(clientSocket, message)
+      println("Sent back message!")
+      clientSocket.close()
     }
   }
 
   def readSocket(socket: Socket, byteLength: Int): Array[Byte] = {
      socket.getInputStream().readNBytes(byteLength)
-  }
-
-  def writeSocket(socket: Socket, string: String): Unit = {
-    val out: PrintWriter = new PrintWriter(new OutputStreamWriter(socket.getOutputStream))
-    out.println(string)
-    out.flush()
-
-    // val writer = new PrintWriter(clientSocket.getOutputStream(), true)
-
-    // val writer = new PrintStream(s.getOutputStream())
-    // writer.flush()
   }
 
   // Parses received message to Wasm Input (Int32, Int64, Float32, Float64)
@@ -114,6 +107,30 @@ object Server {
       }
     }
     parameterList.toVector
+  }
+
+  def writeSocketString(socket: Socket, string: String): Unit = {
+    val out: PrintWriter = new PrintWriter(new OutputStreamWriter(socket.getOutputStream))
+    out.println(string)
+    out.flush()
+  }
+
+  def writeSocket(socket: Socket, message: Array[Byte]): Unit = {
+    socket.getOutputStream().write(message)
+  }
+
+  def randomCoverageFiller(coverage: Array[Byte]): Array[Byte] ={
+    val r = scala.util.Random
+    for (_ <- 0 until 10) {
+      val randomIndex = r.nextInt(coverage.size - 1)
+      coverage(randomIndex) = (coverage(randomIndex).toInt + 1).toByte
+      println(s"coverage($randomIndex): ${coverage(randomIndex)}")
+    }
+    coverage
+  }
+
+  def serializeMessage(exitCode: Int, coverage: Array[Byte]): Array[Byte] = {
+    exitCode.toByte +: coverage
   }
 
   // AFL's input length will be varying a lot - we need to know what the required Byte Array size is for
