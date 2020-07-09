@@ -67,6 +67,7 @@ site/output
 log.txt
 *.lck
 
-*.log
-
-*.dat
+# Fuzzer
+fuzzer/*.log
+fuzzer/*.dat
+**/fuzzer/in
