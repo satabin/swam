@@ -13,6 +13,9 @@ import cats.effect.IO
 import swam.optin.coverage.{CoverageListener, CoverageReporter}
 import swam.runtime.{Function, Value}
 
+import scala.util.control.Breaks._
+
+// TODO: Read port from env-variable SWAM_SOCKET_PORT
 object Server {
   val maxQueue = 50000
   val server = new ServerSocket(9999, maxQueue)
@@ -32,45 +35,52 @@ object Server {
     println(s"In listen! Required bufferSize: $bufferSize bytes")
 
     while (true) {
-      println("Waiting for connection!")
-      val clientSocket = server.accept()
-      println("Connection accepted!")
+      breakable {
+        println("Waiting for connection!")
+        val clientSocket = server.accept()
+        println("Connection accepted!")
 
-      val receivedMessage = readSocket(clientSocket, bufferSize)
-      println("Received message!")
-      println(receivedMessage.mkString(" "))
-
-      val argsParsed = parseMessage(receivedMessage, wasmArgTypes, bufferSize)
-      println("Parsed arguments: " + argsParsed)
-
-      var exitCode = 0
-      try {
-        val result = Main.executeFunction(preparedFunction, argsParsed, time)
-        println(s"Result of calculation: $result")
-        if (logOrNot) {
-          println("Logging now")
-          CoverageReporter.instCoverage(coverage_out, watOrWasm, coverageListener, logOrNot)
+        val receivedMessage = readSocket(clientSocket, bufferSize)
+        if(receivedMessage.length == 0) {
+          println("Connection broke!")
+          break
         }
-        // writeSocket(clientSocket, "Calculation successful! Result: " + result)
-      } catch {
-        // case e: swam.runtime.StackOverflowException => println(e)
-        case e: Exception => {
-          // writeSocket(clientSocket, "Error: " + e)
-          println(e)
-          exitCode = 1
+
+        println("Received message!")
+        println(receivedMessage.mkString(" "))
+
+        val argsParsed = parseMessage(receivedMessage, wasmArgTypes, bufferSize)
+        println("Parsed arguments: " + argsParsed)
+
+        var exitCode = 0
+        try {
+          val result = Main.executeFunction(preparedFunction, argsParsed, time)
+          println(s"Result of calculation: $result")
+          if (logOrNot) {
+            println("Logging now")
+            CoverageReporter.instCoverage(coverage_out, watOrWasm, coverageListener, logOrNot)
+          }
+          // writeSocket(clientSocket, "Calculation successful! Result: " + result)
+        } catch {
+          // case e: swam.runtime.StackOverflowException => println(e)
+          case e: Exception => {
+            // writeSocket(clientSocket, "Error: " + e)
+            println(e)
+            exitCode = 1
+          }
         }
+        val emptyCoverage = new Array[Byte](65536) // Blank coverage every run (better when concurrent?)
+        val filledCoverage = randomCoverageFiller(emptyCoverage)
+        val message = serializeMessage(exitCode, filledCoverage)
+        writeSocket(clientSocket, message)
+        println("Sent back message!")
+        clientSocket.close()
       }
-      val emptyCoverage = new Array[Byte](65536)  // Blank coverage every run (better when concurrent?)
-      val filledCoverage = randomCoverageFiller(emptyCoverage)
-      val message = serializeMessage(exitCode, filledCoverage)
-      writeSocket(clientSocket, message)
-      println("Sent back message!")
-      clientSocket.close()
     }
   }
 
   def readSocket(socket: Socket, byteLength: Int): Array[Byte] = {
-     socket.getInputStream().readNBytes(byteLength)
+    socket.getInputStream().readNBytes(byteLength)
   }
 
   // Parses received message to Wasm Input (Int32, Int64, Float32, Float64)
@@ -119,7 +129,7 @@ object Server {
     socket.getOutputStream().write(message)
   }
 
-  def randomCoverageFiller(coverage: Array[Byte]): Array[Byte] ={
+  def randomCoverageFiller(coverage: Array[Byte]): Array[Byte] = {
     val r = scala.util.Random
     for (_ <- 0 until 10) {
       val randomIndex = r.nextInt(coverage.size - 1)
