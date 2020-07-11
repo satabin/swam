@@ -33,6 +33,8 @@ import java.nio.file.Path
 @module
 abstract class Wasi[@effect F[_]] {
 
+  val version: String
+
   val mem: Deferred[F, Memory[F]]
 
   @effectful(name = "args_get")

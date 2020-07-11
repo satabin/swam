@@ -137,7 +137,8 @@ private[wasi] object HandleManager {
     Rights.FdFilestatGet |
     Rights.FdFilestatSetSize |
     Rights.FdFilestatSetTimes |
-    Rights.PollFdReadwrite
+    Rights.PollFdReadwrite |
+    Rights.SockShutdown
 
   val RegularFilesInheritingRights: Rights = 0
 
