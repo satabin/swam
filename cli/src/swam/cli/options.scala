@@ -17,6 +17,8 @@
 package swam
 package cli
 
+import runtime.wasi.WasiOption
+
 import java.nio.file.Path
 
 sealed trait Options
@@ -26,6 +28,7 @@ case class Run(file: Path,
                main: String,
                wat: Boolean,
                wasi: Boolean,
+               wasiOptions: List[WasiOption],
                time: Boolean,
                trace: Boolean,
                traceFilter: String,

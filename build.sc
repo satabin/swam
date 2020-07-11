@@ -142,7 +142,8 @@ object cli extends SwamModule {
 
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
-    ivy"com.monovore::decline-effect:1.2.0"
+    ivy"com.monovore::decline-effect:1.2.0",
+    ivy"com.monovore::decline-enumeratum:1.2.0"
   )
 
 }

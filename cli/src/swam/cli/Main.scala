@@ -22,13 +22,14 @@ import runtime._
 import binary.ModuleStream
 import runtime.imports._
 import runtime.trace._
-import runtime.wasi.Wasi
+import runtime.wasi.{Wasi, WasiOption}
 
 import cats.effect._
 import cats.implicits._
 
 import com.monovore.decline._
 import com.monovore.decline.effect._
+import com.monovore.decline.enumeratum._
 
 import io.odin._
 import io.odin.formatter.Formatter
@@ -71,6 +72,13 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val wasi =
     Opts.flag("wasi", "Program is using wasi (default false)", short = "W").orFalse
 
+  val wasiOptions =
+    Opts
+      .options[WasiOption](
+        "wasi-opt",
+        s"Implementation specific wasi options. Possible values are: ${WasiOption.values.map(_.entryName).mkString(", ")}")
+      .orEmpty
+
   val time =
     Opts.flag("time", "Measure execution time (default false)", short = "C").orFalse
 
@@ -107,9 +115,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     .option[Path]("out", "Save decompiled result in the given file. Prints to stdout if not provider", short = "o")
 
   val runOpts: Opts[Options] = Opts.subcommand("run", "Run a WebAssembly file") {
-    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments).mapN {
-      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args) =>
-        Run(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug)
+    (mainFun, wat, wasi, wasiOptions, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments).mapN {
+      (main, wat, wasi, wasiOptions, time, dirs, trace, traceFile, filter, debug, wasm, args) =>
+        Run(wasm, args, main, wat, wasi, wasiOptions, time, trace, filter, traceFile, dirs, debug)
     }
   }
 
@@ -138,13 +146,14 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
             preopenedDirs: List[Path],
             args: List[String],
             wasi: Boolean,
+            wasiOptions: List[WasiOption],
             time: Boolean,
             blocker: Blocker): IO[Unit] = {
     val logger = consoleLogger[IO]()
     if (wasi)
-      Wasi[IO](preopenedDirs, main :: args, logger, blocker).use { wasi =>
+      Wasi[IO](wasiOptions, preopenedDirs, main :: args, logger, blocker).use { wasi =>
         for {
-          instance <- module.importing("wasi_snapshot_preview1", wasi).instantiate
+          instance <- module.importing(wasi.version, wasi).instantiate
           main <- instance.exports.typed.function[Unit, Unit](main)
           memory <- instance.exports.memory("memory")
           _ <- wasi.mem.complete(memory)
@@ -165,7 +174,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     runOpts.orElse(decompileOpts).orElse(validateOpts).orElse(compileOpts).map { opts =>
       Blocker[IO].use { blocker =>
         opts match {
-          case Run(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug) =>
+          case Run(file, args, main, wat, wasi, wasiOptions, time, trace, filter, tracef, dirs, debug) =>
             for {
               tracer <- if (trace)
                 JULTracer[IO](blocker,
@@ -179,7 +188,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
               tcompiler <- swam.text.Compiler[IO](blocker)
               module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
               compiled <- engine.compile(module)
-              _ <- doRun(compiled, main, dirs, args, wasi, time, blocker)
+              _ <- doRun(compiled, main, dirs, args, wasi, wasiOptions, time, blocker)
             } yield ExitCode.Success
           case Decompile(file, textual, out) =>
             for {
