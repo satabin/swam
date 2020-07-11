@@ -43,6 +43,12 @@ abstract class Wasi[@effect F[_]] {
   @effectful(name = "args_sizes_get")
   def argsSizesGet(argc: Pointer, argvBufSize: Pointer): F[Errno]
 
+  @effectful(name = "clock_res_get")
+  def clockResGet(id: Clockid, resolution: Pointer): F[Errno]
+
+  @effectful(name = "clock_time_get")
+  def clockTimeGet(id: Clockid, precision: Timestamp, time: Pointer): F[Errno]
+
   @effectful(name = "environ_get")
   def environGet(environ: Pointer, buf: Pointer): F[Errno]
 
