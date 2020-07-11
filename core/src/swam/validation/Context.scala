@@ -119,7 +119,7 @@ case class Context[F[_]](types: Vector[FuncType],
   private def extractType(bt: BlockType, loop: Boolean): F[(Vector[ValType], Int)] =
     bt match {
       case BlockType.NoType         => F.pure((Vector.empty, 0))
-      case BlockType.ValueType(tpe) => F.pure((Vector(tpe), 0))
+      case BlockType.ValueType(tpe) => F.pure((if (loop) Vector.empty else Vector(tpe), 0))
       case BlockType.FunctionType(tpeIdx) =>
         types.lift(tpeIdx) match {
           case Some(FuncType(params, results)) =>

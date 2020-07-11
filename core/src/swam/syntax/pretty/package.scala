@@ -250,10 +250,10 @@ package object pretty {
         case Unreachable => str("unreachable")
 
         case Block(tpe, is) =>
-          group(str("block") ++ space ++ tpe.pretty ++ nest(2, group(line ++ seq(line, is)) ++ line ++ str("end")))
+          group(str("block") ++ space ++ tpe.pretty ++ nest(2, group(line ++ seq(line, is))) ++ line ++ str("end"))
 
         case Loop(tpe, is) =>
-          group(str("loop") ++ space ++ tpe.pretty ++ nest(2, group(line ++ seq(line, is)) ++ line ++ str("end")))
+          group(str("loop") ++ space ++ tpe.pretty ++ nest(2, group(line ++ seq(line, is))) ++ line ++ str("end"))
 
         case If(tpe, t, e) =>
           group(
