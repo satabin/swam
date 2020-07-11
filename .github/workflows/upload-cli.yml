@@ -1,8 +1,11 @@
-name: CI
+name: CLI
 
 on:
   release:
-    types: [published]
+    types:
+      - published
+      - prereleased
+      - released
 
 env:
   GITHUB_TOKEN: ${{ github.token }}
