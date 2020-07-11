@@ -37,4 +37,6 @@ private[wasi] class WasiImpl[F[_]](
     with FileOps[F]
     with PathOps[F]
     with SockOps[F]
-    with MiscOps[F]
+    with MiscOps[F] {
+  val version = "wasi_snapshot_preview1"
+}

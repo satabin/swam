@@ -124,8 +124,12 @@ private[wasi] trait PathOps[F[_]] extends WasiBase[F] {
                opened: Pointer): F[Errno] =
     manager.getHandle(fd, Rights.PathOpen) { parent =>
       // check that required rights are a subset of inherited ones
-      if ((fsRightsBase & parent.rightsInheriting) != fsRightsBase) {
-        F.pure(perm)
+      if ((fsRightsBase & parent.rightsInheriting) != (fsRightsBase & Rights.allMask)) {
+        logger
+          .warn(s"""|Missing rights to open child of ${parent.path}.
+                    |Rights required: ${Rights.listRights(fsRightsBase).mkString(", ")}.
+                    |Rights allowed: ${Rights.listRights(parent.rightsInheriting).mkString(", ")}.""".stripMargin)
+          .as(perm)
       } else if (Oflags.hasRights(oflags, parent.rightsBase) &&
                  FdFlags.hasRights(fdflags, parent.rightsBase)) {
         childFile(parent.path, pathOffset, pathSize) { child =>
