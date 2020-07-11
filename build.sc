@@ -25,9 +25,9 @@ val swamUrl = "https://github.com/satabin/swam"
 
 val swamDeveloper = Developer("satabin", "Lucas Satabin", "https://github.com/satabin")
 
-val fs2Version = "2.3.0"
+val fs2Version = "2.4.2"
 
-val pureconfigVersion = "0.12.3"
+val pureconfigVersion = "0.13.0"
 
 trait SwamModule extends ScalaModule with ScalafmtModule {
 
@@ -55,15 +55,15 @@ object core extends SwamModule with PublishModule {
 
   def ivyDeps =
     Agg(
-      ivy"com.beachape::enumeratum:1.5.15",
+      ivy"com.beachape::enumeratum:1.6.1",
       ivy"co.fs2::fs2-core:$fs2Version",
       ivy"co.fs2::fs2-io:$fs2Version",
       ivy"org.scodec::scodec-stream:2.0.0",
       ivy"com.github.pureconfig::pureconfig-generic:$pureconfigVersion",
       ivy"com.github.pureconfig::pureconfig-cats-effect:$pureconfigVersion",
       ivy"org.scodec::scodec-core:1.11.7",
-      ivy"io.estatico::newtype:0.4.3",
-      ivy"org.scala-lang.modules::scala-collection-compat:2.1.5"
+      ivy"io.estatico::newtype:0.4.4",
+      ivy"org.scala-lang.modules::scala-collection-compat:2.1.6"
     )
 
   def publishVersion = swamVersion
@@ -91,7 +91,7 @@ object core extends SwamModule with PublishModule {
 object text extends SwamModule with PublishModule {
   def moduleDeps = Seq(core)
 
-  def ivyDeps = Agg(ivy"com.lihaoyi::fastparse:2.2.4", ivy"co.fs2::fs2-io:$fs2Version")
+  def ivyDeps = Agg(ivy"com.lihaoyi::fastparse:2.3.0", ivy"co.fs2::fs2-io:$fs2Version")
 
   def publishVersion = swamVersion
 
@@ -120,9 +120,9 @@ object generator extends SwamModule with PublishModule {
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
     ivy"com.github.scopt::scopt:3.7.1",
-    ivy"org.scalameta::scalafmt-dynamic:2.4.2",
-    ivy"org.scalatra.scalate::scalate-core:1.9.5",
-    ivy"org.json4s::json4s-jackson:3.7.0-M2"
+    ivy"org.scalameta::scalafmt-dynamic:2.6.3",
+    ivy"org.scalatra.scalate::scalate-core:1.9.6",
+    ivy"org.json4s::json4s-jackson:3.7.0-M4"
   )
 
   def pomSettings =
@@ -142,7 +142,7 @@ object cli extends SwamModule {
 
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
-    ivy"com.monovore::decline-effect:1.0.0"
+    ivy"com.monovore::decline-effect:1.2.0"
   )
 
 }
@@ -169,7 +169,7 @@ object runtime extends SwamModule with PublishModule {
 
   object test extends Tests with ScalafmtModule {
     def ivyDeps =
-      Agg(ivy"com.lihaoyi::utest:0.7.4", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.9")
+      Agg(ivy"com.lihaoyi::utest:0.7.4", ivy"com.github.pathikrit::better-files:3.9.1", ivy"com.lihaoyi::pprint:0.5.9")
 
     def moduleDeps = Seq(runtime, text, util.test)
 
@@ -220,7 +220,7 @@ object examples extends SwamModule with MdocModule {
 object util extends SwamModule {
 
   object test extends SwamModule {
-    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.4", ivy"com.github.pathikrit::better-files:3.8.0")
+    def ivyDeps = Agg(ivy"com.lihaoyi::utest:0.7.4", ivy"com.github.pathikrit::better-files:3.9.1")
   }
 
 }
