@@ -312,6 +312,7 @@ private[wasi] trait FileOps[F[_]] extends WasiBase[F] {
           }
           (for {
             newo <- newo
+            _ <- blocker.delay(channel.position(newo))
             mem <- mem.get
             _ <- mem.writeLong(newOffset, newo)
           } yield success).handleErrorWith(t => logger.error(s"unable to seek file $path", t).as(io))
