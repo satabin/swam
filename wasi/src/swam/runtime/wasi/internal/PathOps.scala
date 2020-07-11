@@ -20,12 +20,11 @@ package wasi
 package internal
 
 import cats.implicits._
+
 import java.nio.channels.FileChannel
 import java.nio.file._
 import java.nio.file.attribute._
 import java.util.concurrent.TimeUnit
-
-import cats.effect.IO
 
 private[wasi] trait PathOps[F[_]] extends WasiBase[F] {
 
@@ -125,8 +124,12 @@ private[wasi] trait PathOps[F[_]] extends WasiBase[F] {
                opened: Pointer): F[Errno] =
     manager.getHandle(fd, Rights.PathOpen) { parent =>
       // check that required rights are a subset of inherited ones
-      if (false) {
-        F.pure(perm)
+      if ((fsRightsBase & parent.rightsInheriting) != (fsRightsBase & Rights.allMask)) {
+        logger
+          .warn(s"""|Missing rights to open child of ${parent.path}.
+                    |Rights required: ${Rights.listRights(fsRightsBase).mkString(", ")}.
+                    |Rights allowed: ${Rights.listRights(parent.rightsInheriting).mkString(", ")}.""".stripMargin)
+          .as(perm)
       } else if (Oflags.hasRights(oflags, parent.rightsBase) &&
                  FdFlags.hasRights(fdflags, parent.rightsBase)) {
         childFile(parent.path, pathOffset, pathSize) { child =>
@@ -163,7 +166,12 @@ private[wasi] trait PathOps[F[_]] extends WasiBase[F] {
                 ).flatten
 
               blocker.delay[F, Handle](
-                Handle(Filetype.RegularFile, fdflags, 0, 0, child, Some(FileChannel.open(child, ooptions: _*))))
+                Handle(Filetype.RegularFile,
+                       fdflags,
+                       parent.rightsInheriting,
+                       fsRightsInheriting,
+                       child,
+                       Some(FileChannel.open(child, ooptions: _*))))
             }
 
           (for {

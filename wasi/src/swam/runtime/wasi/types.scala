@@ -289,35 +289,79 @@ object Errno extends ShortEnum[Errno] {
 }
 
 object Rights {
-  val FdDatasync: Rights = 0X0000000000000001L
-  val FdRead: Rights = 0X0000000000000002L
-  val FdSeek: Rights = 0X0000000000000004L
-  val FdFdstatSetFlags: Rights = 0X0000000000000008L
-  val FdSync: Rights = 0X0000000000000010L
-  val FdTell: Rights = 0X0000000000000020L
-  val FdWrite: Rights = 0X0000000000000040L
-  val FdAdvise: Rights = 0X0000000000000080L
-  val FdAllocate: Rights = 0X0000000000000100L
-  val PathCreateDirectory: Rights = 0X0000000000000200L
-  val PathCreateFile: Rights = 0X0000000000000400L
-  val PathLinkSource: Rights = 0X0000000000000800L
-  val PathLinkTarget: Rights = 0X0000000000001000L
-  val PathOpen: Rights = 0X0000000000002000L
-  val FdReaddir: Rights = 0X0000000000004000L
-  val PathReadlink: Rights = 0X0000000000008000L
-  val PathRenameSource: Rights = 0X0000000000010000L
-  val PathRenameTarget: Rights = 0X0000000000020000L
-  val PathFilestatGet: Rights = 0X0000000000040000L
-  val PathFilestatSetSize: Rights = 0X0000000000080000L
-  val PathFilestatSetTimes: Rights = 0X0000000000100000L
-  val FdFilestatGet: Rights = 0X0000000000200000L
-  val FdFilestatSetSize: Rights = 0X0000000000400000L
-  val FdFilestatSetTimes: Rights = 0X0000000000800000L
-  val PathSymlink: Rights = 0X0000000001000000L
-  val PathRemoveDirectory: Rights = 0X0000000002000000L
-  val PathUnlinkFile: Rights = 0X0000000004000000L
-  val PollFdReadwrite: Rights = 0X0000000008000000L
-  val SockShutdown: Rights = 0X0000000010000000L
+  val FdDatasync: Rights = 1L << 0
+  val FdRead: Rights = 1L << 1
+  val FdSeek: Rights = 1L << 2
+  val FdFdstatSetFlags: Rights = 1L << 3
+  val FdSync: Rights = 1L << 4
+  val FdTell: Rights = 1L << 5
+  val FdWrite: Rights = 1L << 6
+  val FdAdvise: Rights = 1L << 7
+  val FdAllocate: Rights = 1L << 8
+  val PathCreateDirectory: Rights = 1L << 9
+  val PathCreateFile: Rights = 1L << 10
+  val PathLinkSource: Rights = 1L << 11
+  val PathLinkTarget: Rights = 1L << 12
+  val PathOpen: Rights = 1L << 13
+  val FdReaddir: Rights = 1L << 14
+  val PathReadlink: Rights = 1L << 15
+  val PathRenameSource: Rights = 1L << 16
+  val PathRenameTarget: Rights = 1L << 17
+  val PathFilestatGet: Rights = 1L << 18
+  val PathFilestatSetSize: Rights = 1L << 19
+  val PathFilestatSetTimes: Rights = 1L << 20
+  val FdFilestatGet: Rights = 1L << 21
+  val FdFilestatSetSize: Rights = 1L << 22
+  val FdFilestatSetTimes: Rights = 1L << 23
+  val PathSymlink: Rights = 1L << 24
+  val PathRemoveDirectory: Rights = 1L << 25
+  val PathUnlinkFile: Rights = 1L << 26
+  val PollFdReadwrite: Rights = 1L << 27
+  val SockShutdown: Rights = 1L << 28
+
+  val all: List[(Rights, String)] =
+    List(
+      FdDatasync -> "FdDatasync",
+      FdRead -> "FdRead",
+      FdSeek -> "FdSeek",
+      FdFdstatSetFlags -> "FdFdstatSetFlags",
+      FdSync -> "FdSync",
+      FdTell -> "FdTell",
+      FdWrite -> "FdWrite",
+      FdAdvise -> "FdAdvise",
+      FdAllocate -> "FdAllocate",
+      PathCreateDirectory -> "PathCreateDirectory",
+      PathCreateFile -> "PathCreateFile",
+      PathLinkSource -> "PathLinkSource",
+      PathLinkTarget -> "PathLinkTarget",
+      PathOpen -> "PathOpen",
+      FdReaddir -> "FdReaddir",
+      PathReadlink -> "PathReadlink",
+      PathRenameSource -> "PathRenameSource",
+      PathRenameTarget -> "PathRenameTarget",
+      PathFilestatGet -> "PathFilestatGet",
+      PathFilestatSetSize -> "PathFilestatSetSize",
+      PathFilestatSetTimes -> "PathFilestatSetTimes",
+      FdFilestatGet -> "FdFilestatGet",
+      FdFilestatSetSize -> "FdFilestatSetSize",
+      FdFilestatSetTimes -> "FdFilestatSetTimes",
+      PathSymlink -> "PathSymlink",
+      PathRemoveDirectory -> "PathRemoveDirectory",
+      PathUnlinkFile -> "PathUnlinkFile",
+      PollFdReadwrite -> "PollFdReadwrite",
+      SockShutdown -> "SockShutdown"
+    )
+
+  val allMask = all.foldLeft(0L)((acc, r) => acc | r._1)
+
+  def listRights(rights: Rights): List[String] =
+    all.foldLeft(List.empty[String]) {
+      case (acc, (right, name)) =>
+        if ((rights & right) == 0)
+          acc
+        else
+          name :: acc
+    }
 }
 
 sealed abstract class Advice(val value: Byte) extends ByteEnumEntry
