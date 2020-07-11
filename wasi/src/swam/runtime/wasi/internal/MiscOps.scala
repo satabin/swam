@@ -25,7 +25,11 @@ import java.security.SecureRandom
 
 private[wasi] trait MiscOps[F[_]] extends WasiBase[F] {
 
-  private val random = SecureRandom.getInstanceStrong()
+  private val random =
+    if (options.contains(WasiOption.NonBlockingRNG))
+      SecureRandom.getInstance("NativePRNGNonBlocking")
+    else
+      SecureRandom.getInstance("NativePRNGBlocking")
 
   def pollOneoff(in: Pointer, out: Pointer, nsubscriptions: Size, nevents: Pointer): F[Errno] =
     unimplemented("poll_oneoff")

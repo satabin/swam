@@ -24,6 +24,8 @@ import imports.annotations._
 import cats.effect._
 import cats.effect.concurrent.Deferred
 
+import enumeratum._
+
 import io.odin.Logger
 
 import java.nio.file.Path
@@ -34,6 +36,8 @@ import java.nio.file.Path
 abstract class Wasi[@effect F[_]] {
 
   val version: String
+
+  val options: List[WasiOption]
 
   val mem: Deferred[F, Memory[F]]
 
@@ -210,12 +214,21 @@ abstract class Wasi[@effect F[_]] {
 
 object Wasi {
 
-  def apply[F[_]](preopenedDirs: List[Path], args: List[String], logger: Logger[F], blocker: Blocker)(
-      implicit F: Concurrent[F],
-      clock: Clock[F],
-      cs: ContextShift[F]): Resource[F, Wasi[F]] =
+  def apply[F[_]](
+      options: List[WasiOption],
+      preopenedDirs: List[Path],
+      args: List[String],
+      logger: Logger[F],
+      blocker: Blocker)(implicit F: Concurrent[F], clock: Clock[F], cs: ContextShift[F]): Resource[F, Wasi[F]] =
     Resource.liftF(Deferred[F, Memory[F]]).flatMap { mem =>
-      HandleManager[F](blocker, preopenedDirs, logger).map(new WasiImpl[F](args, _, mem, blocker, logger))
+      HandleManager[F](blocker, preopenedDirs, logger).map(new WasiImpl[F](options, args, _, mem, blocker, logger))
     }
 
+}
+
+sealed trait WasiOption extends EnumEntry with EnumEntry.Hyphencase
+object WasiOption extends Enum[WasiOption] {
+  case object NonBlockingRNG extends WasiOption
+
+  def values: IndexedSeq[WasiOption] = findValues
 }
