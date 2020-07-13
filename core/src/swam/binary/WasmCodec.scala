@@ -110,8 +110,8 @@ object WasmCodec extends InstCodec {
 
   val custom: Codec[(String, BitVector)] =
     variableSizeBytes(varuint32,
-                      (("name" | variableSizeBytes(varuint32, utf8)) ~
-                        ("payload" | scodec.codecs.bits)))
+                      ("name" | variableSizeBytes(varuint32, utf8)) ~
+                        ("payload" | scodec.codecs.bits))
 
   val section =
     discriminated[Section]
