@@ -46,7 +46,7 @@ private class Varuint(bits: Int) extends Codec[Int] {
     if (n <= 0) {
       Attempt.failure(Err("integer representation too long"))
     } else if (buffer.isEmpty) {
-      Attempt.failure(Err("unexpected end of input"))
+      Attempt.failure(Err.insufficientBits(8, 0))
     } else {
       val byte = buffer.head
       if (n >= 7 || (byte & 0x7f) < (1 << n)) {
@@ -95,8 +95,8 @@ private class Varint(bits: Int) extends Codec[Long] {
 
   private val bitsL = bits.toLong
 
-  val MaxValue = (1 << (bits - 1)) - 1
-  val MinValue = -(1 << (bits - 1))
+  val MaxValue = if (bits == 64) Long.MaxValue else (1L << (bits - 1)) - 1
+  val MinValue = if (bits == 64) Long.MinValue else -(1L << (bits - 1))
 
   private def description = s"$bits-bit signed leb128 integer"
 
@@ -110,7 +110,7 @@ private class Varint(bits: Int) extends Codec[Long] {
     if (n <= 0) {
       Attempt.failure(Err("integer representation too long"))
     } else if (buffer.isEmpty) {
-      Attempt.failure(Err("unexpected end of input"))
+      Attempt.failure(Err.insufficientBits(8, 0))
     } else {
       val byte = buffer.head
       val mask = (-1 << (n - 1)) & 0x7f

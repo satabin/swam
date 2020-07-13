@@ -54,6 +54,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val wasmFile =
     Opts.argument[Path](metavar = "wasm")
 
+  val readChunkSize =
+    Opts.option[Int]("read-chunk-size", "Size in bytes of the WASM file read buffer (default 1024)").withDefault(1024)
+
   val restArguments =
     Opts.arguments[String](metavar = "args").orEmpty
 
@@ -115,18 +118,30 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     .option[Path]("out", "Save decompiled result in the given file. Prints to stdout if not provider", short = "o")
 
   val runOpts: Opts[Options] = Opts.subcommand("run", "Run a WebAssembly file") {
-    (mainFun, wat, wasi, wasiOptions, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments).mapN {
-      (main, wat, wasi, wasiOptions, time, dirs, trace, traceFile, filter, debug, wasm, args) =>
-        Run(wasm, args, main, wat, wasi, wasiOptions, time, trace, filter, traceFile, dirs, debug)
+    (mainFun,
+     wat,
+     wasi,
+     wasiOptions,
+     time,
+     dirs,
+     trace,
+     traceFile,
+     filter,
+     debug,
+     wasmFile,
+     readChunkSize,
+     restArguments).mapN {
+      (main, wat, wasi, wasiOptions, time, dirs, trace, traceFile, filter, debug, wasm, readChunkSize, args) =>
+        Run(wasm, args, main, wat, wasi, wasiOptions, time, trace, filter, traceFile, dirs, debug, readChunkSize)
     }
   }
 
   val decompileOpts: Opts[Options] = Opts.subcommand("decompile", "Decompile a wasm file") {
-    (textual, wasmFile, out.orNone).mapN { (textual, wasm, out) => Decompile(wasm, textual, out) }
+    (wasmFile, textual, out.orNone, readChunkSize).mapN(Decompile(_, _, _, _))
   }
 
   val validateOpts: Opts[Options] = Opts.subcommand("validate", "Validate a wasm file") {
-    (wasmFile, wat, dev).mapN(Validate(_, _, _))
+    (wasmFile, wat, dev, readChunkSize).mapN(Validate(_, _, _, _))
   }
 
   val compileOpts: Opts[Options] = Opts.subcommand("compile", "Compile a wat file to wasm") {
@@ -174,7 +189,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     runOpts.orElse(decompileOpts).orElse(validateOpts).orElse(compileOpts).map { opts =>
       Blocker[IO].use { blocker =>
         opts match {
-          case Run(file, args, main, wat, wasi, wasiOptions, time, trace, filter, tracef, dirs, debug) =>
+          case Run(file, args, main, wat, wasi, wasiOptions, time, trace, filter, tracef, dirs, debug, readChunkSize) =>
             for {
               tracer <- if (trace)
                 JULTracer[IO](blocker,
@@ -186,17 +201,18 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 IO(None)
               engine <- Engine[IO](blocker, tracer)
               tcompiler <- swam.text.Compiler[IO](blocker)
-              module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
+              module = if (wat) tcompiler.stream(file, debug, blocker)
+              else engine.sections(file, blocker, chunkSize = readChunkSize)
               compiled <- engine.compile(module)
               _ <- doRun(compiled, main, dirs, args, wasi, wasiOptions, time, blocker)
             } yield ExitCode.Success
-          case Decompile(file, textual, out) =>
+          case Decompile(file, textual, out, readChunkSize) =>
             for {
               decompiler <- if (textual)
                 TextDecompiler[IO](blocker)
               else
                 RawDecompiler[IO]
-              doc <- decompiler.decompilePath(file, blocker)
+              doc <- decompiler.decompilePath(file, blocker, chunkSize = readChunkSize)
               outPipe = out.fold(fs2.io.stdout[IO](blocker))(fs2.io.file.writeAll[IO](_, blocker, outFileOptions))
               _ <- Stream
                 .emits(doc.render(10).getBytes("utf-8"))
@@ -204,7 +220,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 .compile
                 .drain
             } yield ExitCode.Success
-          case Validate(file, wat, dev) =>
+          case Validate(file, wat, dev, readChunkSize) =>
             val throwableFormat =
               if (dev)
                 ThrowableFormat(ThrowableFormat.Depth.Full, ThrowableFormat.Indent.Fixed(2))
@@ -215,7 +231,8 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
             for {
               engine <- Engine[IO](blocker)
               tcompiler <- swam.text.Compiler[IO](blocker)
-              module = if (wat) tcompiler.stream(file, false, blocker) else engine.sections(file, blocker)
+              module = if (wat) tcompiler.stream(file, false, blocker)
+              else engine.sections(file, blocker, chunkSize = readChunkSize)
               res <- engine.validate(module).attempt
               _ <- res.fold(t => logger.error("Module is invalid", t), _ => logger.info("Module is valid"))
             } yield ExitCode.Success
