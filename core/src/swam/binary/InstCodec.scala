@@ -487,11 +487,11 @@ trait InstCodec extends TypeCodec {
         case MemorySize =>
           constant(hex"00")
             .encode(())
-            .map(_ => BitVector.fromByte(OpCode.MemorySize.toByte))
+            .map(BitVector.fromByte(OpCode.MemorySize.toByte) ++ _)
         case MemoryGrow =>
           constant(hex"00")
             .encode(())
-            .map(_ => BitVector.fromByte(OpCode.MemoryGrow.toByte))
+            .map(BitVector.fromByte(OpCode.MemoryGrow.toByte) ++ _)
         case i32.Const(v) =>
           varint32
             .encode(v)
