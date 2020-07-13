@@ -72,8 +72,12 @@ object Server {
         val emptyCoverage = new Array[Byte](65536) // Blank coverage every run (better when concurrent?)
         val filledCoverage = randomCoverageFiller(emptyCoverage)
         val message = serializeMessage(exitCode, filledCoverage)
-        writeSocket(clientSocket, message)
-        println("Sent back message!")
+        try {
+          writeSocket(clientSocket, message)
+          println("Sent back message!")
+        } catch {
+          case e: java.net.SocketException => println(e)
+        }
         clientSocket.close()
       }
     }
