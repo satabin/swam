@@ -41,6 +41,7 @@ RUN mkdir $WASM_PATH_DOCKER
 WORKDIR $REPO_PATH_DOCKER
 
 # TODO: Find way of installing dependencies with Mill without copying over entire repo
+# See: https://stackoverflow.com/questions/62834693/mill-build-tool-install-dependencies-without-compiling-source-code
 
 ADD . $REPO_PATH_DOCKER
 
