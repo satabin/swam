@@ -1,6 +1,8 @@
 package swam
 package cli
 
+import com.typesafe.config.Config
+
 import scala.collection.mutable.ListBuffer
 
 // Simple server
@@ -14,11 +16,13 @@ import swam.optin.coverage.{CoverageListener, CoverageReporter}
 import swam.runtime.{Function, Value}
 
 import scala.util.control.Breaks._
+import com.typesafe.config.ConfigFactory
 
-// TODO: Read port from env-variable SWAM_SOCKET_PORT
+
 object Server {
+  val conf = ConfigFactory.load()
   val maxQueue = 50000
-  val server = new ServerSocket(9999, maxQueue)
+  val server = new ServerSocket(conf.getInt("swam.cli.server.port"), maxQueue)
 
   def listen(
       preparedFunction: IO[Function[IO]],

@@ -38,7 +38,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val wasmFile =
     Opts.argument[Path](metavar = "wasm")
 
-  // TODO: What is this for? Change this to Opts.options for more clarity (more verbose as well)?
+  // Arguments that get passed to the WASM code you execute. They are available through WASI args_get.
   val restArguments =
     Opts.arguments[String](metavar = "args").orEmpty
 
@@ -281,17 +281,17 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     }
 
   def prepareFunction(module: Module[IO],
-                      function_name: String,
+                      functionName: String,
                       preopenedDirs: List[Path],
                       args: List[String],
                       useWasi: Boolean,
                       blocker: Blocker): IO[Function[IO]] = {
     val logger = consoleLogger[IO]()
     if (useWasi) {
-      Wasi[IO](preopenedDirs, function_name :: args, logger, blocker).use { wasi =>
+      Wasi[IO](preopenedDirs, functionName :: args, logger, blocker).use { wasi =>
         for {
           instance <- module.importing("wasi_snapshot_preview1", wasi).instantiate
-          exportedFunc <- instance.exports.function(function_name)
+          exportedFunc <- instance.exports.function(functionName)
           memory <- instance.exports.memory("memory")
           _ <- wasi.mem.complete(memory)
 
@@ -300,7 +300,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     } else {
       for {
         instance <- module.instantiate
-        exportedFunc <- instance.exports.function(function_name)
+        exportedFunc <- instance.exports.function(functionName)
       } yield exportedFunc
     }
   }
