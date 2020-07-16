@@ -72,3 +72,4 @@ fuzzer/*.log
 fuzzer/*.dat
 **/fuzzer/in
 **/fuzzer/logs/*
+fuzzer/local.env
