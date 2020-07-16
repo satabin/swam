@@ -71,5 +71,7 @@ log.txt
 fuzzer/*.log
 fuzzer/*.dat
 **/fuzzer/in
+**/fuzzer/afl_out
+**/fuzzer/cpp_out
 **/fuzzer/logs/*
 fuzzer/local.env
