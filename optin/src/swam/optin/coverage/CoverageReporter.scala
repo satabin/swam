@@ -139,27 +139,28 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
    * @param instance
    * @param logOrNot
    */
-  def instCoverage(dir: Path, watOrWasm: Path, fil: Boolean, instance: CoverageListener[IO]) = {
+  def instCoverage(dir: Path, watOrWasm: Path, instance: CoverageListener[IO]) = {
 
     val report = buildCoverage(instance)
 
     val showmap = buildShowMap(instance)
 
-    if(fil){
+    logCoverage[IO](dir, watOrWasm, report, showmap)
+    //if(fil){
 
-      val def_undef_func:Set[String] = filter.WasiFilter.readWasiFile()
-      val filter_report = filter.WasiFilter.filterCoverageReport(def_undef_func, report.toList)
+      //val def_undef_func:Set[String] = filter.WasiFilter.readWasiFile()
+      //val filter_report = filter.WasiFilter.filterCoverageReport(def_undef_func, report.toList)
       //println(filter_report.toList.toString)
-      val filter_showmap = filter.WasiFilter.filterCoverageShowMap(def_undef_func,showmap.toList)
-      logCoverage[IO](dir, watOrWasm, filter_report.toList, filter_showmap.toList)
+      //val filter_showmap = filter.WasiFilter.filterCoverageShowMap(def_undef_func,showmap.toList)
+      //logCoverage[IO](dir, watOrWasm, filter_report.toList, filter_showmap.toList)
 
-    }
+    //}
 
-    else{
+    //else{
 
-      logCoverage[IO](dir, watOrWasm, report, showmap)
+      
 
-    }
+    //}
 
   }
 

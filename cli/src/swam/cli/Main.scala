@@ -203,14 +203,15 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                               formatter = NoTimestampFormatter).map(Some(_))
               else
                 IO(None)
-              coverageListener = CoverageListener[IO]()
+              coverageListener = CoverageListener[IO](covfilter)
+              //coverageListener.wasiCheck = covfilter
               engine <- Engine[IO](blocker, tracer, listener = Option(coverageListener))
               tcompiler <- swam.text.Compiler[IO](blocker)
               module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
               compiled <- engine.compile(module)
               //instance <- doRunCov(compiled, main, dirs, args, wasi, time, blocker)
               _ <- doRun(compiled, main, dirs, args, wasi, time, blocker)
-              _ <- IO(CoverageReporter.instCoverage(covout, file, covfilter, coverageListener))
+              _ <- IO(CoverageReporter.instCoverage(covout, file, coverageListener))
               //else IO(None)
             } yield ExitCode.Success
           case Validate(file, wat, dev) =>

@@ -33,6 +33,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
   private val dataHardMax = engine.conf.data.hardMax
+  private val def_undef_func:Set[String] = WasiFilter.readWasiFile()
 
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
@@ -100,6 +101,8 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
 
     val instance = new Instance[F](module, interpreter)
 
+
+    
     val (ifunctions, iglobals, itables, imemories) = imports.foldLeft(
       (Vector.empty[Function[F]], Vector.empty[Global[F]], Vector.empty[Table[F]], Vector.empty[Memory[F]])) {
       case ((ifunctions, iglobals, itables, imemories), f: Function[F]) =>
@@ -111,6 +114,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
       case ((ifunctions, iglobals, itables, imemories), m: Memory[F]) =>
         (ifunctions, iglobals, itables, imemories :+ m)
     }
+
     instance.funcs = ifunctions ++ module.functions.map {
       case CompiledFunction(typeIndex, tpe, locals, code) =>
         val functionName =
@@ -127,7 +131,19 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
              * @author Javier Cabrera-Arteaga on 2020-07-16
              * Changed the implementation to Add index to each and every instruction.
              */
-            code.zipWithIndex.map{ case (c, index) => new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]}
+            code.zipWithIndex.map{case (c, index) => 
+                if(!listener.wasiCheck){
+                    new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
+                  }
+                else{
+                  if(!def_undef_func.contains(functionName.getOrElse("N/A").toString)){
+                   new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]   
+                  }
+                  else{
+                    c
+                  }
+                }
+            }
           }
           case None => code
         }

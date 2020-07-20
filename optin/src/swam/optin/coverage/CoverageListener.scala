@@ -12,9 +12,11 @@ import java.io._
 /**
   * @author Javier Cabrera-Arteaga on 2020-06-11
   */
-class CoverageListener[F[_]: Async] extends InstructionListener[F] {
-
+class CoverageListener[F[_]: Async](wasi:Boolean) extends InstructionListener[F] {
+  //(//Index //Function name) -> (Functions, Actual instruction, HitCount)
   var coverageMap = Map[(Int, String), (String, AsmInst[F], Int)]()
+
+  override val wasiCheck : Boolean = wasi
 
   override def before(inner: AsmInst[F], index: Int, functionName: Option[String],frame: Frame[F]): Unit = {}
 
@@ -32,6 +34,7 @@ class CoverageListener[F[_]: Async] extends InstructionListener[F] {
         })
       coverageMap = coverageMap.updated((index, fn), (fn, prev._2, i))
     }
+    //println(coverageMap)
     result
   }
 
@@ -42,5 +45,5 @@ class CoverageListener[F[_]: Async] extends InstructionListener[F] {
 }
 
 object CoverageListener {
-  def apply[F[_]: Async: ContextShift](): CoverageListener[F] = new CoverageListener[F]()
+  def apply[F[_]: Async: ContextShift](wasi:Boolean): CoverageListener[F] = new CoverageListener[F](wasi)
 }
