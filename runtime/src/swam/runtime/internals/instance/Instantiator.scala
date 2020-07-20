@@ -26,7 +26,7 @@ import trace._
 import cats.effect._
 import cats.implicits._
 import swam.binary.custom.FunctionNames
-import swam.runtime.internals.interpreter.{AsmInst, InstructionListener, InstructionWrapper}
+import swam.runtime.internals.interpreter.{AsmInst, InstructionListener, Asm}
 
 private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F]) {
 
@@ -123,12 +123,11 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
         val toWrap = engine.instructionListener match {
           case Some(listener) => {
             // TODO change functionName to some kind of "debugging" class
-            val name = functionName match {
-              case Some(x) => functionName
-              case _       => Option(s"f$typeIndex")
-            }
-
-            code.map(c => new InstructionWrapper[F](c, listener, name).asInstanceOf[AsmInst[F]])
+            /**
+             * @author Javier Cabrera-Arteaga on 2020-07-16
+             * Changed the implementation to Add index to each and every instruction.
+             */
+            code.zipWithIndex.map{ case (c, index) => new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]}
           }
           case None => code
         }

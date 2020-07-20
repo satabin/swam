@@ -182,7 +182,7 @@ object runtime extends SwamModule with PublishModule {
 
 object optin extends SwamModule with PublishModule {
 
-  def moduleDeps = Seq(core, runtime)
+  def moduleDeps = Seq(core, runtime, wasi)
 
   def ivyDeps = Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion", ivy"com.nrinaudo::kantan.csv:0.6.1")
 
@@ -208,7 +208,7 @@ object optin extends SwamModule with PublishModule {
     def ivyDeps =
       Agg(ivy"com.lihaoyi::utest:0.7.4", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.9")
 
-    def moduleDeps = Seq(optin, text, util.test)
+    def moduleDeps = Seq(optin, text, util.test, wasi)
 
   }
 }

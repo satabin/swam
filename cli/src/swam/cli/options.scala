@@ -51,6 +51,6 @@ case class WasmCov(file: Path,
                    traceFile: Path,
                    dirs: List[Path],
                    debug: Boolean,
-                   coverage: Boolean,
-                   out: Path)
+                   out: Path,
+                   filter: Boolean)
     extends Options

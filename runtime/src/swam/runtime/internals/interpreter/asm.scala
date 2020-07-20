@@ -49,26 +49,34 @@ sealed trait AsmInst[F[_]] {
   def execute(t: Frame[F]): Continuation[F]
 }
 
-class InstructionWrapper[F[_]](val inner: AsmInst[F],
-                               val listener: InstructionListener[F],
-                               val functionName: Option[String])(implicit F: MonadError[F, Throwable])
-    extends AsmInst[F] {
-
-  listener.init(inner, functionName)
-
-  override def execute(t: Frame[F]): Continuation[F] = {
-    listener.before(inner, t)
-    val result = inner.execute(t)
-    listener.after(inner, t, result)
-  }
-}
-
 sealed trait Continuation[+F[_]]
 case object Continue extends Continuation[Nothing]
 case class Suspend[F[_]](res: F[Vector[Long]]) extends Continuation[F]
 case class Done(res: Vector[Long]) extends Continuation[Nothing]
 
 class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
+  /**
+  * @author Javier Cabrera-Arteaga on 2020-07-16
+  * Brought the InstructionWrapper class internal to Asm 
+  */
+  class InstructionWrapper[F[_]](val inner: AsmInst[F], val index:Int,
+                               val listener: InstructionListener[F],
+                               val functionName: Option[String])(implicit F: MonadError[F, Throwable])
+      extends AsmInst[F] {
+
+    listener.init(inner,index,functionName)
+
+    /**
+     * Instruction Wrapper listens to all the instructions
+     * @param t
+     * @return
+     */
+    override def execute(t: Frame[F]): Continuation[F] = {
+      listener.before(inner, index, functionName,t)
+      val result = inner.execute(t)
+      listener.after(inner, index, t, functionName, result)
+    }
+  }
 
   object Unop {
     def apply(unop: sy.Unop): AsmInst[F] =

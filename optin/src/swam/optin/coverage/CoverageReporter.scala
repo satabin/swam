@@ -8,76 +8,159 @@ package coverage
   *  ==Overview==
   *
   * */
-import kantan.csv._
-import kantan.csv.ops._
-
 import scala.collection.mutable.ListBuffer
 
 import swam.runtime._
+
 import runtime.internals.interpreter._
 import swam.runtime.internals.compiler.CompiledFunction
 import swam.binary.custom.FunctionNames
 
+import cats._
+import fs2._
+import fs2.io._
 import cats.implicits._
-import cats.effect._
-import cats.effect.IO
+import cats.effect.{Async, ContextShift,IO,Blocker, Sync}
 
-import java.nio.file._
-import java.util.logging._
-import java.nio.file.Path
-import java.io.File
+import java.nio.file.{Files, Path, Paths, StandardOpenOption}
+
+import java.io._
+import swam.runtime.internals.instance._
+
+import scala.concurrent.ExecutionContext
+
+//import scala.util.Random
 
 case class ModuleCoverageInfo(methodName: String, coveredInst: Long, totalInst: Long)
 
+case class ModuleShowMap(methodName: String, inst: String,instIndex: Long, hitCount: Long)
+
 object CoverageReporter {
 
-  def buildCoverage(listener: CoverageListener[IO]): List[ModuleCoverageInfo] = {
+/**
+*Implicit for the executing the ContectShift for fs2.io without extending the object with IOApp
+*/
+implicit val cs = IO.contextShift(ExecutionContext.global)
+
+/**
+   * Function returns the Coverage in the form of a List.
+   * @param listener
+   * @return returns List of Coverage information in the form of Method name, Covered Instructions and Total instructions
+   */
+   def buildCoverage(listener: CoverageListener[IO]): List[ModuleCoverageInfo] = {
 
     val covList = listener.coverageMap
       .groupBy {
-        case (_, (name, _)) => name
+        case ((_,_), (name, _, _)) => name
       }
       .toList
       .map {
-        case (name, map) => ModuleCoverageInfo(name, map.count(t => t._2._2 > 0), map.size)
+        case (name, map) => ModuleCoverageInfo(name, map.count(t => t._2._3 > 0), map.size)
       }
-
+    /**
+     * Print coverage for checking or testing
+     * */
+    //println(listener.coverageMap)
     covList
   }
 
-  private def logCoverage(dir: Any, watOrWasm: Path, list: List[ModuleCoverageInfo]): Unit = {
+  /**
+   * Function returns the afl-showmap in the form of a string
+   * @param listener
+   */
+  def buildShowMap(listener: CoverageListener[IO]) : List[ModuleShowMap] = {
+    val sm = new ListBuffer[ModuleShowMap]()
+    listener.coverageMap foreach {case ((index), value) => sm += ModuleShowMap(index._2,value._2.toString, index._1, value._3)}
+    //println(sm)
+    sm.toList
+  }
 
-    implicit val modEncoder: HeaderEncoder[ModuleCoverageInfo] =
-      HeaderEncoder.caseEncoder("Method Name", "Covered Instruction", "Total Instruction")(ModuleCoverageInfo.unapply _)
-
+  /**
+   * Function prints 2 things 
+   * 1. Coverage Report to a csv file. ("Method Name", "Covered Instruction", "Total Instruction")
+   * 2. Showmap to txt file.(TODO: Format of this file)
+   * @param dir
+   * @param watOrWasm
+   * @param list
+   * @param showMap
+   */
+  private def logCoverage[F[_]: Sync: ContextShift](
+    dir: Path, 
+    watOrWasm: Path,
+    list: List[ModuleCoverageInfo], 
+    showMap: List[ModuleShowMap],
+    )(implicit F: Sync[F]) = {
+    //println("This is dir " + dir)
+    val t = new StringBuilder("")
+    val t1 = new StringBuilder("")
+    t.append(s"Method Name, Covered Instruction, Total Instruction\n")
+    list foreach {case ModuleCoverageInfo(m,c,tc) => t.append(s"$m,$c,$tc\n")}
+    t1.append(s"[")
+    showMap foreach {case ModuleShowMap(m,in,i,h) => t1.append(s"\n\t{\n\t\tmethod : $m ,\n\t\tinstruction : $in ,\n\t\tinstruction_index : $i ,\n\t\tHitCount : $h\n\t},\n")}
+    t1.append(s"]")
     val fn = watOrWasm.getFileName.toString
-    val index = if (fn.lastIndexOf('.') > -1) fn.lastIndexOf('.') else fn.length
+    val index = fn.lastIndexOf('.')
     val mn: String = fn.substring(0, index)
-    val logger: String = dir match {
-      case Some(x) => x.toString + "/" + mn + ".ic.csv"
-      case _       => mn + ".ic.csv"
+
+    val report = dir.toString + "/cov_results/" + mn + "_covreport" 
+
+    val reportName = mn
+    //println(s"$report")
+    /*val prn = */Blocker[IO]
+      .use { blocker =>
+        for {
+          _ <- io.file.createDirectories[IO](blocker, Paths.get(s"$report")) // Creates the module structure
+          _ <- io.file.deleteIfExists[IO](blocker, Paths.get(s"$report/$reportName.ic.csv"))
+          _ <- fs2
+          .Stream(t.toString)
+          .through(text.utf8Encode)
+          .through(io.file
+            .writeAll[IO](Paths.get(s"$report/$reportName.ic.csv"), blocker, Seq(StandardOpenOption.CREATE)))
+          .compile
+          .drain
+          _ <- io.file.deleteIfExists[IO](blocker, Paths.get(s"$report/$reportName.showmap.txt"))
+          _ <- fs2.
+          Stream(t1.toString)
+          .through(text.utf8Encode)
+          .through(io.file
+            .writeAll[IO](Paths.get(s"$report/$reportName.showmap.txt"), blocker, Seq(StandardOpenOption.CREATE)))
+          .compile
+          .drain
+        } yield ()
+      }.unsafeRunSync()
+
+      //println(prn)
+  }
+
+  /**
+   * Interface to prints Instruction Coverage report and afl show-map from the cli tool
+   * @param dir
+   * @param watOrWasm
+   * @param instance
+   * @param logOrNot
+   */
+  def instCoverage(dir: Path, watOrWasm: Path, fil: Boolean, instance: CoverageListener[IO]) = {
+
+    val report = buildCoverage(instance)
+
+    val showmap = buildShowMap(instance)
+
+    if(fil){
+
+      val def_undef_func:Set[String] = filter.WasiFilter.readWasiFile()
+      val filter_report = filter.WasiFilter.filterCoverageReport(def_undef_func, report.toList)
+      //println(filter_report.toList.toString)
+      val filter_showmap = filter.WasiFilter.filterCoverageShowMap(def_undef_func,showmap.toList)
+      logCoverage[IO](dir, watOrWasm, filter_report.toList, filter_showmap.toList)
+
     }
 
-    val out = new File(logger)
+    else{
 
-    println(out)
-    val writer = out.asCsvWriter[ModuleCoverageInfo](rfc.withHeader)
+      logCoverage[IO](dir, watOrWasm, report, showmap)
 
-    list.map(f => {
-      val ModuleCoverageInfo(m, c, t) = f
-      writer.write(ModuleCoverageInfo(m, c, t))
-    })
+    }
 
-    writer.close()
   }
 
-  /** Creates a person with a given name and age.
-    *  @param watOrWasm the filename with absolute path
-    *  @param instance the compiled webassembly functions in the Instance[F] form.
-    */
-  def instCoverage(dir: Any, watOrWasm: Path, instance: CoverageListener[IO], logOrNot: Boolean) = {
-    val list = buildCoverage(instance)
-    //if (logOrNot)
-    logCoverage(dir, watOrWasm, list)
-  }
 }
