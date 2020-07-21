@@ -9,18 +9,19 @@ import scala.collection.mutable.ListBuffer
 
 object WasiFilter {
 
+  //implicit val contextShift: ContextShift[IO] = IO.contextShift(global)
   /**
    * Reads the defined and undefined files in wasi and returns the Set of function defined in these files.
    * @return
    */
-  def readWasiFile() : Set[String] = {
 
-    val defined_check = scala.reflect.io.File("optin/src/swam/optin/filter/defined-symbols.txt").exists
-    val undefined_check = scala.reflect.io.File("optin/src/swam/optin/filter/undefined-symbols.txt").exists
+  def readWasiFile() : Set[String] = {
+    val defined_check = scala.reflect.io.File("runtime/src/swam/runtime/internals/instance/defined-symbols.txt").exists
+    val undefined_check = scala.reflect.io.File("runtime/src/swam/runtime/internals/instance/undefined-symbols.txt").exists
     var define : Set[String] = Set() 
     if(defined_check && undefined_check){ 
-      val defined= scala.io.Source.fromFile("optin/src/swam/optin/filter/defined-symbols.txt", "UTF-8").mkString
-      val undefined= scala.io.Source.fromFile("optin/src/swam/optin/filter/undefined-symbols.txt", "UTF-8").mkString  
+      val defined= scala.io.Source.fromFile("runtime/src/swam/runtime/internals/instance/defined-symbols.txt", "UTF-8").mkString
+      val undefined= scala.io.Source.fromFile("runtime/src/swam/runtime/internals/instance/undefined-symbols.txt", "UTF-8").mkString  
       val undefine = undefined.split("\n").toSet
       define = defined.split("\n").toSet
       
@@ -43,7 +44,6 @@ object WasiFilter {
     }
     define
   }
-
   /**
    * Function Filters the methods related to Wasi using the defined and undefined files in the filter folder
    * @param defined

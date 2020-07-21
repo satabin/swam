@@ -101,8 +101,6 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
 
     val instance = new Instance[F](module, interpreter)
 
-
-    
     val (ifunctions, iglobals, itables, imemories) = imports.foldLeft(
       (Vector.empty[Function[F]], Vector.empty[Global[F]], Vector.empty[Table[F]], Vector.empty[Memory[F]])) {
       case ((ifunctions, iglobals, itables, imemories), f: Function[F]) =>
@@ -114,13 +112,17 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
       case ((ifunctions, iglobals, itables, imemories), m: Memory[F]) =>
         (ifunctions, iglobals, itables, imemories :+ m)
     }
-
+    //println(module.functions)
     instance.funcs = ifunctions ++ module.functions.map {
       case CompiledFunction(typeIndex, tpe, locals, code) =>
         val functionName =
           module.names.flatMap(_.subsections.collectFirstSome {
             case FunctionNames(names) =>
-              names.get(typeIndex)
+              {
+                //code.map(x => println("This is block"))
+                //println(code)
+                names.get(typeIndex)
+              }
             case _ =>
               None
           })
@@ -133,22 +135,63 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
              */
             code.zipWithIndex.map{case (c, index) => 
                 if(!listener.wasiCheck){
+                  if(listener.filter.equals(".")) {
                     new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
                   }
-                else{
-                  if(!def_undef_func.contains(functionName.getOrElse("N/A").toString)){
-                   new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]   
-                  }
                   else{
-                    c
+                    val pattern = listener.filter.r
+                    val fn = functionName.getOrElse("N/A").toString
+                    val checkSome = pattern findFirstIn fn
+                    if(checkSome.isEmpty){
+                        c
+                    }
+                    else{
+                        new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
+                    }
                   }
                 }
+                else{
+                  if(listener.filter.equals(".")) {
+                    println("Check here 1")
+                    if(!def_undef_func.contains(functionName.getOrElse("N/A").toString)) {
+                      new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]   
+                    }
+                    else{
+                      println("Check here 2")
+                      c
+                    }
+                  }
+                  else {
+                    println("Check here 3")
+                    if(!def_undef_func.contains(functionName.getOrElse("N/A").toString)){
+                      //println(def_undef_func)
+                      println("Check here 4" + functionName.getOrElse("N/A").toString)
+                      val pattern = listener.filter.r
+                      val fn = functionName.getOrElse("N/A").toString
+                      val checkSome = pattern findFirstIn fn
+                      if(checkSome.isEmpty){
+                        c
+                      }
+                      else{
+                        new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
+                      }
+                    }
+                    else{
+                      c
+                    }
+                  }  
+                }
+              }
             }
-          }
           case None => code
         }
+
+        //println(toWrap.map(x => println(x.getClass)))
+        //println(toWrap)
         new FunctionInstance[F](tpe, locals, toWrap, instance, functionName)
     }
+
+    //println(module.exports.map(_).toMap)
     instance.globals = iglobals ++ globals
     instance.tables = itables ++ module.tables.map {
       case TableType(_, limits) => new TableInstance[F](limits.min, limits.max)

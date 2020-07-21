@@ -52,5 +52,6 @@ case class WasmCov(file: Path,
                    dirs: List[Path],
                    debug: Boolean,
                    out: Path,
-                   filter: Boolean)
+                   filter: Boolean,
+                   filterFunc: String)
     extends Options
