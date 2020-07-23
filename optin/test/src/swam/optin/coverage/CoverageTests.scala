@@ -60,7 +60,7 @@ def doRunCovWasi(module: Module[IO],
                   wat:Boolean, 
                   wasi: Boolean): CoverageListener[IO] = {
     
-    val coverageListener = CoverageListener[IO](wasi)
+    val coverageListener = CoverageListener[IO](wasi, ".  ")
 
     Blocker[IO]
       .use { blocker =>

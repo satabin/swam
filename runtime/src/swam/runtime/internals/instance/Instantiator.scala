@@ -119,8 +119,6 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
           module.names.flatMap(_.subsections.collectFirstSome {
             case FunctionNames(names) =>
               {
-                //code.map(x => println("This is block"))
-                //println(code)
                 names.get(typeIndex)
               }
             case _ =>
@@ -133,61 +131,33 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
              * @author Javier Cabrera-Arteaga on 2020-07-16
              * Changed the implementation to Add index to each and every instruction.
              */
+            val fn = functionName.getOrElse("N/A").toString
             code.zipWithIndex.map{case (c, index) => 
-                if(!listener.wasiCheck){
-                  if(listener.filter.equals(".")) {
-                    new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
-                  }
-                  else{
-                    val pattern = listener.filter.r
-                    val fn = functionName.getOrElse("N/A").toString
-                    val checkSome = pattern findFirstIn fn
-                    if(checkSome.isEmpty){
-                        c
-                    }
-                    else{
-                        new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
-                    }
-                  }
-                }
-                else{
-                  if(listener.filter.equals(".")) {
-                    println("Check here 1")
-                    if(!def_undef_func.contains(functionName.getOrElse("N/A").toString)) {
-                      new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]   
-                    }
-                    else{
-                      println("Check here 2")
-                      c
-                    }
-                  }
-                  else {
-                    println("Check here 3")
-                    if(!def_undef_func.contains(functionName.getOrElse("N/A").toString)){
-                      //println(def_undef_func)
-                      println("Check here 4" + functionName.getOrElse("N/A").toString)
-                      val pattern = listener.filter.r
-                      val fn = functionName.getOrElse("N/A").toString
-                      val checkSome = pattern findFirstIn fn
-                      if(checkSome.isEmpty){
-                        c
-                      }
-                      else{
-                        new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
-                      }
-                    }
-                    else{
-                      c
-                    }
-                  }  
+              if(!listener.wasiCheck){
+                if(listener.filter.equals("."))
+                  new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
+                else{  
+                  if(WasiFilter.checkPattern(listener.filter, fn)) c 
+                  else new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
                 }
               }
+              else{
+                if(listener.filter.equals(".")){
+                  if(!def_undef_func.contains(fn)) new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
+                  else c
+                  }
+                else {
+                  if(!def_undef_func.contains(fn)) {
+                    if(WasiFilter.checkPattern(listener.filter, fn)) c 
+                    else new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
+                  }
+                  else c
+                }  
+              }
             }
+          }
           case None => code
         }
-
-        //println(toWrap.map(x => println(x.getClass)))
-        //println(toWrap)
         new FunctionInstance[F](tpe, locals, toWrap, instance, functionName)
     }
 
