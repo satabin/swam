@@ -137,7 +137,6 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
    * @param dir
    * @param watOrWasm
    * @param instance
-   * @param logOrNot
    */
   def instCoverage(dir: Path, watOrWasm: Path, instance: CoverageListener[IO]) = {
 
@@ -145,23 +144,17 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
 
     val showmap = buildShowMap(instance)
 
-    logCoverage[IO](dir, watOrWasm, report, showmap)
-    //if(fil){
-
-      //val def_undef_func:Set[String] = filter.WasiFilter.readWasiFile()
-      //val filter_report = filter.WasiFilter.filterCoverageReport(def_undef_func, report.toList)
-      //println(filter_report.toList.toString)
-      //val filter_showmap = filter.WasiFilter.filterCoverageShowMap(def_undef_func,showmap.toList)
-      //logCoverage[IO](dir, watOrWasm, filter_report.toList, filter_showmap.toList)
-
-    //}
-
-    //else{
-
-      
-
-    //}
-
+    if(!instance.coverageMap.isEmpty) {
+      logCoverage[IO](dir, watOrWasm, report, showmap)
+    }
+    else{
+      import scala.Console.{RESET ,YELLOW}
+      println(s"${RESET}${YELLOW}No Coverage${RESET}")
+      println(s"${RESET}${YELLOW}Reason being : ${RESET}")
+      println(s"${RESET}${YELLOW}1) There could be no method in the Wasm module.${RESET}")
+      println(s"${RESET}${YELLOW}2) Or there is no funtions matching the filter options given in --func-filter.${RESET}")
+      println(s"${RESET}${YELLOW}   Please adjust the filter and try again.${RESET}")
+    }
   }
 
 }
