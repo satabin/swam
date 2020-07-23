@@ -75,6 +75,23 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
     sm.toList
   }
 
+  private def writeToReport(report: String, reportName:String, t:String, extension: String) = {
+    Blocker[IO]
+      .use { blocker =>
+        for {
+          _ <- io.file.createDirectories[IO](blocker, Paths.get(s"$report")) // Creates the module structure
+          _ <- io.file.deleteIfExists[IO](blocker, Paths.get(s"$report/$reportName.$extension"))
+          _ <- fs2
+          .Stream(t.toString)
+          .through(text.utf8Encode)
+          .through(io.file
+            .writeAll[IO](Paths.get(s"$report/$reportName.$extension"), blocker, Seq(StandardOpenOption.CREATE)))
+          .compile
+          .drain
+        } yield()
+      }.unsafeRunSync()
+  }
+
   /**
    * Function prints 2 things 
    * 1. Coverage Report to a csv file. ("Method Name", "Covered Instruction", "Total Instruction")
@@ -89,47 +106,63 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
     watOrWasm: Path,
     list: List[ModuleCoverageInfo], 
     showMap: List[ModuleShowMap],
+    printReport: Boolean,
+    printShowMap : Boolean
     )(implicit F: Sync[F]) = {
     //println("This is dir " + dir)
-    val t = new StringBuilder("")
-    val t1 = new StringBuilder("")
-    t.append(s"Method Name, Covered Instruction, Total Instruction\n")
-    list foreach {case ModuleCoverageInfo(m,c,tc) => t.append(s"$m,$c,$tc\n")}
-    t1.append(s"[")
-    showMap foreach {case ModuleShowMap(m,in,i,h) => t1.append(s"\n\t{\n\t\tmethod : $m ,\n\t\tinstruction : $in ,\n\t\tinstruction_index : $i ,\n\t\tHitCount : $h\n\t},\n")}
-    t1.append(s"]")
+    
     val fn = watOrWasm.getFileName.toString
     val index = fn.lastIndexOf('.')
     val mn: String = fn.substring(0, index)
 
     val report = dir.toString + "/cov_results/" + mn + "_covreport" 
-
     val reportName = mn
-    //println(s"$report")
-    /*val prn = */Blocker[IO]
-      .use { blocker =>
-        for {
-          _ <- io.file.createDirectories[IO](blocker, Paths.get(s"$report")) // Creates the module structure
-          _ <- io.file.deleteIfExists[IO](blocker, Paths.get(s"$report/$reportName.ic.csv"))
-          _ <- fs2
-          .Stream(t.toString)
-          .through(text.utf8Encode)
-          .through(io.file
-            .writeAll[IO](Paths.get(s"$report/$reportName.ic.csv"), blocker, Seq(StandardOpenOption.CREATE)))
-          .compile
-          .drain
-          _ <- io.file.deleteIfExists[IO](blocker, Paths.get(s"$report/$reportName.showmap.txt"))
-          _ <- fs2.
-          Stream(t1.toString)
-          .through(text.utf8Encode)
-          .through(io.file
-            .writeAll[IO](Paths.get(s"$report/$reportName.showmap.txt"), blocker, Seq(StandardOpenOption.CREATE)))
-          .compile
-          .drain
-        } yield ()
-      }.unsafeRunSync()
 
-      //println(prn)
+    /*Report*/
+    val t = new StringBuilder("")
+    t.append(s"Method Name, Covered Instruction, Total Instruction\n")
+      
+    /*Showmap*/
+    val t1 = new StringBuilder("")
+    t1.append(s"[")
+
+    if(!(printReport ^ printShowMap)) {
+      if(!list.isEmpty){
+        list foreach {case ModuleCoverageInfo(m,c,tc) => t.append(s"$m,$c,$tc\n")}
+        writeToReport(report, reportName, t.toString, "ic.csv")
+        showMap foreach {case ModuleShowMap(m,in,i,h) => t1.append(s"\n\t{\n\t\tmethod : $m ,\n\t\tinstruction : $in ,\n\t\tinstruction_index : $i ,\n\t\tHitCount : $h\n\t},\n")}
+        t1.append(s"]")
+        writeToReport(report, reportName, t1.toString, "showmap.txt")
+      }
+    }
+    else {
+      if(!list.isEmpty && printReport) {
+        list foreach {case ModuleCoverageInfo(m,c,tc) => t.append(s"$m,$c,$tc\n")}
+        writeToReport(report, reportName, t.toString, "ic.csv")
+      }
+      else if(!showMap.isEmpty && printShowMap) {
+        showMap foreach {case ModuleShowMap(m,in,i,h) => t1.append(s"\n\t{\n\t\tmethod : $m ,\n\t\tinstruction : $in ,\n\t\tinstruction_index : $i ,\n\t\tHitCount : $h\n\t},\n")}
+        t1.append(s"]")
+        writeToReport(report, reportName, t1.toString, "showmap.txt")
+      } 
+    }
+  }
+
+  def checkCoverageMap(dir: Path, 
+    watOrWasm: Path, 
+    report: List[ModuleCoverageInfo], 
+    showmap: List[ModuleShowMap], 
+    instance: CoverageListener[IO]) = {
+    if(!instance.coverageMap.isEmpty)
+        logCoverage[IO](dir, watOrWasm, report, showmap, instance.covreport, instance.covshowmap)
+      else{
+        import scala.Console.{RESET ,YELLOW}
+        println(s"${RESET}${YELLOW}No Coverage${RESET}")
+        println(s"${RESET}${YELLOW}Reason being : ${RESET}")
+        println(s"${RESET}${YELLOW}1) There could be no method in the Wasm module.${RESET}")
+        println(s"${RESET}${YELLOW}2) Or there is no funtions matching the filter options given in --func-filter.${RESET}")
+        println(s"${RESET}${YELLOW}   Please adjust the filter and try again.${RESET}")
+      }
   }
 
   /**
@@ -140,21 +173,16 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
    */
   def instCoverage(dir: Path, watOrWasm: Path, instance: CoverageListener[IO]) = {
 
-    val report = buildCoverage(instance)
-
-    val showmap = buildShowMap(instance)
-
-    if(!instance.coverageMap.isEmpty) {
-      logCoverage[IO](dir, watOrWasm, report, showmap)
+    if (!(instance.covreport ^ instance.covshowmap)){
+      val report = buildCoverage(instance)
+      val showmap = buildShowMap(instance)
+      checkCoverageMap(dir, watOrWasm, report, showmap, instance)
     }
     else{
-      import scala.Console.{RESET ,YELLOW}
-      println(s"${RESET}${YELLOW}No Coverage${RESET}")
-      println(s"${RESET}${YELLOW}Reason being : ${RESET}")
-      println(s"${RESET}${YELLOW}1) There could be no method in the Wasm module.${RESET}")
-      println(s"${RESET}${YELLOW}2) Or there is no funtions matching the filter options given in --func-filter.${RESET}")
-      println(s"${RESET}${YELLOW}   Please adjust the filter and try again.${RESET}")
+      val report = if (instance.covreport) buildCoverage(instance) else List.empty[ModuleCoverageInfo] 
+      val showmap = if (instance.covshowmap) buildShowMap(instance) else List.empty[ModuleShowMap]
+      checkCoverageMap(dir, watOrWasm, report, showmap, instance)
     }
+    
   }
-
 }

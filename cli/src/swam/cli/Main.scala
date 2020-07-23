@@ -66,6 +66,10 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
 
   val covfilter = Opts.flag("covf", "Generate coverage with filter on Wasi Methods", short = "r").orFalse
 
+  val covshowmap = Opts.flag("showmap", "When used, only provides show map for code coverage data.", short = "p").orFalse
+
+  val covreport = Opts.flag("report", "When used, only provides coverage reports for code coverage data.", short = "R").orFalse
+
   val covfilterOnFunc = Opts
         .option[String]("func-filter","filter with function name or regular expression")
         .withDefault(".")
@@ -109,9 +113,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   }
 
   val covOpts: Opts[Options] = Opts.subcommand("coverage", "Run a WebAssembly file and generate coverage report") {
-    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, covout, covFilterOpt).mapN {
-      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covout, covFilterOpt) =>
-        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, covout, covFilterOpt._1, covFilterOpt._2)
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, covout, covFilterOpt, covreport, covshowmap).mapN {
+      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covout, covFilterOpt, covreport, covshowmap) =>
+        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, covout, covFilterOpt._1, covFilterOpt._2, covreport, covshowmap)
     }
   }
 
@@ -199,7 +203,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 .compile
                 .drain
             } yield ExitCode.Success
-         case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug, covout, covfilter, covfilterOnFunc) =>
+         case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug, covout, covfilter, covfilterOnFunc, covreport, covshowmap) =>
             for {
               tracer <- if (trace)
                 JULTracer[IO](blocker,
@@ -209,7 +213,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                               formatter = NoTimestampFormatter).map(Some(_))
               else
                 IO(None)
-              coverageListener = CoverageListener[IO](covfilter, covfilterOnFunc)
+              coverageListener = CoverageListener[IO](covfilter, covfilterOnFunc, covreport, covshowmap)
               //coverageListener.wasiCheck = covfilter
               engine <- Engine[IO](blocker, tracer, listener = Option(coverageListener))
               tcompiler <- swam.text.Compiler[IO](blocker)
