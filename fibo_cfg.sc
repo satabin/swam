@@ -38,11 +38,11 @@ def GetCFG(func_id : Int, wat : Boolean, fileName: String) : CFG = {
   cfg
 }
 
-val cfg0 = GetCFG(0, true, "fibo.wat")
-val cfg1 = GetCFG(1, true, "fibo.wat")
-val cfg2 = GetCFG(2, true, "fibo.wat")
-val cfg3 = GetCFG(3, true, "fibo.wat")
+val cfg0 = GetCFG(0, false, "check-for.wasm")
+val cfg1 = GetCFG(1, false, "check-for.wasm")
+val cfg2 = GetCFG(2, false, "check-for.wasm")
+val cfg3 = GetCFG(3, false, "check-for.wasm")
 println("This is cfg for func 0" + cfg0.blocks)
 println("This is cfg for func 1" + cfg1.blocks)
 println("This is cfg for func 2" + cfg2.blocks)
-println("This is cfg for func 3" + cfg3.blocks)
+println("This is cfg for func 3" + cfg3.blocks) //--- Issues getting exception here

@@ -125,13 +125,6 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
             case _ =>
               None
           })
-        val ca = Blocker[IO].use { blocker => 
-          for {
-            c <- cfg
-          } yield c
-        }.unsafeRunSync()
-        println("CFG in Instantiator" + ca)
-        
         val toWrap = engine.instructionListener match {
           case Some(listener) => {
             // TODO change functionName to some kind of "debugging" class
@@ -151,7 +144,16 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
               }
               else{
                 if(listener.filter.equals(".")){
-                  if(!def_undef_func.contains(fn)) new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
+                  println(functionName)
+                  if(!def_undef_func.contains(fn)) {
+                    val ca = Blocker[IO].use { blocker => 
+                      for {
+                        cf <- cfg
+                      } yield cf
+                    }.unsafeRunSync()
+                    println("CFG in Instantiator" + ca)
+                    new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
+                  }
                   else c
                   }
                 else {
