@@ -54,7 +54,7 @@ package object string {
         }
     }
 
-  /** Decodes a UTF-8 encoed string starting with its size in bytes
+  /** Decodes a UTF-8 encoded string starting with its size in bytes
     * encoded in little-endian on 4 bytes.
     */
   implicit def utf8[F[_]](implicit F: MonadError[F, Throwable]): ValueReader[F, String] = new ValueReader[F, String] {
