@@ -42,7 +42,7 @@ object Server {
       breakable {
         println("Waiting for connection!")
         val clientSocket = server.accept()
-        println("Connection accepted!")
+        // println("Connection accepted!")
 
         val receivedMessage = readSocket(clientSocket, bufferSize)
         if(receivedMessage.length == 0) {
@@ -51,15 +51,15 @@ object Server {
         }
 
         println("Received message!")
-        println(receivedMessage.mkString(" "))
+        // println(receivedMessage.mkString(" "))
 
         val argsParsed = parseMessage(receivedMessage, wasmArgTypes, bufferSize)
-        println("Parsed arguments: " + argsParsed)
+        // println("Parsed arguments: " + argsParsed)
 
         var exitCode = 0
         try {
           val result = Main.executeFunction(preparedFunction, argsParsed, time)
-          println(s"Result of calculation: $result")
+          // println(s"Result of calculation: $result")
           if (logOrNot) {
             println("Logging now")
             CoverageReporter.instCoverage(coverage_out, watOrWasm, coverageListener, logOrNot)
@@ -98,9 +98,9 @@ object Server {
     var byteIndex = 0
 
     // Just in case message does not have required size:
-    println(s"Length before padding: ${input.length}")
+    // println(s"Length before padding: ${input.length}")
     val paddedInput = input.padTo(requiredBufferSize, 0.toByte)
-    println(s"Length after padding: ${paddedInput.length}")
+    // println(s"Length after padding: ${paddedInput.length}")
 
     for (argType <- argsTypes) {
       argType match {
@@ -142,7 +142,7 @@ object Server {
     for (_ <- 0 until 10) {
       val randomIndex = r.nextInt(coverage.size - 1)
       coverage(randomIndex) = (coverage(randomIndex).toInt + 1).toByte
-      println(s"coverage($randomIndex): ${coverage(randomIndex)}")
+      // println(s"coverage($randomIndex): ${coverage(randomIndex)}")
     }
     coverage
   }
