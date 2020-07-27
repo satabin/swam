@@ -22,6 +22,7 @@ package instance
 import imports._
 import compiler._
 import trace._
+import cfg._
 
 import cats.effect._
 import cats.implicits._
@@ -114,7 +115,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
     }
     //println(module.functions)
     instance.funcs = ifunctions ++ module.functions.map {
-      case CompiledFunction(typeIndex, tpe, locals, code) =>
+      case CompiledFunction(typeIndex, tpe, locals, code, cfg) =>
         val functionName =
           module.names.flatMap(_.subsections.collectFirstSome {
             case FunctionNames(names) =>
@@ -124,6 +125,13 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
             case _ =>
               None
           })
+        val ca = Blocker[IO].use { blocker => 
+          for {
+            c <- cfg
+          } yield c
+        }.unsafeRunSync()
+        println("CFG in Instantiator" + ca)
+        
         val toWrap = engine.instructionListener match {
           case Some(listener) => {
             // TODO change functionName to some kind of "debugging" class

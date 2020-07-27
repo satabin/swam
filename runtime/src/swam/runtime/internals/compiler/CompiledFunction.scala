@@ -19,9 +19,12 @@ package runtime
 package internals
 package compiler
 
+import cfg._
+import cats.effect.IO
 import swam.runtime.internals.interpreter.AsmInst
 
 private[runtime] case class CompiledFunction[F[_]](idx: Int,
                                                    tpe: FuncType,
                                                    locals: Vector[ValType],
-                                                   code: Array[AsmInst[F]])
+                                                   code: Array[AsmInst[F]],
+                                               	   cfg: IO[CFG])

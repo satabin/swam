@@ -124,7 +124,7 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
       
     /*Showmap*/
     val t1 = new StringBuilder("")
-    t1.append(s"[")
+    t1.append(s"{")
 
     if(!(printReport ^ printShowMap)) {
       if(!list.isEmpty){
@@ -132,12 +132,12 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
         writeToReport(report, reportName, t.toString, "ic.csv")
         showMap.zipWithIndex.foreach {
           case (ModuleShowMap(m,in,i,h),index) => 
-            t1.append("{\n\t\""+index+"\":{\n\t\t\"method\":\""+ m +"\","+
+            t1.append("\n\t\""+index+"\":{\n\t\t\"method\":\""+ m +"\","+
                         "\n\t\t\"instruction\" : \"" + in + "\"," +
                         "\n\t\t\"instruction_index\" : \"" + i + "\"," +
-                        "\n\t\t\"HitCount\" : \"" + h + "\"\n\t},\n}")
+                        "\n\t\t\"HitCount\" : \"" + h + "\"\n\t},\n")
           }
-        t1.append(s"]")
+        t1.append(s"}")
         writeToReport(report, reportName, t1.toString, "showmap.txt")
       }
     }

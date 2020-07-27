@@ -11,102 +11,38 @@ import java.nio.file.Paths
 import java.io._
 import fs2._
 
+import cats.effect.{Blocker, ContextShift, IO}
+import scala.concurrent.ExecutionContext
+
 
 implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
 
-val wat = true
 
-//val wastPositioner = new WastPositioner(Paths.get("fibo.wat"))
-
-val c =
-    Blocker[IO].use { blocker => for {
-        engine <- Engine[IO](blocker)
-        validator <- Validator[IO](blocker)
-        binaryParser = new ModuleParser[IO](validator)
-        tcompiler <- swam.text.Compiler[IO](blocker)
-        module = if (wat) tcompiler.stream(Paths.get("fibo.wat"), false, blocker) else engine.sections(Paths.get("Babbage_problem.wasm"), blocker)
-        mod <- binaryParser.parse(module)
-        //cfg <- CFGicator.buildCFG[IO](mod)
-        //cfg <- CFGicator.buildCFG[IO](naive.body)
-      }yield mod
-    }.unsafeRunSync()
-
-println(c)
-
-//for(x <- 0 to 2){
-  //cfgs.funcs(x).body
-  //var cfg = CFGicator.buildCFG[IO](cfgs.funcs(x).body)
-  //val program: IO[swam.cfg.CFG] = 
-   // for {
-   //    s1 <- cfg
-   // } yield s1
-  //  program.unsafeRunSync()
-  //println(program)
-//}
-
-
-
-/*var count = 0
-
-def getModule(fileName: String) = {
-  val module1 = 
-    Blocker[IO].use { blocker => for {
-        engine <- Engine[IO](blocker)
-        validator <- Validator[IO](blocker)
-        binaryParser = new ModuleParser[IO](validator)
-        tcompiler <- swam.text.Compiler[IO](blocker)
-        module = if (wat) tcompiler.stream(Paths.get(fileName), false, blocker) else engine.sections(Paths.get(fileName), blocker)
-        //mod <- binaryParser.parse(module).map(_.funcs().body)
-        
-        mod <- binaryParser.parse(module)
-
-        //cfg <- CFGicator.buildCFG[IO](mod)
-        //cfg <- CFGicator.buildCFG[IO](naive.body)
-      }yield mod
-    }.unsafeRunSync()
-
-  module1
-}
-
-//val r = getModule("wasm_programs/3.wasm")
-
-//val r = getModule("Babbage_problem.wasm")
-val r = getModule("Deconvolution-1D.wasm")
-
-def getCFGForFunc(func_id:Int,module: swam.syntax.Module) = {
-  println("Thsi is funcs at 5" + module.funcs(5))
-  val cfgs = module.funcs.map(x=>{  
-        CFGicator.buildCFG[IO](x.body)
-      })
-  //println(cfgs(0))
-  val program: IO[swam.cfg.CFG] = 
+def GetCFG(func_id : Int, wat : Boolean, fileName: String) : CFG = {
+  val cfg =
+  Blocker[IO].use { blocker =>
     for {
-       cfg <- cfgs(func_id)
+      engine <- Engine[IO](blocker)
+      validator <- Validator[IO](blocker)
+      binaryParser = new ModuleParser[IO](validator)
+      compiler <- Compiler[IO](blocker)
+      module = 
+        if (wat) compiler.stream(Paths.get(fileName), false, blocker) 
+        else engine.sections(Paths.get(fileName), blocker)
+      mod <- binaryParser.parse(module)
+      cfg = mod.funcs(func_id)
+      //naive <- compiler.compile(Paths.get("fibo.wat"), blocker).map(_.funcs(0))
+      cfg <- CFGicator.buildCFG[IO](cfg.body)
     } yield cfg
-    program.unsafeRunSync()
+  }.unsafeRunSync()
+  cfg
 }
 
-var result  = getCFGForFunc(5,r)
-println(s"This is a cfg for method 5 : " + result.blocks)
-*/
-/**for(x <- 0 to 4){
-   //println(x+1)
-   var result  = getCFGForFunc(x,r)
-   println(s"This is a cfg for method $x : " + result.blocks)
-   //println(x)
-}
-
-for(x <- 6 to 39){
-   //println(x+1)
-   var result  = getCFGForFunc(x,r)
-   println(s"This is a cfg for method $x : " + result.blocks)
-   //println(x)
-}
-
-for(x <- 42 to 50){
-   //println(x+1)
-   var result  = getCFGForFunc(x,r)
-   println(s"This is a cfg for method $x : " + result.blocks)
-   //println(x)
-}*/
-
+val cfg0 = GetCFG(0, true, "fibo.wat")
+val cfg1 = GetCFG(1, true, "fibo.wat")
+val cfg2 = GetCFG(2, true, "fibo.wat")
+val cfg3 = GetCFG(3, true, "fibo.wat")
+println("This is cfg for func 0" + cfg0.blocks)
+println("This is cfg for func 1" + cfg1.blocks)
+println("This is cfg for func 2" + cfg2.blocks)
+println("This is cfg for func 3" + cfg3.blocks)

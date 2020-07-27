@@ -3,8 +3,6 @@ package runtime
 package internals
 package instance
 
-//import swam.optin.coverage.{ModuleCoverageInfo,ModuleShowMap}
-
 import scala.collection.mutable.ListBuffer
 
 object WasiFilter {
@@ -47,12 +45,11 @@ object WasiFilter {
       define ++= List("dummy",
                     "long_double_not_supported",
                     "dlmalloc",
-                    "pop_arg",
-                    "printf_core",
                     "dispose_chunk",
                     "internal_memalign",
                     "dlfree",
-      /*-------------musl compiler-rt ABI's-----------------------------------------*/
+      /*----------------------------------------musl compiler-rt ABI's--------------------------------*/
+      /*https://opensource.apple.com/source/clang/clang-800.0.38/src/projects/compiler-rt/lib/builtins*/
                     "__absvdi2","__absvsi2","__absvti2","__adddf3",
                     " __addsf3","__addtf3","__addvdi3","__addvsi3",
                     "__addvti3","__ashldi3","__ashlti3","__ashrdi3",
@@ -89,7 +86,10 @@ object WasiFilter {
                     "__truncdfsf2","__truncsfhf2","__trunctfdf2","__trunctfsf2","__ucmpdi2",
                     "__ucmpti2","__udivdi3","__udivmoddi4","__udivmodsi4","__udivmodti4",
                     "__udivsi3","__umoddi3","__umodsi3","__umodti3",
-                    "__muldc3")
+                    "__muldc3",
+      /*-------------musl standard library for Linux-based systems-------------*/
+      /*https://git.musl-libc.org/cgit/musl/tree/src*/
+                 "sn_write","pop_arg","printf_core","scanexp","do_read")
       define -= "__original_main"
     }
     define
