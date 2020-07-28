@@ -29,21 +29,21 @@ RUN \
 
 ###### Actual Project ######
 
-ENV REPO_PATH_DOCKER=/home/swam
-ENV SWAM_OUTPUT_DOCKER=/home/out
-ENV WASM_PATH_DOCKER=/home/wasm
+ENV DOCKER_SWAM_SRC=/home/swam
+ENV DOCKER_SWAM_OUTPUT=/home/out
+ENV DOCKER_WASM=/home/wasm
 
 # Create the appropriate directories
-RUN mkdir $REPO_PATH_DOCKER
-RUN mkdir $SWAM_OUTPUT_DOCKER
-RUN mkdir $WASM_PATH_DOCKER
+RUN mkdir $DOCKER_SWAM_SRC
+RUN mkdir $DOCKER_SWAM_OUTPUT
+RUN mkdir $DOCKER_WASM
 
-WORKDIR $REPO_PATH_DOCKER
+WORKDIR $DOCKER_SWAM_SRC
 
 # TODO: Find way of installing dependencies with Mill without copying over entire repo
 # See: https://stackoverflow.com/questions/62834693/mill-build-tool-install-dependencies-without-compiling-source-code
 
-ADD . $REPO_PATH_DOCKER
+ADD . $DOCKER_SWAM_SRC
 
 # As long as I cannot separate installing dependencies and compiling 
 # src, this will be done in the entrypoint, so volumes can be used:
@@ -54,4 +54,4 @@ ADD . $REPO_PATH_DOCKER
 #     examples.compile util.compile 
 #     # Excluding benchmarks
 
-RUN chmod +x $REPO_PATH_DOCKER/entrypoint_mill_server.sh
+RUN chmod +x $DOCKER_SWAM_SRC/entrypoint_mill_server.sh
