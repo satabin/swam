@@ -56,5 +56,38 @@ class WastPositioner(file: Path) extends Positioner[TextFilePosition] {
     val column = pos - offsets(line)
     TextFilePosition(file, line + 1, column, lines(line))
   }
-
 }
+
+class WastCustomPositioner(doc: String, file: Path) extends Positioner[TextFilePosition] {
+  private val lines =
+    IO(doc.split("\n").map(_.trim).toVector).unsafeRunSync()
+
+  private val offsets =
+    lines
+      .foldLeft((0, new VectorBuilder[Int])) {
+        case ((offset, acc), line) =>
+          (offset + line.size + 1, acc += offset)
+      }
+      ._2
+      .result()
+
+  def render(pos: Int) = {
+    val line = findLine(pos)
+    val column = pos - offsets(line)
+    TextFilePosition(file, line + 1, column, lines(line))
+  }
+
+  // returns the index of the line containing the position
+  private def findLine(pos: Int): Int =
+    offsets.search(pos) match {
+      case Found(i)           => i
+      case InsertionPoint(ip) => ip - 1
+  }
+
+  def getLines() = {
+    val lines_all = lines
+    lines_all
+  }
+}
+
+
