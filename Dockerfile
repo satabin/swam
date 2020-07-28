@@ -54,4 +54,4 @@ ADD . $REPO_PATH_DOCKER
 #     examples.compile util.compile 
 #     # Excluding benchmarks
 
-RUN chmod +x $REPO_PATH_DOCKER/fuzzer/entrypoint_mill_server.sh
+RUN chmod +x $REPO_PATH_DOCKER/entrypoint_mill_server.sh
