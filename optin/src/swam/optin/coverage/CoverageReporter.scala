@@ -33,7 +33,7 @@ import scala.concurrent.ExecutionContext
 
 case class ModuleCoverageInfo(methodName: String, coveredInst: Long, totalInst: Long)
 
-case class ModuleShowMap(methodName: String, inst: String,instIndex: Long, hitCount: Long)
+case class ModuleShowMap(methodName: String, inst: String,instIndex: Int, hitCount: Int)
 
 object CoverageReporter {
 
@@ -92,6 +92,10 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
       }.unsafeRunSync()
   }
 
+  def MapforAFL(randIndex : Int , hitCount : Int) = {
+
+  }
+
   /**
    * Function prints 2 things 
    * 1. Coverage Report to a csv file. ("Method Name", "Covered Instruction", "Total Instruction")
@@ -106,8 +110,7 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
     watOrWasm: Path,
     list: List[ModuleCoverageInfo], 
     showMap: List[ModuleShowMap],
-    printReport: Boolean,
-    printShowMap : Boolean
+    instance : CoverageListener[IO]
     )(implicit F: Sync[F]) = {
     //println("This is dir " + dir)
     
@@ -122,34 +125,40 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
     val t = new StringBuilder("")
     t.append(s"Method Name, Covered Instruction, Total Instruction\n")
       
-    /*Showmap*/
+    /*Showmap for analysis of hit count*/
     val t1 = new StringBuilder("")
-    t1.append(s"{")
-
-    if(!(printReport ^ printShowMap)) {
+    //t1.append(s"{")
+    t1.append("s.no,method,instruction,instruction_index,hitcount\n")
+    val r = new scala.util.Random(instance.seed)
+    if(!(instance.covreport ^ instance.covshowmap)) {
       if(!list.isEmpty){
         list foreach {case ModuleCoverageInfo(m,c,tc) => t.append(s"$m,$c,$tc\n")}
         writeToReport(report, reportName, t.toString, "ic.csv")
         showMap.zipWithIndex.foreach {
           case (ModuleShowMap(m,in,i,h),index) => 
-            t1.append("\n\t\""+index+"\":{\n\t\t\"method\":\""+ m +"\","+
-                        "\n\t\t\"instruction\" : \"" + in + "\"," +
-                        "\n\t\t\"instruction_index\" : \"" + i + "\"," +
-                        "\n\t\t\"HitCount\" : \"" + h + "\"\n\t},\n")
+            t1.append(s"$index,$m,$in,$i,$h\n")
+            val randomIndex = r.nextInt(instance.buffer.length - 1)
+            instance.buffer(randomIndex) = h.toByte
+            //println(s"$i:$h")
+            //array = (coverage(instruction_index).toInt + 1).toByte
           }
-        t1.append(s"}")
-        writeToReport(report, reportName, t1.toString, "showmap.txt")
+        //t1.append(s"}")
+        writeToReport(report, reportName, t1.toString, "showmap.csv")
       }
     }
     else {
-      if(!list.isEmpty && printReport) {
+      if(!list.isEmpty && instance.covreport) {
         list foreach {case ModuleCoverageInfo(m,c,tc) => t.append(s"$m,$c,$tc\n")}
         writeToReport(report, reportName, t.toString, "ic.csv")
       }
-      else if(!showMap.isEmpty && printShowMap) {
-        showMap foreach {case ModuleShowMap(m,in,i,h) => t1.append(s"\n\t{\n\t\tmethod : $m ,\n\t\tinstruction : $in ,\n\t\tinstruction_index : $i ,\n\t\tHitCount : $h\n\t},\n")}
-        t1.append(s"]")
-        writeToReport(report, reportName, t1.toString, "showmap.txt")
+      else if(!showMap.isEmpty && instance.covshowmap) {
+        showMap.zipWithIndex.foreach {
+          case (ModuleShowMap(m,in,i,h),index) =>
+            t1.append(s"$index,$m,$in,$i,$h\n")
+            val randomIndex = r.nextInt(instance.buffer.length - 1)
+            instance.buffer(randomIndex) = h.toByte
+        }
+        writeToReport(report, reportName, t1.toString, "showmap.csv")
       } 
     }
   }
@@ -160,7 +169,7 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
     showmap: List[ModuleShowMap], 
     instance: CoverageListener[IO]) = {
     if(!instance.coverageMap.isEmpty)
-        logCoverage[IO](dir, watOrWasm, report, showmap, instance.covreport, instance.covshowmap)
+        logCoverage[IO](dir, watOrWasm, report, showmap, instance)
       else{
         import scala.Console.{RESET ,YELLOW}
         println(s"${RESET}${YELLOW}No Coverage${RESET}")
@@ -177,7 +186,7 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
    * @param watOrWasm
    * @param instance
    */
-  def instCoverage(dir: Path, watOrWasm: Path, instance: CoverageListener[IO]) = {
+  def instCoverage(dir: Path, watOrWasm: Path, instance: CoverageListener[IO]):Array[Byte] = {
 
     if (!(instance.covreport ^ instance.covshowmap)){
       val report = buildCoverage(instance)
@@ -189,6 +198,8 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
       val showmap = if (instance.covshowmap) buildShowMap(instance) else List.empty[ModuleShowMap]
       checkCoverageMap(dir, watOrWasm, report, showmap, instance)
     }
-    
+    //println("This is buffer" + instance.buffer)
+    //for(i <- 0 to instance.buffer.length-1)/*yield i ->*/ println(s"index $i: ${instance.buffer(i)}")
+    instance.buffer
   }
 }
