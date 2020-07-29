@@ -44,5 +44,5 @@ val cfg2 = GetCFG(2, false, "check-for.wasm")
 val cfg3 = GetCFG(3, false, "check-for.wasm")
 println("This is cfg for func 0" + cfg0.blocks)
 println("This is cfg for func 1" + cfg1.blocks)
-println("This is cfg for func 2" + cfg2.blocks)
-println("This is cfg for func 3" + cfg3.blocks) //--- Issues getting exception here
+println("This is cfg for func 2" + cfg2.blocks) //--- Issues getting exception here
+println("This is cfg for func 3" + cfg3.blocks)
