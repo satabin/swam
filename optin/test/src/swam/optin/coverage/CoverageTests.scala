@@ -58,9 +58,9 @@ def doRunCovWasi(module: Module[IO],
                   args:List[String],
                   vec: Vector[Value], 
                   wat:Boolean, 
-                  wasi: Boolean): CoverageListener[IO] = {
+                  wasi: Boolean, mapsize:Int, seed:Int): CoverageListener[IO] = {
     
-    val coverageListener = CoverageListener[IO](wasi, ".", false, false)
+    val coverageListener = CoverageListener[IO](wasi, ".", false, false, mapsize, seed)
 
     Blocker[IO]
       .use { blocker =>
@@ -81,7 +81,7 @@ def doRunCovWasi(module: Module[IO],
 
     val vec = Vector(Value.Int32(10), Value.Int32(10))
 
-    val listener = runCoverage(wasmFile, "add", List(),vec, true, false)
+    val listener = runCoverage(wasmFile, "add", List(),vec, true, false,0,0)
 
     val list = CoverageReporter.buildCoverage(listener)
 
@@ -95,7 +95,7 @@ def doRunCovWasi(module: Module[IO],
   def test2(wasmFile: String) = {
 
     val vec = Vector()
-    val listener = runCoverage(wasmFile, "_start", List(), vec, false, true)
+    val listener = runCoverage(wasmFile, "_start", List(), vec, false, true,0,0)
 
     val list = CoverageReporter.buildCoverage(listener)
 
@@ -109,7 +109,7 @@ def doRunCovWasi(module: Module[IO],
   def test3(wasmFile: String) = {
 
     val vec = Vector()
-    val listener = runCoverage(wasmFile, "_start", List(), vec, false, true)
+    val listener = runCoverage(wasmFile, "_start", List(), vec, false, true,0,0)
 
     val list = CoverageReporter.buildCoverage(listener)
 
@@ -123,7 +123,7 @@ def doRunCovWasi(module: Module[IO],
   def test4(wasmFile: String) = {
 
     val vec = Vector()
-    val listener = runCoverage(wasmFile, "_start", List(), vec, false, true)
+    val listener = runCoverage(wasmFile, "_start", List(), vec, false, true,0,0)
 
     val list = CoverageReporter.buildCoverage(listener)
 
@@ -137,7 +137,7 @@ def doRunCovWasi(module: Module[IO],
   def test5(wasmFile: String) = {
 
     val vec = Vector()
-    val listener = runCoverage(wasmFile, "_start", List(), vec, false, true)
+    val listener = runCoverage(wasmFile, "_start", List(), vec, false, true,0,0)
 
     val list = CoverageReporter.buildCoverage(listener)
 
@@ -156,8 +156,37 @@ def doRunCovWasi(module: Module[IO],
     }
   }
 
-  val tests = Tests {
+  /**
+   * One test for testing the random seed values for instruction set of a Wasm module being executed.
+   * As it is necessary for the AFL to have the same random instruction for all run added this test method
+   * */
+  def message: String = "ABC"
 
+  def test6(wasmFile: String) = {
+    val vec1 = Vector(Value.Int32(10), Value.Int32(10))
+
+    /*First run on naive method*/
+    val listener_1 = runCoverage(wasmFile, "add", List(), vec1, true, false, 65000, 1)
+    //build show map for first time
+    val list_randIndex_1 = CoverageReporter.buildShowMap(listener_1)
+    /*Second run on naive method*/
+    val vec2 = Vector(Value.Int32(30), Value.Int32(20))
+    val listener_2 = runCoverage(wasmFile, "add", List(), vec2, true, false, 65000, 1)
+    //build show map for second time
+    val list_randIndex_2 = CoverageReporter.buildShowMap(listener_2)
+
+    val zip = list_randIndex_1 zip list_randIndex_2
+    for(x <- zip){
+      Predef.assert((x._1.seededIndex == x._2.seededIndex && x._1.hitCount == x._2.hitCount),
+                      s"Mismatch between seeded index or hotcount : " +
+                        s"Seeded Instruction Index : ${x._1.seededIndex} == ${x._2.seededIndex} \n" +
+                          s"OR\n" +
+                          s"Hit Count : ${x._1.hitCount} == ${x._2.hitCount}"
+      )
+    }
+  }
+
+  val tests = Tests {
     /**
     TODO more manual test cases to be added.
       */
@@ -166,5 +195,6 @@ def doRunCovWasi(module: Module[IO],
     "check-else" - test3("optin/test/resources/coverage-test/informal_data/wasm_programs/if_else-check-else.wasm")
     "check-for" - test4("optin/test/resources/coverage-test/informal_data/wasm_programs/check-for.wasm")
     "deconvolution" - test5("optin/test/resources/coverage-test/formal_data/Deconvolution-1D.wasm")
+    "seed-test" - test6("optin/test/resources/coverage-test/add.wat")
   }
 }

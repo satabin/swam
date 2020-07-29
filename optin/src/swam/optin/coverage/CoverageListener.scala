@@ -57,8 +57,11 @@ class CoverageListener[F[_]: Async](wasi:Boolean, filterFunc:String, covr: Boole
 }
 
 object CoverageListener {
-  def apply[F[_]: Async: ContextShift](wasi:Boolean, filterFunc: String, 
-    covreport: Boolean, covshowmap: Boolean,mapsize:Int, randomSeed:Int): CoverageListener[F] = {
+  def apply[F[_]: Async: ContextShift](wasi:Boolean,
+                                       filterFunc: String,
+                                       covreport: Boolean,
+                                       covshowmap: Boolean,
+                                       mapsize:Int, randomSeed:Int): CoverageListener[F] = {
 
     new CoverageListener[F](wasi, filterFunc, covreport, covshowmap,mapsize, randomSeed)
 
