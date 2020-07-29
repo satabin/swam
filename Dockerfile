@@ -47,11 +47,10 @@ ADD . $DOCKER_SWAM_SRC
 
 # As long as I cannot separate installing dependencies and compiling 
 # src, this will be done in the entrypoint, so volumes can be used:
-# RUN mill core.compile text.compile \
-#     generator.compile cli.compile \
-#     runtime.compile test.compile \
-#     optin.compile wasi.compile \
-#     examples.compile util.compile 
-#     # Excluding benchmarks
+
+# For maven data:
+VOLUME /root/.cache/coursier/v1/https/repo1.maven.org/maven2
+# For compiled sources:
+VOLUME $DOCKER_SWAM_SRC/out/
 
 RUN chmod +x $DOCKER_SWAM_SRC/entrypoint_mill_server.sh
