@@ -144,14 +144,14 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
               }
               else{
                 if(listener.filter.equals(".")){
-                  println(functionName)
+                  //println(functionName)
                   if(!def_undef_func.contains(fn)) {
-                    val ca = Blocker[IO].use { blocker => 
-                      for {
-                        cf <- cfg
-                      } yield cf
-                    }.unsafeRunSync()
-                    println("CFG in Instantiator" + ca)
+                    //val ca = Blocker[IO].use { blocker =>
+                    //  for {
+                    //    cf <- cfg
+                   //   } yield cf
+                   // }.unsafeRunSync()
+                    //println("CFG in Instantiator" + ca)
                     new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
                   }
                   else c

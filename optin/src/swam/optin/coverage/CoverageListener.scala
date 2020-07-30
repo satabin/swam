@@ -12,9 +12,13 @@ import java.io._
 /**
   * @author Javier Cabrera-Arteaga on 2020-06-11
   */
-class CoverageListener[F[_]: Async](wasi:Boolean, filterFunc:String, covr: Boolean, covs: Boolean) extends InstructionListener[F] {
+class CoverageListener[F[_]: Async](wasi:Boolean, filterFunc:String, covr: Boolean, covs: Boolean,
+                                    mapsize:Int, randomSeed:Int) extends InstructionListener[F] {
   //(//Index //Function name) -> (Functions, Actual instruction, HitCount)
   var coverageMap = Map[(Int, String), (String, AsmInst[F], Int)]()
+
+  /*Showmap for afl*/
+  var buffer = new Array[Byte](mapsize)
 
   override val wasiCheck : Boolean = wasi
 
@@ -23,6 +27,8 @@ class CoverageListener[F[_]: Async](wasi:Boolean, filterFunc:String, covr: Boole
   override val covshowmap: Boolean = covs
 
   override val filter : String = filterFunc
+
+  override val seed : Int = randomSeed
 
   override def before(inner: AsmInst[F], index: Int, functionName: Option[String],frame: Frame[F]): Unit = {}
 
@@ -51,10 +57,13 @@ class CoverageListener[F[_]: Async](wasi:Boolean, filterFunc:String, covr: Boole
 }
 
 object CoverageListener {
-  def apply[F[_]: Async: ContextShift](wasi:Boolean, filterFunc: String, 
-    covreport: Boolean, covshowmap: Boolean): CoverageListener[F] = {
+  def apply[F[_]: Async: ContextShift](wasi:Boolean,
+                                       filterFunc: String,
+                                       covreport: Boolean,
+                                       covshowmap: Boolean,
+                                       mapsize:Int, randomSeed:Int): CoverageListener[F] = {
 
-    new CoverageListener[F](wasi, filterFunc, covreport, covshowmap)
+    new CoverageListener[F](wasi, filterFunc, covreport, covshowmap,mapsize, randomSeed)
 
   }
 }
