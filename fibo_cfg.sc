@@ -1,22 +1,12 @@
 import swam.text._
-import swam.cfg._
-import swam.runtime._
-import swam.binary._
-
-import swam.validation._
-
 import cats.effect._
-
+import swam.cfg._
+import swam.runtime._ 
+import swam.validation._
+import swam.binary._
 import java.nio.file.Paths
-import java.io._
-import fs2._
-
-import cats.effect.{Blocker, ContextShift, IO}
-import scala.concurrent.ExecutionContext
-
 
 implicit val cs = IO.contextShift(scala.concurrent.ExecutionContext.global)
-
 
 def GetCFG(func_id : Int, wat : Boolean, fileName: String) : CFG = {
   val cfg =
@@ -45,4 +35,4 @@ val cfg3 = GetCFG(3, false, "check-for.wasm")
 println("This is cfg for func 0" + cfg0.blocks)
 println("This is cfg for func 1" + cfg1.blocks)
 println("This is cfg for func 2" + cfg2.blocks) //--- Issues getting exception here
-println("This is cfg for func 3" + cfg3.blocks)
+println("This is cfg for func 3" + cfg3.blocks) 

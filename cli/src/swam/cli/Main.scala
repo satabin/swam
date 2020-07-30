@@ -11,7 +11,6 @@ import cats.effect._
 import cats.implicits._
 import com.monovore.decline._
 import com.monovore.decline.effect._
-import _root_.enumeratum.values._
 import io.odin._
 import io.odin.formatter.Formatter
 import io.odin.formatter.options.ThrowableFormat
@@ -65,7 +64,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     .withDefault(Paths.get(".").toAbsolutePath.normalize)
       //Files.createDirectory(Paths.get(".").toAbsolutePath.normalize.toString + "/covreports/"))
 
-  val covfilter = Opts.flag("cov-filter", "Generate coverage with filter on Wasi Methods", short = "r").orFalse
+  val covfilter = Opts.flag("covf", "Generate coverage with filter on Wasi Methods", short = "r").orFalse
 
   val covshowmap = Opts.flag("showmap", "When used, only provides show map for code coverage data.", short = "p").orFalse
 
@@ -76,16 +75,6 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
         .withDefault(".")
 
   val covFilterOpt = (covfilter, covfilterOnFunc).tupled
-
-  val mapSize =
-    Opts
-      .option[Int]("map-size", "Size of the Map in AFL", short = "M")
-      .withDefault(0)
-
-  val seed =
-    Opts
-      .option[Int]("seed", "Need to provide it with AFL Map size option for assigning the instruction same seed value when running with the same run instance.", short = "S")
-      .withDefault(0)
 
   val filter =
     Opts
@@ -124,9 +113,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   }
 
   val covOpts: Opts[Options] = Opts.subcommand("coverage", "Run a WebAssembly file and generate coverage report") {
-    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, covout, covFilterOpt, covreport, covshowmap, mapSize,seed).mapN {
-      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covout, covFilterOpt, covreport, covshowmap,mapSize,seed) =>
-        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, covout, covFilterOpt._1, covFilterOpt._2, covreport, covshowmap,mapSize,seed)
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, covout, covFilterOpt, covreport, covshowmap).mapN {
+      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covout, covFilterOpt, covreport, covshowmap) =>
+        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, covout, covFilterOpt._1, covFilterOpt._2, covreport, covshowmap)
     }
   }
 
@@ -214,10 +203,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 .compile
                 .drain
             } yield ExitCode.Success
-         case WasmCov(file, args, main, wat,
-                        wasi, time, trace, filter, tracef,
-                              dirs, debug, covout, covfilter, covfilterOnFunc,
-                                          covreport, covshowmap, mapSize, seed) =>
+         case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug, covout, covfilter, covfilterOnFunc, covreport, covshowmap) =>
             for {
               tracer <- if (trace)
                 JULTracer[IO](blocker,
@@ -227,7 +213,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                               formatter = NoTimestampFormatter).map(Some(_))
               else
                 IO(None)
-              coverageListener = CoverageListener[IO](covfilter, covfilterOnFunc, covreport, covshowmap, mapSize, seed)
+              coverageListener = CoverageListener[IO](covfilter, covfilterOnFunc, covreport, covshowmap)
               //coverageListener.wasiCheck = covfilter
               engine <- Engine[IO](blocker, tracer, listener = Option(coverageListener))
               tcompiler <- swam.text.Compiler[IO](blocker)
@@ -236,8 +222,6 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
               //instance <- doRunCov(compiled, main, dirs, args, wasi, time, blocker)
               _ <- doRun(compiled, main, dirs, args, wasi, time, blocker)
               _ <- IO(CoverageReporter.instCoverage(covout, file, coverageListener))
-              //_ <- IO(for(i <- instan)/*yield i ->*/ println(i.asInstanceOf[Int]))
-              //_ <- IO(println(instan.foreach(i => println(i))))
               //else IO(None)
             } yield ExitCode.Success
           case Validate(file, wat, dev) =>
