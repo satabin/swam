@@ -45,12 +45,4 @@ WORKDIR $DOCKER_SWAM_SRC
 
 ADD . $DOCKER_SWAM_SRC
 
-# As long as I cannot separate installing dependencies and compiling 
-# src, this will be done in the entrypoint, so volumes can be used:
-
-# For maven data:
-VOLUME /root/.cache/coursier/v1/https/repo1.maven.org/maven2
-# For compiled sources:
-VOLUME $DOCKER_SWAM_SRC/out/
-
 RUN chmod +x $DOCKER_SWAM_SRC/entrypoint_mill_server.sh
