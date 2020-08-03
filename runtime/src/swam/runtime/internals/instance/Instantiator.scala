@@ -125,7 +125,50 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
             case _ =>
               None
           })
-        val toWrap = engine.instructionListener match {
+        val toWrap1 = engine.instructionListener match { 
+          case Some(listener) => {
+            val fn = functionName.getOrElse("N/A").toString
+            if(!listener.wasiCheck){
+              // code with Wasi methods fails to get the cfg. 
+              // So currently not in scope. Todo later.
+              code
+            }
+            else{
+              //Working code of cfg for some Wasm modules. 
+              //So trying to code path coverage for those wasm modules.
+              if(listener.filter.equals(".")){
+                  if(!def_undef_func.contains(fn)) {
+                    println(fn)
+                    val ca = Blocker[IO].use { blocker => 
+                      for {
+                        cf <- cfg
+                      } yield cf
+                    }.unsafeRunSync()
+                    println("CFG in Instantiator" + ca.blocks)
+                    code.zipWithIndex.map{
+                      case (c, index) => new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
+                        c
+                      }
+                  }
+                  else code
+                }
+                else {
+                  if(!def_undef_func.contains(fn)) {
+                    if(WasiFilter.checkPattern(listener.filter, fn)) code 
+                    else {
+                        code.zipWithIndex.map{
+                          case (c, index) => new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
+                          c
+                        }
+                      }
+                  }
+                  else code
+                }
+              }
+            }
+          case None => code
+        } 
+        /*val toWrap = engine.instructionListener match {
           case Some(listener) => {
             // TODO change functionName to some kind of "debugging" class
             /**
@@ -135,23 +178,26 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
             val fn = functionName.getOrElse("N/A").toString
             code.zipWithIndex.map{case (c, index) => 
               if(!listener.wasiCheck){
-                if(listener.filter.equals("."))
+                /*if(listener.filter.equals("."))
                   new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
                 else{  
                   if(WasiFilter.checkPattern(listener.filter, fn)) c 
                   else new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
-                }
+                }*/
+
+                //No need of reading the cfgs for the Wasi methods.
+                c
               }
               else{
                 if(listener.filter.equals(".")){
-                  println(functionName)
                   if(!def_undef_func.contains(fn)) {
+                    println(fn)
                     val ca = Blocker[IO].use { blocker => 
                       for {
                         cf <- cfg
                       } yield cf
                     }.unsafeRunSync()
-                    println("CFG in Instantiator" + ca)
+                    println("CFG in Instantiator" + ca.blocks)
                     new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
                   }
                   else c
@@ -167,8 +213,8 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
             }
           }
           case None => code
-        }
-        new FunctionInstance[F](tpe, locals, toWrap, instance, functionName)
+        }*/
+        new FunctionInstance[F](tpe, locals, toWrap1, instance, functionName)
     }
 
     //println(module.exports.map(_).toMap)

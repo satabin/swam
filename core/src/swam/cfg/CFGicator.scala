@@ -39,6 +39,8 @@ private class CFGicator[F[_]](val builder: CFGBuilder)(implicit F: MonadError[F,
 
   private object traverser extends Traverser[F, Context] {
 
+    var index = 0
+
     override val blockPrepare: (Context, Block) => F[Context] = {
       case (ctx, _) if ctx.reachable =>
         // jump to new basic block, representing the start of this new block
@@ -160,7 +162,8 @@ private class CFGicator[F[_]](val builder: CFGBuilder)(implicit F: MonadError[F,
         F.pure(ctx.copy(reachable = false))
       case (ctx, inst) =>
         if (ctx.reachable)
-          ctx.currentBasicBlock.addInst(inst)
+          ctx.currentBasicBlock.addInst(inst, index)
+        index = index + 1
         F.pure(ctx)
     }
 
