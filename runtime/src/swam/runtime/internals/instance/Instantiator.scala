@@ -127,6 +127,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
           })
         val toWrap1 = engine.instructionListener match { 
           case Some(listener) => {
+            var index = 0
             val fn = functionName.getOrElse("N/A").toString
             if(!listener.wasiCheck){
               // code with Wasi methods fails to get the cfg. 
@@ -144,11 +145,21 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
                         cf <- cfg
                       } yield cf
                     }.unsafeRunSync()
-                    println("CFG in Instantiator" + ca.blocks)
-                    code.zipWithIndex.map{
-                      case (c, index) => new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
-                        c
+                    println("CFG in Instantiator" + ca.blocks.map(x => println(s"This is a basic block ${x.id} :: " + x)))
+                    //code.map{x => println("This is actual instruction :::::: " + x.toString)}
+                    code.map { c =>
+                      if(c.toString.contains("BrIf@") || c.toString.contains("Br@") || c.toString.contains("Return")){
+                        println(s"This is BrIf and Br and Return ::: $fn, ${c.toString}")
+                        val newCode = new engine.asm.InstructionWrapper(c, -1, listener, functionName).asInstanceOf[AsmInst[F]]
+                        newCode
                       }
+                      else {
+                        println(s"This is others ::: $fn, ${c.toString}, $index") 
+                        val newCode = new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
+                        index = index + 1
+                        newCode
+                      }
+                    }
                   }
                   else code
                 }
@@ -158,7 +169,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
                     else {
                         code.zipWithIndex.map{
                           case (c, index) => new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
-                          c
+                          //c
                         }
                       }
                   }
