@@ -140,21 +140,36 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
               if(listener.filter.equals(".")){
                   if(!def_undef_func.contains(fn)) {
                     println(fn)
-                    val ca = Blocker[IO].use { blocker => 
+                    val f_cfg = Blocker[IO].use { blocker => 
                       for {
                         cf <- cfg
                       } yield cf
                     }.unsafeRunSync()
-                    println("CFG in Instantiator" + ca.blocks.map(x => println(s"This is a basic block ${x.id} :: " + x)))
+                    //println("CFG in Instantiator" + ca.blocks.map(x => println(s"This is a basic block ${x.id} :: " + x)))
                     //code.map{x => println("This is actual instruction :::::: " + x.toString)}
                     code.map { c =>
+                      //println("This is the option present at head : " + f_cfg.blocks.filter(_.stmts.headOption.contains()))
+                      //f_cfg.blocks.map(f=>{f.stmts.map(d => println(s"$index $fn \t ${d._2} \t ${d._1}"))})
+                      f_cfg.blocks.map(f => {
+
+                        val checkTop = f.stmts.lastOption
+
+                        checkTop match {
+                          case Some(x) => {
+                            if(x._2 == index)
+                              println(s"${f.id} \t $fn \t ${x._2 == index}")
+                            c
+                          } 
+                          case None => c
+                        }
+                      })
                       if(c.toString.contains("BrIf@") || c.toString.contains("Br@") || c.toString.contains("Return")){
-                        println(s"This is BrIf and Br and Return ::: $fn, ${c.toString}")
+                        //println(s"This is BrIf and Br and Return ::: $fn, ${c.toString}")
                         val newCode = new engine.asm.InstructionWrapper(c, -1, listener, functionName).asInstanceOf[AsmInst[F]]
                         newCode
                       }
                       else {
-                        println(s"This is others ::: $fn, ${c.toString}, $index") 
+                        //println(s"This is others ::: $fn, ${c.toString}, $index") 
                         val newCode = new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
                         index = index + 1
                         newCode

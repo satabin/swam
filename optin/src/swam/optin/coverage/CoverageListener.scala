@@ -16,6 +16,9 @@ class CoverageListener[F[_]: Async](wasi:Boolean, filterFunc:String, covr: Boole
   //(//Index //Function name) -> (Functions, Actual instruction, HitCount)
   var coverageMap = Map[(Int, String), (String, AsmInst[F], Int)]()
 
+  //(Instruction Index, Function Name -> FunctionName, MapOfPath[(current Block id, previous Block id ), hitCount])
+  //var coveragePath = Map[(Int, String), (String, AsmInst[F], Int, Int, Int)]()
+
   override val wasiCheck : Boolean = wasi
 
   override val covreport: Boolean = covr

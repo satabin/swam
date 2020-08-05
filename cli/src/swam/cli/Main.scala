@@ -59,12 +59,18 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val trace =
     Opts.flag("trace", "Trace WASM execution channels (default false)", short = "t").orFalse
 
+  val covinst =
+    Opts.flag("inst-coverage","Generate the instruction level coverage.",short = "i").orFalse
+
+  val covpath =
+    Opts.flag("path-coverage","Generate the path level coverage.",short = "b").orFalse
+
   val covout : com.monovore.decline.Opts[Path]= Opts
     .option[Path]("covout", "Output folder for coverage reports and show-map", short = "c")
     .withDefault(Paths.get(".").toAbsolutePath.normalize)
       //Files.createDirectory(Paths.get(".").toAbsolutePath.normalize.toString + "/covreports/"))
 
-  val covfilter = Opts.flag("covf", "Generate coverage with filter on Wasi Methods", short = "r").orFalse
+  val covfilter = Opts.flag("cov-filter", "Generate coverage with filter on Wasi Methods", short = "r").orFalse
 
   val covshowmap = Opts.flag("showmap", "When used, only provides show map for code coverage data.", short = "p").orFalse
 
@@ -113,9 +119,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   }
 
   val covOpts: Opts[Options] = Opts.subcommand("coverage", "Run a WebAssembly file and generate coverage report") {
-    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, covout, covFilterOpt, covreport, covshowmap).mapN {
-      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covout, covFilterOpt, covreport, covshowmap) =>
-        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, covout, covFilterOpt._1, covFilterOpt._2, covreport, covshowmap)
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, covout, covFilterOpt, covreport, covshowmap, covinst, covpath).mapN {
+      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covout, covFilterOpt, covreport, covshowmap,covinst, covpath) =>
+        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, covout, covFilterOpt._1, covFilterOpt._2, covreport, covshowmap,covinst, covpath)
     }
   }
 
@@ -203,7 +209,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 .compile
                 .drain
             } yield ExitCode.Success
-         case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug, covout, covfilter, covfilterOnFunc, covreport, covshowmap) =>
+         case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug, covout, covfilter, covfilterOnFunc, covreport, covshowmap, covinst, covpath) =>
             for {
               tracer <- if (trace)
                 JULTracer[IO](blocker,
