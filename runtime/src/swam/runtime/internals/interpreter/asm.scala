@@ -59,22 +59,54 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
   * @author Javier Cabrera-Arteaga on 2020-07-16
   * Brought the InstructionWrapper class internal to Asm 
   */
-  class InstructionWrapper[F[_]](val inner: AsmInst[F], val index:Int,
-                               val listener: InstructionListener[F],
-                               val functionName: Option[String])(implicit F: MonadError[F, Throwable])
+
+  /*class PathWrapper[F[_]](val inner: AsmInst[F], val current:Int, 
+                          val next:Int,
+                          val listener: CodeCoverageListener[F],
+                          val functionName: Option[String])(implicit F: MonadError[F, Throwable])
       extends AsmInst[F] {
 
-    listener.init(inner,index,functionName)
+    listener.init(current, next, functionName)
 
     /**
-     * Instruction Wrapper listens to all the instructions
+     * Path Wrapper listens to all the decisions between the blocks.
      * @param t
      * @return
      */
     override def execute(t: Frame[F]): Continuation[F] = {
-      listener.before(inner, index, functionName,t)
+      listener.before(current, next, functionName, t)
       val result = inner.execute(t)
-      listener.after(inner, index, t, functionName, result)
+      listener.after(current, next, functionName ,result)
+    }
+  }*/
+
+  class InstructionWrapper[F[_]](val inner: AsmInst[F], 
+                                 val index:Int,
+                                 val current:Int, 
+                                 val next:Int ,
+                                 val listener: InstructionListener[F],
+                                 val functionName: Option[String])(implicit F: MonadError[F, Throwable])
+      extends AsmInst[F] {
+
+    if(listener.covinst){
+      listener.init(inner, index, functionName)
+    }
+    else {
+      listener.initPath(current, next, functionName)
+    }
+
+    override def execute(t: Frame[F]): Continuation[F] = {
+      if(listener.covinst){
+        listener.before(inner, index, functionName, t)
+        val result = inner.execute(t)
+        listener.after(inner, index, t, functionName, result)  
+      }
+      else{
+        //println(s"This is new :: $next \t $current")
+        listener.beforePath(current, next, functionName, t)
+        val result = inner.execute(t)
+        listener.afterPath(current, next, functionName, result) 
+      }  
     }
   }
 
