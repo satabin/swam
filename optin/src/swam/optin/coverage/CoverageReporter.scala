@@ -31,6 +31,8 @@ import scala.concurrent.ExecutionContext
 
 //import scala.util.Random
 
+case class ModulePathCoverage(methodName:String, src : Int, dest: Int, hitCount:Long)
+
 case class ModuleCoverageInfo(methodName: String, coveredInst: Long, totalInst: Long)
 
 case class ModuleShowMap(methodName: String, inst: String,instIndex: Long, hitCount: Long)
@@ -185,5 +187,9 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
       checkCoverageMap(dir, watOrWasm, report, showmap, instance)
     }
     
+  }
+
+  def pathCoverage(dir: Path, watOrWasm: Path, instance: CoverageListener[IO]) = {
+    println(instance.coveragePathMap)
   }
 }
