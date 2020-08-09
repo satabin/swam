@@ -169,7 +169,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
               //var offset = 0
 
               var mappingBlocks = Map[Int, Int]()
-
+              var checkBlocks = Map[Int, Boolean]()
               if(!listener.wasiCheck){
                 // code with Wasi methods fails to get the cfg. 
                 // So currently not in scope. Todo later.
@@ -178,13 +178,13 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
               else {
                 if(listener.filter.equals(".")) {
                     if(!def_undef_func.contains(fn)) {
-                      println(fn)
+                      //println(fn)
                       val f_cfg = Blocker[IO].use { blocker => 
                         for {
                           cf <- cfg
                         } yield cf
                       }.unsafeRunSync()
-                      println("CFG in Instantiator" + f_cfg.blocks.map(x => println(s"This is a basic block ${x.id} :: " + x)))
+                      //println("CFG in Instantiator" + f_cfg.blocks.map(x => println(s"This is a basic block ${x.id} :: " + x)))
                       val newCode = code.map{c => if(c.toString.contains("BrIf@") || c.toString.contains("Br@") || c.toString.contains("Return")){
                           index_brif_return = index_brif_return + 1
                           index_global = index_global + 1
@@ -197,7 +197,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
                         } 
                       }
 
-                      newCode.map{u => println(s"${u._1},${u._2},${u._3}")}
+                      //newCode.map{u => println(s"${u._1},${u._2},${u._3}")}
                       /*val mapBlocks = */f_cfg.blocks.map(b => {
                         val checkLast = b.stmts.lastOption
                         checkLast match{
@@ -209,6 +209,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
                           }
                           case None => {
                             mappingBlocks = mappingBlocks.updated(b.id, 0)
+                            checkBlocks = checkBlocks.updated(b.id, false)
                             b.id -> 0
                           }
                         }
@@ -263,7 +264,23 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
                                   }
                                 }
                               }
-                            case None => ;
+                              case None => {
+                                //println(s"This is ...$checkLast, ${control.id}")
+                                if(checkBlocks.getOrElse(control.id,false) == false){
+                                  control.jump match {
+                                    case Some(Jump.To(tgt)) => {
+                                      current = control.id
+                                      checkBlocks = checkBlocks.updated(control.id, true)
+                                      next = tgt
+                                      if(current != next)
+                                        code(ig) = new engine.asm.InstructionWrapper(c, ig, current, next, listener, functionName).asInstanceOf[AsmInst[F]]
+                                    }
+                                    case Some(Jump.If(tTgt, eTgt)) => Nil
+                                    case Some(Jump.Table(cases, dflt)) => Nil
+                                    case None => Nil
+                                  }  
+                                }
+                              }
                             }
                           })
                         }

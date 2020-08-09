@@ -102,7 +102,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
         listener.after(inner, index, t, functionName, result)  
       }
       else{
-        println(s"This is exshuative $index, ${inner.toString}")
+        //println(s"This is exshuative $index, ${inner.toString}")
         listener.beforePath(current, next, functionName, t)
         val result = inner.execute(t)
         listener.afterPath(current, next, functionName, result) 
