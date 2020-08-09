@@ -61,6 +61,7 @@ class CoverageListener[F[_]: Async](wasi:Boolean,
 
   override def init(inner: AsmInst[F], index: Int, functionName: Option[String]): Unit = {
     val fn = functionName.getOrElse("N/A").toString
+    
     coverageMap = coverageMap.updated((index, fn), (fn, inner, 0))
 
     //coveragePath = coveragePath.updated((fn, currentBlockId, previousBlockId), 0)
@@ -69,7 +70,7 @@ class CoverageListener[F[_]: Async](wasi:Boolean,
   override def beforePath(current:Int, next:Int, functionName: Option[String], frame: Frame[F]): Unit = {}
 
   override def afterPath(current:Int, next:Int, functionName:Option[String],result: Continuation[F]): Continuation[F] = {
-    println("This is after execution")
+    //println("This is after execution")
     val fn:String = functionName.getOrElse("N/A").toString
     //println(s"This is not print :: $current \t $next \t $fn")
     //val prev = coveragePathMap((fn, current, next))
@@ -85,17 +86,18 @@ class CoverageListener[F[_]: Async](wasi:Boolean,
         })
       coveragePathMap = coveragePathMap.updated((fn, current, next), i)
     }
-    println("This is in After : " + coveragePathMap)
+    //println("This is in After : " + coveragePathMap)
     //println(coverageMap)
     result
   }
 
   override def initPath(current:Int, next:Int, functionName: Option[String]): Unit = {
-    println("This is init execution")
+    //println("This is init execution")
+    
     val fn = functionName.getOrElse("N/A").toString
-
+    //println(s"This is not print :: $current \t $next \t $fn")
     coveragePathMap = coveragePathMap.updated((fn, current, next), 0)
-    println("This is in Init : " + coveragePathMap)
+    //println("This is in Init : " + coveragePathMap)
   }
 }
 

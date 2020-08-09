@@ -50,7 +50,8 @@ class Engine[F[_]: Async] private (val conf: EngineConfiguration,
                                    private[runtime] val instructionListener: Option[InstructionListener[F]])
     extends ModuleLoader[F] {
 
-  val asm = new Asm[F]
+  private[runtime] val asm =
+    new Asm[F]
 
   private[runtime] val compiler =
     new Compiler[F](this, asm)

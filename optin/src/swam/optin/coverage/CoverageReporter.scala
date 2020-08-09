@@ -62,7 +62,7 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
     /**
      * Print coverage for checking or testing
      * */
-    //println(listener.coverageMap)
+    println(listener.coverageMap)
     covList
   }
 
@@ -73,7 +73,7 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
   def buildShowMap(listener: CoverageListener[IO]) : List[ModuleShowMap] = {
     val sm = new ListBuffer[ModuleShowMap]()
     listener.coverageMap foreach {case ((index), value) => sm += ModuleShowMap(index._2,value._2.toString, index._1, value._3)}
-    //println(sm)
+    println(sm)
     sm.toList
   }
 
@@ -144,9 +144,8 @@ implicit val cs = IO.contextShift(ExecutionContext.global)
         writeToReport(report, reportName, t.toString, "ic.csv")
       }
       else if(!showMap.isEmpty && printShowMap) {
-        showMap foreach {case ModuleShowMap(m,in,i,h) => t1.append(s"\n\t{\n\t\tmethod : $m ,\n\t\tinstruction : $in ,\n\t\tinstruction_index : $i ,\n\t\tHitCount : $h\n\t},\n")}
-        t1.append(s"]")
-        writeToReport(report, reportName, t1.toString, "showmap.txt")
+        showMap foreach {case ModuleShowMap(m,in,i,h) => t1.append(s"$index, $m, $in, $i, $h\n")}
+        writeToReport(report, reportName, t1.toString, "showmap.csv")
       } 
     }
   }
