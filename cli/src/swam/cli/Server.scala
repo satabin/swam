@@ -1,8 +1,7 @@
 package swam
 package cli
 
-import com.typesafe.config.Config
-import swam.cli.Server.{parseMessage, randomCoverageFiller, readSocket, serializeMessage, writeSocket}
+// import swam.cli.Server.{parseMessage, randomCoverageFiller, readSocket, serializeMessage, writeSocket}
 
 import scala.collection.mutable.ListBuffer
 
@@ -13,7 +12,7 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 
 import cats.effect.IO
-import swam.code_analysis.coverage.{CoverageListener, CoverageReporter}
+import swam.code_analysis.coverage.CoverageListener
 import swam.runtime.{Function, Value}
 
 import com.typesafe.config.ConfigFactory
@@ -28,10 +27,8 @@ object Server {
       preparedFunction: IO[Function[IO]],
       wasmArgTypes: List[String],
       time: Boolean,
-      coverage_out: Option[Path],
       watOrWasm: Path,
-      coverageListener: CoverageListener[IO],
-      covfilter: Boolean
+      coverageListener: CoverageListener[IO]
   ): Unit = {
 
     println("wasmArgTypes: " + wasmArgTypes)
@@ -47,10 +44,8 @@ object Server {
         new ConnectionThread(preparedFunction,
                              wasmArgTypes,
                              time,
-                             coverage_out,
                              watOrWasm,
                              coverageListener,
-                             covfilter,
                              clientSocket,
                              bufferSize)
       ).start
@@ -62,10 +57,8 @@ object Server {
       preparedFunction: IO[Function[IO]],
       wasmArgTypes: List[String],
       time: Boolean,
-      coverage_out: Option[Path],
       watOrWasm: Path,
       coverageListener: CoverageListener[IO],
-      covfilter: Boolean,
       clientSocket: Socket,
       bufferSize: Int
   ) extends Runnable {
@@ -87,11 +80,6 @@ object Server {
         Main.executeFunction(preparedFunction, argsParsed, time)
         // val result = Main.executeFunction(preparedFunction, argsParsed, time)
         // println(s"Result of calculation: $result")
-        if (covfilter) {
-          println("Instantiating Coverage now!")
-          CoverageReporter.instCoverage(coverage_out.get, watOrWasm, coverageListener)
-        }
-        // writeSocket(clientSocket, "Calculation successful! Result: " + result)
       } catch {
         // case e: swam.runtime.StackOverflowException => println(e)
         case e: Exception => {
@@ -103,6 +91,7 @@ object Server {
       val filledCoverage = coverageListener.pathInfo
       val message = serializeMessage(exitCode, filledCoverage)
       try {
+        // writeSocket(clientSocket, "Calculation successful! Result: " + result)
         writeSocket(clientSocket, message)
         println("Sent back message!")
       } catch {
