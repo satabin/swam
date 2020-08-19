@@ -13,6 +13,8 @@ import java.io._
 class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F] {
   var coverageMap = Map[Int, (String, Int)]()
 
+  override val buffer = new Array[Byte](65536)
+
   override val wasiCheck: Boolean = wasi
 
   override def before(inner: InstructionWrapper[F], frame: Frame[F]): Unit = {}

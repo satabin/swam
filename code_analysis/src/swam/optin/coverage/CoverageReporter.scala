@@ -173,10 +173,21 @@ object CoverageReporter {
     *  @param watOrWasm the filename with absolute path
     *  @param instance the compiled webassembly functions in the Instance[F] form.
     */
-  def blockCoverage(dir: Path, watOrWasm: Path, instance: CoverageListener[IO]) = {
+  def blockCoverage(dir: Path, watOrWasm: Path, instance: CoverageListener[IO]) : Array[Byte] = {
     val list = buildCoverage(instance)
     val showmap = buildShowMap(instance)
-    //if (logOrNot)
+    val r = new scala.util.Random(1000)
+    showmap.map{
+      c => {
+        val randomIndex = r.nextInt(65536 - 1)
+        instance.buffer(randomIndex) = c.hitCount.toByte
+        
+      } 
+    }
+    
+    //instance.buffer.filter(_ > 0).map(x => println(x))
+
     logCoverage(dir, watOrWasm, list, showmap)
+    instance.buffer
   }
 }

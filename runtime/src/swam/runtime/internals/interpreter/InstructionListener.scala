@@ -11,6 +11,7 @@ import swam.runtime.internals.instance.FunctionInstance
 trait InstructionListener[F[_]] {
 
   val wasiCheck: Boolean
+  val buffer: Array[Byte]
 
   def init(inner: InstructionWrapper[F], functionName: Option[String]): Unit
   def before(inner: InstructionWrapper[F], frame: Frame[F]): Unit
