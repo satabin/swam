@@ -30,12 +30,10 @@ RUN \
 ###### Actual Project ######
 
 ENV DOCKER_SWAM_SRC=/home/swam
-ENV DOCKER_SWAM_OUTPUT=/home/out
 ENV DOCKER_WASM=/home/wasm
 
 # Create the appropriate directories
 RUN mkdir $DOCKER_SWAM_SRC
-RUN mkdir $DOCKER_SWAM_OUTPUT
 RUN mkdir $DOCKER_WASM
 
 WORKDIR $DOCKER_SWAM_SRC
