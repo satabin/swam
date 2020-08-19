@@ -33,7 +33,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
   private val dataHardMax = engine.conf.data.hardMax
-  private val random = scala.util.Random
+  private val random = new scala.util.Random(100) // TODO check if we need to pass this as a parameter for the coverage tool
   private val def_undef_func: Set[String] = WasiFilter.readWasiFile()
 
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
