@@ -10,7 +10,12 @@ import swam.runtime.internals.instance.FunctionInstance
   */
 trait InstructionListener[F[_]] {
 
-  def init(inner: AsmInst[F], functionName: Option[String]): Unit
-  def before(inner: AsmInst[F], frame: Frame[F]): Unit
-  def after(inner: AsmInst[F], frame: Frame[F], result: Continuation[F]): Continuation[F]
+  val wasiCheck: Boolean
+
+  def init(inner: InstructionWrapper[F], functionName: Option[String]): Unit
+  def before(inner: InstructionWrapper[F], frame: Frame[F]): Unit
+  def after(inner: InstructionWrapper[F],
+            frame: Frame[F],
+            functionName: Option[String],
+            result: Continuation[F]): Continuation[F]
 }

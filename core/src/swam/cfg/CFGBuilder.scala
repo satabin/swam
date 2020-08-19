@@ -30,13 +30,13 @@ class CFGBuilder private {
 
     states += this
 
-    private[CFGBuilder] val stmts = ListBuffer.empty[Inst]
+    private[CFGBuilder] val stmts = ListBuffer.empty[(Inst, Int)]
 
     private[CFGBuilder] var jump = Option.empty[Jump]
 
     private val predecessors = ListBuffer.empty[Int]
 
-    def addInst(i: Inst): Unit =
+    def addInst(i: (Inst, Int)): Unit =
       stmts += i
 
     def jumpTo(tgt: BasicBlockBuilder): Unit = if (jump.isEmpty) {

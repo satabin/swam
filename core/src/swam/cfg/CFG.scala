@@ -262,7 +262,7 @@ class DominatorTree private[cfg] (idoms: Vector[Int]) {
 
 }
 
-case class BasicBlock(id: Int, name: String, stmts: List[Inst], jump: Option[Jump])(val predecessors: List[Int]) {
+case class BasicBlock(id: Int, name: String, stmts: List[(Inst,Int)], jump: Option[Jump])(val predecessors: List[Int]) {
   def successors: List[Int] =
     jump match {
       case Some(Jump.To(tgt))            => List(tgt)

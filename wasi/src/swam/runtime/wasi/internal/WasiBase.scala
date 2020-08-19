@@ -135,6 +135,23 @@ private[wasi] abstract class WasiBase[F[_]] extends Wasi[F] {
         }
         .handleErrorWith(t => logger.error("unable to read file name", t).as(io)))
 
+  def getChildFile(parent: Path, pathOffset: Pointer, pathSize: Size)(f: Path => F[Errno]): F[Errno] = {
+
+    mem.get.flatMap(
+      _.readBytes(pathOffset, pathSize)
+        .flatMap { bytes =>
+          val pathStr = new String(bytes, "UTF-8")
+          val child = parent.resolve(pathStr).normalize()
+          if (!child.startsWith(parent)) {
+            // the file is not a child of the file descriptor, no capability
+            F.pure(notcapable)
+          } else {
+            f(child)
+          }
+        }
+        .handleErrorWith(t => logger.error(s"unable to read child of $parent file name", t).as(io)))
+  }
+
   def childFile(parent: Path, pathOffset: Pointer, pathSize: Size)(f: Path => F[Errno]): F[Errno] =
     // read the path from memory
     mem.get.flatMap(

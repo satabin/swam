@@ -15,7 +15,7 @@ import io.odin.{Logger, consoleLogger}
 import fs2._
 import swam.binary.ModuleStream
 import swam.decompilation._
-import swam.optin.coverage.{CoverageListener, CoverageReporter}
+import swam.code_analysis.coverage.{CoverageListener, CoverageReporter}
 import swam.runtime.imports._
 import swam.runtime.trace._
 import swam.runtime.wasi.Wasi
@@ -69,8 +69,8 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val trace =
     Opts.flag("trace", "Trace WASM execution channels (default false)", short = "t").orFalse
 
-  val cov =
-    Opts.flag("instcov", "Run the WebAssembly module and gets coverage.", short = "v").orFalse
+  /*val cov =
+    Opts.flag("instcov", "Run the WebAssembly module and gets coverage.", short = "v").orFalse*/
 
   val filter =
     Opts
@@ -110,21 +110,27 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     }
   }
 
+  val covout: com.monovore.decline.Opts[Path] = Opts
+    .option[Path]("covout", "Output folder for coverage reports and show-map", short = "c")
+    .withDefault(Paths.get(".").toAbsolutePath.normalize)
+
+  val covfilter = Opts.flag("cov-filter", "Generate coverage with filter on Wasi Methods", short = "r").orFalse
+
   val covOpts: Opts[Options] = Opts.subcommand("coverage", "Run a WebAssembly file and generate coverage report") {
-    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, cov, out, wasmArgTypes)
-      .mapN { (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, cov, out, wasmArgTypes) =>
-        RunWithCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, cov, out, wasmArgTypes)
-      }
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, covout, covfilter, wasmArgTypes).mapN {
+      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covout, covfilter, wasmArgTypes) =>
+        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, covout, covfilter, wasmArgTypes)
+    }
   }
 
   val serverOpts: Opts[Options] =
-    Opts.subcommand("run_server", "Run a socket for a given WASM that listens to inputs") {
-      // TODO: Check which ones of these are really necessary
-      (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, cov, out, wasmArgTypes)
-        .mapN { (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, cov, out, wasmArgTypes) =>
-          RunServer(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, cov, out, wasmArgTypes)
-        }
-    }
+  Opts.subcommand("run_server", "Run a socket for a given WASM that listens to inputs") {
+    // TODO: Check which ones of these are really necessary
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, cov, out, wasmArgTypes)
+      .mapN { (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, cov, out, wasmArgTypes) =>
+        RunServer(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, cov, out, wasmArgTypes)
+      }
+  }
 
   val decompileOpts: Opts[Options] = Opts.subcommand("decompile", "Decompile a wasm file") {
     (textual, wasmFile, out.orNone).mapN { (textual, wasm, out) => Decompile(wasm, textual, out) }
@@ -164,41 +170,26 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 _ <- IO(executeFunction(IO(preparedFunction), argsParsed, time))
               } yield ExitCode.Success
 
-            // TODO: Delete this and make Option(coverageListener) in .instCoverage()
-            case RunWithCov(file,
-                            args,
-                            main,
-                            wat,
-                            wasi,
-                            time,
-                            trace,
-                            filter,
-                            tracef,
-                            dirs,
-                            debug,
-                            coverage,
-                            out,
-                            wasmArgTypes) =>
-              for {
-                tracer <- if (trace)
-                  JULTracer[IO](blocker,
-                                traceFolder = ".",
-                                traceNamePattern = tracef.toAbsolutePath().toString(),
-                                filter = filter,
-                                formatter = NoTimestampFormatter).map(Some(_))
-                else
-                  IO(None)
-                argsParsed <- IO(parseWasmArgs(wasmArgTypes, args))
-                coverageListener = CoverageListener[IO]()
-                engine <- Engine[IO](blocker, tracer, listener = Option(coverageListener))
-                tcompiler <- Compiler[IO](blocker)
-                module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
-                compiled <- engine.compile(module)
-                preparedFunction <- prepareFunction(compiled, main, dirs, args, wasi, blocker)
-                _ <- IO(executeFunction(IO(preparedFunction), argsParsed, time))
-                _ <- if (coverage) IO(CoverageReporter.instCoverage(Option(out), file, coverageListener, coverage))
-                else IO(None)
-              } yield ExitCode.Success
+            case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug, covout, covfilter, wasmArgTypes) =>
+                for {
+                    tracer <- if (trace)
+                        JULTracer[IO](blocker,
+                        traceFolder = ".",
+                        traceNamePattern = tracef.toAbsolutePath().toString(),
+                        filter = filter,
+                        formatter = NoTimestampFormatter).map(Some(_))
+                    else
+                        IO(None)
+                    argsParsed <- IO(parseWasmArgs(wasmArgTypes, args))
+                    coverageListener = CoverageListener[IO](covfilter)
+                    engine <- Engine[IO](blocker, tracer, listener = Option(coverageListener))
+                    tcompiler <- swam.text.Compiler[IO](blocker)
+                    module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
+                    compiled <- engine.compile(module)
+                    preparedFunction <- prepareFunction(compiled, main, dirs, args, wasi, blocker)
+                    _ <- IO(executeFunction(IO(preparedFunction), argsParsed, time))
+                    _ <- IO(CoverageReporter.blockCoverage(covout, file, coverageListener))
+                } yield ExitCode.Success
 
             case RunServer(file,
                            args,

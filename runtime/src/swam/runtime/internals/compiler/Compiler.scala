@@ -24,8 +24,11 @@ import interpreter._
 import config.ConfiguredByteOrder
 
 import cats._
-
+import cats.effect.{IO}
+import cats.implicits._
 import fs2._
+
+import cfg._
 
 import scala.collection.mutable.ArrayBuilder
 
@@ -168,6 +171,7 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
           ctx.copy(types = types)
         case (ctx, Section.Code(codes)) =>
           val shift = ctx.funcs.size - codes.size
+
           val code =
             codes.zipWithIndex.map {
               case ((FuncBody(locals, code)), idx) =>
@@ -180,7 +184,9 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
                 val clocals = locals.flatMap(e => Vector.fill(e.count)(e.tpe))
                 compiler.Func.Compiled(CompiledFunction(idx + shift, tpe, clocals, compiled))
             }
+          //println(code)
           ctx.copy(code = code)
+        //ctx.copy(cfgs = cfgs)
         case (ctx, Section.Elements(elems)) =>
           val celems =
             elems.map {
