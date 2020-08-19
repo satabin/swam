@@ -48,7 +48,7 @@ object CoverageReporter {
   private def logCoverage(dir: Any, watOrWasm: Path, list: List[ModuleCoverageInfo]): Unit = {
 
     implicit val modEncoder: HeaderEncoder[ModuleCoverageInfo] =
-      HeaderEncoder.caseEncoder("Method Name", "Covered Instruction", "Total Instruction")(ModuleCoverageInfo.unapply _)
+      HeaderEncoder.caseEncoder("Method Name", "Covered Block", "Total Blocks")(ModuleCoverageInfo.unapply _)
 
     val fn = watOrWasm.getFileName.toString
     val index = if (fn.lastIndexOf('.') > -1) fn.lastIndexOf('.') else fn.length
