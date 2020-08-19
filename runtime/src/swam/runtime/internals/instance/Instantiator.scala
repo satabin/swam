@@ -35,9 +35,9 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
   private val dataHardMax = engine.conf.data.hardMax
   private val def_undef_func: Set[String] = WasiFilter.readWasiFile()
 
-  // Hashing primes
-  private val p1: Int = 73856093
-  private val p2: Int = 19349663
+  // Hashing primess
+  private val p1: Int = 269987
+  private val p2: Int = 267017
 
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
@@ -190,8 +190,8 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
 
             code.zipWithIndex.map {
               case (inst, i) =>
-                val iid = 100000 + ((i * p1) ^ (fidx * p2)) % 100000
-                print(s"$iid ")
+                val iid = ((i * p1) ^ (fidx * p2)) % 100000 // hashing id
+                println(s"$iid ")
                 if (!listener.wasiCheck) { // Just added the check for Wasi filter
                   if (leaders.contains(i))
                     new InstructionWrapper[F](iid, inst, listener, name)
