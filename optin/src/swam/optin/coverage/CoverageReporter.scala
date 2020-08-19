@@ -75,7 +75,7 @@ object CoverageReporter {
     *  @param watOrWasm the filename with absolute path
     *  @param instance the compiled webassembly functions in the Instance[F] form.
     */
-  def instCoverage(dir: Any, watOrWasm: Path, instance: CoverageListener[IO], logOrNot: Boolean) = {
+  def blockCoverage(dir: Any, watOrWasm: Path, instance: CoverageListener[IO], logOrNot: Boolean) = {
     val list = buildCoverage(instance)
     //if (logOrNot)
     logCoverage(dir, watOrWasm, list)
