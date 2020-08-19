@@ -22,19 +22,18 @@ package instance
 import imports._
 import compiler._
 import trace._
-import cfg._
-
 import cats.effect._
 import cats.implicits._
 import swam.binary.custom.FunctionNames
-import swam.runtime.internals.interpreter.{AsmInst, InstructionListener, Asm}
+import swam.cfg.CFGicator
+import swam.runtime.internals.interpreter.{AsmInst, InstructionListener, InstructionWrapper}
 
 private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F]) {
 
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
   private val dataHardMax = engine.conf.data.hardMax
-  private val def_undef_func:Set[String] = WasiFilter.readWasiFile()
+  private val random = scala.util.Random
 
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
@@ -96,6 +95,57 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
     }
   }
 
+  private def getBBLeaders(code: Array[AsmInst[F]]): Set[Int] = {
+
+    var leaders = Set[Int]()
+    leaders += 0 // first instruction is a leader
+
+    def getBBSaux(idx: Int): Unit = {
+
+      if (idx < code.length) {
+
+        val inst: AsmInst[F] = code(idx)
+
+        inst match {
+          // Every jump instruction target and the the next instruction is then a leader
+          case x: engine.asm.Jump => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.JumpIf => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.Br => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.BrIf => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.BrLabel => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.BrTable => {
+            x.lbls.foreach(l => {
+              leaders += l.addr
+            })
+
+            leaders += x.dflt.addr
+            leaders += idx + 1
+          }
+          case _ => {}
+        }
+        getBBSaux(idx + 1)
+      }
+    }
+
+    getBBSaux(1)
+    leaders
+  }
+
   private def allocate(module: Module[F],
                        globals: Vector[GlobalInstance[F]],
                        imports: Vector[Interface[F, Type]]): F[Instance[F]] = {
@@ -113,202 +163,38 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
       case ((ifunctions, iglobals, itables, imemories), m: Memory[F]) =>
         (ifunctions, iglobals, itables, imemories :+ m)
     }
-    //println(module.functions)
+
     instance.funcs = ifunctions ++ module.functions.map {
-      case CompiledFunction(typeIndex, tpe, locals, code, cfg) =>
+      case CompiledFunction(typeIndex, tpe, locals, code) =>
         val functionName =
           module.names.flatMap(_.subsections.collectFirstSome {
             case FunctionNames(names) =>
-              {
-                names.get(typeIndex)
-              }
+              names.get(typeIndex)
             case _ =>
               None
           })
 
+        val leaders = getBBLeaders(code)
+
         val toWrap = engine.instructionListener match {
           case Some(listener) => {
-            val fn = functionName.getOrElse("N/A").toString
-            if(listener.covinst){
-              code.zipWithIndex.map{case (c, index) => 
-                if(!listener.wasiCheck){
-                  /*if(listener.filter.equals("."))
-                    new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
-                  else{  
-                    if(WasiFilter.checkPattern(listener.filter, fn)) c 
-                    else new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
-                  }*/
-
-                  //No need of reading the cfgs for the Wasi methods.
-                  c
-                }
-                else{
-                  if(listener.filter.equals(".")){
-                    if(!def_undef_func.contains(fn)) {
-                      //println(fn)
-                      new engine.asm.InstructionWrapper(c, index, 0, 0, listener, functionName).asInstanceOf[AsmInst[F]]
-                    }
-                    else c
-                    }
-                  else {
-                    if(!def_undef_func.contains(fn)) {
-                      if(WasiFilter.checkPattern(listener.filter, fn)) c 
-                      else new engine.asm.InstructionWrapper(c, index, 0, 0, listener, functionName).asInstanceOf[AsmInst[F]]
-                    }
-                    else c
-                  }  
-                }
-              }
+            // TODO change functionName to some kind of "debugging" class
+            val name = functionName match {
+              case Some(x) => functionName
+              case _       => Option(s"f$typeIndex")
             }
-            else {
-              var index = -1
-              var index_brif_return = -1
-              var index_global = -1
-              var current = 0
-              var next = 0
-              //var offset = 0
 
-              var mappingBlocks = Map[Int, Int]()
-              var checkBlocks = Map[Int, Boolean]()
-              if(!listener.wasiCheck){
-                // code with Wasi methods fails to get the cfg. 
-                // So currently not in scope. Todo later.
-                code
-              }
-              else {
-                if(listener.filter.equals(".")) {
-                    if(!def_undef_func.contains(fn)) {
-                      //println(fn)
-                      val f_cfg = Blocker[IO].use { blocker => 
-                        for {
-                          cf <- cfg
-                        } yield cf
-                      }.unsafeRunSync()
-                      //println("CFG in Instantiator" + f_cfg.blocks.map(x => println(s"This is a basic block ${x.id} :: " + x)))
-                      val newCode = code.map{c => if(c.toString.contains("BrIf@") || c.toString.contains("Br@") || c.toString.contains("Return")){
-                          index_brif_return = index_brif_return + 1
-                          index_global = index_global + 1
-                          (c, index_brif_return, index_global)
-                        }
-                        else{
-                          index = index + 1
-                          index_global = index_global + 1
-                          (c, index, index_global)
-                        } 
-                      }
-
-                      //newCode.map{u => println(s"${u._1},${u._2},${u._3}")}
-                      /*val mapBlocks = */f_cfg.blocks.map(b => {
-                        val checkLast = b.stmts.lastOption
-                        checkLast match{
-                          case Some(n) => {
-                            //println(s"This is last value in block:::: ${b.id}, ${n._2}")
-                            //(b.id, n._2)
-                            mappingBlocks = mappingBlocks.updated(b.id, n._2)
-                            b.id -> n._2
-                          }
-                          case None => {
-                            mappingBlocks = mappingBlocks.updated(b.id, 0)
-                            checkBlocks = checkBlocks.updated(b.id, false)
-                            b.id -> 0
-                          }
-                        }
-                      })
-                      newCode.map{
-                        case(c, id, ig) => {
-                          f_cfg.blocks.map(control => {
-                            val checkLast = control.stmts.lastOption
-                            checkLast match {
-                              case Some(last) => {
-                                if(last._2 == id){
-                                  control.jump match {
-                                    case Some(Jump.To(tgt)) => {
-                                      current = control.id
-                                      next = tgt
-                                      if(current != next)
-                                        code(ig) = new engine.asm.InstructionWrapper(c, ig, current, next, listener, functionName).asInstanceOf[AsmInst[F]]
-                                    }
-                                    case Some(Jump.If(tTgt, eTgt)) => {
-                                      current = control.id
-                                      val list = List(tTgt, eTgt)
-
-                                      for(x <- 0 to list.size-1){
-                                        val instruction_id = mappingBlocks.get(list(x))
-                                        instruction_id match {
-                                          case Some(b_id) => {
-                                            //println(s"This is print >>>>>>>>>>>>>>>>>>>>> $b_id")
-                                            code(b_id) = new engine.asm.InstructionWrapper(code(b_id), b_id, current, list(x), listener, functionName).asInstanceOf[AsmInst[F]]
-                                            b_id
-                                          }
-                                          case None => 0 
-                                        }
-                                      }
-                                    }
-                                    case Some(Jump.Table(cases, dflt)) => {
-                                      current = control.id
-                                      val list = cases.toList :+ dflt
-
-                                      for(x <- 0 to list.size-1){
-                                        val instruction_id = mappingBlocks.get(list(x))
-                                        instruction_id match {
-                                          case Some(b_id) => {
-                                            //println(s"This is print >>>>>>>>>>>>>>>>>>>>> $b_id")
-                                            code(b_id) = new engine.asm.InstructionWrapper(code(b_id), b_id, current, list(x), listener, functionName).asInstanceOf[AsmInst[F]]
-                                            b_id
-                                          }
-                                          case None => 0 
-                                        }
-                                      }
-                                    }
-                                    case None => Nil
-                                  }
-                                }
-                              }
-                              case None => {
-                                //println(s"This is ...$checkLast, ${control.id}")
-                                if(checkBlocks.getOrElse(control.id,false) == false){
-                                  control.jump match {
-                                    case Some(Jump.To(tgt)) => {
-                                      current = control.id
-                                      checkBlocks = checkBlocks.updated(control.id, true)
-                                      next = tgt
-                                      if(current != next)
-                                        code(ig) = new engine.asm.InstructionWrapper(c, ig, current, next, listener, functionName).asInstanceOf[AsmInst[F]]
-                                    }
-                                    case Some(Jump.If(tTgt, eTgt)) => Nil
-                                    case Some(Jump.Table(cases, dflt)) => Nil
-                                    case None => Nil
-                                  }  
-                                }
-                              }
-                            }
-                          })
-                        }
-                      }
-                      code
-                    }
-                    else code 
-                  }
-                  else {
-                    if(!def_undef_func.contains(fn)) {
-                      if(WasiFilter.checkPattern(listener.filter, fn)) code 
-                      else {
-                        code.zipWithIndex.map{
-                        //case (c, index) => new engine.asm.InstructionWrapper(c, index, listener, functionName).asInstanceOf[AsmInst[F]]
-                        case(c,index) => c
-                          }
-                      }
-                    }
-                    else code
-                  }
-                }
-              }
+            code.zipWithIndex.map {
+              case (inst, i) =>
+                if (leaders.contains(i))
+                  new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name).asInstanceOf[AsmInst[F]]
+                else inst
             }
-            case None => code
           }
-      new FunctionInstance[F](tpe, locals, toWrap, instance, functionName)
+          case None => code
+        }
+        new FunctionInstance[F](tpe, locals, toWrap, instance, functionName)
     }
-    //println(module.exports.map(_).toMap)
     instance.globals = iglobals ++ globals
     instance.tables = itables ++ module.tables.map {
       case TableType(_, limits) => new TableInstance[F](limits.min, limits.max)

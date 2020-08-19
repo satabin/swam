@@ -434,7 +434,7 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
             // we can skip the rest of the block
             (false, ctx.copy(offset = ctx.offset + 1))
           case Call(idx) =>
-            builder += new asm.Call(idx)
+            builder += new asm.Call(idx, instIdx)
             val tpe = functions(idx)
             loop(instIdx + 1, ctx.pop(tpe.params.size).push(tpe.t.size).copy(offset = ctx.offset + 1), false)
           case CallIndirect(idx) =>

@@ -55,9 +55,9 @@ object SimplifierTest extends TestSuite {
         TODO more manual test cases to be added.
       */
     //"inst1" - runCoverage("runtime/test/resources/coverage-test/1_inst.wasm")
-    "add" - test1("optin/test/resources/coverage-test/add.wat")
-    "add2" - test1("optin/test/resources/coverage-test/add2.wat")
-    "add3" - test1("optin/test/resources/coverage-test/add3.wat")
-    "multi" - test1("optin/test/resources/coverage-test/if-nested.wat", "nested")
+    //"add" - test1("optin/test/resources/coverage-test/add.wat")
+    //"add2" - test1("optin/test/resources/coverage-test/add2.wat")
+    //"add3" - test1("optin/test/resources/coverage-test/add3.wat")
+    //"multi" - test1("optin/test/resources/coverage-test/if-nested.wat", "nested")
   }
 }
