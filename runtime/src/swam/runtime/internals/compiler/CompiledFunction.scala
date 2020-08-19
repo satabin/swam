@@ -26,5 +26,4 @@ import swam.runtime.internals.interpreter.AsmInst
 private[runtime] case class CompiledFunction[F[_]](idx: Int,
                                                    tpe: FuncType,
                                                    locals: Vector[ValType],
-                                                   code: Array[AsmInst[F]],
-                                               	   cfg: IO[CFG])
+                                                   code: Array[AsmInst[F]])
