@@ -33,6 +33,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
   private val dataHardMax = engine.conf.data.hardMax
+  private val random = scala.util.Random
 
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
@@ -173,8 +174,6 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
               None
           })
 
-        val r = scala.util.Random
-
         val leaders = getBBLeaders(code)
 
         val toWrap = engine.instructionListener match {
@@ -188,7 +187,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
             code.zipWithIndex.map {
               case (inst, i) =>
                 if (leaders.contains(i))
-                  new InstructionWrapper[F](r.nextInt(), inst, listener, name).asInstanceOf[AsmInst[F]]
+                  new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name).asInstanceOf[AsmInst[F]]
                 else inst
             }
           }
