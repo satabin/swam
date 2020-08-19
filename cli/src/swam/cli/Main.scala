@@ -72,6 +72,12 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   /*val cov =
     Opts.flag("instcov", "Run the WebAssembly module and gets coverage.", short = "v").orFalse*/
 
+  val covfilter = Opts.flag("cov-filter", "Generate coverage with filter on Wasi Methods", short = "r").orFalse
+
+  val covout = Opts
+    .option[Path]("covout", "Output folder for coverage reports and show-map", short = "c")
+    .withDefault(Paths.get(".").toAbsolutePath.normalize)
+
   val filter =
     Opts
       .option[String](
@@ -109,12 +115,6 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
         Run(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, wasmArgTypes)
     }
   }
-
-  val covout: com.monovore.decline.Opts[Path] = Opts
-    .option[Path]("covout", "Output folder for coverage reports and show-map", short = "c")
-    .withDefault(Paths.get(".").toAbsolutePath.normalize)
-
-  val covfilter = Opts.flag("cov-filter", "Generate coverage with filter on Wasi Methods", short = "r").orFalse
 
   val covOpts: Opts[Options] = Opts.subcommand("coverage", "Run a WebAssembly file and generate coverage report") {
     (mainFun,
@@ -164,10 +164,10 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
        wasmFile,
        restArguments,
        covfilter,
-       out,
+        covout,
        wasmArgTypes)
         .mapN {
-          (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covfilter, out, wasmArgTypes) =>
+          (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covfilter, covout, wasmArgTypes) =>
             RunServer(wasm,
                       args,
                       main,
@@ -180,7 +180,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                       dirs,
                       debug,
                       covfilter,
-                      out,
+              covout,
                       wasmArgTypes)
         }
     }
@@ -223,6 +223,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 _ <- IO(executeFunction(IO(preparedFunction), argsParsed, time))
               } yield ExitCode.Success
 
+              // TODO: Remove this and instead to coverage flag in Run(...)
             case WasmCov(file,
                          args,
                          main,
@@ -269,7 +270,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                            dirs,
                            debug,
                            covfilter,
-                           out,
+                           covout,
                            wasmArgTypes) =>
               for {
                 tracer <- if (trace)
@@ -287,7 +288,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 compiled <- engine.compile(module)
                 preparedFunction <- prepareFunction(compiled, main, dirs, args, wasi, blocker)
                 _ <- IO(Server
-                  .listen(IO(preparedFunction), wasmArgTypes, time, Option(out), file, coverageListener, covfilter))
+                  .listen(IO(preparedFunction), wasmArgTypes, time, covout, file, coverageListener))
               } yield ExitCode.Success
 
             case Decompile(file, textual, out) =>
