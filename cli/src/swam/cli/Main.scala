@@ -98,7 +98,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     }
   }
 
-  val covout : com.monovore.decline.Opts[Path]= Opts
+  val covout: com.monovore.decline.Opts[Path] = Opts
     .option[Path]("covout", "Output folder for coverage reports and show-map", short = "c")
     .withDefault(Paths.get(".").toAbsolutePath.normalize)
 
@@ -243,7 +243,6 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
               } catch {
                 case _: Exception => IO(println("Error"))
               }
-              //_ <- if(coverage) IO(CoverageType.instCoverage(file,instance)) else IO(None)
               _ <- IO(CoverageReporter.blockCoverage(covout, file, coverageListener))
             } yield ExitCode.Success
           case Validate(file, wat, dev) =>
