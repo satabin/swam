@@ -18,7 +18,6 @@ import swam.runtime.{Function, Value}
 
 import com.typesafe.config.ConfigFactory
 
-
 object Server {
   val conf = ConfigFactory.load()
   val maxQueue = 50000
@@ -46,73 +45,72 @@ object Server {
 
       new Thread(
         new ConnectionThread(preparedFunction,
-                         wasmArgTypes,
-                         time,
-                         coverage_out,
-                         watOrWasm,
-                         coverageListener,
-                         covfilter,
-                         clientSocket,
-                         bufferSize)
+                             wasmArgTypes,
+                             time,
+                             coverage_out,
+                             watOrWasm,
+                             coverageListener,
+                             covfilter,
+                             clientSocket,
+                             bufferSize)
       ).start
 
     }
   }
 
   class ConnectionThread(
-    preparedFunction: IO[Function[IO]],
-    wasmArgTypes: List[String],
-    time: Boolean,
-    coverage_out: Option[Path],
-    watOrWasm: Path,
-    coverageListener: CoverageListener[IO],
-    covfilter: Boolean,
-    clientSocket: Socket,
-    bufferSize: Int
-) extends Runnable {
+      preparedFunction: IO[Function[IO]],
+      wasmArgTypes: List[String],
+      time: Boolean,
+      coverage_out: Option[Path],
+      watOrWasm: Path,
+      coverageListener: CoverageListener[IO],
+      covfilter: Boolean,
+      clientSocket: Socket,
+      bufferSize: Int
+  ) extends Runnable {
 
-  def run(): Unit = {
-    val receivedMessage = readSocket(clientSocket, bufferSize)
-    if (receivedMessage.length == 0) {
-      throw new Exception("Connection broke!")
-    }
-
-    println("Received message!")
-    // println(receivedMessage.mkString(" "))
-
-    val argsParsed = parseMessage(receivedMessage, wasmArgTypes, bufferSize)
-    // println("Parsed arguments: " + argsParsed)
-
-    var exitCode = 0
-    try {
-      Main.executeFunction(preparedFunction, argsParsed, time)
-      // val result = Main.executeFunction(preparedFunction, argsParsed, time)
-      // println(s"Result of calculation: $result")
-      if (covfilter) {
-        println("Instantiating Coverage now!")
-        CoverageReporter.instCoverage(coverage_out.get, watOrWasm, coverageListener)
+    def run(): Unit = {
+      val receivedMessage = readSocket(clientSocket, bufferSize)
+      if (receivedMessage.length == 0) {
+        throw new Exception("Connection broke!")
       }
-      // writeSocket(clientSocket, "Calculation successful! Result: " + result)
-    } catch {
-      // case e: swam.runtime.StackOverflowException => println(e)
-      case e: Exception => {
-        // writeSocket(clientSocket, "Error: " + e)
-        println(e)
-        exitCode = 1
+
+      println("Received message!")
+      // println(receivedMessage.mkString(" "))
+
+      val argsParsed = parseMessage(receivedMessage, wasmArgTypes, bufferSize)
+      // println("Parsed arguments: " + argsParsed)
+
+      var exitCode = 0
+      try {
+        Main.executeFunction(preparedFunction, argsParsed, time)
+        // val result = Main.executeFunction(preparedFunction, argsParsed, time)
+        // println(s"Result of calculation: $result")
+        if (covfilter) {
+          println("Instantiating Coverage now!")
+          CoverageReporter.instCoverage(coverage_out.get, watOrWasm, coverageListener)
+        }
+        // writeSocket(clientSocket, "Calculation successful! Result: " + result)
+      } catch {
+        // case e: swam.runtime.StackOverflowException => println(e)
+        case e: Exception => {
+          // writeSocket(clientSocket, "Error: " + e)
+          println(e)
+          exitCode = 1
+        }
       }
+      val filledCoverage = coverageListener.pathInfo
+      val message = serializeMessage(exitCode, filledCoverage)
+      try {
+        writeSocket(clientSocket, message)
+        println("Sent back message!")
+      } catch {
+        case e: java.net.SocketException => println(e)
+      }
+      clientSocket.close()
     }
-    val emptyCoverage = new Array[Byte](65536) // Blank coverage every run (better when concurrent?)
-    val filledCoverage = randomCoverageFiller(emptyCoverage)
-    val message = serializeMessage(exitCode, filledCoverage)
-    try {
-      writeSocket(clientSocket, message)
-      println("Sent back message!")
-    } catch {
-      case e: java.net.SocketException => println(e)
-    }
-    clientSocket.close()
   }
-}
 
   def readSocket(socket: Socket, byteLength: Int): Array[Byte] = {
     socket.getInputStream().readNBytes(byteLength)

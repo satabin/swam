@@ -15,6 +15,9 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
 
   override val wasiCheck: Boolean = wasi
 
+  val pathInfo: Array[Byte] = new Array[Byte](65536) // TODO pass this as a parameter
+  var previousInstId: Int = -1
+
   override def before(inner: InstructionWrapper[F], frame: Frame[F]): Unit = {}
 
   override def after(inner: InstructionWrapper[F],
@@ -24,6 +27,13 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
     val fn: String = functionName.getOrElse("N/A").toString
     val count: (String, Int) = coverageMap.getOrElse(inner.id, (fn, 0))
     coverageMap = coverageMap.updated(inner.id, (fn, count._2 + 1))
+
+    if (previousInstId != -1) {
+      val index = (previousInstId ^ inner.id) % pathInfo.length
+      pathInfo(index) = (pathInfo(index) + 1).toByte
+      previousInstId = inner.id >> 1
+    }
+    previousInstId = inner.id
     result
   }
 
