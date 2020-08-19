@@ -126,9 +126,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val serverOpts: Opts[Options] =
   Opts.subcommand("run_server", "Run a socket for a given WASM that listens to inputs") {
     // TODO: Check which ones of these are really necessary
-    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, cov, out, wasmArgTypes)
-      .mapN { (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, cov, out, wasmArgTypes) =>
-        RunServer(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, cov, out, wasmArgTypes)
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, covfilter, out, wasmArgTypes)
+      .mapN { (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covfilter, out, wasmArgTypes) =>
+        RunServer(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, covfilter, out, wasmArgTypes)
       }
   }
 
@@ -202,7 +202,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                            tracef,
                            dirs,
                            debug,
-                           coverage,
+                           covfilter,
                            out,
                            wasmArgTypes) =>
               for {
@@ -214,14 +214,14 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                                 formatter = NoTimestampFormatter).map(Some(_))
                 else
                   IO(None)
-                coverageListener = CoverageListener[IO]()
+                coverageListener = CoverageListener[IO](covfilter)
                 engine <- Engine[IO](blocker, tracer, listener = Option(coverageListener))
                 tcompiler <- Compiler[IO](blocker)
                 module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
                 compiled <- engine.compile(module)
                 preparedFunction <- prepareFunction(compiled, main, dirs, args, wasi, blocker)
                 _ <- IO(
-                  Server.listen(IO(preparedFunction), wasmArgTypes, time, Option(out), file, coverageListener, coverage))
+                  Server.listen(IO(preparedFunction), wasmArgTypes, time, Option(out), file, coverageListener, covfilter))
               } yield ExitCode.Success
 
             case Decompile(file, textual, out) =>

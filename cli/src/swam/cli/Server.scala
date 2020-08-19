@@ -13,7 +13,7 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 
 import cats.effect.IO
-import swam.optin.coverage.{CoverageListener, CoverageReporter}
+import swam.code_analysis.coverage.{CoverageListener, CoverageReporter}
 import swam.runtime.{Function, Value}
 
 import com.typesafe.config.ConfigFactory
@@ -32,7 +32,7 @@ object Server {
       coverage_out: Option[Path],
       watOrWasm: Path,
       coverageListener: CoverageListener[IO],
-      logOrNot: Boolean
+      covfilter: Boolean
   ): Unit = {
 
     println("wasmArgTypes: " + wasmArgTypes)
@@ -51,7 +51,7 @@ object Server {
                          coverage_out,
                          watOrWasm,
                          coverageListener,
-                         logOrNot,
+                         covfilter,
                          clientSocket,
                          bufferSize)
       ).start
@@ -66,7 +66,7 @@ object Server {
     coverage_out: Option[Path],
     watOrWasm: Path,
     coverageListener: CoverageListener[IO],
-    logOrNot: Boolean,
+    covfilter: Boolean,
     clientSocket: Socket,
     bufferSize: Int
 ) extends Runnable {
@@ -88,9 +88,9 @@ object Server {
       Main.executeFunction(preparedFunction, argsParsed, time)
       // val result = Main.executeFunction(preparedFunction, argsParsed, time)
       // println(s"Result of calculation: $result")
-      if (logOrNot) {
-        println("Logging now")
-        CoverageReporter.instCoverage(coverage_out, watOrWasm, coverageListener, logOrNot)
+      if (covfilter) {
+        println("Instantiating Coverage now!")
+        CoverageReporter.instCoverage(coverage_out.get, watOrWasm, coverageListener)
       }
       // writeSocket(clientSocket, "Calculation successful! Result: " + result)
     } catch {
