@@ -34,8 +34,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
   private val dataOnHeap = engine.conf.data.onHeap
   private val dataHardMax = engine.conf.data.hardMax
   private val random = scala.util.Random
-  private val def_undef_func:Set[String] = WasiFilter.readWasiFile()
-
+  private val def_undef_func: Set[String] = WasiFilter.readWasiFile()
 
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
@@ -176,10 +175,9 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
               None
           })
 
-        val leaders = getBBLeaders(code)
-
         val toWrap = engine.instructionListener match {
           case Some(listener) => {
+            val leaders = getBBLeaders(code)
             // TODO change functionName to some kind of "debugging" class
             val name = functionName match {
               case Some(x) => functionName
@@ -188,19 +186,19 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
             val fn = functionName.getOrElse("N/A").toString
             code.zipWithIndex.map {
               case (inst, i) =>
-                if(!listener.wasiCheck){ // Just added the check for Wasi filter
+                if (!listener.wasiCheck) { // Just added the check for Wasi filter
                   if (leaders.contains(i))
-                    new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name).asInstanceOf[AsmInst[F]]
+                    new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name)
+                      .asInstanceOf[AsmInst[F]]
                   else inst
-                }
-                else{
-                  if(!def_undef_func.contains(fn)) {
+                } else {
+                  if (!def_undef_func.contains(fn)) {
                     if (leaders.contains(i))
-                      new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name).asInstanceOf[AsmInst[F]]
+                      new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name)
+                        .asInstanceOf[AsmInst[F]]
                     else inst
-                  }
-                  else inst
-                }   
+                  } else inst
+                }
             }
           }
           case None => code
