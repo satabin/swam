@@ -6,7 +6,8 @@ import java.io.File
 import java.nio.file.Paths
 
 import cats.effect.{Blocker, IO}
-import swam.optin.coverage.CoverageListener
+import swam.cfg.CFGicator
+import swam.optin.coverage.{CFGicator4Compiler, CoverageListener}
 import swam.optin.verifier.PathExtractor
 import swam.runtime.internals.instance.FunctionInstance
 import swam.runtime.{Engine, Instance, Value}
@@ -18,9 +19,9 @@ import scala.language.postfixOps
 import scala.collection.mutable.ListBuffer
 
 /**
-  *@author Javier Cabrera-Arteaga on 2020-06-11
+  * @author Javier Cabrera-Arteaga on 2020-08-18
   */
-object SimplifierTest extends TestSuite {
+object CFGicatorTests extends TestSuite {
 
   def runCoverage(wasmFile: String, main: String): Any = {
 
@@ -29,14 +30,15 @@ object SimplifierTest extends TestSuite {
       .use { blocker =>
         for {
           engine <- Engine[IO](blocker)
-          extractor = PathExtractor[IO](engine.asm)
+          extractor = CFGicator4Compiler[IO](engine.asm)
           tcompiler <- Compiler[IO](blocker)
           m <- engine.compile(tcompiler.stream(Paths.get(wasmFile), true, blocker))
           i <- m.instantiate
           f <- i.exports.function(main) // Calling function
-          graph <- IO(extractor.symbolicEval(f.asInstanceOf[FunctionInstance[IO]]))
-          _ <- IO(println((s"echo '$graph'" #> new File(s"$wasmFile.dot")).!))
-          _ <- IO(println((s"dot -Tpng $wasmFile.dot -o $wasmFile.png").!))
+          _ <- IO(extractor.getBBIndexes(f.asInstanceOf[FunctionInstance[IO]]))
+          /*_ <- IO(
+            println(1)
+          )*/
         } yield {}
       }
       .unsafeRunSync()
@@ -55,7 +57,7 @@ object SimplifierTest extends TestSuite {
         TODO more manual test cases to be added.
       */
     //"inst1" - runCoverage("runtime/test/resources/coverage-test/1_inst.wasm")
-    //"add" - test1("optin/test/resources/coverage-test/add.wat")
+    "add" - test1("optin/test/resources/coverage-test/add3.wat")
     //"add2" - test1("optin/test/resources/coverage-test/add2.wat")
     //"add3" - test1("optin/test/resources/coverage-test/add3.wat")
     //"multi" - test1("optin/test/resources/coverage-test/if-nested.wat", "nested")

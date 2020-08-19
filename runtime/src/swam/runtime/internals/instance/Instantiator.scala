@@ -22,10 +22,10 @@ package instance
 import imports._
 import compiler._
 import trace._
-
 import cats.effect._
 import cats.implicits._
 import swam.binary.custom.FunctionNames
+import swam.cfg.CFGicator
 import swam.runtime.internals.interpreter.{AsmInst, InstructionListener, InstructionWrapper}
 
 private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F]) {
@@ -94,6 +94,57 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
     }
   }
 
+  private def getBBLeaders(code: Array[AsmInst[F]]): Set[Int] = {
+
+    var leaders = Set[Int]()
+    leaders += 0 // first instruction is a leader
+
+    def getBBSaux(idx: Int): Unit = {
+
+      if (idx < code.length) {
+
+        val inst: AsmInst[F] = code(idx)
+
+        inst match {
+          // Every jump instruction target and the the next instruction is then a leader
+          case x: engine.asm.Jump => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.JumpIf => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.Br => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.BrIf => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.BrLabel => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.BrTable => {
+            x.lbls.foreach(l => {
+              leaders += l.addr
+            })
+
+            leaders += x.dflt.addr
+            leaders += idx + 1
+          }
+          case _ => {}
+        }
+        getBBSaux(idx + 1)
+      }
+    }
+
+    getBBSaux(1)
+    leaders
+  }
+
   private def allocate(module: Module[F],
                        globals: Vector[GlobalInstance[F]],
                        imports: Vector[Interface[F, Type]]): F[Instance[F]] = {
@@ -111,6 +162,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
       case ((ifunctions, iglobals, itables, imemories), m: Memory[F]) =>
         (ifunctions, iglobals, itables, imemories :+ m)
     }
+
     instance.funcs = ifunctions ++ module.functions.map {
       case CompiledFunction(typeIndex, tpe, locals, code) =>
         val functionName =
@@ -120,6 +172,11 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
             case _ =>
               None
           })
+
+        val r = scala.util.Random
+
+        val leaders = getBBLeaders(code)
+
         val toWrap = engine.instructionListener match {
           case Some(listener) => {
             // TODO change functionName to some kind of "debugging" class
@@ -128,7 +185,12 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
               case _       => Option(s"f$typeIndex")
             }
 
-            code.map(c => new InstructionWrapper[F](c, listener, name).asInstanceOf[AsmInst[F]])
+            code.zipWithIndex.map {
+              case (inst, i) =>
+                if (leaders.contains(i))
+                  new InstructionWrapper[F](r.nextInt(), inst, listener, name).asInstanceOf[AsmInst[F]]
+                else inst
+            }
           }
           case None => code
         }

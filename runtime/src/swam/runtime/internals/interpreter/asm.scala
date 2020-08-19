@@ -49,12 +49,15 @@ sealed trait AsmInst[F[_]] {
   def execute(t: Frame[F]): Continuation[F]
 }
 
-class InstructionWrapper[F[_]](val inner: AsmInst[F],
+class InstructionWrapper[F[_]](var id: Int,
+                               val inner: AsmInst[F],
                                val listener: InstructionListener[F],
                                val functionName: Option[String])(implicit F: MonadError[F, Throwable])
     extends AsmInst[F] {
 
   listener.init(inner, functionName)
+
+  println(id)
 
   override def execute(t: Frame[F]): Continuation[F] = {
     listener.before(inner, t)
@@ -2077,7 +2080,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
 
   class BrLabel(val arity: Int, val drop: Int, var addr: Int)
 
-  class BrTable(lbls: Array[BrLabel], dflt: BrLabel) extends Breaking {
+  class BrTable(val lbls: Array[BrLabel], val dflt: BrLabel) extends Breaking {
     def execute(thread: Frame[F]): Continuation[F] = {
       // get the label index from stack
       val i = thread.popInt()
@@ -2119,7 +2122,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       }
   }
 
-  class Call(val fidx: Int) extends Invoking {
+  class Call(val fidx: Int, val idx: Int) extends Invoking {
     def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.func(fidx)
       invoke(thread, f)
