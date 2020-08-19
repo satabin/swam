@@ -34,6 +34,8 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
   private val dataOnHeap = engine.conf.data.onHeap
   private val dataHardMax = engine.conf.data.hardMax
   private val random = scala.util.Random
+  private val def_undef_func:Set[String] = WasiFilter.readWasiFile()
+
 
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
@@ -183,12 +185,22 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
               case Some(x) => functionName
               case _       => Option(s"f$typeIndex")
             }
-
+            val fn = functionName.getOrElse("N/A").toString
             code.zipWithIndex.map {
               case (inst, i) =>
-                if (leaders.contains(i))
-                  new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name).asInstanceOf[AsmInst[F]]
-                else inst
+                if(!listener.wasiCheck){ // Just added the check for Wasi filter
+                  if (leaders.contains(i))
+                    new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name).asInstanceOf[AsmInst[F]]
+                  else inst
+                }
+                else{
+                  if(!def_undef_func.contains(fn)) {
+                    if (leaders.contains(i))
+                      new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name).asInstanceOf[AsmInst[F]]
+                    else inst
+                  }
+                  else inst
+                }   
             }
           }
           case None => code

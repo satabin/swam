@@ -52,10 +52,5 @@ case class WasmCov(file: Path,
                    dirs: List[Path],
                    debug: Boolean,
                    out: Path,
-                   filter: Boolean,
-                   filterFunc: String,
-                   covreport: Boolean,
-                   covshowmap: Boolean,
-                   covinst : Boolean,
-                   covpath: Boolean)
+                   filter: Boolean)
     extends Options

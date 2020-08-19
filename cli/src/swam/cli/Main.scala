@@ -59,8 +59,8 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val trace =
     Opts.flag("trace", "Trace WASM execution channels (default false)", short = "t").orFalse
 
-  val cov =
-    Opts.flag("instcov", "Run the WebAssembly module and gets coverage.", short = "v").orFalse
+  /*val cov =
+    Opts.flag("instcov", "Run the WebAssembly module and gets coverage.", short = "v").orFalse*/
 
   val filter =
     Opts
@@ -98,10 +98,16 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     }
   }
 
+  val covout : com.monovore.decline.Opts[Path]= Opts
+    .option[Path]("covout", "Output folder for coverage reports and show-map", short = "c")
+    .withDefault(Paths.get(".").toAbsolutePath.normalize)
+
+  val covfilter = Opts.flag("cov-filter", "Generate coverage with filter on Wasi Methods", short = "r").orFalse
+
   val covOpts: Opts[Options] = Opts.subcommand("coverage", "Run a WebAssembly file and generate coverage report") {
-    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, cov, out).mapN {
-      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, cov, out) =>
-        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, cov, out)
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, covout, covfilter).mapN {
+      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covout, covfilter) =>
+        WasmCov(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, covout, covfilter)
     }
   }
 
@@ -217,7 +223,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 .compile
                 .drain
             } yield ExitCode.Success
-          case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug, coverage, out) =>
+          case WasmCov(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug, covout, covfilter) =>
             for {
               tracer <- if (trace)
                 JULTracer[IO](blocker,
@@ -227,7 +233,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                               formatter = NoTimestampFormatter).map(Some(_))
               else
                 IO(None)
-              coverageListener = CoverageListener[IO]()
+              coverageListener = CoverageListener[IO](covfilter)
               engine <- Engine[IO](blocker, tracer, listener = Option(coverageListener))
               tcompiler <- swam.text.Compiler[IO](blocker)
               module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
@@ -238,7 +244,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 case _: Exception => IO(println("Error"))
               }
               //_ <- if(coverage) IO(CoverageType.instCoverage(file,instance)) else IO(None)
-              _ <- IO(CoverageReporter.blockCoverage(Option(out), file, coverageListener, coverage))
+              _ <- IO(CoverageReporter.blockCoverage(covout, file, coverageListener))
             } yield ExitCode.Success
           case Validate(file, wat, dev) =>
             val throwableFormat =
