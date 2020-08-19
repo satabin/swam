@@ -33,8 +33,11 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
   private val dataHardMax = engine.conf.data.hardMax
-  private val random = new scala.util.Random(100) // TODO check if we need to pass this as a parameter for the coverage tool
   private val def_undef_func: Set[String] = WasiFilter.readWasiFile()
+
+  // Hashing primes
+  private val p1: Int = 73856093
+  private val p2: Int = 19349663
 
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
@@ -165,8 +168,8 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
         (ifunctions, iglobals, itables, imemories :+ m)
     }
 
-    instance.funcs = ifunctions ++ module.functions.map {
-      case CompiledFunction(typeIndex, tpe, locals, code) =>
+    instance.funcs = ifunctions ++ module.functions.zipWithIndex.map {
+      case (CompiledFunction(typeIndex, tpe, locals, code), fidx) =>
         val functionName =
           module.names.flatMap(_.subsections.collectFirstSome {
             case FunctionNames(names) =>
@@ -184,17 +187,20 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
               case _       => Option(s"f$typeIndex")
             }
             val fn = functionName.getOrElse("N/A").toString
+
             code.zipWithIndex.map {
               case (inst, i) =>
+                val iid = 100000 + ((i * p1) ^ (fidx * p2)) % 100000
+                print(s"$iid ")
                 if (!listener.wasiCheck) { // Just added the check for Wasi filter
                   if (leaders.contains(i))
-                    new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name)
+                    new InstructionWrapper[F](iid, inst, listener, name)
                       .asInstanceOf[AsmInst[F]]
                   else inst
                 } else {
                   if (!def_undef_func.contains(fn)) {
                     if (leaders.contains(i))
-                      new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name)
+                      new InstructionWrapper[F](iid, inst, listener, name)
                         .asInstanceOf[AsmInst[F]]
                     else inst
                   } else inst
