@@ -19,8 +19,8 @@ import java.util.logging.{LogRecord, Formatter => JFormatter}
 import java.nio.file._
 import java.util.concurrent.TimeUnit
 
-import optin.coverage._
-import swam.optin.coverage.{CoverageListener, CoverageReporter}
+import code_analysis.coverage._
+import swam.code_analysis.coverage.{CoverageListener, CoverageReporter}
 
 private object NoTimestampFormatter extends JFormatter {
   override def format(x: LogRecord): String =

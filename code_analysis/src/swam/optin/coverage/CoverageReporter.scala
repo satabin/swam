@@ -1,5 +1,5 @@
 package swam
-package optin
+package code_analysis
 package coverage
 
 /**

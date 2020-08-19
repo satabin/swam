@@ -801,7 +801,7 @@ opendir
 opendirat
 optarg
 opterr
-optind
+code_analysisd
 optopt
 optreset
 pathconf

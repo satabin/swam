@@ -1,13 +1,13 @@
 package swam
-package optin
+package code_analysis
 package simplifier
 
 import java.io.File
 import java.nio.file.Paths
 
 import cats.effect.{Blocker, IO}
-import swam.optin.coverage.CoverageListener
-import swam.optin.verifier.PathExtractor
+import swam.code_analysis.coverage.CoverageListener
+import swam.code_analysis.verifier.PathExtractor
 import swam.runtime.internals.instance.FunctionInstance
 import swam.runtime.{Engine, Instance, Value}
 import swam.text.Compiler
@@ -55,9 +55,9 @@ object SimplifierTest extends TestSuite {
         TODO more manual test cases to be added.
       */
     //"inst1" - runCoverage("runtime/test/resources/coverage-test/1_inst.wasm")
-    //"add" - test1("optin/test/resources/coverage-test/add.wat")
-    //"add2" - test1("optin/test/resources/coverage-test/add2.wat")
-    //"add3" - test1("optin/test/resources/coverage-test/add3.wat")
-    //"multi" - test1("optin/test/resources/coverage-test/if-nested.wat", "nested")
+    //"add" - test1("code_analysis/test/resources/coverage-test/add.wat")
+    //"add2" - test1("code_analysis/test/resources/coverage-test/add2.wat")
+    //"add3" - test1("code_analysis/test/resources/coverage-test/add3.wat")
+    //"multi" - test1("code_analysis/test/resources/coverage-test/if-nested.wat", "nested")
   }
 }

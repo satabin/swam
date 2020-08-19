@@ -134,7 +134,7 @@ object generator extends SwamModule with PublishModule {
 
 object cli extends SwamModule {
 
-  def moduleDeps = Seq(text, core, runtime, wasi, optin)
+  def moduleDeps = Seq(text, core, runtime, wasi, code_analysis)
 
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
@@ -180,7 +180,7 @@ object runtime extends SwamModule with PublishModule {
 }
 
 
-object optin extends SwamModule with PublishModule {
+object code_analysis extends SwamModule with PublishModule {
 
   def moduleDeps = Seq(core, runtime, wasi)
 
@@ -188,7 +188,7 @@ object optin extends SwamModule with PublishModule {
 
   def publishVersion = swamVersion
 
-  def artifactName = "swam-optin"
+  def artifactName = "swam-code_analysis"
 
   def pomSettings =
     PomSettings(
@@ -208,7 +208,7 @@ object optin extends SwamModule with PublishModule {
     def ivyDeps =
       Agg(ivy"com.lihaoyi::utest:0.7.4", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.9")
 
-    def moduleDeps = Seq(optin, text, util.test, wasi)
+    def moduleDeps = Seq(code_analysis, text, util.test, wasi)
 
   }
 }
