@@ -12,7 +12,7 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 
 import cats.effect.IO
-import swam.code_analysis.coverage.{CoverageListener, CoverageReporter}
+import swam.code_analysis.coverage.CoverageListener
 import swam.runtime.{Function, Value}
 
 import com.typesafe.config.ConfigFactory
@@ -27,7 +27,6 @@ object Server {
       preparedFunction: IO[Function[IO]],
       wasmArgTypes: List[String],
       time: Boolean,
-      coverage_out: Path,
       watOrWasm: Path,
       coverageListener: CoverageListener[IO]
   ): Unit = {
@@ -45,7 +44,6 @@ object Server {
         new ConnectionThread(preparedFunction,
                              wasmArgTypes,
                              time,
-                             coverage_out,
                              watOrWasm,
                              coverageListener,
                              clientSocket,
@@ -59,7 +57,6 @@ object Server {
       preparedFunction: IO[Function[IO]],
       wasmArgTypes: List[String],
       time: Boolean,
-      coverage_out: Path,
       watOrWasm: Path,
       coverageListener: CoverageListener[IO],
       clientSocket: Socket,
@@ -91,7 +88,6 @@ object Server {
           exitCode = 1
         }
       }
-      // CoverageReporter.instCoverage(coverage_out, watOrWasm, coverageListener)
       val filledCoverage = coverageListener.pathInfo
       val message = serializeMessage(exitCode, filledCoverage)
       try {
