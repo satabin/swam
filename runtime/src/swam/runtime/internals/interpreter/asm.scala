@@ -49,66 +49,27 @@ sealed trait AsmInst[F[_]] {
   def execute(t: Frame[F]): Continuation[F]
 }
 
+class InstructionWrapper[F[_]](var id: Int,
+                               val inner: AsmInst[F],
+                               val listener: InstructionListener[F],
+                               val functionName: Option[String])(implicit F: MonadError[F, Throwable])
+    extends AsmInst[F] {
+
+  listener.init(this, functionName)
+
+  override def execute(t: Frame[F]): Continuation[F] = {
+    listener.before(this, t)
+    val result = inner.execute(t)
+    listener.after(this, t, result)
+  }
+}
+
 sealed trait Continuation[+F[_]]
 case object Continue extends Continuation[Nothing]
 case class Suspend[F[_]](res: F[Vector[Long]]) extends Continuation[F]
 case class Done(res: Vector[Long]) extends Continuation[Nothing]
 
 class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
-  /**
-  * @author Javier Cabrera-Arteaga on 2020-07-16
-  * Brought the InstructionWrapper class internal to Asm 
-  */
-
-  /*class PathWrapper[F[_]](val inner: AsmInst[F], val current:Int, 
-                          val next:Int,
-                          val listener: CodeCoverageListener[F],
-                          val functionName: Option[String])(implicit F: MonadError[F, Throwable])
-      extends AsmInst[F] {
-
-    listener.init(current, next, functionName)
-
-    /**
-     * Path Wrapper listens to all the decisions between the blocks.
-     * @param t
-     * @return
-     */
-    override def execute(t: Frame[F]): Continuation[F] = {
-      listener.before(current, next, functionName, t)
-      val result = inner.execute(t)
-      listener.after(current, next, functionName ,result)
-    }
-  }*/
-
-  class InstructionWrapper[F[_]](val inner: AsmInst[F], 
-                                 val index:Int,
-                                 val current:Int, 
-                                 val next:Int ,
-                                 val listener: InstructionListener[F],
-                                 val functionName: Option[String])(implicit F: MonadError[F, Throwable])
-      extends AsmInst[F] {
-
-    if(listener.covinst) {
-      listener.init(inner, index, functionName)
-    }
-    else {
-      listener.initPath(current, next, functionName)
-    }
-
-    override def execute(t: Frame[F]): Continuation[F] = {
-      if(listener.covinst){
-        listener.before(inner, index, functionName, t)
-        val result = inner.execute(t)
-        listener.after(inner, index, t, functionName, result)  
-      }
-      else{
-        //println(s"This is exshuative $index, ${inner.toString}")
-        listener.beforePath(current, next, functionName, t)
-        val result = inner.execute(t)
-        listener.afterPath(current, next, functionName, result) 
-      }  
-    }
-  }
 
   object Unop {
     def apply(unop: sy.Unop): AsmInst[F] =
@@ -2117,7 +2078,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
 
   class BrLabel(val arity: Int, val drop: Int, var addr: Int)
 
-  class BrTable(lbls: Array[BrLabel], dflt: BrLabel) extends Breaking {
+  class BrTable(val lbls: Array[BrLabel], val dflt: BrLabel) extends Breaking {
     def execute(thread: Frame[F]): Continuation[F] = {
       // get the label index from stack
       val i = thread.popInt()
