@@ -171,9 +171,7 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
           ctx.copy(types = types)
         case (ctx, Section.Code(codes)) =>
           val shift = ctx.funcs.size - codes.size
-          val cfgs = codes.map(x => {
-                              CFGicator.buildCFG[IO](x.code)
-                            })
+
           val code =
             codes.zipWithIndex.map {
               case ((FuncBody(locals, code)), idx) =>
@@ -184,11 +182,11 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
                                        ctx.functions,
                                        ctx.types)._1
                 val clocals = locals.flatMap(e => Vector.fill(e.count)(e.tpe))
-                compiler.Func.Compiled(CompiledFunction(idx + shift, tpe, clocals, compiled, cfgs(idx)))
+                compiler.Func.Compiled(CompiledFunction(idx + shift, tpe, clocals, compiled))
             }
           //println(code)
           ctx.copy(code = code)
-          //ctx.copy(cfgs = cfgs)
+        //ctx.copy(cfgs = cfgs)
         case (ctx, Section.Elements(elems)) =>
           val celems =
             elems.map {
@@ -434,7 +432,7 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
             // we can skip the rest of the block
             (false, ctx.copy(offset = ctx.offset + 1))
           case Call(idx) =>
-            builder += new asm.Call(idx, instIdx)
+            builder += new asm.Call(idx)
             val tpe = functions(idx)
             loop(instIdx + 1, ctx.pop(tpe.params.size).push(tpe.t.size).copy(offset = ctx.offset + 1), false)
           case CallIndirect(idx) =>
