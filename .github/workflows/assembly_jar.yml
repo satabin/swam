@@ -25,15 +25,15 @@ jobs:
         run: |
           bash ./millw cli.assembly
 
-      - name: Compress binaries
+      - name: Rename binary
         run: |
-          zip -r cli-0.6.0-RC3.zip out/cli/assembly
+          mv out/cli/assembly/dest/out.jar cli-0.6.0-RC3.jar
 
       - name: Submit release aligners
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: '*.zip'
+          file: 'cli-0.6.0-RC3.jar'
           tag: v0.6.0-RC3
           overwrite: true
           file_glob: true
