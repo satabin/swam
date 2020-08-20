@@ -191,7 +191,6 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
             code.zipWithIndex.map {
               case (inst, i) =>
                 val iid = ((i * p1) ^ (fidx * p2)) % 1000000 // hashing id
-                println(s"$iid ")
                 if (!listener.wasiCheck) { // Just added the check for Wasi filter
                   if (leaders.contains(i))
                     new InstructionWrapper[F](iid, inst, listener, name)
