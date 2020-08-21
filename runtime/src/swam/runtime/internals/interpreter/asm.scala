@@ -55,6 +55,7 @@ class InstructionWrapper[F[_]](var id: Int,
                                val functionName: Option[String])(implicit F: MonadError[F, Throwable])
     extends AsmInst[F] {
 
+  // println(id)
   listener.init(this, functionName)
 
   override def execute(t: Frame[F]): Continuation[F] = {

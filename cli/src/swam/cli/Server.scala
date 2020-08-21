@@ -30,13 +30,12 @@ object Server {
       watOrWasm: Path,
       coverageListener: CoverageListener[IO]
   ): Unit = {
-
-    println("wasmArgTypes: " + wasmArgTypes)
+    System.err.println("wasmArgTypes: " + wasmArgTypes)
     val bufferSize = getRequiredBufferSize(wasmArgTypes)
-    println(s"In listen! Required bufferSize: $bufferSize bytes")
+    System.err.println(s"In listen! Required bufferSize: $bufferSize bytes")
 
     while (true) {
-      println("Waiting for connection!")
+      System.err.println("Waiting for connection!")
       val clientSocket = server.accept()
       // println("Connection accepted!")
 
@@ -69,11 +68,11 @@ object Server {
         throw new Exception("Connection broke!")
       }
 
-      println("Received message!")
+      System.err.println("Received message!")
       // println(receivedMessage.mkString(" "))
 
       val argsParsed = parseMessage(receivedMessage, wasmArgTypes, bufferSize)
-      // println("Parsed arguments: " + argsParsed)
+      //println("Parsed arguments: " + argsParsed)
 
       var exitCode = 0
       try {
@@ -93,7 +92,7 @@ object Server {
       try {
         // writeSocket(clientSocket, "Calculation successful! Result: " + result)
         writeSocket(clientSocket, message)
-        println("Sent back message!")
+        System.err.println("Sent back message!")
       } catch {
         case e: java.net.SocketException => println(e)
       }
@@ -170,7 +169,7 @@ object Server {
   def getRequiredBufferSize(argsTypes: List[String]): Int = {
     var bufferSize = 0
     for (argType <- argsTypes) {
-      println("argType: " + argType)
+      System.err.println("argType: " + argType)
       argType match {
         case "Int32" =>
           bufferSize += 4
