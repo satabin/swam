@@ -32,7 +32,7 @@ private[wasi] trait MiscOps[F[_]] extends WasiBase[F] {
     unimplemented("poll_oneoff")
 
   def procExit(rval: Exitcode): F[Unit] =
-    F.delay(sys.exit(rval))
+    F.delay(throw new Exception)
 
   def procRaise(sig: Signal): F[Errno] =
     F.delay(sun.misc.Signal.raise(new sun.misc.Signal(sig.entryName))).as(success)

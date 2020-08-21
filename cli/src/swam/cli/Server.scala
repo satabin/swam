@@ -89,6 +89,7 @@ object Server {
       }
       val filledCoverage = coverageListener.pathInfo
       val message = serializeMessage(exitCode, filledCoverage)
+      coverageListener.clean()
       try {
         // writeSocket(clientSocket, "Calculation successful! Result: " + result)
         writeSocket(clientSocket, message)

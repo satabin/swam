@@ -15,8 +15,13 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
 
   override val wasiCheck: Boolean = wasi
 
-  val pathInfo: Array[Byte] = new Array[Byte](65536) // TODO pass this as a parameter
+  var pathInfo: Array[Byte] = new Array[Byte](65536) // TODO pass this as a parameter
   var previousInstId: Int = -1
+
+  def clean(): Unit = {
+    pathInfo = new Array[Byte](65536)
+    previousInstId = -1
+  }
 
   override def before(inner: InstructionWrapper[F], frame: Frame[F]): Unit = {}
 
@@ -32,8 +37,8 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
       val index = (previousInstId ^ inner.id) % pathInfo.length
       pathInfo(index) = (pathInfo(index) + 1).toByte
       previousInstId = inner.id >> 1
-    }
-    previousInstId = inner.id
+    } else
+      previousInstId = inner.id
     result
   }
 
