@@ -356,7 +356,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                           }
                           val resultParams = mapping.mkString(",")
                           if (resultParams == "") {
-                            println("void")
+                            println("")
                           }
                           println(resultParams)
                         }
