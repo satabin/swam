@@ -41,7 +41,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val wasmFile =
     Opts.argument[Path](metavar = "wasm")
 
-    val func_name =
+  val func_name =
     Opts.argument[String](metavar = "functionName")
 
   // Arguments that get passed to the WASM code you execute. They are available through WASI args_get.
@@ -134,7 +134,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
      debug,
      wasmFile,
      restArguments,
-      covOut,
+     covOut,
      covfilter,
      wasmArgTypes).mapN {
       (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covOut, covfilter, wasmArgTypes) =>
@@ -171,21 +171,8 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
        restArguments,
        covfilter,
        wasmArgTypes)
-        .mapN {
-          (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covfilter, wasmArgTypes) =>
-            RunServer(wasm,
-                      args,
-                      main,
-                      wat,
-                      wasi,
-                      time,
-                      trace,
-                      filter,
-                      traceFile,
-                      dirs,
-                      debug,
-                      covfilter,
-                      wasmArgTypes)
+        .mapN { (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covfilter, wasmArgTypes) =>
+          RunServer(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, covfilter, wasmArgTypes)
         }
     }
 
@@ -193,9 +180,10 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     (textual, wasmFile, out.orNone).mapN { (textual, wasm, out) => Decompile(wasm, textual, out) }
   }
 
-  val inferOpts: Opts[Options] = Opts.subcommand("infer", "Get the parameters type for functions file in Wasm module.") {
-    (wasmFile,wat,wasi,func_name).mapN { (wasm, wat, wasi, func_name) => Infer(wasm, wat, wasi, func_name) }
-  }
+  val inferOpts: Opts[Options] =
+    Opts.subcommand("infer", "Get the parameters type for functions file in Wasm module.") {
+      (wasmFile, wat, wasi, func_name).mapN { (wasm, wat, wasi, func_name) => Infer(wasm, wat, wasi, func_name) }
+    }
 
   val validateOpts: Opts[Options] = Opts.subcommand("validate", "Validate a wasm file") {
     (wasmFile, wat, dev).mapN(Validate(_, _, _))
@@ -208,8 +196,14 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val outFileOptions = List(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
 
   def main: Opts[IO[ExitCode]] =
-    runOpts.orElse(serverOpts).orElse(covOpts).orElse(inferOpts).orElse(decompileOpts).orElse(validateOpts).orElse(compileOpts).map {
-      opts =>
+    runOpts
+      .orElse(serverOpts)
+      .orElse(covOpts)
+      .orElse(inferOpts)
+      .orElse(decompileOpts)
+      .orElse(validateOpts)
+      .orElse(compileOpts)
+      .map { opts =>
         Blocker[IO].use { blocker =>
           opts match {
             case Run(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug, wasmArgTypes) =>
@@ -231,7 +225,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 _ <- IO(executeFunction(IO(preparedFunction), argsParsed, time))
               } yield ExitCode.Success
 
-              // TODO: Remove this and instead to coverage flag in Run(...)
+            // TODO: Remove this and instead to coverage flag in Run(...)
             case WasmCov(file,
                          args,
                          main,
@@ -294,8 +288,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
                 compiled <- engine.compile(module)
                 preparedFunction <- prepareFunction(compiled, main, dirs, args, wasi, blocker)
-                _ <- IO(Server
-                  .listen(IO(preparedFunction), wasmArgTypes, time, file, coverageListener))
+                _ <- IO(
+                  Server
+                    .listen(IO(preparedFunction), wasmArgTypes, time, file, coverageListener))
               } yield ExitCode.Success
 
             case Decompile(file, textual, out) =>
@@ -336,42 +331,39 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
 
                 compiled <- engine.compile(module)
                 _ <- IO(compiled.functions.zipWithIndex.map {
-                        case (CompiledFunction(typeIndex, tpe, locals, code), fidx) => 
-                          val functionName =
-                          compiled.names.flatMap(_.subsections.collectFirstSome {
-                            case FunctionNames(names) =>
-                              
-                              val mapList = names.values
-                              val check = mapList.exists(j => j == func_name)
-                              if(!check){
-                                System.err.println("Function name does not exists.")
-                                sys.exit(1)
-                              }
-                              names.get(typeIndex)
-                            case _ =>
-                              None
-                        })
-                        functionName match {
-                          case Some(x) => {
-                            if(x == func_name){
-                              val mapping = tpe.params.map({
-                                _ match {
-                                  case ValType.I32 => "Int32"
-                                  case ValType.I64 => "Int64"
-                                  case ValType.F32 => "Float32"
-                                  case ValType.F64 => "Float64"
-                                }
-                              })
-                              val resultParams = mapping.mkString(",")
-                              if(resultParams == ""){
-                                println("void")
-                              } 
-                              println(resultParams)
-                            }
-                          } 
-                          case _ => None
-                        }  
-                    })
+                  case (CompiledFunction(typeIndex, tpe, locals, code), fidx) =>
+                    val functionName =
+                      compiled.names.flatMap(_.subsections.collectFirstSome {
+                        case FunctionNames(names) =>
+                          val mapList = names.values
+                          val check = mapList.exists(j => j == func_name)
+                          if (!check) {
+                            System.err.println("Function name does not exists.")
+                            sys.exit(1)
+                          }
+                          names.get(typeIndex)
+                        case _ =>
+                          None
+                      })
+                    functionName match {
+                      case Some(x) => {
+                        if (x == func_name) {
+                          val mapping = tpe.params.map {
+                            case ValType.I32 => "Int32"
+                            case ValType.I64 => "Int64"
+                            case ValType.F32 => "Float32"
+                            case ValType.F64 => "Float64"
+                          }
+                          val resultParams = mapping.mkString(",")
+                          if (resultParams == "") {
+                            println("void")
+                          }
+                          println(resultParams)
+                        }
+                      }
+                      case _ => None
+                    }
+                })
               } yield ExitCode.Success
             case Compile(file, out, debug) =>
               for {
@@ -387,7 +379,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
 
           }
         }
-    }
+      }
 
   def prepareFunction(module: Module[IO],
                       functionName: String,
