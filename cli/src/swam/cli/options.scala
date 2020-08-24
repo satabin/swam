@@ -71,3 +71,10 @@ case class WasmCov(file: Path,
                    filter: Boolean,
                    wasmArgTypes: List[String])
     extends Options
+
+case class Infer(file: Path,
+                 wat: Boolean,
+                 wasi: Boolean,  
+                 functionName:String
+                )extends Options
+

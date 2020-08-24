@@ -22,6 +22,9 @@ import swam.runtime.wasi.Wasi
 import swam.runtime.{Engine, Function, Module, Value}
 import swam.text.Compiler
 
+import swam.binary.custom.FunctionNames
+import swam.runtime.internals.compiler.CompiledFunction
+
 private object NoTimestampFormatter extends JFormatter {
   override def format(x: LogRecord): String =
     x.getMessage
@@ -37,6 +40,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
 
   val wasmFile =
     Opts.argument[Path](metavar = "wasm")
+
+    val func_name =
+    Opts.argument[String](metavar = "functionName")
 
   // Arguments that get passed to the WASM code you execute. They are available through WASI args_get.
   val restArguments =
@@ -187,6 +193,10 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     (textual, wasmFile, out.orNone).mapN { (textual, wasm, out) => Decompile(wasm, textual, out) }
   }
 
+  val inferOpts: Opts[Options] = Opts.subcommand("infer", "Get the parameters type for functions file in Wasm module.") {
+    (wasmFile,wat,wasi,func_name).mapN { (wasm, wat, wasi, func_name) => Infer(wasm, wat, wasi, func_name) }
+  }
+
   val validateOpts: Opts[Options] = Opts.subcommand("validate", "Validate a wasm file") {
     (wasmFile, wat, dev).mapN(Validate(_, _, _))
   }
@@ -198,7 +208,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val outFileOptions = List(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
 
   def main: Opts[IO[ExitCode]] =
-    runOpts.orElse(serverOpts).orElse(covOpts).orElse(decompileOpts).orElse(validateOpts).orElse(compileOpts).map {
+    runOpts.orElse(serverOpts).orElse(covOpts).orElse(inferOpts).orElse(decompileOpts).orElse(validateOpts).orElse(compileOpts).map {
       opts =>
         Blocker[IO].use { blocker =>
           opts match {
@@ -318,7 +328,38 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 res <- engine.validate(module).attempt
                 _ <- res.fold(t => logger.error("Module is invalid", t), _ => logger.info("Module is valid"))
               } yield ExitCode.Success
+            case Infer(file, wat, wasi, func_name) =>
+              for {
+                engine <- Engine[IO](blocker)
+                tcompiler <- swam.text.Compiler[IO](blocker)
+                module = if (wat) tcompiler.stream(file, false, blocker) else engine.sections(file, blocker)
 
+                compiled <- engine.compile(module)
+                _ <- IO(compiled.functions.zipWithIndex.map {
+                        case (CompiledFunction(typeIndex, tpe, locals, code), fidx) => 
+                          val functionName =
+                          compiled.names.flatMap(_.subsections.collectFirstSome {
+                            case FunctionNames(names) =>
+                              names.get(typeIndex)
+                            case _ =>
+                              None
+                        })
+                        functionName match {
+                          case Some(x) => {
+                            if(x == func_name){
+                              println(s"This is function name : $func_name")
+                              println(s"This is param names : ${tpe.params}")
+                            }
+                          } 
+                          case None => {
+                            println(s"The function name does not exists.")
+                          }
+                        }
+                        
+                    })
+                _ <- IO(Infer)
+                //_ <- IO(println(module))
+              } yield ExitCode.Success
             case Compile(file, out, debug) =>
               for {
                 tcompiler <- Compiler[IO](blocker)
