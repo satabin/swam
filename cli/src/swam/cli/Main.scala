@@ -342,7 +342,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                             case FunctionNames(names) =>
                               
                               val mapList = names.values
-                              val check = mapList.exists(j => {j == func_name})
+                              val check = mapList.exists(j => j == func_name)
                               if(!check){
                                 System.err.println("Function name does not exists.")
                                 sys.exit(1)
@@ -354,8 +354,8 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                         functionName match {
                           case Some(x) => {
                             if(x == func_name){
-                              val mapping = tpe.params.map(y => {
-                                y match {
+                              val mapping = tpe.params.map({
+                                _ match {
                                   case ValType.I32 => "Int32"
                                   case ValType.I64 => "Int64"
                                   case ValType.F32 => "Float32"
