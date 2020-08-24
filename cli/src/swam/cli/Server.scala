@@ -5,7 +5,6 @@ package cli
 
 import scala.collection.mutable.ListBuffer
 
-// Simple server
 import java.io._
 import java.net.{ServerSocket, Socket}
 import java.nio.ByteBuffer
@@ -17,6 +16,8 @@ import swam.runtime.{Function, Value}
 
 import com.typesafe.config.ConfigFactory
 
+// Server which listens to a socket to get instructions to start the WASM file with specific arguments
+// and write the coverage back in the socket in the AFL binary format directly
 object Server {
   val conf = ConfigFactory.load()
   val maxQueue = 50000
