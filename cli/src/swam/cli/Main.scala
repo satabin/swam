@@ -340,6 +340,13 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                           val functionName =
                           compiled.names.flatMap(_.subsections.collectFirstSome {
                             case FunctionNames(names) =>
+                              
+                              val mapList = names.values
+                              val check = mapList.exists(j => {j == func_name})
+                              if(!check){
+                                System.err.println("Function name does not exists.")
+                                sys.exit(1)
+                              }
                               names.get(typeIndex)
                             case _ =>
                               None
@@ -347,18 +354,24 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                         functionName match {
                           case Some(x) => {
                             if(x == func_name){
-                              println(s"This is function name : $func_name")
-                              println(s"This is param names : ${tpe.params}")
+                              val mapping = tpe.params.map(y => {
+                                y match {
+                                  case ValType.I32 => "Int32"
+                                  case ValType.I64 => "Int64"
+                                  case ValType.F32 => "Float32"
+                                  case ValType.F64 => "Float64"
+                                }
+                              })
+                              val resultParams = mapping.mkString(",")
+                              if(resultParams == ""){
+                                println("void")
+                              } 
+                              println(resultParams)
                             }
                           } 
-                          case None => {
-                            println(s"The function name does not exists.")
-                          }
-                        }
-                        
+                          case _ => None
+                        }  
                     })
-                _ <- IO(Infer)
-                //_ <- IO(println(module))
               } yield ExitCode.Success
             case Compile(file, out, debug) =>
               for {
