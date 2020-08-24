@@ -45,12 +45,12 @@ class Module[F[_]] private[runtime] (
     private[runtime] val tables: Vector[TableType],
     private[runtime] val memories: Vector[MemType],
     private[runtime] val start: Option[Int],
-    private[runtime] val functions: Vector[CompiledFunction[F]],
+    val functions: Vector[CompiledFunction[F]],
     private[runtime] val elems: Vector[CompiledElem[F]],
     private[runtime] val data: Vector[CompiledData[F]])(implicit F: MonadError[F, Throwable]) {
   self =>
 
-  private[runtime] lazy val names = {
+    lazy val names = {
     val sec = customs.collectFirst {
       case Custom("name", payload) => payload
     }
