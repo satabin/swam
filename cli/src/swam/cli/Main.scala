@@ -13,6 +13,7 @@ import io.odin.formatter.Formatter
 import io.odin.formatter.options.ThrowableFormat
 import io.odin.{Logger, consoleLogger}
 import fs2._
+import swam.ValType.{F32, F64, I32, I64}
 import swam.binary.ModuleStream
 import swam.decompilation._
 import swam.code_analysis.coverage.{CoverageListener, CoverageReporter}
@@ -21,8 +22,7 @@ import swam.runtime.trace._
 import swam.runtime.wasi.Wasi
 import swam.runtime.{Engine, Function, Module, Value}
 import swam.text.Compiler
-
-import swam.binary.custom.FunctionNames
+import swam.binary.custom.{FunctionNames, ModuleName}
 import swam.runtime.internals.compiler.CompiledFunction
 
 private object NoTimestampFormatter extends JFormatter {
@@ -330,41 +330,42 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 module = if (wat) tcompiler.stream(file, false, blocker) else engine.sections(file, blocker)
 
                 compiled <- engine.compile(module)
-                _ <- IO(compiled.functions.zipWithIndex.map {
-                  case (CompiledFunction(typeIndex, tpe, locals, code), fidx) =>
-                    val functionName =
-                      compiled.names.flatMap(_.subsections.collectFirstSome {
-                        case FunctionNames(names) =>
-                          val mapList = names.values
-                          val check = mapList.exists(j => j == func_name)
-                          if (!check) {
-                            System.err.println("Function name does not exists.")
-                            sys.exit(1)
-                          }
-                          names.get(typeIndex)
-                        case _ =>
-                          None
-                      })
-                    functionName match {
-                      case Some(x) => {
-                        if (x == func_name) {
-                          val mapping = tpe.params.map {
-                            case ValType.I32 => "Int32"
-                            case ValType.I64 => "Int64"
-                            case ValType.F32 => "Float32"
-                            case ValType.F64 => "Float64"
-                          }
-                          val resultParams = mapping.mkString(",")
-                          if (resultParams == "") {
-                            println("")
-                          }
-                          println(resultParams)
+                names <- IO(compiled.names.flatMap(_.subsections.collectFirst { case FunctionNames(n) => n }))
+                exitCode <- IO(
+                  names match {
+                    case Some(x) => {
+                      val func = x.filter { case (idx, name) => func_name == name }
+
+                      if (func.nonEmpty) {
+
+                        if (func.size > 1) {
+
+                          System.err.println(s"Warning $func_name has more than one definition, taking the first one")
                         }
+
+                        val tpeidx = func.collectFirst { case (tid, _) => tid }.get
+
+                        // There is always one at this point
+                        val tpe = compiled.functions.filter(f => f.idx == tpeidx)(0).tpe
+
+                        val params = tpe.params.map {
+                          case I32 => "Int32"
+                          case I64 => "Int64"
+                          case F32 => "Float32"
+                          case F64 => "Float64"
+                        }
+                        println(params.mkString(","))
+                        ExitCode.Success
+                      } else {
+                        System.err.println(s"Function '$func_name' does not exist")
+                        ExitCode.Error
                       }
-                      case _ => None
                     }
-                })
-              } yield ExitCode.Success
+                    case None => ExitCode.Error
+                  }
+                )
+
+              } yield exitCode
             case Compile(file, out, debug) =>
               for {
                 tcompiler <- Compiler[IO](blocker)
