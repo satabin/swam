@@ -87,8 +87,9 @@ object Server {
           exitCode = e.code
         }
         case e: Exception => {
+          System.err.println("SWAM internal crash")
           System.err.println(e)
-          throw e
+          exitCode = 1 // SWAM internal crash
         }
       }
       val filledCoverage = coverageListener.pathInfo
