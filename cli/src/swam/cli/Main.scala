@@ -323,7 +323,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 res <- engine.validate(module).attempt
                 _ <- res.fold(t => logger.error("Module is invalid", t), _ => logger.info("Module is valid"))
               } yield ExitCode.Success
-            case Infer(file, wat, wasi, func_name) =>
+            case Infer(file, wat, func_name) =>
               for {
                 engine <- Engine[IO](blocker)
                 tcompiler <- swam.text.Compiler[IO](blocker)
