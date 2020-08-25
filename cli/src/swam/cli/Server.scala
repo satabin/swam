@@ -83,6 +83,7 @@ object Server {
         // case e: swam.runtime.StackOverflowException => println(e)
         case e: ExitCodeException => {
           // writeSocket(clientSocket, "Error: " + e)
+          println(s"The input ${argsParsed.mkString("(", ",", ")")} causes a non-zero exit code")
           exitCode = e.code
         }
         case e: Exception => {
