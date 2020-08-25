@@ -361,7 +361,10 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                         ExitCode.Error
                       }
                     }
-                    case None => ExitCode.Error
+                    case None => {
+                      System.err.println(s"The module does not contain a name/metadata section")
+                      ExitCode.Error
+                    }
                   }
                 )
 
