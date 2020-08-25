@@ -36,7 +36,7 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
     if (previousInstId != -1) {
       val index = (previousInstId ^ inner.id) % pathInfo.length
       pathInfo(index) = (pathInfo(index) + 1).toByte
-      previousInstId = inner.id
+      previousInstId = inner.id >> 1
     } else
       previousInstId = inner.id
     result
