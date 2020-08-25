@@ -4,7 +4,6 @@ package cli
 // import swam.cli.Server.{parseMessage, randomCoverageFiller, readSocket, serializeMessage, writeSocket}
 
 import scala.collection.mutable.ListBuffer
-
 import java.io._
 import java.net.{ServerSocket, Socket}
 import java.nio.ByteBuffer
@@ -13,8 +12,8 @@ import java.nio.file.Path
 import cats.effect.IO
 import swam.code_analysis.coverage.CoverageListener
 import swam.runtime.{Function, Value}
-
 import com.typesafe.config.ConfigFactory
+import swam.runtime.wasi.internal.ExitCodeException
 
 // Server which listens to a socket to get instructions to start the WASM file with specific arguments
 // and write the coverage back in the socket in the AFL binary format directly
@@ -82,10 +81,13 @@ object Server {
         // println(s"Result of calculation: $result")
       } catch {
         // case e: swam.runtime.StackOverflowException => println(e)
-        case e: Exception => {
+        case e: ExitCodeException => {
           // writeSocket(clientSocket, "Error: " + e)
-          println(e)
-          exitCode = 1
+          exitCode = e.code
+        }
+        case e: Exception => {
+          System.err.println(e)
+          throw e
         }
       }
       val filledCoverage = coverageListener.pathInfo
