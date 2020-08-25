@@ -182,7 +182,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
 
   val inferOpts: Opts[Options] =
     Opts.subcommand("infer", "Get the parameters type for functions file in Wasm module.") {
-      (wasmFile, wat, wasi, func_name).mapN { (wasm, wat, wasi, func_name) => Infer(wasm, wat, wasi, func_name) }
+      (wasmFile, wat, wasi, func_name).mapN { (wasm, wat, wasi, func_name) => Infer(wasm, wat, func_name) }
     }
 
   val validateOpts: Opts[Options] = Opts.subcommand("validate", "Validate a wasm file") {
