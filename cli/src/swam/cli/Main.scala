@@ -357,7 +357,10 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                         println(params.mkString(","))
                         ExitCode.Success
                       } else {
-                        System.err.println(s"Function '$func_name' does not exist")
+                        System.err.println(s"Function '$func_name' does not exist. Listing available functions...")
+
+                        names.foreach(f => f.foreach(e => println(s"\t${e._2}")))
+
                         ExitCode.Error
                       }
                     }
