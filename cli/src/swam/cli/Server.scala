@@ -68,7 +68,7 @@ object Server {
         throw new Exception("Connection broke!")
       }
 
-      System.err.println("Received message!")
+      System.err.println(s"Received message!")
       // println(receivedMessage.mkString(" "))
 
       val argsParsed = parseMessage(receivedMessage, wasmArgTypes, bufferSize)
