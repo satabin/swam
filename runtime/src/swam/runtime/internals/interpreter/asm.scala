@@ -25,6 +25,8 @@ import instance._
 import cats._
 import cats.implicits._
 
+import scala.collection.mutable.Map
+
 import java.lang.{Integer => JInt, Long => JLong, Float => JFloat, Double => JDouble}
 
 /** `Asm` is the interpreted language. It closely mirrors the WebAssembly bytecode with
@@ -45,6 +47,21 @@ import java.lang.{Integer => JInt, Long => JLong, Float => JFloat, Double => JDo
   */
 sealed trait AsmInst[F[_]] {
   def execute(t: Frame[F]): Continuation[F]
+}
+
+class InstructionWrapper[F[_]](var id: Int,
+                               val inner: AsmInst[F],
+                               val listener: InstructionListener[F],
+                               val functionName: Option[String])(implicit F: MonadError[F, Throwable])
+    extends AsmInst[F] {
+
+  listener.init(this, functionName)
+
+  override def execute(t: Frame[F]): Continuation[F] = {
+    listener.before(this, t)
+    val result = inner.execute(t)
+    listener.after(this, t, functionName, result)
+  }
 }
 
 sealed trait Continuation[+F[_]]
@@ -273,14 +290,14 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       }
   }
 
-  class I32Const(v: Int) extends AsmInst[F] {
+  class I32Const(val v: Int) extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushInt(v)
       Continue
     }
   }
 
-  class I64Const(v: Long) extends AsmInst[F] {
+  class I64Const(val v: Long) extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushLong(v)
       Continue
@@ -1535,7 +1552,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
-  class Drop(n: Int) extends AsmInst[F] {
+  class Drop(val n: Int) extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       thread.drop(n)
       Continue
@@ -1555,7 +1572,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
     }
   }
 
-  class LocalGet(idx: Int) extends AsmInst[F] {
+  class LocalGet(val idx: Int) extends AsmInst[F] {
     def execute(thread: Frame[F]): Continuation[F] = {
       thread.pushValue(thread.local(idx))
       Continue
@@ -2061,7 +2078,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
 
   class BrLabel(val arity: Int, val drop: Int, var addr: Int)
 
-  class BrTable(lbls: Array[BrLabel], dflt: BrLabel) extends Breaking {
+  class BrTable(val lbls: Array[BrLabel], val dflt: BrLabel) extends Breaking {
     def execute(thread: Frame[F]): Continuation[F] = {
       // get the label index from stack
       val i = thread.popInt()
@@ -2103,7 +2120,7 @@ class Asm[F[_]](implicit F: MonadError[F, Throwable]) {
       }
   }
 
-  class Call(fidx: Int) extends Invoking {
+  class Call(val fidx: Int) extends Invoking {
     def execute(thread: Frame[F]): Continuation[F] = {
       val f = thread.func(fidx)
       invoke(thread, f)

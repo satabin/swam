@@ -46,7 +46,8 @@ import java.nio.file.Path
   */
 class Engine[F[_]: Async] private (val conf: EngineConfiguration,
                                    private[runtime] val validator: Validator[F],
-                                   private[runtime] val tracer: Option[Tracer])
+                                   private[runtime] val tracer: Option[Tracer],
+                                   private[runtime] val instructionListener: Option[InstructionListener[F]])
     extends ModuleLoader[F] {
 
   private[runtime] val asm =
@@ -157,13 +158,18 @@ class Engine[F[_]: Async] private (val conf: EngineConfiguration,
 
 object Engine {
 
-  def apply[F[_]: Async: ContextShift](blocker: Blocker, tracer: Option[Tracer] = None): F[Engine[F]] =
+  def apply[F[_]: Async: ContextShift](blocker: Blocker,
+                                       tracer: Option[Tracer] = None,
+                                       listener: Option[InstructionListener[F]] = None): F[Engine[F]] =
     for {
       validator <- Validator[F](blocker)
       conf <- ConfigSource.default.at("swam.runtime").loadF[F, EngineConfiguration](blocker)
-    } yield new Engine[F](conf, validator, tracer)
+    } yield new Engine[F](conf, validator, tracer, listener)
 
-  def apply[F[_]: Async](conf: EngineConfiguration, validator: Validator[F], tracer: Option[Tracer]): Engine[F] =
-    new Engine[F](conf, validator, tracer)
+  def apply[F[_]: Async](conf: EngineConfiguration,
+                         validator: Validator[F],
+                         tracer: Option[Tracer],
+                         listener: Option[InstructionListener[F]]): Engine[F] =
+    new Engine[F](conf, validator, tracer, listener)
 
 }

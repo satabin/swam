@@ -22,16 +22,19 @@ package instance
 import imports._
 import compiler._
 import trace._
-
 import cats.effect._
 import cats.implicits._
 import swam.binary.custom.FunctionNames
+import swam.cfg.CFGicator
+import swam.runtime.internals.interpreter.{AsmInst, InstructionListener, InstructionWrapper}
 
 private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F]) {
 
   private val interpreter = engine.interpreter
   private val dataOnHeap = engine.conf.data.onHeap
   private val dataHardMax = engine.conf.data.hardMax
+  private val random = new scala.util.Random(100) // TODO check if we need to pass this as a parameter for the coverage tool
+  private val def_undef_func: Set[String] = WasiFilter.readWasiFile()
 
   def instantiate(module: Module[F], imports: Imports[F]): F[Instance[F]] = {
     for {
@@ -93,6 +96,57 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
     }
   }
 
+  private def getBBLeaders(code: Array[AsmInst[F]]): Set[Int] = {
+
+    var leaders = Set[Int]()
+    leaders += 0 // first instruction is a leader
+
+    def getBBSaux(idx: Int): Unit = {
+
+      if (idx < code.length) {
+
+        val inst: AsmInst[F] = code(idx)
+
+        inst match {
+          // Every jump instruction target and the the next instruction is then a leader
+          case x: engine.asm.Jump => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.JumpIf => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.Br => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.BrIf => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.BrLabel => {
+            leaders += x.addr
+            leaders += idx + 1
+          }
+          case x: engine.asm.BrTable => {
+            x.lbls.foreach(l => {
+              leaders += l.addr
+            })
+
+            leaders += x.dflt.addr
+            leaders += idx + 1
+          }
+          case _ => {}
+        }
+        getBBSaux(idx + 1)
+      }
+    }
+
+    getBBSaux(1)
+    leaders
+  }
+
   private def allocate(module: Module[F],
                        globals: Vector[GlobalInstance[F]],
                        imports: Vector[Interface[F, Type]]): F[Instance[F]] = {
@@ -110,6 +164,7 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
       case ((ifunctions, iglobals, itables, imemories), m: Memory[F]) =>
         (ifunctions, iglobals, itables, imemories :+ m)
     }
+
     instance.funcs = ifunctions ++ module.functions.map {
       case CompiledFunction(typeIndex, tpe, locals, code) =>
         val functionName =
@@ -119,7 +174,36 @@ private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F
             case _ =>
               None
           })
-        new FunctionInstance[F](tpe, locals, code, instance, functionName)
+
+        val toWrap = engine.instructionListener match {
+          case Some(listener) => {
+            val leaders = getBBLeaders(code)
+            // TODO change functionName to some kind of "debugging" class
+            val name = functionName match {
+              case Some(x) => functionName
+              case _       => Option(s"f$typeIndex")
+            }
+            val fn = functionName.getOrElse("N/A").toString
+            code.zipWithIndex.map {
+              case (inst, i) =>
+                if (!listener.wasiCheck) { // Just added the check for Wasi filter
+                  if (leaders.contains(i))
+                    new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name)
+                      .asInstanceOf[AsmInst[F]]
+                  else inst
+                } else {
+                  if (!def_undef_func.contains(fn)) {
+                    if (leaders.contains(i))
+                      new InstructionWrapper[F](random.nextInt(Int.MaxValue), inst, listener, name)
+                        .asInstanceOf[AsmInst[F]]
+                    else inst
+                  } else inst
+                }
+            }
+          }
+          case None => code
+        }
+        new FunctionInstance[F](tpe, locals, toWrap, instance, functionName)
     }
     instance.globals = iglobals ++ globals
     instance.tables = itables ++ module.tables.map {

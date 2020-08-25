@@ -76,7 +76,7 @@ private[wasi] class HandleManager[F[_]](private[internal] val handles: Ref[F, Ha
         case None    => F.pure(Errno.Badf)
       }
 
-  def getHandle(fd: Fd, rights: Rights)(f: Handle => F[Errno]): F[Errno] =
+  def getHandle(fd: Fd, rights: Rights)(f: Handle => F[Errno]): F[Errno] = {
     handles.get.map(_.descriptors.lift(fd).flatten).flatMap {
       case Some(handle) =>
         if ((handle.rightsBase & rights) != rights) {
@@ -87,6 +87,7 @@ private[wasi] class HandleManager[F[_]](private[internal] val handles: Ref[F, Ha
       case None =>
         F.pure(Errno.Badf)
     }
+  }
 
   def modifyHandle(fd: Fd)(f: Handle => (Handle, Errno)): F[Errno] =
     handles.modify { handles =>
@@ -213,6 +214,7 @@ private[wasi] object HandleManager {
               .updated(0, Some(stdin))
               .updated(1, Some(stdout))
               .updated(2, Some(stderr))
+
             val descriptors = preopenedDirs.zipWithIndex.foldLeft(withstd) {
               case (descriptors, (dir, idx)) =>
                 descriptors

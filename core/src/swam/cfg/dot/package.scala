@@ -19,7 +19,7 @@ package object dot {
             else
               s"""bb$id[label="{$name: $id|${insts
                 .map(
-                  _.pretty
+                  _._1.pretty
                     .render(80)
                     .replace("{", "\\{")
                     .replace("}", "\\}"))

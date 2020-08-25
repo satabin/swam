@@ -3,19 +3,15 @@ import mill.eval._
 import mill.scalalib._
 import mill.scalalib.publish._
 import mill.scalalib.scalafmt._
-
 import ammonite.ops._
 import mill.modules.Jvm.runSubprocess
-
 import coursier.maven.MavenRepository
-
 import $file.jmh
 import jmh.Jmh
-
 import $file.mdoc
 import mdoc.MdocModule
-
 import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
+import runtime.ivy
 
 val swamVersion = "0.6.0-RC3"
 
@@ -138,7 +134,7 @@ object generator extends SwamModule with PublishModule {
 
 object cli extends SwamModule {
 
-  def moduleDeps = Seq(text, core, runtime, wasi)
+  def moduleDeps = Seq(text, core, runtime, wasi, code_analysis)
 
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
@@ -181,6 +177,40 @@ object runtime extends SwamModule with PublishModule {
     }
   }
 
+}
+
+
+object code_analysis extends SwamModule with PublishModule {
+
+  def moduleDeps = Seq(core, runtime, wasi)
+
+  def ivyDeps = Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion", ivy"com.nrinaudo::kantan.csv:0.6.1")
+
+  def publishVersion = swamVersion
+
+  def artifactName = "swam-code_analysis"
+
+  def pomSettings =
+    PomSettings(
+      description = "Swam opt-in library",
+      organization = "org.gnieh",
+      url = swamUrl,
+      licenses = Seq(swamLicense),
+      versionControl = VersionControl.github("satabin", "swam"),
+      developers = Seq(swamDeveloper)
+    )
+
+
+  object test extends Tests with ScalafmtModule {
+
+    def testFrameworks = Seq("swam.util.Framework")
+
+    def ivyDeps =
+      Agg(ivy"com.lihaoyi::utest:0.7.4", ivy"com.github.pathikrit::better-files:3.8.0", ivy"com.lihaoyi::pprint:0.5.9")
+
+    def moduleDeps = Seq(code_analysis, text, util.test, wasi)
+
+  }
 }
 
 object wasi extends SwamModule with PublishModule {
