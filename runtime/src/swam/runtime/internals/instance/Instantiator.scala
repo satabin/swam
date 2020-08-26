@@ -26,7 +26,7 @@ import cats.effect._
 import cats.implicits._
 import swam.binary.custom.FunctionNames
 import swam.cfg.CFGicator
-import swam.runtime.internals.interpreter.{AsmInst, InstructionListener, InstructionWrapper}
+import swam.runtime.internals.interpreter.{AsmInst, InstructionWrapper}
 
 private[runtime] class Instantiator[F[_]](engine: Engine[F])(implicit F: Async[F]) {
 
