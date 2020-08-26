@@ -16,8 +16,12 @@ syntax: glob
 .manager
 .scala_dependencies
 
+# VS Code
+.vscode
+
 # idea
 .idea
+.idea_modules
 *.iml
 
 # building
@@ -30,6 +34,7 @@ tmp*
 dist
 test-output
 build.log
+*.out
 
 # other scm
 .svn

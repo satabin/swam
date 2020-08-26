@@ -65,7 +65,7 @@ class MandelbrotPerformances {
     mandelbrot = (for {
       v <- Validator[IO](blocker)
       conf <- ConfigSource.default.at("swam.runtime").loadF[IO, EngineConfiguration](blocker)
-      e = Engine[IO](conf, v, None)
+      e = Engine[IO](conf, v, None, None)
       m <- e.compile(Paths.get("../../../../benchmarks/resources/mandelbrot.wasm"), blocker)
       i <- m.instantiate
       f <- i.exports.typed.function[(Int, Double, Double, Double), Unit]("mandelbrot")

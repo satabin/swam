@@ -428,8 +428,8 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
 
   /** Resolves the entire module, stopping on the first encountered error. */
   def resolve(mod: Module, debug: Boolean = false): F[Stream[F, r.Section]] = {
-    // first we initialize the resolver context with declared identiiers
-    // a variation from the spec is that fresh identifiers are not sytactically correct
+    // first we initialize the resolver context with declared identifiers
+    // a variation from the spec is that fresh identifiers are not syntactically correct
     // (they do not start with a "$"). This ensures that they indeed are fresh
     val ctx = mod.fields.foldLeft(ResolverContext(name = mod.id)) {
       case (ctx, fld @ Type(id, _, tpe)) =>

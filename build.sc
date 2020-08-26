@@ -138,7 +138,8 @@ object cli extends SwamModule {
 
   def ivyDeps = Agg(
     ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
-    ivy"com.monovore::decline-effect:1.0.0"
+    ivy"com.monovore::decline-effect:1.2.0",
+    ivy"com.monovore::decline:1.2.0"
   )
 
 }
@@ -184,7 +185,8 @@ object code_analysis extends SwamModule with PublishModule {
 
   def moduleDeps = Seq(core, runtime, wasi)
 
-  def ivyDeps = Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion", ivy"com.nrinaudo::kantan.csv:0.6.1")
+  def ivyDeps =
+    Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion", ivy"com.nrinaudo::kantan.csv:0.6.1")
 
   def publishVersion = swamVersion
 
@@ -199,7 +201,6 @@ object code_analysis extends SwamModule with PublishModule {
       versionControl = VersionControl.github("satabin", "swam"),
       developers = Seq(swamDeveloper)
     )
-
 
   object test extends Tests with ScalafmtModule {
 
@@ -270,7 +271,8 @@ def unidoc(ev: Evaluator) = T.command {
       case x: ScalaModule#Tests => true
       case _ =>
         val segments = x.millModuleBasePath.value.segments.toVector
-        segments.contains("util") || segments.contains("benchmarks") || segments.contains("examples") || segments.contains("cli")
+        segments.contains("util") || segments.contains("benchmarks") || segments.contains("examples") || segments
+          .contains("cli")
     }
 
   val modules =

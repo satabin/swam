@@ -59,7 +59,7 @@ object CoverageTests extends TestSuite {
                   wat: Boolean,
                   wasi: Boolean): CoverageListener[IO] = {
 
-    val coverageListener = CoverageListener[IO](wasi, ".", false, false)
+    val coverageListener = CoverageListener[IO](wasi)
 
     Blocker[IO]
       .use { blocker =>
@@ -88,7 +88,7 @@ object CoverageTests extends TestSuite {
     for (l <- list) {
       val ModuleCoverageInfo(m, c, t) = l
       if (m == "add")
-        assert(c == 4, t == 4) // 100 % percent covered
+        assert(c == 1, t == 1) // 100 % percent covered
     }
   }
 
@@ -102,7 +102,7 @@ object CoverageTests extends TestSuite {
     for (l <- list) {
       val ModuleCoverageInfo(m, c, t) = l
       if (m == "__original_main")
-        assert(c == 61, t == 74) // 82% percent covered
+        assert(c == 3, t == 4) // 82% percent covered
     }
   }
 
@@ -116,7 +116,7 @@ object CoverageTests extends TestSuite {
     for (l <- list) {
       val ModuleCoverageInfo(m, c, t) = l
       if (m == "__original_main")
-        assert(c == 75, t == 89) // 84 % percent covered
+        assert(c == 3, t == 4) // 84 % percent covered
     }
   }
 
@@ -130,7 +130,7 @@ object CoverageTests extends TestSuite {
     for (l <- list) {
       val ModuleCoverageInfo(m, c, t) = l
       if (m == "__original_main")
-        assert(c == 75, t == 75) // 100 % percent covered
+        assert(c == 4, t == 4) // 100 % percent covered
     }
   }
 
@@ -144,15 +144,15 @@ object CoverageTests extends TestSuite {
     for (l <- list) {
       val ModuleCoverageInfo(m, c, t) = l
       if (m == "__original_main")
-        assert(c == 514, t == 514) // 100 % percent covered
+        assert(c == 1, t == 1) // 100 % percent covered
       else if (m == "deconv")
-        assert(c == 203, t == 214) // 94 % percent covered
+        assert(c == 16, t == 18) // 94 % percent covered
       else if (m == "pad_two")
-        assert(c == 0, t == 47) // 0 % percent covered
+        assert(c == 0, t == 7) // 0 % percent covered
       else if (m == "fft")
-        assert(c == 53, t == 53) // 100 % percent covered
+        assert(c == 4, t == 4) // 100 % percent covered
       else if (m == "_fft")
-        assert(c == 192, t == 229) // 83 % percent covered
+        assert(c == 7, t == 11) // 83 % percent covered
     }
   }
 
