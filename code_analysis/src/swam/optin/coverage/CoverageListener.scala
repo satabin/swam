@@ -17,6 +17,7 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
 
   var pathInfo: Array[Byte] = new Array[Byte](65536) // TODO pass this as a parameter
   var previousInstId: Int = -1
+  var uniqueIds: Set[Int] = Set()
 
   def clean(): Unit = {
     pathInfo = new Array[Byte](65536)
@@ -33,6 +34,7 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
     val count: (String, Int) = coverageMap.getOrElse(inner.id, (fn, 0))
     coverageMap = coverageMap.updated(inner.id, (fn, count._2 + 1))
 
+    uniqueIds += inner.id
     if (previousInstId != -1) {
       val index = (previousInstId ^ inner.id)
       pathInfo(index) = (pathInfo(index) + 1).toByte

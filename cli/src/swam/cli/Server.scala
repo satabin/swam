@@ -95,6 +95,9 @@ object Server {
       val filledCoverage = coverageListener.pathInfo
       val message = serializeMessage(exitCode, filledCoverage)
       coverageListener.clean()
+
+      // Print the number of unique covered blocks
+      System.err.println(s"Unique block ids ${coverageListener.uniqueIds.size}")
       try {
         // writeSocket(clientSocket, "Calculation successful! Result: " + result)
         writeSocket(clientSocket, message)
