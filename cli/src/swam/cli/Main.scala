@@ -280,12 +280,14 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 argsParsed <- IO(parseWasmArgs(wasmArgTypes, args))
                 coverageListener = CoverageListener[IO](covfilter)
                 engine <- Engine[IO](blocker, tracer, listener = Option(coverageListener))
+
                 tcompiler <- swam.text.Compiler[IO](blocker)
                 module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
                 _ <- if (exportInstrumented != null) {
                   IO(println("Export"))
 
                   (Stream.emits(ModuleStream.header.toArray) ++ module
+                    .through(coverageListener.instrument)
                     .through(ModuleStream.encoder.encode[IO])
                     .flatMap(bv => Stream.emits(bv.toByteArray)))
                     .through(fs2.io.file.writeAll(exportInstrumented, blocker, outFileOptions))
