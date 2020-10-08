@@ -118,6 +118,17 @@ class Engine[F[_]: Async] private (val conf: EngineConfiguration,
       .last
       .map(_.get)
 
+  /** Reads the given stream of binary module sections and compiles it.
+    * The returned compiled [[Module]] can then be instantiated to be run.
+    *
+    */
+  def compileNotValidate(sections: Stream[F, Section]): F[Module[F]] =
+    sections
+      .through(compiler.compile)
+      .compile
+      .last
+      .map(_.get)
+
   /** Reads the `.wasm` file at the given path, validates, compiles, and instantiates it.
     * The returned [[Instance]] can then be used to access exported elements.
     *

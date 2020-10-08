@@ -67,9 +67,11 @@ case class WasmCov(file: Path,
                    traceFile: Path,
                    dirs: List[Path],
                    debug: Boolean,
+                   exportInstrumented: Path,
                    covOut: Path,
                    filter: Boolean,
-                   wasmArgTypes: List[String])
+                   wasmArgTypes: List[String],
+                   validate: Boolean)
     extends Options
 
 case class Infer(file: Path, wat: Boolean, functionName: String) extends Options

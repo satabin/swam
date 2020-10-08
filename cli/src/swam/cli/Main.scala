@@ -72,9 +72,16 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val time =
     Opts.flag("time", "Measure execution time (default false)", short = "C").orFalse
 
+  val noValidateBinary =
+    Opts.flag("novalidate", "Do not validate WASM binary, imports for example").orFalse
+
   val trace =
     Opts.flag("trace", "Trace WASM execution channels (default false)", short = "t").orFalse
 
+  val exportInstrumented =
+    Opts
+      .option[Path]("export-instrumented", "Compile and export the instrumented WASM binary")
+      .withDefault(null)
   /*val cov =
     Opts.flag("instcov", "Run the WebAssembly module and gets coverage.", short = "v").orFalse*/
 
@@ -134,10 +141,27 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
      debug,
      wasmFile,
      restArguments,
+     exportInstrumented,
      covOut,
      covfilter,
-     wasmArgTypes).mapN {
-      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covOut, covfilter, wasmArgTypes) =>
+     wasmArgTypes,
+     noValidateBinary).mapN {
+      (main,
+       wat,
+       wasi,
+       time,
+       dirs,
+       trace,
+       traceFile,
+       filter,
+       debug,
+       wasm,
+       args,
+       exportInstrumented,
+       covOut,
+       covfilter,
+       wasmArgTypes,
+       noValidateBinary) =>
         WasmCov(wasm,
                 args,
                 main,
@@ -149,9 +173,11 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 traceFile,
                 dirs,
                 debug,
+                exportInstrumented,
                 covOut,
                 covfilter,
-                wasmArgTypes)
+                wasmArgTypes,
+                noValidateBinary)
     }
   }
 
@@ -237,9 +263,11 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                          tracef,
                          dirs,
                          debug,
+                         exportInstrumented,
                          covOut,
                          covfilter,
-                         wasmArgTypes) =>
+                         wasmArgTypes,
+                         noValidateBinary) =>
               for {
                 tracer <- if (trace)
                   JULTracer[IO](blocker,
@@ -254,7 +282,19 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 engine <- Engine[IO](blocker, tracer, listener = Option(coverageListener))
                 tcompiler <- swam.text.Compiler[IO](blocker)
                 module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
-                compiled <- engine.compile(module)
+                _ <- if (exportInstrumented != null) {
+                  IO(println("Export"))
+
+                  (Stream.emits(ModuleStream.header.toArray) ++ module
+                    .through(ModuleStream.encoder.encode[IO])
+                    .flatMap(bv => Stream.emits(bv.toByteArray)))
+                    .through(fs2.io.file.writeAll(exportInstrumented, blocker, outFileOptions))
+                    .compile
+                    .drain
+
+                } else { IO(println("Do not export")) }
+                compiled <- if (noValidateBinary) engine.compileNotValidate(module)
+                else engine.compile(module) // This is not needed since the validation is read from the config files
                 preparedFunction <- prepareFunction(compiled, main, dirs, args, wasi, blocker)
                 _ <- IO(executeFunction(IO(preparedFunction), argsParsed, time))
                 _ <- IO(CoverageReporter.blockCoverage(covOut, file, coverageListener))
