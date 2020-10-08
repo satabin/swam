@@ -11,7 +11,11 @@ import swam.syntax.Section.Imports
   */
 case class TransformationContext(sections: Seq[Section],
                                  types: Option[Section.Types],
-                                 imported: Option[Section.Imports]) {
+                                 imported: Option[Section.Imports],
+                                 code: Option[Section.Code]) {
+
+  lazy val sortedSections: Seq[Section] =
+    (types.get +: sections :+ code.get :+ imported.get).sortBy(t => t.id)
 
   lazy val numberOfImportedFunctions: Int = imported.get.imports.collect {
     case x: Import.Function => x

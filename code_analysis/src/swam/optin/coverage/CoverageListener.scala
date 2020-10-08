@@ -80,40 +80,103 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
   }
 
   def instrument(sections: Stream[F, Section]): Stream[F, Section] = {
+    val ran = scala.util.Random
 
-    sections
-      .fold(TransformationContext(Seq(), None, None)) {
-        case (ctx, c: Section.Types) => ctx.copy(sections = ctx.sections, types = Option(c), imported = ctx.imported)
-        /* case (ctx, c: Section.Functions) =>
-          ctx.copy(sections = ctx.sections
-                     :+ Section.Functions(c.functions :+ c.functions.size),
-                   types = ctx.types)*/
-        case (ctx, c: Section.Code) =>
+    /*
+
+    case (ctx, c: Section.Code) =>
           ctx.copy(
             sections = ctx.sections :+
-              Section.Code(c.bodies
-                .map { x: FuncBody =>
-                  FuncBody(x.locals, x.code.map {
-                    case Call(funcidx) =>
-                      if (funcidx >= ctx.numberOfImportedFunctions) Call(funcidx + 1) else Call(funcidx)
-                    case x => x
-                  })
-                }),
+              ,
             types = ctx.types,
             imported = ctx.imported
           )
-        case (ctx, c: Section.Imports) => {
-          ctx.copy(sections = ctx.sections,
-                   types = ctx.types,
-                   imported =
-                     Option(Section.Imports(c.imports.appended(Import.Function("env", "swam_cb", ctx.tpeIndex)))))
+     */
+    val r = for {
+      firstPass <- sections
+        .fold(TransformationContext(Seq(), None, None, None)) {
+          case (ctx, c: Section.Types) =>
+            ctx.copy(sections = ctx.sections, types = Option(c), imported = ctx.imported, code = ctx.code)
+          case (ctx, _: Section.Custom) => // Patch removing custom section
+            ctx.copy(sections = ctx.sections, types = ctx.types, imported = ctx.imported, code = ctx.code)
+          case (ctx, c: Section.Imports) => {
+            ctx.copy(
+              sections = ctx.sections,
+              types = ctx.types,
+              code = ctx.code,
+              imported = Option(Section.Imports(c.imports.appended(Import.Function("env", "swam_cb", ctx.tpeIndex))))
+            )
+          }
+          case (ctx, c: Section.Code) =>
+            ctx.copy(sections = ctx.sections, types = ctx.types, imported = ctx.imported, code = Option(c))
+          case (ctx, c: Section) =>
+            ctx.copy(sections = ctx.sections :+ c, types = ctx.types, imported = ctx.imported, code = ctx.code)
         }
-        case (ctx, c: Section) => ctx.copy(sections = ctx.sections :+ c, types = ctx.types, imported = ctx.imported)
-      }
-      .flatMap(t => {
-        Stream.emits(t.redefinedTypes +: (t.imported.get +: t.sections))
-      })
 
+      // First pass done !
+      /*ctx = firstPass.copy(
+        sections = firstPass.sections,
+        imported = firstPass.imported,
+        types = firstPass.types,
+        code = Option(
+          Section.Code(
+            firstPass.code.get.bodies
+              .map { x: FuncBody =>
+                {
+                  println(firstPass.imported)
+                  FuncBody(x.locals, x.code.map {
+                    case Call(funcidx) =>
+                      if (funcidx >= firstPass.numberOfImportedFunctions) Call(funcidx + 1) else Call(funcidx)
+                    case x => x
+                  })
+                }
+              })
+        )
+      )*/
+      ctx = firstPass.copy(
+        sections = firstPass.sections,
+        types = firstPass.types,
+        code = firstPass.code,
+        imported =
+          if (firstPass.imported.isEmpty)
+            Option(Section.Imports(Vector(Import.Function("env", "swam_cb", firstPass.tpeIndex))))
+          else firstPass.imported
+      )
+
+      wrappingCode = ctx.copy(
+        sections = ctx.sections,
+        types = ctx.types,
+        code = Option(
+          Section.Code(
+            firstPass.code.get.bodies
+              .map { x: FuncBody =>
+                {
+                  val leaders = getBBLeaders(x.code)
+
+                  FuncBody(
+                    x.locals,
+                    x.code.zipWithIndex.flatMap {
+                      case (Call(funcidx), i) =>
+                        if (funcidx >= ctx.numberOfImportedFunctions) Vector(Call(funcidx + 1))
+                        else Vector(Call(funcidx))
+                      case (x, i) =>
+                        if (leaders.contains(i))
+                          Vector(i32.Const(ran.nextInt(10000)), Call(ctx.numberOfImportedFunctions - 1), x)
+                        else Vector(x)
+                    }
+                  )
+                }
+              })
+        ),
+        imported = ctx.imported
+      )
+
+    } yield wrappingCode
+
+    //r.map(t => Stream.emits(t.sections))
+    r.flatMap(t => {
+      Stream.emits(t.sortedSections)
+    })
   }
 }
 
