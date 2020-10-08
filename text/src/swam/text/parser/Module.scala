@@ -19,9 +19,9 @@ package text
 package parser
 
 import unresolved._
-
 import fastparse._
 import WastWhitespace._
+import swam.text.parser.Instructions.table_func
 
 object ModuleParsers {
 
@@ -191,14 +191,14 @@ object ModuleParsers {
 
   private def elem[_: P]: P[Seq[Elem]] =
     P(
-      (Index ~ word("elem") ~/ (index | Pass(Left(0))) ~ ("(" ~ word("offset") ~/ expr ~ ")" | foldedinstr | instr
-        .map(Seq(_))) ~ index.rep ~ ")").map {
+      (Index ~ word("elem") ~/ (index | Pass(Left(0))) ~ ("(" ~ word("offset").? ~/ expr ~ ")" | foldedinstr | instr
+        .map(Seq(_))) ~ word("func").? ~ index.rep ~ ")").map {
         case (idx, x, e, y) => Seq(Elem(x, e, y)(idx))
       })
 
   private def data[_: P]: P[Seq[Data]] =
     P(
-      (Index ~ word("data") ~/ (index | Pass(Left(0))) ~ ("(" ~ word("offset") ~/ expr ~ ")" | foldedinstr) ~ bstring.rep
+      (Index ~ word("data") ~/ (index | Pass(Left(0))) ~ ("(" ~ word("offset").? ~/ expr ~ ")" | foldedinstr) ~ bstring.rep
         .map(_.flatten.toArray) ~ ")").map {
         case (idx, x, e, b) => Seq(Data(x, e, b)(idx))
       })

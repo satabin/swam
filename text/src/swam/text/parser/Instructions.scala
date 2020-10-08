@@ -396,6 +396,13 @@ object Instructions {
   private def log2(n: Int) =
     31 - Integer.numberOfLeadingZeros(n)
 
+  def table_func[_: P]: P[Inst] =
+    P((word("func") ~ id.rep)).map {
+      case (i) => {
+        Nop()(0)
+      }
+    }
+
   def instr[_: P]: P[Inst] =
     P((Index ~ (blockinstr | plaininstr)).map { case (idx, i) => i(idx) })
 
