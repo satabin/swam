@@ -72,69 +72,58 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
     coverageMap = coverageMap.updated(inner.id, (fn, 0))
   }
 
-  private def getBBLeaders(code: Expr): Set[Int] = {
-
-    var leaders = Set[Int]()
-    leaders += 0 // first instruction is a leader
-
-    def getBBSaux(idx: Int): Unit = {
-
-      if (idx < code.length) {
-
-        val inst: Inst = code(idx)
-
-        inst match {
-          // Every jump instruction target and the the next instruction is then a leader
-
-          case _ => {}
-        }
-        getBBSaux(idx + 1)
-      }
-    }
-
-    getBBSaux(1)
-    leaders
-  }
   val ran = scala.util.Random
+  var blockCount = 0
+  var instructionCount = 0
 
   def instrumentVector(instr: Vector[Inst], ctx: TransformationContext): Vector[Inst] = {
 
     instr.zipWithIndex.flatMap {
       case (CallIndirect(funcidx), i) =>
         if (funcidx >= ctx.cbFuncIndex) {
+          instructionCount += 1
           Vector(
             CallIndirect(funcidx + 1)
           ) // Increment the call index for collision between previous and the new injected cb function
         } else {
-          //println(s"Call $funcidx")
+          instructionCount += 1
           Vector(CallIndirect(funcidx))
         }
       case (Call(funcidx), i) =>
         if (funcidx >= ctx.cbFuncIndex) {
+          instructionCount += 1
           Vector(
             Call(funcidx + 1)
           ) // Increment the call index for collision between previous and the new injected cb function
         } else {
-          //println(s"Call $funcidx")
+          instructionCount += 1
           Vector(Call(funcidx))
         }
       case (Block(tpe, instr), i) => {
+        instructionCount += 1
         Vector(Block(tpe, instrumentVector(instr, ctx)))
       }
       case (Loop(tpe, instr), i) => {
+        instructionCount += 1
         Vector(Loop(tpe, instrumentVector(instr, ctx)))
       }
       case (If(tpe, thn, els), i) => {
+        instructionCount += 1
         Vector(If(tpe, instrumentVector(thn, ctx), instrumentVector(els, ctx)))
       }
       case (BrIf(lbl), i) => {
+        instructionCount += 1
+        blockCount += 1
         Vector(BrIf(lbl), i32.Const(ran.nextInt(Int.MaxValue)), Call(ctx.cbFuncIndex))
       }
-      case (x, i) =>
-        if (i == 0)
+      case (x, i) => {
+        instructionCount += 1
+        if (i == 0) {
+          blockCount += 1
           Vector(i32.Const(ran.nextInt(Int.MaxValue)), Call(ctx.cbFuncIndex), x)
-        else
+        } else
           Vector(x)
+      }
 
     }
   }
@@ -190,6 +179,7 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
 
     //r.map(t => Stream.emits(t.sections))
     r.flatMap(t => {
+      System.err.println(s"Number of instrumented blocks $blockCount. Number of instructions $instructionCount")
       Stream.emits(t.sortedSections)
     })
   }
