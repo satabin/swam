@@ -9,8 +9,10 @@ import cats.implicits._
 import cats._
 import cats.effect._
 import scodec.bits.BitVector
-import swam.syntax.{Br, Call, Expr, FuncBody, Import, Inst, MemorySize, Section, i32}
+import swam.syntax.{Block, Br, Call, CallIndirect, Expr, FuncBody, If, Import, Inst, Loop, MemorySize, Section, i32}
 import fs2._
+import scodec.Attempt
+import swam.binary.custom.NameSectionHandler
 import swam.code_analysis.coverage.utils.TransformationContext
 
 /**
@@ -80,7 +82,7 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
   }
 
   def instrument(sections: Stream[F, Section]): Stream[F, Section] = {
-    val ran = scala.util.Random
+    // val ran = scala.util.Random
 
     /*
 
@@ -92,47 +94,74 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
             imported = ctx.imported
           )
      */
+
+    def instrumentVector(instr: Vector[Inst], ctx: TransformationContext): Vector[Inst] = {
+      instr.flatMap {
+        case CallIndirect(funcidx) =>
+          if (funcidx >= ctx.cbFuncIndex) {
+            Vector(
+              CallIndirect(funcidx + 1)
+            ) // Increment the call index for collision between previous and the new injected cb function
+          } else {
+            //println(s"Call $funcidx")
+            Vector(CallIndirect(funcidx))
+          }
+        case Call(funcidx) =>
+          if (funcidx >= ctx.cbFuncIndex) {
+            println(s"Call replacement $funcidx")
+
+            Vector(
+              Call(funcidx + 1)
+            ) // Increment the call index for collision between previous and the new injected cb function
+          } else {
+            //println(s"Call $funcidx")
+            Vector(Call(funcidx))
+          }
+        case Block(tpe, instr) => {
+          Vector(Block(tpe, instrumentVector(instr, ctx)))
+        }
+        case Loop(tpe, instr) => {
+          Vector(Loop(tpe, instrumentVector(instr, ctx)))
+        }
+        case If(tpe, thn, els) => {
+          Vector(If(tpe, instrumentVector(thn, ctx), instrumentVector(els, ctx)))
+        }
+        case x =>
+          Vector(x)
+      }
+    }
+
     val r = for {
       firstPass <- sections
         .fold(TransformationContext(Seq(), None, None, None)) {
           case (ctx, c: Section.Types) =>
             ctx.copy(sections = ctx.sections, types = Option(c), imported = ctx.imported, code = ctx.code)
-          case (ctx, _: Section.Custom) => // Patch removing custom section
-            ctx.copy(sections = ctx.sections, types = ctx.types, imported = ctx.imported, code = ctx.code)
+          case (ctx, c: Section.Custom) => // Patch removing custom section
+            {
+              if (c.name == "name") {
+                NameSectionHandler.codec.decodeValue(c.payload) match {
+                  case Attempt.Successful(names) => println(names)
+                  case _                         => None
+                }
+              }
+              ctx.copy(sections = ctx.sections, types = ctx.types, imported = ctx.imported, code = ctx.code)
+            }
           case (ctx, c: Section.Imports) => {
             ctx.copy(
               sections = ctx.sections,
               types = ctx.types,
               code = ctx.code,
+              //imported = Option(c)
               imported = Option(Section.Imports(c.imports.appended(Import.Function("env", "swam_cb", ctx.tpeIndex))))
             )
           }
-          case (ctx, c: Section.Code) =>
+          case (ctx, c: Section.Code) => {
             ctx.copy(sections = ctx.sections, types = ctx.types, imported = ctx.imported, code = Option(c))
+          }
           case (ctx, c: Section) =>
             ctx.copy(sections = ctx.sections :+ c, types = ctx.types, imported = ctx.imported, code = ctx.code)
         }
 
-      // First pass done !
-      /*ctx = firstPass.copy(
-        sections = firstPass.sections,
-        imported = firstPass.imported,
-        types = firstPass.types,
-        code = Option(
-          Section.Code(
-            firstPass.code.get.bodies
-              .map { x: FuncBody =>
-                {
-                  println(firstPass.imported)
-                  FuncBody(x.locals, x.code.map {
-                    case Call(funcidx) =>
-                      if (funcidx >= firstPass.numberOfImportedFunctions) Call(funcidx + 1) else Call(funcidx)
-                    case x => x
-                  })
-                }
-              })
-        )
-      )*/
       ctx = firstPass.copy(
         sections = firstPass.sections,
         types = firstPass.types,
@@ -140,9 +169,9 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
         imported =
           if (firstPass.imported.isEmpty)
             Option(Section.Imports(Vector(Import.Function("env", "swam_cb", firstPass.tpeIndex))))
-          else firstPass.imported
+          else
+            firstPass.imported
       )
-
       wrappingCode = ctx.copy(
         sections = ctx.sections,
         types = ctx.types,
@@ -151,20 +180,7 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
             firstPass.code.get.bodies
               .map { x: FuncBody =>
                 {
-                  val leaders = getBBLeaders(x.code)
-
-                  FuncBody(
-                    x.locals,
-                    x.code.zipWithIndex.flatMap {
-                      case (Call(funcidx), i) =>
-                        if (funcidx >= ctx.numberOfImportedFunctions) Vector(Call(funcidx + 1))
-                        else Vector(Call(funcidx))
-                      case (x, i) =>
-                        if (leaders.contains(i))
-                          Vector(i32.Const(ran.nextInt(10000)), Call(ctx.numberOfImportedFunctions - 1), x)
-                        else Vector(x)
-                    }
-                  )
+                  FuncBody(x.locals, instrumentVector(x.code, ctx))
                 }
               })
         ),
@@ -175,7 +191,6 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
 
     //r.map(t => Stream.emits(t.sections))
     r.flatMap(t => {
-      println(t.sortedSections)
       Stream.emits(t.sortedSections)
     })
   }

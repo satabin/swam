@@ -14,8 +14,10 @@ case class TransformationContext(sections: Seq[Section],
                                  imported: Option[Section.Imports],
                                  code: Option[Section.Code]) {
 
+  lazy val cbFuncIndex: Int = numberOfImportedFunctions - 1
+
   lazy val sortedSections: Seq[Section] =
-    (types.get +: sections :+ code.get :+ imported.get).sortBy(t => t.id)
+    (redefinedTypes +: sections :+ code.get :+ imported.get).sortBy(t => t.id)
 
   lazy val numberOfImportedFunctions: Int = imported.get.imports.collect {
     case x: Import.Function => x

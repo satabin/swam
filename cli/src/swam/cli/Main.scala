@@ -329,8 +329,6 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 _ <- if (exportInstrumented != null) {
 
                   for {
-                    _ <- IO(println("Export"))
-
                     _ <- (Stream.emits(ModuleStream.header.toArray) ++ module
                       .through(coverageListener.instrument)
                       .through(ModuleStream.encoder.encode[IO])
