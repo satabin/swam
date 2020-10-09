@@ -9,6 +9,8 @@ import cats.effect.{Blocker, Clock, ExitCode, IO}
 import cats.implicits._
 import com.monovore.decline.Opts
 import com.monovore.decline.effect.CommandIOApp
+import com.monovore.decline.enumeratum._
+
 import io.odin.formatter.Formatter
 import io.odin.formatter.options.ThrowableFormat
 import io.odin.{Logger, consoleLogger}
@@ -16,7 +18,7 @@ import fs2._
 import swam.ValType.{F32, F64, I32, I64}
 import swam.binary.ModuleStream
 import swam.decompilation._
-import swam.code_analysis.coverage.{CoverageListener, CoverageReporter, CoverageType}
+import swam.code_analysis.coverage.{CoverageListener, CoverageReporter}
 import swam.runtime.imports._
 import swam.runtime.trace._
 import swam.runtime.wasi.{Wasi, WasiOption}
