@@ -9,7 +9,7 @@ import cats.implicits._
 import cats._
 import cats.effect._
 import scodec.bits.BitVector
-import swam.syntax.{Br, Call, Expr, FuncBody, Import, Inst, Section, i32}
+import swam.syntax.{Br, Call, Expr, FuncBody, Import, Inst, MemorySize, Section, i32}
 import fs2._
 import swam.code_analysis.coverage.utils.TransformationContext
 

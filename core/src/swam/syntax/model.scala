@@ -33,7 +33,7 @@ object ExternalKind {
   case object Global extends ExternalKind
 }
 
-sealed abstract class Section(val id: Int)
+sealed abstract class Section(val id: Int, val order: Int = 0)
 object Section {
   case class Types(types: Vector[FuncType]) extends Section(1)
   case class Imports(imports: Vector[Import]) extends Section(2)
