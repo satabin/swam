@@ -327,22 +327,31 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 tcompiler <- swam.text.Compiler[IO](blocker)
                 module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
                 _ <- if (exportInstrumented != null) {
-                  IO(println("Export"))
 
-                  (Stream.emits(ModuleStream.header.toArray) ++ module
-                    .through(coverageListener.instrument)
-                    .through(ModuleStream.encoder.encode[IO])
-                    .flatMap(bv => Stream.emits(bv.toByteArray)))
-                    .through(fs2.io.file.writeAll(exportInstrumented, blocker, outFileOptions))
-                    .compile
-                    .drain
+                  for {
+                    _ <- IO(println("Export"))
 
-                } else { IO(println("Do not export")) }
-                compiled <- if (noValidateBinary) engine.compileNotValidate(module)
-                else engine.compile(module) // This is not needed since the validation is read from the config files
-                preparedFunction <- prepareFunction(compiled, wasiOption, main, dirs, args, wasi, blocker)
-                _ <- IO(executeFunction(IO(preparedFunction), argsParsed, time))
-                _ <- IO(CoverageReporter.blockCoverage(covOut, file, coverageListener))
+                    _ <- (Stream.emits(ModuleStream.header.toArray) ++ module
+                      .through(coverageListener.instrument)
+                      .through(ModuleStream.encoder.encode[IO])
+                      .flatMap(bv => Stream.emits(bv.toByteArray)))
+                      .through(fs2.io.file.writeAll(exportInstrumented, blocker, outFileOptions))
+                      .compile
+                      .drain
+                  } yield ExitCode.Success
+
+                } else {
+
+                  for {
+                    compiled <- if (noValidateBinary) engine.compileNotValidate(module)
+                    else engine.compile(module) // This is not needed since the validation is read from the config files
+                    preparedFunction <- prepareFunction(compiled, wasiOption, main, dirs, args, wasi, blocker)
+                    _ <- IO(executeFunction(IO(preparedFunction), argsParsed, time))
+                    _ <- IO(CoverageReporter.blockCoverage(covOut, file, coverageListener))
+                  } yield ExitCode.Success
+
+                }
+
               } yield ExitCode.Success
 
             case RunServer(file,

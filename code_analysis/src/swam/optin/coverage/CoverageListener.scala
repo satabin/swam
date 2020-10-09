@@ -175,6 +175,7 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
 
     //r.map(t => Stream.emits(t.sections))
     r.flatMap(t => {
+      println(t.sortedSections)
       Stream.emits(t.sortedSections)
     })
   }
