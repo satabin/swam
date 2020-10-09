@@ -79,16 +79,10 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
   def instrumentVector(instr: Vector[Inst], ctx: TransformationContext): Vector[Inst] = {
 
     instr.zipWithIndex.flatMap {
-      case (CallIndirect(funcidx), i) =>
-        if (funcidx >= ctx.cbFuncIndex) {
-          instructionCount += 1
-          Vector(
-            CallIndirect(funcidx + 1)
-          ) // Increment the call index for collision between previous and the new injected cb function
-        } else {
-          instructionCount += 1
-          Vector(CallIndirect(funcidx))
-        }
+      case (CallIndirect(funcidx), i) => {
+        instructionCount += 1
+        Vector(CallIndirect(funcidx))
+      }
       case (Call(funcidx), i) =>
         if (funcidx >= ctx.cbFuncIndex) {
           instructionCount += 1
@@ -143,7 +137,7 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
               types = ctx.types,
               code = ctx.code,
               //imported = Option(c)
-              imported = Option(Section.Imports(c.imports.appended(Import.Function("env", "swam_cb", ctx.tpeIndex))))
+              imported = Option(Section.Imports(c.imports.appended(Import.Function("swam", "swam_cb", ctx.tpeIndex))))
             )
           }
           case (ctx, c: Section.Code) => {
