@@ -9,7 +9,22 @@ import cats.implicits._
 import cats._
 import cats.effect._
 import scodec.bits.BitVector
-import swam.syntax.{Block, Br, Call, CallIndirect, Expr, FuncBody, If, Import, Inst, Loop, MemorySize, Section, i32}
+import swam.syntax.{
+  Block,
+  Br,
+  BrIf,
+  Call,
+  CallIndirect,
+  Expr,
+  FuncBody,
+  If,
+  Import,
+  Inst,
+  Loop,
+  MemorySize,
+  Section,
+  i32
+}
 import fs2._
 import scodec.Attempt
 import swam.binary.custom.NameSectionHandler
@@ -80,56 +95,51 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
     getBBSaux(1)
     leaders
   }
+  val ran = scala.util.Random
+
+  def instrumentVector(instr: Vector[Inst], ctx: TransformationContext): Vector[Inst] = {
+
+    instr.zipWithIndex.flatMap {
+      case (CallIndirect(funcidx), i) =>
+        if (funcidx >= ctx.cbFuncIndex) {
+          Vector(
+            CallIndirect(funcidx + 1)
+          ) // Increment the call index for collision between previous and the new injected cb function
+        } else {
+          //println(s"Call $funcidx")
+          Vector(CallIndirect(funcidx))
+        }
+      case (Call(funcidx), i) =>
+        if (funcidx >= ctx.cbFuncIndex) {
+          Vector(
+            Call(funcidx + 1)
+          ) // Increment the call index for collision between previous and the new injected cb function
+        } else {
+          //println(s"Call $funcidx")
+          Vector(Call(funcidx))
+        }
+      case (Block(tpe, instr), i) => {
+        Vector(Block(tpe, instrumentVector(instr, ctx)))
+      }
+      case (Loop(tpe, instr), i) => {
+        Vector(Loop(tpe, instrumentVector(instr, ctx)))
+      }
+      case (If(tpe, thn, els), i) => {
+        Vector(If(tpe, instrumentVector(thn, ctx), instrumentVector(els, ctx)))
+      }
+      case (BrIf(lbl), i) => {
+        Vector(BrIf(lbl), i32.Const(ran.nextInt(Int.MaxValue)), Call(ctx.cbFuncIndex))
+      }
+      case (x, i) =>
+        if (i == 0)
+          Vector(i32.Const(ran.nextInt(Int.MaxValue)), Call(ctx.cbFuncIndex), x)
+        else
+          Vector(x)
+
+    }
+  }
 
   def instrument(sections: Stream[F, Section]): Stream[F, Section] = {
-    // val ran = scala.util.Random
-
-    /*
-
-    case (ctx, c: Section.Code) =>
-          ctx.copy(
-            sections = ctx.sections :+
-              ,
-            types = ctx.types,
-            imported = ctx.imported
-          )
-     */
-
-    def instrumentVector(instr: Vector[Inst], ctx: TransformationContext): Vector[Inst] = {
-      instr.flatMap {
-        case CallIndirect(funcidx) =>
-          if (funcidx >= ctx.cbFuncIndex) {
-            Vector(
-              CallIndirect(funcidx + 1)
-            ) // Increment the call index for collision between previous and the new injected cb function
-          } else {
-            //println(s"Call $funcidx")
-            Vector(CallIndirect(funcidx))
-          }
-        case Call(funcidx) =>
-          if (funcidx >= ctx.cbFuncIndex) {
-            println(s"Call replacement $funcidx")
-
-            Vector(
-              Call(funcidx + 1)
-            ) // Increment the call index for collision between previous and the new injected cb function
-          } else {
-            //println(s"Call $funcidx")
-            Vector(Call(funcidx))
-          }
-        case Block(tpe, instr) => {
-          Vector(Block(tpe, instrumentVector(instr, ctx)))
-        }
-        case Loop(tpe, instr) => {
-          Vector(Loop(tpe, instrumentVector(instr, ctx)))
-        }
-        case If(tpe, thn, els) => {
-          Vector(If(tpe, instrumentVector(thn, ctx), instrumentVector(els, ctx)))
-        }
-        case x =>
-          Vector(x)
-      }
-    }
 
     val r = for {
       firstPass <- sections
@@ -137,15 +147,7 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
           case (ctx, c: Section.Types) =>
             ctx.copy(sections = ctx.sections, types = Option(c), imported = ctx.imported, code = ctx.code)
           case (ctx, c: Section.Custom) => // Patch removing custom section
-            {
-              if (c.name == "name") {
-                NameSectionHandler.codec.decodeValue(c.payload) match {
-                  case Attempt.Successful(names) => println(names)
-                  case _                         => None
-                }
-              }
-              ctx.copy(sections = ctx.sections, types = ctx.types, imported = ctx.imported, code = ctx.code)
-            }
+            ctx.copy(sections = ctx.sections, types = ctx.types, imported = ctx.imported, code = ctx.code)
           case (ctx, c: Section.Imports) => {
             ctx.copy(
               sections = ctx.sections,
@@ -178,11 +180,8 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
         code = Option(
           Section.Code(
             firstPass.code.get.bodies
-              .map { x: FuncBody =>
-                {
-                  FuncBody(x.locals, instrumentVector(x.code, ctx))
-                }
-              })
+              .map(f => FuncBody(f.locals, instrumentVector(f.code, ctx)))
+          )
         ),
         imported = ctx.imported
       )
