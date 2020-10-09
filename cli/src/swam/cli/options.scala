@@ -28,7 +28,6 @@ case class Run(file: Path,
                main: String,
                wat: Boolean,
                wasi: Boolean,
-               wasiOptions: List[WasiOption],
                time: Boolean,
                trace: Boolean,
                traceFilter: String,
@@ -49,7 +48,7 @@ case class RunServer(file: Path,
                      traceFile: Path,
                      dirs: List[Path],
                      debug: Boolean,
-                     filter: Boolean,
+                     filterOutWASI: Boolean,
                      wasmArgTypes: List[String])
     extends Options
 

@@ -19,7 +19,7 @@ import swam.decompilation._
 import swam.code_analysis.coverage.{CoverageListener, CoverageReporter}
 import swam.runtime.imports._
 import swam.runtime.trace._
-import swam.runtime.wasi.Wasi
+import swam.runtime.wasi.{Wasi, WasiOption}
 import swam.runtime.{Engine, Function, Module, Value}
 import swam.text.Compiler
 import swam.binary.custom.{FunctionNames, ModuleName}
@@ -120,13 +120,15 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val out = Opts
     .option[Path]("out", "Save decompiled result in the given file. Prints to stdout if not provider", short = "o")
 
+  val readChunkSizeOpt = Opts.option[Int]("chunk-size", "Decoder chunk size").withDefault(1 << 10)
+
   ////// CLI-COMMAND ARGUMENT COMBINATIONS //////
 
   val runOpts: Opts[Options] = Opts.subcommand("run", "Run a WebAssembly file") {
-    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, wasmArgTypes).mapN {
-      (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, wasmArgTypes) =>
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, wasmArgTypes)
+      .mapN { (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, wasmArgTypes) =>
         Run(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, wasmArgTypes)
-    }
+      }
   }
 
   val covOpts: Opts[Options] = Opts.subcommand("coverage", "Run a WebAssembly file and generate coverage report") {
@@ -203,7 +205,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     }
 
   val decompileOpts: Opts[Options] = Opts.subcommand("decompile", "Decompile a wasm file") {
-    (textual, wasmFile, out.orNone).mapN { (textual, wasm, out) => Decompile(wasm, textual, out) }
+    (textual, wasmFile, out.orNone, readChunkSizeOpt).mapN { (textual, wasm, out, chunkSize) =>
+      Decompile(wasm, textual, out, chunkSize)
+    }
   }
 
   val inferOpts: Opts[Options] =
@@ -212,11 +216,11 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     }
 
   val validateOpts: Opts[Options] = Opts.subcommand("validate", "Validate a wasm file") {
-    (wasmFile, wat, dev).mapN(Validate(_, _, _))
+    (wasmFile, wat, dev, readChunkSizeOpt).mapN(Validate)
   }
 
   val compileOpts: Opts[Options] = Opts.subcommand("compile", "Compile a wat file to wasm") {
-    (wasmFile, out, debug).mapN(Compile(_, _, _))
+    (wasmFile, out, debug).mapN(Compile)
   }
 
   val outFileOptions = List(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
@@ -335,7 +339,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                     .listen(IO(preparedFunction), wasmArgTypes, time, file, coverageListener))
               } yield ExitCode.Success
 
-            case Decompile(file, textual, out) =>
+            case Decompile(file, textual, out, chunkSize) =>
               for {
                 decompiler <- if (textual)
                   TextDecompiler[IO](blocker)
@@ -350,7 +354,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                   .drain
               } yield ExitCode.Success
 
-            case Validate(file, wat, dev) =>
+            case Validate(file, wat, dev, chunkSize) =>
               val throwableFormat =
                 if (dev)
                   ThrowableFormat(ThrowableFormat.Depth.Full, ThrowableFormat.Indent.Fixed(2))
