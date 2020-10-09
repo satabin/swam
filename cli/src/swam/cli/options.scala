@@ -34,6 +34,7 @@ case class Run(file: Path,
                traceFile: Path,
                dirs: List[Path],
                debug: Boolean,
+               wasiOption: WasiOption,
                wasmArgTypes: List[String])
     extends Options
 
@@ -48,6 +49,7 @@ case class RunServer(file: Path,
                      traceFile: Path,
                      dirs: List[Path],
                      debug: Boolean,
+                     wasiOption: WasiOption,
                      filterOutWASI: Boolean,
                      wasmArgTypes: List[String])
     extends Options
@@ -73,6 +75,7 @@ case class WasmCov(file: Path,
                    covOut: Path,
                    filter: Boolean,
                    wasmArgTypes: List[String],
+                   wasiOption: WasiOption,
                    validate: Boolean)
     extends Options
 

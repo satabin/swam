@@ -16,13 +16,14 @@ import fs2._
 import swam.ValType.{F32, F64, I32, I64}
 import swam.binary.ModuleStream
 import swam.decompilation._
-import swam.code_analysis.coverage.{CoverageListener, CoverageReporter}
+import swam.code_analysis.coverage.{CoverageListener, CoverageReporter, CoverageType}
 import swam.runtime.imports._
 import swam.runtime.trace._
 import swam.runtime.wasi.{Wasi, WasiOption}
 import swam.runtime.{Engine, Function, Module, Value}
 import swam.text.Compiler
 import swam.binary.custom.{FunctionNames, ModuleName}
+import swam.cli.Main.wasiOption
 import swam.runtime.internals.compiler.CompiledFunction
 
 private object NoTimestampFormatter extends JFormatter {
@@ -91,6 +92,10 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     .option[Path]("covout", "Output folder for coverage reports and show-map", short = "c")
     .withDefault(Paths.get(".").toAbsolutePath.normalize)
 
+  val wasiOption = Opts
+    .option[WasiOption]("wasi-option", "WASI options")
+    .withDefault(WasiOption.NonBlockingRNG)
+
   val filter =
     Opts
       .option[String](
@@ -125,9 +130,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   ////// CLI-COMMAND ARGUMENT COMBINATIONS //////
 
   val runOpts: Opts[Options] = Opts.subcommand("run", "Run a WebAssembly file") {
-    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, wasmArgTypes)
-      .mapN { (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, wasmArgTypes) =>
-        Run(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, wasmArgTypes)
+    (mainFun, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasmFile, restArguments, wasiOption, wasmArgTypes)
+      .mapN { (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, wasiOption, wasmArgTypes) =>
+        Run(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, wasiOption, wasmArgTypes)
       }
   }
 
@@ -147,6 +152,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
      covOut,
      covfilter,
      wasmArgTypes,
+     wasiOption,
      noValidateBinary).mapN {
       (main,
        wat,
@@ -163,6 +169,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
        covOut,
        covfilter,
        wasmArgTypes,
+       wasiOption,
        noValidateBinary) =>
         WasmCov(wasm,
                 args,
@@ -179,6 +186,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 covOut,
                 covfilter,
                 wasmArgTypes,
+                wasiOption,
                 noValidateBinary)
     }
   }
@@ -197,10 +205,38 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
        debug,
        wasmFile,
        restArguments,
+       wasiOption,
        covfilter,
        wasmArgTypes)
-        .mapN { (main, wat, wasi, time, dirs, trace, traceFile, filter, debug, wasm, args, covfilter, wasmArgTypes) =>
-          RunServer(wasm, args, main, wat, wasi, time, trace, filter, traceFile, dirs, debug, covfilter, wasmArgTypes)
+        .mapN {
+          (main,
+           wat,
+           wasi,
+           time,
+           dirs,
+           trace,
+           traceFile,
+           filter,
+           debug,
+           wasm,
+           args,
+           wasiOption,
+           covfilter,
+           wasmArgTypes) =>
+            RunServer(wasm,
+                      args,
+                      main,
+                      wat,
+                      wasi,
+                      time,
+                      trace,
+                      filter,
+                      traceFile,
+                      dirs,
+                      debug,
+                      wasiOption,
+                      covfilter,
+                      wasmArgTypes)
         }
     }
 
@@ -236,7 +272,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
       .map { opts =>
         Blocker[IO].use { blocker =>
           opts match {
-            case Run(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug, wasmArgTypes) =>
+            case Run(file, args, main, wat, wasi, time, trace, filter, tracef, dirs, debug, wasiOption, wasmArgTypes) =>
               for {
                 tracer <- if (trace)
                   JULTracer[IO](blocker,
@@ -251,7 +287,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 tcompiler <- Compiler[IO](blocker)
                 module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
                 compiled <- engine.compile(module)
-                preparedFunction <- prepareFunction(compiled, main, dirs, args, wasi, blocker)
+                preparedFunction <- prepareFunction(compiled, wasiOption, main, dirs, args, wasi, blocker)
                 _ <- IO(executeFunction(IO(preparedFunction), argsParsed, time))
               } yield ExitCode.Success
 
@@ -271,6 +307,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                          covOut,
                          covfilter,
                          wasmArgTypes,
+                         wasiOption,
                          noValidateBinary) =>
               for {
                 tracer <- if (trace)
@@ -301,7 +338,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 } else { IO(println("Do not export")) }
                 compiled <- if (noValidateBinary) engine.compileNotValidate(module)
                 else engine.compile(module) // This is not needed since the validation is read from the config files
-                preparedFunction <- prepareFunction(compiled, main, dirs, args, wasi, blocker)
+                preparedFunction <- prepareFunction(compiled, wasiOption, main, dirs, args, wasi, blocker)
                 _ <- IO(executeFunction(IO(preparedFunction), argsParsed, time))
                 _ <- IO(CoverageReporter.blockCoverage(covOut, file, coverageListener))
               } yield ExitCode.Success
@@ -317,6 +354,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                            tracef,
                            dirs,
                            debug,
+                           wasiOption,
                            covfilter,
                            wasmArgTypes) =>
               for {
@@ -333,7 +371,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 tcompiler <- Compiler[IO](blocker)
                 module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
                 compiled <- engine.compile(module)
-                preparedFunction <- prepareFunction(compiled, main, dirs, args, wasi, blocker)
+                preparedFunction <- prepareFunction(compiled, wasiOption, main, dirs, args, wasi, blocker)
                 _ <- IO(
                   Server
                     .listen(IO(preparedFunction), wasmArgTypes, time, file, coverageListener))
@@ -435,6 +473,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
       }
 
   def prepareFunction(module: Module[IO],
+                      wasiOption: WasiOption,
                       functionName: String,
                       preopenedDirs: List[Path],
                       args: List[String],
@@ -442,7 +481,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                       blocker: Blocker): IO[Function[IO]] = {
     val logger = consoleLogger[IO]()
     if (useWasi) {
-      Wasi[IO](preopenedDirs, functionName :: args, logger, blocker).use { wasi =>
+      Wasi[IO](List(wasiOption), preopenedDirs, functionName :: args, logger, blocker).use { wasi =>
         for {
           instance <- module.importing("wasi_snapshot_preview1", wasi).instantiate
           exportedFunc <- instance.exports.function(functionName)
