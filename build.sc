@@ -25,13 +25,13 @@ val swamUrl = "https://github.com/satabin/swam"
 
 val swamDeveloper = Developer("satabin", "Lucas Satabin", "https://github.com/satabin")
 
-val fs2Version = "2.4.2"
+val fs2Version = "2.4.4"
 
 val pureconfigVersion = "0.13.0"
 
 trait SwamModule extends ScalaModule with ScalafmtModule {
 
-  def scalaVersion = "2.13.2"
+  def scalaVersion = "2.13.3"
 
   def scalacOptions =
     Seq(

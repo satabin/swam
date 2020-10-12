@@ -92,7 +92,7 @@ package object binary {
                 case Attempt.Failure(e) => Attempt.Failure(e)
               }
             case Attempt.Successful(false) =>
-              Attempt.Successful(DecodeResult(builder.result, bits))
+              Attempt.Successful(DecodeResult(builder.result(), bits))
             case Attempt.Failure(e) =>
               Attempt.failure(e)
           }

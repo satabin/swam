@@ -43,7 +43,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                          ctx: ResolverContext,
                          debug: Boolean): F[(Vector[r.Inst], ResolverContext)] =
     F.tailRecM((instrs, ctx, new VectorBuilder[r.Inst])) {
-      case (Seq(), ctx, acc) => F.pure(Right((acc.result, ctx)))
+      case (Seq(), ctx, acc) => F.pure(Right((acc.result(), ctx)))
       case (Seq(i, rest @ _*), ctx, acc) =>
         resolve(i, ctx, debug).map { case (i, ctx) => Left((rest, ctx, acc += i)) }
     }
@@ -274,7 +274,7 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
   private def resolveIndices(idx: Seq[Index], pos: Int, vars: Vector[Def], kind: String)(
       implicit F: MonadError[F, Throwable]): F[Vector[Int]] =
     F.tailRecM((idx, new VectorBuilder[Int])) {
-      case (Seq(), acc) => F.pure(Right(acc.result))
+      case (Seq(), acc) => F.pure(Right(acc.result()))
       case (Seq(idx, rest @ _*), acc) =>
         resolveIndex(idx, pos, vars, kind).map(idx => Left((rest, acc += idx)))
     }

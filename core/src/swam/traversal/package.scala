@@ -32,7 +32,7 @@ package object traversal {
             }
         }
         .map {
-          case (acc, vb) => (acc, vb.result)
+          case (acc, vb) => (acc, vb.result())
         }
   }
 

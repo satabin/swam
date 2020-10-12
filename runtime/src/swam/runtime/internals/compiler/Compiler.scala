@@ -352,7 +352,7 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
             }
             val (label, toDrop) = ctx2.labels.break(lbll)
             val dflt = new asm.BrLabel(label.arity, toDrop, -1)
-            builder += new asm.BrTable(lbls.result, dflt)
+            builder += new asm.BrTable(lbls.result(), dflt)
             // save the placeholder offset to be fixed-up with the real label address in the end and skip the rest of the block
             val ctx3 =
               ctx2.copy(offset = ctx2.offset + 1, errata = (label.target, dflt.addr_= _) :: ctx2.errata)

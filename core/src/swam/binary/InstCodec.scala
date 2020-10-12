@@ -53,8 +53,8 @@ trait InstCodec extends TypeCodec {
 
   private val misc: Codec[Miscop] =
     mappedEnum(
-      byte,
-      Map[Miscop, Byte](
+      varuint32,
+      Map[Miscop, Int](
         i32.TruncSatSF32 -> 0x00,
         i32.TruncSatUF32 -> 0x01,
         i32.TruncSatSF64 -> 0x02,

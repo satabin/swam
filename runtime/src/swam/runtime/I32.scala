@@ -68,7 +68,7 @@ object I32 {
   def truncSf64(d: Double): CanFail[Int] =
     if (d.isNaN)
       Left("invalid conversion to integer")
-    else if (d >= -Int.MinValue.toDouble || d < Int.MinValue)
+    else if (d >= -Int.MinValue.toDouble || d <= Int.MinValue.toDouble - 1)
       Left("integer overflow")
     else
       Right(d.toInt)
