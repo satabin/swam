@@ -5,6 +5,10 @@ package coverage
 import swam.runtime.internals.interpreter.{AsmInst, Continuation, Frame, InstructionListener, InstructionWrapper}
 import java.io._
 
+import binary.custom._
+import fs2.Stream
+import scodec._
+import scodec.bits._
 import cats.implicits._
 import cats._
 import cats.effect._
@@ -15,7 +19,9 @@ import swam.syntax.{
   BrIf,
   Call,
   CallIndirect,
+  Export,
   Expr,
+  ExternalKind,
   FuncBody,
   If,
   Import,
@@ -27,13 +33,13 @@ import swam.syntax.{
 }
 import fs2._
 import scodec.Attempt
-import swam.binary.custom.NameSectionHandler
+import swam.binary.custom.{FunctionNames, NameSectionHandler}
 import swam.code_analysis.coverage.utils.TransformationContext
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-06-11
   */
-class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F] {
+class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]) extends InstructionListener[F] {
   var coverageMap = Map[Int, (String, Int)]()
 
   override val wasiCheck: Boolean = wasi
@@ -75,6 +81,7 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
   val ran = scala.util.Random
   var blockCount = 0
   var instructionCount = 0
+  var id = 100
 
   def instrumentVector(instr: Vector[Inst], ctx: TransformationContext): Vector[Inst] = {
 
@@ -108,13 +115,15 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
       case (BrIf(lbl), i) => {
         instructionCount += 1
         blockCount += 1
-        Vector(BrIf(lbl), i32.Const(ran.nextInt(Int.MaxValue)), Call(ctx.cbFuncIndex))
+        id += 1
+        Vector(BrIf(lbl), i32.Const(id), Call(ctx.cbFuncIndex))
       }
       case (x, i) => {
         instructionCount += 1
         if (i == 0) {
           blockCount += 1
-          Vector(i32.Const(ran.nextInt(Int.MaxValue)), Call(ctx.cbFuncIndex), x)
+          id += 1
+          Vector(i32.Const(id), Call(ctx.cbFuncIndex), x)
         } else
           Vector(x)
       }
@@ -124,27 +133,70 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
 
   def instrument(sections: Stream[F, Section]): Stream[F, Section] = {
 
+    // TODO patch custom names section
+
     val r = for {
       firstPass <- sections
-        .fold(TransformationContext(Seq(), None, None, None)) {
+        .fold(TransformationContext(Seq(), None, None, None, None, None)) {
           case (ctx, c: Section.Types) =>
-            ctx.copy(sections = ctx.sections, types = Option(c), imported = ctx.imported, code = ctx.code)
+            ctx.copy(sections = ctx.sections,
+                     types = Option(c),
+                     imported = ctx.imported,
+                     code = ctx.code,
+                     exports = ctx.exports,
+                     names = ctx.names)
           case (ctx, c: Section.Custom) => // Patch removing custom section
-            ctx.copy(sections = ctx.sections, types = ctx.types, imported = ctx.imported, code = ctx.code)
+            {
+              c match {
+                case Section.Custom("name", payload) =>
+                  ctx.copy(sections = ctx.sections,
+                           types = ctx.types,
+                           imported = ctx.imported,
+                           code = ctx.code,
+                           exports = ctx.exports,
+                           names = Option(c))
+                case _ =>
+                  ctx.copy(sections = ctx.sections :+ c,
+                           types = ctx.types,
+                           imported = ctx.imported,
+                           code = ctx.code,
+                           exports = ctx.exports)
+              }
+
+            }
           case (ctx, c: Section.Imports) => {
             ctx.copy(
               sections = ctx.sections,
               types = ctx.types,
               code = ctx.code,
               //imported = Option(c)
-              imported = Option(Section.Imports(c.imports.appended(Import.Function("swam", "swam_cb", ctx.tpeIndex))))
+              imported = Option(Section.Imports(c.imports.appended(Import.Function("swam", "swam_cb", ctx.tpeIndex)))),
+              exports = ctx.exports,
+              names = ctx.names
             )
           }
           case (ctx, c: Section.Code) => {
-            ctx.copy(sections = ctx.sections, types = ctx.types, imported = ctx.imported, code = Option(c))
+            ctx.copy(sections = ctx.sections,
+                     types = ctx.types,
+                     imported = ctx.imported,
+                     code = Option(c),
+                     exports = ctx.exports,
+                     names = ctx.names)
           }
+          case (ctx, c: Section.Exports) =>
+            ctx.copy(sections = ctx.sections,
+                     types = ctx.types,
+                     imported = ctx.imported,
+                     code = ctx.code,
+                     exports = Option(c),
+                     names = ctx.names)
           case (ctx, c: Section) =>
-            ctx.copy(sections = ctx.sections :+ c, types = ctx.types, imported = ctx.imported, code = ctx.code)
+            ctx.copy(sections = ctx.sections :+ c,
+                     types = ctx.types,
+                     imported = ctx.imported,
+                     code = ctx.code,
+                     exports = ctx.exports,
+                     names = ctx.names)
         }
 
       ctx = firstPass.copy(
@@ -155,24 +207,65 @@ class CoverageListener[F[_]: Async](wasi: Boolean) extends InstructionListener[F
           if (firstPass.imported.isEmpty)
             Option(Section.Imports(Vector(Import.Function("env", "swam_cb", firstPass.tpeIndex))))
           else
-            firstPass.imported
+            firstPass.imported,
+        exports = firstPass.exports,
+        names = firstPass.names
       )
-      wrappingCode = ctx.copy(
+      ctxExports = ctx.copy(
         sections = ctx.sections,
         types = ctx.types,
+        code = ctx.code,
+        imported = ctx.imported,
+        exports = Option(
+          Section.Exports(
+            ctx.exports.get.exports.map(x =>
+              Export(x.fieldName,
+                     x.kind,
+                     if (x.kind == ExternalKind.Function && x.index >= ctx.cbFuncIndex) x.index + 1 else x.index))
+          )),
+        names = ctx.names match {
+          case Some(m) => {
+            val decoded =
+              NameSectionHandler.codec.decodeValue(m.payload) match {
+                case Attempt.Successful(names) =>
+                  Names(names.subsections.map {
+                    case FunctionNames(fnames) =>
+                      FunctionNames(fnames.map {
+                        case (k: Int, m: String) => (if (k >= ctx.cbFuncIndex) k + 1 else k, m)
+                      })
+                    case x => x
+                  })
+                case _ => Names(Vector()) // simply ignore malformed name section
+              }
+
+            NameSectionHandler.codec.encode(decoded) match {
+              case Attempt.Successful(bv) => Option(Section.Custom("name", bv))
+              case Attempt.Failure(err)   => ctx.names
+            }
+          }
+          case None => ctx.names
+        }
+      )
+
+      wrappingCode = ctxExports.copy(
+        sections = ctxExports.sections,
+        types = ctxExports.types,
         code = Option(
           Section.Code(
             firstPass.code.get.bodies
-              .map(f => FuncBody(f.locals, instrumentVector(f.code, ctx)))
+              .map(f => FuncBody(f.locals, instrumentVector(f.code, ctxExports)))
           )
         ),
-        imported = ctx.imported
+        imported = ctxExports.imported,
+        exports = ctxExports.exports,
+        names = ctxExports.names
       )
 
     } yield wrappingCode
 
     //r.map(t => Stream.emits(t.sections))
     r.flatMap(t => {
+      System.err.println(t.names)
       System.err.println(s"Number of instrumented blocks $blockCount. Number of instructions $instructionCount")
       Stream.emits(t.sortedSections)
     })
