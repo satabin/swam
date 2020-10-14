@@ -136,16 +136,17 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
     // TODO patch custom names section
 
     val r = for {
-      firstPass <- sections
-        .fold(TransformationContext(Seq(), None, None, None, None, None)) {
-          case (ctx, c: Section.Types) =>
+      firstPass <- sections.zipWithIndex
+        .fold(TransformationContext(Seq(), None, None, None, None, None, None)) {
+          case (ctx, (c: Section.Types, i)) =>
             ctx.copy(sections = ctx.sections,
-                     types = Option(c),
+                     types = Option((c, i)),
                      imported = ctx.imported,
                      code = ctx.code,
                      exports = ctx.exports,
-                     names = ctx.names)
-          case (ctx, c: Section.Custom) => // Patch removing custom section
+                     names = ctx.names,
+                     functions = ctx.functions)
+          case (ctx, (c: Section.Custom, i)) => // Patch removing custom section
             {
               c match {
                 case Section.Custom("name", payload) =>
@@ -154,49 +155,65 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
                            imported = ctx.imported,
                            code = ctx.code,
                            exports = ctx.exports,
-                           names = Option(c))
+                           names = Option((c, i)),
+                           functions = ctx.functions)
                 case _ =>
-                  ctx.copy(sections = ctx.sections :+ c,
+                  ctx.copy(sections = ctx.sections.appended((c, i)),
                            types = ctx.types,
                            imported = ctx.imported,
                            code = ctx.code,
-                           exports = ctx.exports)
+                           exports = ctx.exports,
+                           functions = ctx.functions)
               }
 
             }
-          case (ctx, c: Section.Imports) => {
+          case (ctx, (c: Section.Functions, i)) =>
             ctx.copy(
               sections = ctx.sections,
               types = ctx.types,
               code = ctx.code,
-              //imported = Option(c)
-              imported = Option(Section.Imports(c.imports.appended(Import.Function("swam", "swam_cb", ctx.tpeIndex)))),
+              imported = ctx.imported,
               exports = ctx.exports,
-              names = ctx.names
+              names = ctx.names,
+              functions = Option((c, i))
+            )
+          case (ctx, (c: Section.Imports, i)) => {
+            ctx.copy(
+              sections = ctx.sections,
+              types = ctx.types,
+              code = ctx.code,
+              imported =
+                Option((Section.Imports(c.imports.appended(Import.Function("swam", "swam_cb", ctx.tpeIndex))), i)),
+              exports = ctx.exports,
+              names = ctx.names,
+              functions = ctx.functions
             )
           }
-          case (ctx, c: Section.Code) => {
+          case (ctx, (c: Section.Code, i)) => {
             ctx.copy(sections = ctx.sections,
                      types = ctx.types,
                      imported = ctx.imported,
-                     code = Option(c),
+                     code = Option((c, i)),
                      exports = ctx.exports,
-                     names = ctx.names)
+                     names = ctx.names,
+                     functions = ctx.functions)
           }
-          case (ctx, c: Section.Exports) =>
+          case (ctx, (c: Section.Exports, i)) =>
             ctx.copy(sections = ctx.sections,
                      types = ctx.types,
                      imported = ctx.imported,
                      code = ctx.code,
-                     exports = Option(c),
-                     names = ctx.names)
-          case (ctx, c: Section) =>
-            ctx.copy(sections = ctx.sections :+ c,
+                     exports = Option((c, i)),
+                     names = ctx.names,
+                     functions = ctx.functions)
+          case (ctx, (c: Section, i)) =>
+            ctx.copy(sections = ctx.sections.appended((c, i)),
                      types = ctx.types,
                      imported = ctx.imported,
                      code = ctx.code,
                      exports = ctx.exports,
-                     names = ctx.names)
+                     names = ctx.names,
+                     functions = ctx.functions)
         }
 
       ctx = firstPass.copy(
@@ -205,11 +222,14 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
         code = firstPass.code,
         imported =
           if (firstPass.imported.isEmpty)
-            Option(Section.Imports(Vector(Import.Function("env", "swam_cb", firstPass.tpeIndex))))
+            Option(
+              (Section.Imports(Vector(Import.Function("swam", "swam_cb", firstPass.tpeIndex))),
+               firstPass.imported.get._2))
           else
             firstPass.imported,
         exports = firstPass.exports,
-        names = firstPass.names
+        names = firstPass.names,
+        functions = firstPass.functions
       )
       ctxExports = ctx.copy(
         sections = ctx.sections,
@@ -217,56 +237,62 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
         code = ctx.code,
         imported = ctx.imported,
         exports = Option(
-          Section.Exports(
-            ctx.exports.get.exports.map(x =>
-              Export(x.fieldName,
-                     x.kind,
-                     if (x.kind == ExternalKind.Function && x.index >= ctx.cbFuncIndex) x.index + 1 else x.index))
-          )),
+          (Section.Exports(
+             ctx.exports.get._1.exports.map(x =>
+               Export(x.fieldName,
+                      x.kind,
+                      if (x.kind == ExternalKind.Function && x.index >= ctx.cbFuncIndex) x.index + 1 else x.index))
+           ),
+           ctx.exports.get._2)),
         names = ctx.names match {
           case Some(m) => {
             val decoded =
-              NameSectionHandler.codec.decodeValue(m.payload) match {
+              NameSectionHandler.codec.decodeValue(m._1.payload) match {
                 case Attempt.Successful(names) =>
                   Names(names.subsections.map {
                     case FunctionNames(fnames) =>
-                      FunctionNames(fnames.map {
-                        case (k: Int, m: String) => (if (k >= ctx.cbFuncIndex) k + 1 else k, m)
-                      })
+                      FunctionNames(
+                        fnames.toVector
+                          .map {
+                            case (k: Int, m: String) => (if (k >= ctx.cbFuncIndex) k + 1 else k, m)
+                          }
+                          .toMap
+                          .updated(ctx.cbFuncIndex, "__swam_swam_cb"))
                     case x => x
                   })
                 case _ => Names(Vector()) // simply ignore malformed name section
               }
-
             NameSectionHandler.codec.encode(decoded) match {
-              case Attempt.Successful(bv) => Option(Section.Custom("name", bv))
+              case Attempt.Successful(bv) => Option((Section.Custom("name", bv), m._2))
               case Attempt.Failure(err)   => ctx.names
             }
           }
           case None => ctx.names
-        }
+        },
+        functions = ctx.functions
       )
 
       wrappingCode = ctxExports.copy(
         sections = ctxExports.sections,
         types = ctxExports.types,
         code = Option(
-          Section.Code(
-            firstPass.code.get.bodies
-              .map(f => FuncBody(f.locals, instrumentVector(f.code, ctxExports)))
-          )
-        ),
+          (Section.Code(
+             ctxExports.code.get._1.bodies
+               .map(f => FuncBody(f.locals, instrumentVector(f.code, ctxExports)))
+           ),
+           ctxExports.code.get._2)),
         imported = ctxExports.imported,
         exports = ctxExports.exports,
-        names = ctxExports.names
+        names = ctxExports.names,
+        functions = ctxExports.functions
       )
 
     } yield wrappingCode
 
     //r.map(t => Stream.emits(t.sections))
     r.flatMap(t => {
-      System.err.println(t.names)
       System.err.println(s"Number of instrumented blocks $blockCount. Number of instructions $instructionCount")
+
       Stream.emits(t.sortedSections)
     })
   }

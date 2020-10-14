@@ -50,7 +50,7 @@ object NameSectionHandler extends CustomSectionHandler[Names] {
     discriminated[NameSubsection]
       .by(byte)
       .|(0) { case ModuleName(n) => n }(ModuleName(_))(name)
-      .|(1) { case FunctionNames(ns) => ns.toVector }(v => FunctionNames(v.toMap))(namemap)
+      .|(1) { case FunctionNames(ns) => ns.toVector.sortBy(t => t._1) }(v => FunctionNames(v.toMap))(namemap)
       .|(2) { case LocalNames(ns) => ns.view.mapValues(_.toVector).toVector }(v =>
         LocalNames(v.map { case (k, v) => (k, v.toMap) }.toMap))(indirectnamemap)
       .|(3) { case LabelNames(ns) => ns.view.mapValues(_.toVector).toVector }(v =>
