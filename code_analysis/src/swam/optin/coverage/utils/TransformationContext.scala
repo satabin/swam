@@ -15,18 +15,19 @@ case class TransformationContext(sections: Seq[(Section, Long)],
                                  code: Option[(Section.Code, Long)],
                                  exports: Option[(Section.Exports, Long)],
                                  names: Option[(Section.Custom, Long)],
-                                 functions: Option[(Section.Functions, Long)]) {
+                                 functions: Option[(Section.Functions, Long)],
+                                 elements: Option[(Section.Elements, Long)]) {
 
   lazy val cbFuncIndex: Int = numberOfImportedFunctions - 1
 
   lazy val sortedSections: Seq[Section] =
     names match {
       case Some(m) =>
-        (redefinedTypes +: imported.get +: functions.get +: m +: sections :+ code.get :+ exports.get)
+        (redefinedTypes +: imported.get +: elements.get +: functions.get +: m +: sections :+ code.get :+ exports.get)
           .sortBy(t => t._2)
           .map(t => t._1)
       case None =>
-        (redefinedTypes +: imported.get +: functions.get +: sections :+ code.get :+ exports.get)
+        (redefinedTypes +: imported.get +: elements.get +: functions.get +: sections :+ code.get :+ exports.get)
           .sortBy(t => t._2)
           .map(t => t._1)
 

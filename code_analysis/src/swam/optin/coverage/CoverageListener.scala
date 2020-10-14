@@ -19,6 +19,7 @@ import swam.syntax.{
   BrIf,
   Call,
   CallIndirect,
+  Elem,
   Export,
   Expr,
   ExternalKind,
@@ -137,33 +138,54 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
 
     val r = for {
       firstPass <- sections.zipWithIndex
-        .fold(TransformationContext(Seq(), None, None, None, None, None, None)) {
+        .fold(TransformationContext(Seq(), None, None, None, None, None, None, None)) {
           case (ctx, (c: Section.Types, i)) =>
-            ctx.copy(sections = ctx.sections,
-                     types = Option((c, i)),
-                     imported = ctx.imported,
-                     code = ctx.code,
-                     exports = ctx.exports,
-                     names = ctx.names,
-                     functions = ctx.functions)
+            ctx.copy(
+              sections = ctx.sections,
+              types = Option((c, i)),
+              imported = ctx.imported,
+              code = ctx.code,
+              exports = ctx.exports,
+              names = ctx.names,
+              functions = ctx.functions,
+              elements = ctx.elements
+            )
+          case (ctx, (c: Section.Elements, i)) => {
+            ctx.copy(
+              sections = ctx.sections,
+              types = ctx.types,
+              imported = ctx.imported,
+              code = ctx.code,
+              exports = ctx.exports,
+              names = ctx.names,
+              functions = ctx.functions,
+              elements = Option((c, i))
+            )
+          }
           case (ctx, (c: Section.Custom, i)) => // Patch removing custom section
             {
               c match {
                 case Section.Custom("name", payload) =>
-                  ctx.copy(sections = ctx.sections,
-                           types = ctx.types,
-                           imported = ctx.imported,
-                           code = ctx.code,
-                           exports = ctx.exports,
-                           names = Option((c, i)),
-                           functions = ctx.functions)
+                  ctx.copy(
+                    sections = ctx.sections,
+                    types = ctx.types,
+                    imported = ctx.imported,
+                    code = ctx.code,
+                    exports = ctx.exports,
+                    names = Option((c, i)),
+                    functions = ctx.functions,
+                    elements = ctx.elements
+                  )
                 case _ =>
-                  ctx.copy(sections = ctx.sections.appended((c, i)),
-                           types = ctx.types,
-                           imported = ctx.imported,
-                           code = ctx.code,
-                           exports = ctx.exports,
-                           functions = ctx.functions)
+                  ctx.copy(
+                    sections = ctx.sections.appended((c, i)),
+                    types = ctx.types,
+                    imported = ctx.imported,
+                    code = ctx.code,
+                    exports = ctx.exports,
+                    functions = ctx.functions,
+                    elements = ctx.elements
+                  )
               }
 
             }
@@ -175,7 +197,8 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
               imported = ctx.imported,
               exports = ctx.exports,
               names = ctx.names,
-              functions = Option((c, i))
+              functions = Option((c, i)),
+              elements = ctx.elements
             )
           case (ctx, (c: Section.Imports, i)) => {
             ctx.copy(
@@ -186,34 +209,44 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
                 Option((Section.Imports(c.imports.appended(Import.Function("swam", "swam_cb", ctx.tpeIndex))), i)),
               exports = ctx.exports,
               names = ctx.names,
-              functions = ctx.functions
+              functions = ctx.functions,
+              elements = ctx.elements
             )
           }
           case (ctx, (c: Section.Code, i)) => {
-            ctx.copy(sections = ctx.sections,
-                     types = ctx.types,
-                     imported = ctx.imported,
-                     code = Option((c, i)),
-                     exports = ctx.exports,
-                     names = ctx.names,
-                     functions = ctx.functions)
+            ctx.copy(
+              sections = ctx.sections,
+              types = ctx.types,
+              imported = ctx.imported,
+              code = Option((c, i)),
+              exports = ctx.exports,
+              names = ctx.names,
+              functions = ctx.functions,
+              elements = ctx.elements
+            )
           }
           case (ctx, (c: Section.Exports, i)) =>
-            ctx.copy(sections = ctx.sections,
-                     types = ctx.types,
-                     imported = ctx.imported,
-                     code = ctx.code,
-                     exports = Option((c, i)),
-                     names = ctx.names,
-                     functions = ctx.functions)
+            ctx.copy(
+              sections = ctx.sections,
+              types = ctx.types,
+              imported = ctx.imported,
+              code = ctx.code,
+              exports = Option((c, i)),
+              names = ctx.names,
+              functions = ctx.functions,
+              elements = ctx.elements
+            )
           case (ctx, (c: Section, i)) =>
-            ctx.copy(sections = ctx.sections.appended((c, i)),
-                     types = ctx.types,
-                     imported = ctx.imported,
-                     code = ctx.code,
-                     exports = ctx.exports,
-                     names = ctx.names,
-                     functions = ctx.functions)
+            ctx.copy(
+              sections = ctx.sections.appended((c, i)),
+              types = ctx.types,
+              imported = ctx.imported,
+              code = ctx.code,
+              exports = ctx.exports,
+              names = ctx.names,
+              functions = ctx.functions,
+              elements = ctx.elements
+            )
         }
 
       ctx = firstPass.copy(
@@ -229,7 +262,8 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
             firstPass.imported,
         exports = firstPass.exports,
         names = firstPass.names,
-        functions = firstPass.functions
+        functions = firstPass.functions,
+        elements = firstPass.elements
       )
       ctxExports = ctx.copy(
         sections = ctx.sections,
@@ -274,7 +308,8 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
           }
           case None => ctx.names
         },
-        functions = ctx.functions
+        functions = ctx.functions,
+        elements = ctx.elements
       )
 
       wrappingCode = ctxExports.copy(
@@ -289,7 +324,13 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
         imported = ctxExports.imported,
         exports = ctxExports.exports,
         names = ctxExports.names,
-        functions = ctxExports.functions
+        functions = ctxExports.functions,
+        elements = Option(
+          (Section.Elements(
+             ctx.elements.get._1.elements
+               .map(t => Elem(t.table, t.offset, t.init.map(fi => if (fi >= ctx.cbFuncIndex) fi + 1 else fi)))),
+           ctx.elements.get._2)
+        )
       )
 
     } yield wrappingCode
