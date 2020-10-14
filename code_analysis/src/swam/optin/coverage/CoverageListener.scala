@@ -244,12 +244,12 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
                       if (x.kind == ExternalKind.Function && x.index >= ctx.cbFuncIndex) x.index + 1 else x.index))
            ),
            ctx.exports.get._2)),
-        names = ctx.names match {
+        names = ctx.names match { // The names section is not needed, only debugging reasons, TODO remove after
           case Some(m) => {
             val decoded =
               NameSectionHandler.codec.decodeValue(m._1.payload) match {
                 case Attempt.Successful(names) =>
-                  Names(names.subsections.map {
+                  Option(Names(names.subsections.collect {
                     case FunctionNames(fnames) =>
                       FunctionNames(
                         fnames.toVector
@@ -258,14 +258,19 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
                           }
                           .toMap
                           .updated(ctx.cbFuncIndex, "__swam_swam_cb"))
-                    case x => x
-                  })
-                case _ => Names(Vector()) // simply ignore malformed name section
+                  }))
+                case _ => None // simply ignore malformed name section
               }
-            NameSectionHandler.codec.encode(decoded) match {
-              case Attempt.Successful(bv) => Option((Section.Custom("name", bv), m._2))
-              case Attempt.Failure(err)   => ctx.names
+            System.err.println(decoded)
+            decoded match {
+              case Some(d) =>
+                NameSectionHandler.codec.encode(d) match {
+                  case Attempt.Successful(bv) => Option((Section.Custom("name", bv), m._2))
+                  case Attempt.Failure(err)   => ctx.names
+                }
+              case None => ctx.names
             }
+
           }
           case None => ctx.names
         },
