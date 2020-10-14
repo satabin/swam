@@ -295,7 +295,6 @@ class CoverageListener[F[_]](wasi: Boolean)(implicit F: MonadError[F, Throwable]
                   }))
                 case _ => None // simply ignore malformed name section
               }
-            System.err.println(decoded)
             decoded match {
               case Some(d) =>
                 NameSectionHandler.codec.encode(d) match {
