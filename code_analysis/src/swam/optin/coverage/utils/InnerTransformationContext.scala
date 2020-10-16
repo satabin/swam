@@ -21,6 +21,7 @@ case class InnerTransformationContext(sections: Seq[(Section, Long)],
                                       cbFuncIndex: Int,
                                       previousIdGlobalIndex: Int,
                                       blockCount: Int,
+                                      AFLOffset: Int,
                                       AFLCoverageSize: Int) {
 
   def reduceSections(prepend: Vector[Option[(Section, Long)]],
@@ -35,22 +36,6 @@ case class InnerTransformationContext(sections: Seq[(Section, Long)],
         }
     }
   }
-
-  lazy val lastDataOffsetAndLength: (Long, Int) =
-    data match {
-      case Some(n) =>
-        n match {
-          case (d: Section.Datas, _) =>
-            d.data.last.offset(0) match {
-              case i32.Const(v) => (v + d.data.last.init.length, d.data.last.data)
-              case _            => throw new Exception("Should data offset be a constant ?")
-            }
-        }
-      case None => (0, 0)
-    }
-
-  lazy val blockCoverageDataOffsetAndLength: (Long, Int) =
-    (lastDataOffsetAndLength._1 + AFLCoverageSize, blockCount + 1)
 
   lazy val sortedSections: Seq[Section] =
     reduceSections(sections.map(t => Option(t)).toVector,

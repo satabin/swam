@@ -38,7 +38,9 @@ class JSCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]) extends
   val ran = scala.util.Random
   var blockCount = 0
   var instructionCount = 0
-  var id = 100
+  var id = 0
+
+  //TODO fix the count of instructions
 
   def instrumentVector(instr: Vector[Inst], ctx: JSTransformationContext): Vector[Inst] = {
 

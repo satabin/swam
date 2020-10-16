@@ -17,23 +17,22 @@ import swam.syntax.i32.Xor
 /**
   * @author Javier Cabrera-Arteaga on 2020-10-16
   */
-class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 10)(implicit F: MonadError[F, Throwable])
+class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 17)(implicit F: MonadError[F, Throwable])
     extends Instrumenter[F] {
 
   val ran = scala.util.Random
   var blockCount = 0
   var instructionCount = 0
-  var id = 1
+  var id = 0
 
   def instrumentVector(instr: Vector[Inst], ctx: InnerTransformationContext): Vector[Inst] = {
 
     instr.zipWithIndex.flatMap {
+
       case (CallIndirect(funcidx), i) => {
         instructionCount += 1
         Vector(CallIndirect(funcidx))
       }
-      case (Call(funcidx), i) =>
-        Vector(Call(funcidx))
       case (Block(tpe, instr), i) => {
         instructionCount += 1
         Vector(Block(tpe, instrumentVector(instr, ctx)))
@@ -52,6 +51,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 10)(
         id += 1
         Vector(BrIf(lbl), i32.Const(id), Call(ctx.cbFuncIndex))
       }
+
       case (x, i) => {
         instructionCount += 1
         if (i == 0) {
@@ -61,6 +61,39 @@ class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 10)(
         } else
           Vector(x)
       }
+
+    }
+  }
+
+  def redefineMem(instr: Vector[Inst], ctx: InnerTransformationContext): Vector[Inst] = {
+
+    instr.flatMap {
+
+      case i32.Load(align, offset) =>
+        Vector(i32.Load(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
+      case i64.Load(align, offset) =>
+        Vector(i64.Load(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
+      case f32.Load(align, offset) =>
+        Vector(f32.Load(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
+      case f64.Load(align, offset) =>
+        Vector(f64.Load(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
+      case i32.Store(align, offset) =>
+        Vector(i32.Store(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
+      case i64.Store(align, offset) =>
+        Vector(i64.Store(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
+      case f32.Store(align, offset) =>
+        Vector(f32.Store(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
+      case f64.Store(align, offset) =>
+        Vector(f64.Store(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
+      case Block(tpe, instr) =>
+        Vector(Block(tpe, redefineMem(instr, ctx)))
+      case Loop(tpe, instr) =>
+        Vector(Loop(tpe, redefineMem(instr, ctx)))
+      case If(tpe, thn, els) =>
+        Vector(If(tpe, redefineMem(thn, ctx), redefineMem(els, ctx)))
+
+      case x =>
+        Vector(x)
 
     }
   }
@@ -84,6 +117,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 10)(
                                      None,
                                      0,
                                      -1,
+                                     0,
                                      0,
                                      coverageMemSize)) {
           case (ctx, (c: Section.Types, i)) =>
@@ -223,12 +257,12 @@ class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 10)(
               :+ Global(GlobalType(ValType.I32, Mut.Var), Vector(i32.Const(-1))) // Previous ID
               :+ Global(
                 GlobalType(ValType.I32, Mut.Const),
-                Vector(i32.Const(wrappingCode.lastDataOffsetAndLength._1.toInt))
+                Vector(i32.Const(0))
               ) // MemoryOffset to collect AFL coverage memory
               :+ Global(GlobalType(ValType.I32, Mut.Const), Vector(i32.Const(coverageMemSize))) // AFLMemorySize
               :+ Global(
                 GlobalType(ValType.I32, Mut.Const),
-                Vector(i32.Const(wrappingCode.blockCoverageDataOffsetAndLength._1.toInt))
+                Vector(i32.Const(coverageMemSize))
               ) // BLOCK Coverage offset
               :+ Global(GlobalType(ValType.I32, Mut.Const), Vector(i32.Const(blockCount + 1))) // BLOCK Coverage size
           ),
@@ -237,63 +271,74 @@ class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 10)(
         data = Option(
           Section.Datas(
             (wrappingCode.data match {
-              case Some(realData) => realData._1.data
-              case None           => Vector()
-            })
-              :+ // AFL Coverage memory piece
-                Data(
-                  0, // In the current version of WebAssembly, at most one memory is allowed in a module. Consequently, the only valid memidxmemidx is 00.
-                  Vector(i32.Const(wrappingCode.lastDataOffsetAndLength._1.toInt)),
-                  BitVector(new Array[Byte](coverageMemSize))
-                )
-              :+ // BLOCK Coverage memory piece
-                Data(
-                  0, // In the current version of WebAssembly, at most one memory is allowed in a module. Consequently, the only valid memidxmemidx is 00.
-                  Vector(i32.Const(wrappingCode.blockCoverageDataOffsetAndLength._1.toInt)),
-                  BitVector(new Array[Byte](wrappingCode.blockCoverageDataOffsetAndLength._2))
-                )
+              case Some(realData) =>
+                realData._1.data.map(t =>
+                  Data(0,
+                       Vector(
+                         i32.Const(
+                           t.offset(0).asInstanceOf[i32.Const].v + coverageMemSize + blockCount
+                         )),
+                       t.init))
+              case None => Vector()
+            }).prepended(Data(
+                0, // In the current version of WebAssembly, at most one memory is allowed in a module. Consequently, the only valid memidxmemidx is 00.
+                Vector(i32.Const(coverageMemSize)),
+                BitVector(new Array[Byte](blockCount))
+              ))
+              .prepended(Data(
+                0, // In the current version of WebAssembly, at most one memory is allowed in a module. Consequently, the only valid memidxmemidx is 00.
+                Vector(i32.Const(0)),
+                BitVector(new Array[Byte](coverageMemSize))
+              ))
+            // BLOCK Coverage memory piece
           ),
           wrappingCode.data match {
             case Some(realData) => realData._2
             case None           => 11
           }
         ),
+        AFLOffset = 0,
         code = Option(
           Section.Code(
-            wrappingCode.code.get._1.bodies :+ FuncBody(
-              Vector(),
-              Vector(
-                LocalGet(0), // l0
-                i32.Const(1), // 1, l0
-                i32.Store(0, wrappingCode.blockCoverageDataOffsetAndLength._1.toInt), // mem[offset + l0] = 1
-                GlobalGet(wrappingCode.previousIdGlobalIndex),
-                i32.Const(-1),
-                i32.GtS,
-                If(
-                  BlockType.NoType,
-                  Vector(
-                    LocalGet(0), // l0
-                    GlobalGet(wrappingCode.previousIdGlobalIndex), // g0, lo
-                    Xor, // gx ^ l0
-                    LocalGet(0), // l0, gx ^ l0
-                    GlobalGet(wrappingCode.previousIdGlobalIndex),
-                    Xor, // gx ^ l0, gx ^ l0,
-                    i32.Load(0, wrappingCode.lastDataOffsetAndLength._1.toInt), // mem[gx ^ l0], gx ^ l0
-                    i32.Const(1), // 1, mem[gx ^ l0], gx ^ l0
-                    i32.Add, // 1 + mem[gx ^ l0], gx ^ l0
-                    i32.Store(0, wrappingCode.lastDataOffsetAndLength._1.toInt), // mem[gx ^ l0] = 1 + mem[gx ^ l0]
-                    LocalGet(0), // l0
-                    i32.Const(1), // l0, 1
-                    i32.ShrS, // l0 >> 1
-                    GlobalSet(wrappingCode.previousIdGlobalIndex) // g0 = l0 >> 1
-                  ),
-                  Vector(
-                    LocalGet(0),
-                    GlobalSet(wrappingCode.previousIdGlobalIndex) // g0 = l0 >> 1
-                  )
+            wrappingCode.code.get._1.bodies.map(f => FuncBody(f.locals, redefineMem(f.code, wrappingCode)))
+              :+ FuncBody(
+                Vector(),
+                Vector(
+                  LocalGet(0), // l0
+                  i32.Const(1), // 1, l0
+                  i32.Store(2, wrappingCode.AFLOffset + coverageMemSize), // mem[offset + l0] = 1
+                  GlobalGet(wrappingCode.previousIdGlobalIndex),
+                  i32.Const(-1),
+                  i32.GtS,
+                  If(
+                    BlockType.NoType,
+                    Vector(
+                      LocalGet(0), // l0
+                      GlobalGet(wrappingCode.previousIdGlobalIndex), // g0, lo
+                      Xor, // gx ^ l0
+                      i32.Const(coverageMemSize), // size, gx ^ l0
+                      i32.RemU, //  gx ^ l0 % size
+                      LocalGet(0), // l0, gx ^ l0
+                      GlobalGet(wrappingCode.previousIdGlobalIndex),
+                      Xor, // gx ^ l0, gx ^ l0,
+                      i32.Const(coverageMemSize), // size, gx ^ l0, gx ^ l0 % size
+                      i32.RemU, //  gx ^ l0 % size, gx ^ l0 % size
+                      i32.Load(2, 0), // mem[gx ^ l0], gx ^ l0
+                      i32.Const(1), // 1, mem[gx ^ l0], gx ^ l0
+                      i32.Add, // 1 + mem[gx ^ l0], gx ^ l0
+                      i32.Store(2, 0), // mem[gx ^ l0] = 1 + mem[gx ^ l0]
+                      LocalGet(0), // l0
+                      i32.Const(1), // l0, 1
+                      i32.ShrS, // l0 >> 1
+                      GlobalSet(wrappingCode.previousIdGlobalIndex) // g0 = l0 >> 1
+                    ),
+                    Vector(
+                      LocalGet(0),
+                      GlobalSet(wrappingCode.previousIdGlobalIndex) // g0 = l0 >> 1
+                    )
+                  ) /*endof*/
                 )
-              )
-            )),
+              )),
           wrappingCode.code.get._2
         )
       )
@@ -304,7 +349,17 @@ class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 10)(
     r.flatMap(t => {
 
       // Output JSON with the metadata
-      println(writePretty(new CoverageMetadaDTO(instructionCount, blockCount, 1)))
+      println(
+        writePretty(
+          new CoverageMetadaDTO(
+            instructionCount,
+            blockCount,
+            1,
+            t.AFLOffset,
+            t.AFLCoverageSize,
+            t.AFLCoverageSize + t.AFLOffset,
+            blockCount + 1
+          )))
 
       //System.err.println(s"Number of instrumented blocks $blockCount. Number of instructions $instructionCount")
 
