@@ -21,7 +21,7 @@ import swam.code_analysis.coverage.{CoverageListener, CoverageReporter}
 import swam.runtime.imports._
 import swam.runtime.trace._
 import swam.runtime.wasi.{Wasi, WasiOption}
-import swam.runtime.{Engine, Function, Module, Value}
+import swam.runtime.{Engine, Function, Memory, Module, Value}
 import swam.text.Compiler
 import swam.binary.custom.{FunctionNames, ModuleName}
 import swam.cli.Main.wasiOption
@@ -363,6 +363,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                     preparedFunction <- prepareFunction(compiled, wasiOption, main, dirs, args, wasi, blocker)
                     _ <- IO(executeFunction(IO(preparedFunction), argsParsed, time))
                     _ <- IO(CoverageReporter.blockCoverage(covOut, file, coverageListener))
+
                   } yield ExitCode.Success
 
                 }
@@ -534,6 +535,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
         } yield res
       }
       .unsafeRunSync()
+
   }
 
   def measureTime[T](logger: Logger[IO], io: IO[T]): IO[T] =

@@ -17,7 +17,22 @@ case class InnerTransformationContext(sections: Seq[(Section, Long)],
                                       functions: Option[(Section.Functions, Long)],
                                       elements: Option[(Section.Elements, Long)],
                                       data: Option[(Section.Datas, Long)],
-                                      cbFuncIndex: Int) {
+                                      globals: Option[(Section.Globals, Long)],
+                                      cbFuncIndex: Int,
+                                      previousIdGlobalIndex: Int) {
+
+  def reduceSections(prepend: Vector[Option[(Section, Long)]],
+                     sections: Option[(Section, Long)]*): Seq[(Section, Long)] = {
+
+    val v: Vector[(Section, Long)] = Vector()
+    prepend.concat(sections).foldLeft(v) {
+      case (cumul, o) =>
+        o match {
+          case Some(x) => cumul.appended(x)
+          case None    => cumul
+        }
+    }
+  }
 
   lazy val lastDataOffsetAndLength: (Long, Int) =
     data match {
@@ -33,17 +48,28 @@ case class InnerTransformationContext(sections: Seq[(Section, Long)],
     }
 
   lazy val sortedSections: Seq[Section] =
-    names match {
+    reduceSections(sections.map(t => Option(t)).toVector,
+                   Option(redefinedTypes),
+                   imported,
+                   globals,
+                   data,
+                   elements,
+                   functions,
+                   names,
+                   code,
+                   exports).sortBy(t => t._2).map(t => t._1)
+
+  /*names match {
       case Some(m) =>
-        (redefinedTypes +: imported.get +: data.get +: elements.get +: functions.get +: m +: sections :+ code.get :+ exports.get)
+        (redefinedTypes +: imported.get +: globals.get +: data.get +: elements.get +: functions.get +: m +: sections :+ code.get :+ exports.get)
           .sortBy(t => t._2)
           .map(t => t._1)
       case None =>
-        (redefinedTypes +: imported.get +: data.get +: elements.get +: functions.get +: sections :+ code.get :+ exports.get)
+        (redefinedTypes +: imported.get +: globals.get +: data.get +: elements.get +: functions.get +: sections :+ code.get :+ exports.get)
           .sortBy(t => t._2)
           .map(t => t._1)
 
-    }
+    }*/
 
   lazy val tpeIndex: Int = types match {
     case None => {

@@ -12,6 +12,7 @@ import scodec.bits.BitVector
 import swam.binary.custom.{FunctionNames, NameSectionHandler, Names}
 import swam.code_analysis.coverage.utils.{CoverageMetadaDTO, InnerTransformationContext, JSTransformationContext}
 import swam.syntax._
+import swam.syntax.i32.Xor
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-10-16
@@ -69,7 +70,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
 
     val r = for {
       firstPass <- sections.zipWithIndex
-        .fold(InnerTransformationContext(Seq(), None, None, None, None, None, None, None, None, 0)) {
+        .fold(InnerTransformationContext(Seq(), None, None, None, None, None, None, None, None, None, 0, -1)) {
           case (ctx, (c: Section.Types, i)) =>
             ctx.copy(
               types = Option((c, i))
@@ -87,7 +88,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
               c match {
                 case Section.Custom("name", _) =>
                   ctx.copy(
-                    names = Option((c, i))
+                    names = Option((c, Int.MaxValue))
                   )
                 case _ =>
                   ctx.copy(
@@ -96,9 +97,15 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
               }
 
             }
-          case (ctx, (c: Section.Functions, i)) =>
+          case (ctx, (c: Section.Functions, i)) => {
+            println(c)
             ctx.copy(
               functions = Option((c, i))
+            )
+          }
+          case (ctx, (c: Section.Globals, i)) =>
+            ctx.copy(
+              globals = Option((c, i))
             )
           case (ctx, (c: Section.Imports, i)) => {
             ctx.copy(
@@ -121,9 +128,13 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
         }
 
       ctx = firstPass.copy(
-        cbFuncIndex = firstPass.functions.get._1.functions.length + firstPass.imported.get._1.imports.collect {
-          case x: Import.Function => x
-        }.length, // Set new function index
+        cbFuncIndex = firstPass.functions.get._1.functions.length + (firstPass.imported match {
+          case Some(x) =>
+            x._1.imports.collect {
+              case x: Import.Function => x
+            }.length
+          case None => 0
+        }), // Set new function index
         functions = Option(
           (
             Section.Functions(firstPass.functions.get._1.functions :+ firstPass.tpeIndex),
@@ -132,6 +143,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
       )
 
       ctxExports = ctx.copy(
+        previousIdGlobalIndex = ctx.globals.get._1.globals.length,
         names = ctx.names match { // The names section is not needed, only debugging reasons, TODO remove after
           case Some(m) => {
             val decoded =
@@ -160,19 +172,61 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
       wrappingCode = ctxExports.copy(
         data = Option(
           Section.Datas(
-            ctx.data.get._1.data :+
-              Data(
-                0, // In the current version of WebAssembly, at most one memory is allowed in a module. Consequently, the only valid memidxmemidx is 00.
-                Vector(i32.Const(ctxExports.lastDataOffsetAndLength._1.toInt)),
-                BitVector(new Array[Byte](1 << 17))
-              )),
-          ctxExports.data.get._2
+            (ctx.data match {
+              case Some(realData) => realData._1.data
+              case None           => Vector()
+            })
+              :+
+                Data(
+                  0, // In the current version of WebAssembly, at most one memory is allowed in a module. Consequently, the only valid memidxmemidx is 00.
+                  Vector(i32.Const(ctxExports.lastDataOffsetAndLength._1.toInt)),
+                  BitVector(new Array[Byte](1 << 10))
+                )),
+          ctx.data match {
+            case Some(realData) => realData._2
+            case None           => 11
+          }
+        ),
+        globals = Option(
+          Section.Globals(
+            ctx.globals.get._1.globals :+ Global(GlobalType(ValType.I32, Mut.Var), Vector(i32.Const(-1)))),
+          ctxExports.globals.get._2
         ),
         code = Option(
           (Section.Code(
              ctxExports.code.get._1.bodies
                .map(f => FuncBody(f.locals, instrumentVector(f.code, ctxExports)))
-               :+ FuncBody(Vector(), Vector(Nop))
+               :+ FuncBody(
+                 Vector(),
+                 Vector(
+                   GlobalGet(ctxExports.previousIdGlobalIndex),
+                   i32.Const(-1),
+                   i32.GtS,
+                   If(
+                     BlockType.NoType,
+                     Vector(
+                       LocalGet(0),
+                       GlobalGet(ctxExports.previousIdGlobalIndex),
+                       Xor, // gx ^ l0
+                       LocalGet(0),
+                       GlobalGet(ctxExports.previousIdGlobalIndex),
+                       Xor, // gx ^ l0, gx ^ l0,
+                       i32.Load(0, ctxExports.lastDataOffsetAndLength._1.toInt), // <- mem[gx ^ l0]
+                       i32.Const(1), // 1
+                       i32.Add, // 1 + mem[gx ^ l0], gx ^ l0
+                       i32.Store(0, ctxExports.lastDataOffsetAndLength._1.toInt),
+                       LocalGet(0),
+                       i32.Const(1), // l0, 1
+                       i32.ShrS, // l0 >> 1
+                       GlobalSet(ctxExports.previousIdGlobalIndex)
+                     ),
+                     Vector(
+                       LocalGet(0),
+                       GlobalSet(ctxExports.previousIdGlobalIndex)
+                     )
+                   )
+                 )
+               )
            ),
            ctxExports.code.get._2)),
         exports = Option(
@@ -186,8 +240,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
     //r.map(t => Stream.emits(t.sections))
     r.flatMap(t => {
 
-      println(t.data)
-      println(t.lastDataOffsetAndLength)
+      println(t.sortedSections)
       // Output JSON with the metadata
       println(writePretty(new CoverageMetadaDTO(instructionCount, blockCount)))
 
