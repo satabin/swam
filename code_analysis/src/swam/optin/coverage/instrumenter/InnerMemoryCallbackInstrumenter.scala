@@ -204,24 +204,24 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
                    If(
                      BlockType.NoType,
                      Vector(
-                       LocalGet(0),
-                       GlobalGet(ctxExports.previousIdGlobalIndex),
+                       LocalGet(0), // l0
+                       GlobalGet(ctxExports.previousIdGlobalIndex), // g0, lo
                        Xor, // gx ^ l0
-                       LocalGet(0),
+                       LocalGet(0), // l0, gx ^ l0
                        GlobalGet(ctxExports.previousIdGlobalIndex),
                        Xor, // gx ^ l0, gx ^ l0,
-                       i32.Load(0, ctxExports.lastDataOffsetAndLength._1.toInt), // <- mem[gx ^ l0]
-                       i32.Const(1), // 1
+                       i32.Load(0, ctxExports.lastDataOffsetAndLength._1.toInt), // mem[gx ^ l0], gx ^ l0
+                       i32.Const(1), // 1, mem[gx ^ l0], gx ^ l0
                        i32.Add, // 1 + mem[gx ^ l0], gx ^ l0
-                       i32.Store(0, ctxExports.lastDataOffsetAndLength._1.toInt),
-                       LocalGet(0),
+                       i32.Store(0, ctxExports.lastDataOffsetAndLength._1.toInt), // mem[gx ^ l0] = 1 + mem[gx ^ l0]
+                       LocalGet(0), // l0
                        i32.Const(1), // l0, 1
                        i32.ShrS, // l0 >> 1
-                       GlobalSet(ctxExports.previousIdGlobalIndex)
+                       GlobalSet(ctxExports.previousIdGlobalIndex) // g0 = l0 >> 1
                      ),
                      Vector(
                        LocalGet(0),
-                       GlobalSet(ctxExports.previousIdGlobalIndex)
+                       GlobalSet(ctxExports.previousIdGlobalIndex) // g0 = l0 >> 1
                      )
                    )
                  )
@@ -229,9 +229,12 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
            ),
            ctxExports.code.get._2)),
         exports = Option(
-          Section.Exports(
-            ctxExports.exports.get._1.exports :+ Export("__swam_cb", ExternalKind.Function, ctxExports.cbFuncIndex)),
-          ctxExports.exports.get._2)
+          Section.Exports( // TODO patch with mnatch option in case the section does not exist
+            ctxExports.exports.get._1.exports :+
+              Export("__swam_cb", ExternalKind.Function, ctxExports.cbFuncIndex)
+              :+ Export("__previous_id", ExternalKind.Global, ctxExports.previousIdGlobalIndex)),
+          ctxExports.exports.get._2
+        )
       )
 
     } yield wrappingCode
