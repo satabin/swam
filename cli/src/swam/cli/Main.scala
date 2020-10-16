@@ -25,7 +25,7 @@ import swam.runtime.{Engine, Function, Module, Value}
 import swam.text.Compiler
 import swam.binary.custom.{FunctionNames, ModuleName}
 import swam.cli.Main.wasiOption
-import swam.code_analysis.coverage.instrument.{Instrumenter, JSCallbackInstrumenter}
+import swam.code_analysis.coverage.instrument.{InnerMemoryCallbackInstrumenter, Instrumenter, JSCallbackInstrumenter}
 import swam.runtime.internals.compiler.CompiledFunction
 
 private object NoTimestampFormatter extends JFormatter {
@@ -98,6 +98,11 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     .option[WasiOption]("wasi-option", "WASI options")
     .withDefault(WasiOption.NonBlockingRNG)
 
+  val instrumentationType = Opts
+    .option[InstrumentationType]("instrumentation-type",
+                                 "Type of coverage instrumentation, JS callback or inner memory setting")
+    .withDefault(InstrumentationType.JSCallback)
+
   val filter =
     Opts
       .option[String](
@@ -151,6 +156,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
      wasmFile,
      restArguments,
      exportInstrumented,
+     instrumentationType,
      covOut,
      covfilter,
      wasmArgTypes,
@@ -168,28 +174,32 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
        wasm,
        args,
        exportInstrumented,
+       instrumentationType,
        covOut,
        covfilter,
        wasmArgTypes,
        wasiOption,
        noValidateBinary) =>
-        WasmCov(wasm,
-                args,
-                main,
-                wat,
-                wasi,
-                time,
-                trace,
-                filter,
-                traceFile,
-                dirs,
-                debug,
-                exportInstrumented,
-                covOut,
-                covfilter,
-                wasmArgTypes,
-                wasiOption,
-                noValidateBinary)
+        WasmCov(
+          wasm,
+          args,
+          main,
+          wat,
+          wasi,
+          time,
+          trace,
+          filter,
+          traceFile,
+          dirs,
+          debug,
+          exportInstrumented,
+          instrumentationType,
+          covOut,
+          covfilter,
+          wasmArgTypes,
+          wasiOption,
+          noValidateBinary
+        )
     }
   }
 
@@ -306,6 +316,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                          dirs,
                          debug,
                          exportInstrumented,
+                         instrumentationType,
                          covOut,
                          covfilter,
                          wasmArgTypes,
@@ -322,7 +333,10 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                   IO(None)
                 argsParsed <- IO(parseWasmArgs(wasmArgTypes, args))
                 instrumenter: Option[Instrumenter[IO]] = if (exportInstrumented != null)
-                  Option(new JSCallbackInstrumenter[IO]())
+                  instrumentationType match {
+                    case InstrumentationType.JSCallback    => Option(new JSCallbackInstrumenter[IO]())
+                    case InstrumentationType.InnerCallback => Option(new InnerMemoryCallbackInstrumenter[IO]())
+                  }
                 else None
                 coverageListener = CoverageListener[IO](covfilter, instrumenter)
                 engine <- Engine[IO](blocker, tracer, listener = Option(coverageListener))

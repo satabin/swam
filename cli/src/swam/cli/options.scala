@@ -18,7 +18,7 @@ package swam
 package cli
 
 import runtime.wasi.WasiOption
-
+import enumeratum._
 import java.nio.file.Path
 
 sealed trait Options
@@ -60,6 +60,15 @@ case class Validate(file: Path, wat: Boolean, dev: Boolean, readChunkSize: Int) 
 
 case class Compile(file: Path, out: Path, debug: Boolean) extends Options
 
+sealed trait InstrumentationType extends EnumEntry with EnumEntry.Hyphencase
+object InstrumentationType extends Enum[InstrumentationType] {
+
+  case object JSCallback extends InstrumentationType
+  case object InnerCallback extends InstrumentationType
+
+  def values: IndexedSeq[InstrumentationType] = findValues
+}
+
 case class WasmCov(file: Path,
                    args: List[String],
                    main: String,
@@ -72,6 +81,7 @@ case class WasmCov(file: Path,
                    dirs: List[Path],
                    debug: Boolean,
                    exportInstrumented: Path,
+                   instrumentationType: InstrumentationType,
                    covOut: Path,
                    filter: Boolean,
                    wasmArgTypes: List[String],
