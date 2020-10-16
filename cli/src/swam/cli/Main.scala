@@ -10,7 +10,6 @@ import cats.implicits._
 import com.monovore.decline.Opts
 import com.monovore.decline.effect.CommandIOApp
 import com.monovore.decline.enumeratum._
-
 import io.odin.formatter.Formatter
 import io.odin.formatter.options.ThrowableFormat
 import io.odin.{Logger, consoleLogger}
@@ -26,6 +25,7 @@ import swam.runtime.{Engine, Function, Module, Value}
 import swam.text.Compiler
 import swam.binary.custom.{FunctionNames, ModuleName}
 import swam.cli.Main.wasiOption
+import swam.code_analysis.coverage.instrument.{Instrumenter, JSCallbackInstrumenter}
 import swam.runtime.internals.compiler.CompiledFunction
 
 private object NoTimestampFormatter extends JFormatter {
@@ -321,7 +321,10 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 else
                   IO(None)
                 argsParsed <- IO(parseWasmArgs(wasmArgTypes, args))
-                coverageListener = CoverageListener[IO](covfilter)
+                instrumenter: Option[Instrumenter[IO]] = if (exportInstrumented != null)
+                  Option(new JSCallbackInstrumenter[IO]())
+                else None
+                coverageListener = CoverageListener[IO](covfilter, instrumenter)
                 engine <- Engine[IO](blocker, tracer, listener = Option(coverageListener))
 
                 tcompiler <- swam.text.Compiler[IO](blocker)

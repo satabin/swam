@@ -3,7 +3,9 @@ package runtime
 package internals
 package interpreter
 
+import fs2.Stream
 import swam.runtime.internals.interpreter.{Continuation, Frame, InstructionWrapper}
+import swam.syntax.Section
 
 trait InstructionListener[F[_]] {
 
@@ -15,4 +17,7 @@ trait InstructionListener[F[_]] {
             frame: Frame[F],
             functionName: Option[String],
             result: Continuation[F]): Continuation[F]
+
+  def instrument(sections: Stream[F, Section]): Stream[F, Section]
+
 }

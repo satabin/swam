@@ -3,19 +3,15 @@ import mill.eval._
 import mill.scalalib._
 import mill.scalalib.publish._
 import mill.scalalib.scalafmt._
-
 import ammonite.ops._
 import mill.modules.Jvm.runSubprocess
-
 import coursier.maven.MavenRepository
-
 import $file.jmh
 import jmh.Jmh
-
 import $file.mdoc
 import mdoc.MdocModule
-
 import $ivy.`com.lihaoyi::mill-contrib-bloop:$MILL_VERSION`
+import generator.ivy
 
 val swamVersion = "0.6.0-RC4"
 
@@ -190,7 +186,10 @@ object code_analysis extends SwamModule with PublishModule {
   def moduleDeps = Seq(core, runtime, wasi)
 
   def ivyDeps =
-    Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion", ivy"com.nrinaudo::kantan.csv:0.6.1")
+    Agg(ivy"com.github.pureconfig::pureconfig-enumeratum:$pureconfigVersion",
+      ivy"com.nrinaudo::kantan.csv:0.6.1",
+      ivy"org.json4s::json4s-jackson:3.7.0-M4"
+    )
 
   def publishVersion = swamVersion
 
