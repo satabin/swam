@@ -9,7 +9,7 @@ import cats.effect._
 import fs2.Stream
 import scodec.Attempt
 import swam.binary.custom.{FunctionNames, NameSectionHandler, Names}
-import swam.code_analysis.coverage.utils.{CoverageMetadaDTO, TransformationContext}
+import swam.code_analysis.coverage.utils.{CoverageMetadaDTO, JSTransformationContext}
 import swam.syntax.{
   Block,
   BrIf,
@@ -40,7 +40,7 @@ class JSCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]) extends
   var instructionCount = 0
   var id = 100
 
-  def instrumentVector(instr: Vector[Inst], ctx: TransformationContext): Vector[Inst] = {
+  def instrumentVector(instr: Vector[Inst], ctx: JSTransformationContext): Vector[Inst] = {
 
     instr.zipWithIndex.flatMap {
       case (CallIndirect(funcidx), i) => {
@@ -94,7 +94,7 @@ class JSCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]) extends
 
     val r = for {
       firstPass <- sections.zipWithIndex
-        .fold(TransformationContext(Seq(), None, None, None, None, None, None, None)) {
+        .fold(JSTransformationContext(Seq(), None, None, None, None, None, None, None)) {
           case (ctx, (c: Section.Types, i)) =>
             ctx.copy(
               sections = ctx.sections,

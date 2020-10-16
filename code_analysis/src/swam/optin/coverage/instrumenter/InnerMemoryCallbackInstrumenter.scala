@@ -9,7 +9,7 @@ import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization.writePretty
 import scodec.Attempt
 import swam.binary.custom.{FunctionNames, NameSectionHandler, Names}
-import swam.code_analysis.coverage.utils.{CoverageMetadaDTO, TransformationContext}
+import swam.code_analysis.coverage.utils.{CoverageMetadaDTO, InnerTransformationContext, JSTransformationContext}
 import swam.syntax._
 
 /**
@@ -22,7 +22,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
   var instructionCount = 0
   var id = 100
 
-  def instrumentVector(instr: Vector[Inst], ctx: TransformationContext): Vector[Inst] = {
+  def instrumentVector(instr: Vector[Inst], ctx: InnerTransformationContext): Vector[Inst] = {
 
     instr.zipWithIndex.flatMap {
       case (CallIndirect(funcidx), i) => {
@@ -30,15 +30,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
         Vector(CallIndirect(funcidx))
       }
       case (Call(funcidx), i) =>
-        if (funcidx >= ctx.cbFuncIndex) {
-          instructionCount += 1
-          Vector(
-            Call(funcidx + 1)
-          ) // Increment the call index for collision between previous and the new injected cb function
-        } else {
-          instructionCount += 1
-          Vector(Call(funcidx))
-        }
+        Vector(Call(funcidx))
       case (Block(tpe, instr), i) => {
         instructionCount += 1
         Vector(Block(tpe, instrumentVector(instr, ctx)))
@@ -76,7 +68,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
 
     val r = for {
       firstPass <- sections.zipWithIndex
-        .fold(TransformationContext(Seq(), None, None, None, None, None, None, None)) {
+        .fold(InnerTransformationContext(Seq(), None, None, None, None, None, None, None)) {
           case (ctx, (c: Section.Types, i)) =>
             ctx.copy(
               sections = ctx.sections,
@@ -143,8 +135,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
               sections = ctx.sections,
               types = ctx.types,
               code = ctx.code,
-              imported =
-                Option((Section.Imports(c.imports.appended(Import.Function("swam", "swam_cb", ctx.tpeIndex))), i)),
+              imported = Option((c, i)),
               exports = ctx.exports,
               names = ctx.names,
               functions = ctx.functions,
@@ -191,31 +182,23 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
         sections = firstPass.sections,
         types = firstPass.types,
         code = firstPass.code,
-        imported =
-          if (firstPass.imported.isEmpty)
-            Option(
-              (Section.Imports(Vector(Import.Function("swam", "swam_cb", firstPass.tpeIndex))),
-               firstPass.imported.get._2))
-          else
-            firstPass.imported,
+        imported = firstPass.imported,
         exports = firstPass.exports,
         names = firstPass.names,
-        functions = firstPass.functions,
+        functions = Option(
+          (
+            Section.Functions(firstPass.functions.get._1.functions :+ firstPass.tpeIndex),
+            firstPass.functions.get._2
+          )),
         elements = firstPass.elements
       )
+
       ctxExports = ctx.copy(
         sections = ctx.sections,
         types = ctx.types,
         code = ctx.code,
         imported = ctx.imported,
-        exports = Option(
-          (Section.Exports(
-             ctx.exports.get._1.exports.map(x =>
-               Export(x.fieldName,
-                      x.kind,
-                      if (x.kind == ExternalKind.Function && x.index >= ctx.cbFuncIndex) x.index + 1 else x.index))
-           ),
-           ctx.exports.get._2)),
+        exports = ctx.exports,
         names = ctx.names match { // The names section is not needed, only debugging reasons, TODO remove after
           case Some(m) => {
             val decoded =
@@ -223,13 +206,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
                 case Attempt.Successful(names) =>
                   Option(Names(names.subsections.collect {
                     case FunctionNames(fnames) =>
-                      FunctionNames(
-                        fnames.toVector
-                          .map {
-                            case (k: Int, m: String) => (if (k >= ctx.cbFuncIndex) k + 1 else k, m)
-                          }
-                          .toMap
-                          .updated(ctx.cbFuncIndex, "__swam_swam_cb"))
+                      FunctionNames(fnames.updated(ctx.cbFuncIndex, "__swam_swam_cb"))
                   }))
                 case _ => None // simply ignore malformed name section
               }
@@ -256,18 +233,14 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
           (Section.Code(
              ctxExports.code.get._1.bodies
                .map(f => FuncBody(f.locals, instrumentVector(f.code, ctxExports)))
+               :+ FuncBody(Vector(), Vector(Nop))
            ),
            ctxExports.code.get._2)),
         imported = ctxExports.imported,
         exports = ctxExports.exports,
         names = ctxExports.names,
         functions = ctxExports.functions,
-        elements = Option(
-          (Section.Elements(
-             ctx.elements.get._1.elements
-               .map(t => Elem(t.table, t.offset, t.init.map(fi => if (fi >= ctx.cbFuncIndex) fi + 1 else fi)))),
-           ctx.elements.get._2)
-        )
+        elements = ctxExports.elements
       )
 
     } yield wrappingCode
@@ -275,6 +248,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
     //r.map(t => Stream.emits(t.sections))
     r.flatMap(t => {
 
+      println(t.functions)
       // Output JSON with the metadata
       println(writePretty(new CoverageMetadaDTO(instructionCount, blockCount)))
 

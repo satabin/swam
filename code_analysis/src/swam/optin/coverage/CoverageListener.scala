@@ -36,7 +36,7 @@ import fs2._
 import scodec.Attempt
 import swam.binary.custom.{FunctionNames, NameSectionHandler}
 import swam.code_analysis.coverage.instrument.Instrumenter
-import swam.code_analysis.coverage.utils.{CoverageMetadaDTO, TransformationContext}
+import swam.code_analysis.coverage.utils.{CoverageMetadaDTO, JSTransformationContext}
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-06-11

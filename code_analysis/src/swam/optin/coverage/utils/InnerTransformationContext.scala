@@ -4,21 +4,20 @@ package coverage
 package utils
 
 import swam.syntax.{Import, Section}
-import swam.syntax.Section.Imports
 
 /**
   *@author Javier Cabrera-Arteaga on 2020-10-08
   */
-case class TransformationContext(sections: Seq[(Section, Long)],
-                                 types: Option[(Section.Types, Long)],
-                                 imported: Option[(Section.Imports, Long)],
-                                 code: Option[(Section.Code, Long)],
-                                 exports: Option[(Section.Exports, Long)],
-                                 names: Option[(Section.Custom, Long)],
-                                 functions: Option[(Section.Functions, Long)],
-                                 elements: Option[(Section.Elements, Long)]) {
+case class InnerTransformationContext(sections: Seq[(Section, Long)],
+                                      types: Option[(Section.Types, Long)],
+                                      imported: Option[(Section.Imports, Long)],
+                                      code: Option[(Section.Code, Long)],
+                                      exports: Option[(Section.Exports, Long)],
+                                      names: Option[(Section.Custom, Long)],
+                                      functions: Option[(Section.Functions, Long)],
+                                      elements: Option[(Section.Elements, Long)]) {
 
-  lazy val cbFuncIndex: Int = numberOfImportedFunctions - 1
+  lazy val cbFuncIndex: Int = functions.get._1.functions.length
 
   lazy val sortedSections: Seq[Section] =
     names match {
@@ -33,13 +32,9 @@ case class TransformationContext(sections: Seq[(Section, Long)],
 
     }
 
-  lazy val numberOfImportedFunctions: Int = imported.get._1.imports.collect {
-    case x: Import.Function => x
-  }.size
-
   lazy val tpeIndex: Int = types match {
     case None => {
-      -1
+      0
     }
     case Some(tps) =>
       val idx = tps._1.types.zipWithIndex.filter {
