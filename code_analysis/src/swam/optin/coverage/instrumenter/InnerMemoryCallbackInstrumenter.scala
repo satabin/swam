@@ -98,7 +98,6 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
 
             }
           case (ctx, (c: Section.Functions, i)) => {
-            println(c)
             ctx.copy(
               functions = Option((c, i))
             )
@@ -240,9 +239,8 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
     //r.map(t => Stream.emits(t.sections))
     r.flatMap(t => {
 
-      println(t.sortedSections)
       // Output JSON with the metadata
-      println(writePretty(new CoverageMetadaDTO(instructionCount, blockCount)))
+      println(writePretty(new CoverageMetadaDTO(instructionCount, blockCount, 1)))
 
       //System.err.println(s"Number of instrumented blocks $blockCount. Number of instructions $instructionCount")
 

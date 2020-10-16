@@ -21,6 +21,8 @@ import runtime.wasi.WasiOption
 import enumeratum._
 import java.nio.file.Path
 
+import swam.code_analysis.coverage.instrument.InstrumentationType
+
 sealed trait Options
 
 case class Run(file: Path,
@@ -59,15 +61,6 @@ case class Decompile(file: Path, textual: Boolean, out: Option[Path], readChunkS
 case class Validate(file: Path, wat: Boolean, dev: Boolean, readChunkSize: Int) extends Options
 
 case class Compile(file: Path, out: Path, debug: Boolean) extends Options
-
-sealed trait InstrumentationType extends EnumEntry with EnumEntry.Hyphencase
-object InstrumentationType extends Enum[InstrumentationType] {
-
-  case object JSCallback extends InstrumentationType
-  case object InnerCallback extends InstrumentationType
-
-  def values: IndexedSeq[InstrumentationType] = findValues
-}
 
 case class WasmCov(file: Path,
                    args: List[String],

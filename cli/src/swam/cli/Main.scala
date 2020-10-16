@@ -25,7 +25,12 @@ import swam.runtime.{Engine, Function, Memory, Module, Value}
 import swam.text.Compiler
 import swam.binary.custom.{FunctionNames, ModuleName}
 import swam.cli.Main.wasiOption
-import swam.code_analysis.coverage.instrument.{InnerMemoryCallbackInstrumenter, Instrumenter, JSCallbackInstrumenter}
+import swam.code_analysis.coverage.instrument.{
+  InnerMemoryCallbackInstrumenter,
+  InstrumentationType,
+  Instrumenter,
+  JSCallbackInstrumenter
+}
 import swam.runtime.internals.compiler.CompiledFunction
 
 private object NoTimestampFormatter extends JFormatter {
