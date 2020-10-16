@@ -3,7 +3,7 @@ package code_analysis
 package coverage
 package utils
 
-import swam.syntax.{Import, Section}
+import swam.syntax.{Import, Section, i32}
 
 /**
   *@author Javier Cabrera-Arteaga on 2020-10-08
@@ -15,18 +15,31 @@ case class InnerTransformationContext(sections: Seq[(Section, Long)],
                                       exports: Option[(Section.Exports, Long)],
                                       names: Option[(Section.Custom, Long)],
                                       functions: Option[(Section.Functions, Long)],
-                                      elements: Option[(Section.Elements, Long)]) {
+                                      elements: Option[(Section.Elements, Long)],
+                                      data: Option[(Section.Datas, Long)],
+                                      cbFuncIndex: Int) {
 
-  lazy val cbFuncIndex: Int = functions.get._1.functions.length
+  lazy val lastDataOffsetAndLength: (Long, Int) =
+    data match {
+      case Some(n) =>
+        n match {
+          case (d: Section.Datas, _) =>
+            d.data.last.offset(0) match {
+              case i32.Const(v) => (v + d.data.last.init.length, d.data.last.data)
+              case _            => throw new Exception("Should data offset be a constant ?")
+            }
+        }
+      case None => (0, 0)
+    }
 
   lazy val sortedSections: Seq[Section] =
     names match {
       case Some(m) =>
-        (redefinedTypes +: imported.get +: elements.get +: functions.get +: m +: sections :+ code.get :+ exports.get)
+        (redefinedTypes +: imported.get +: data.get +: elements.get +: functions.get +: m +: sections :+ code.get :+ exports.get)
           .sortBy(t => t._2)
           .map(t => t._1)
       case None =>
-        (redefinedTypes +: imported.get +: elements.get +: functions.get +: sections :+ code.get :+ exports.get)
+        (redefinedTypes +: imported.get +: data.get +: elements.get +: functions.get +: sections :+ code.get :+ exports.get)
           .sortBy(t => t._2)
           .map(t => t._1)
 

@@ -8,6 +8,7 @@ import fs2.Stream
 import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization.writePretty
 import scodec.Attempt
+import scodec.bits.BitVector
 import swam.binary.custom.{FunctionNames, NameSectionHandler, Names}
 import swam.code_analysis.coverage.utils.{CoverageMetadaDTO, InnerTransformationContext, JSTransformationContext}
 import swam.syntax._
@@ -68,137 +69,69 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
 
     val r = for {
       firstPass <- sections.zipWithIndex
-        .fold(InnerTransformationContext(Seq(), None, None, None, None, None, None, None)) {
+        .fold(InnerTransformationContext(Seq(), None, None, None, None, None, None, None, None, 0)) {
           case (ctx, (c: Section.Types, i)) =>
             ctx.copy(
-              sections = ctx.sections,
-              types = Option((c, i)),
-              imported = ctx.imported,
-              code = ctx.code,
-              exports = ctx.exports,
-              names = ctx.names,
-              functions = ctx.functions,
-              elements = ctx.elements
+              types = Option((c, i))
             )
           case (ctx, (c: Section.Elements, i)) => {
             ctx.copy(
-              sections = ctx.sections,
-              types = ctx.types,
-              imported = ctx.imported,
-              code = ctx.code,
-              exports = ctx.exports,
-              names = ctx.names,
-              functions = ctx.functions,
               elements = Option((c, i))
             )
+          }
+          case (ctx, (c: Section.Datas, i)) => {
+            ctx.copy(data = Option((c, i)))
           }
           case (ctx, (c: Section.Custom, i)) => // Patch removing custom section
             {
               c match {
                 case Section.Custom("name", _) =>
                   ctx.copy(
-                    sections = ctx.sections,
-                    types = ctx.types,
-                    imported = ctx.imported,
-                    code = ctx.code,
-                    exports = ctx.exports,
-                    names = Option((c, i)),
-                    functions = ctx.functions,
-                    elements = ctx.elements
+                    names = Option((c, i))
                   )
                 case _ =>
                   ctx.copy(
-                    sections = ctx.sections.appended((c, i)),
-                    types = ctx.types,
-                    imported = ctx.imported,
-                    code = ctx.code,
-                    exports = ctx.exports,
-                    functions = ctx.functions,
-                    elements = ctx.elements
+                    sections = ctx.sections.appended((c, i))
                   )
               }
 
             }
           case (ctx, (c: Section.Functions, i)) =>
             ctx.copy(
-              sections = ctx.sections,
-              types = ctx.types,
-              code = ctx.code,
-              imported = ctx.imported,
-              exports = ctx.exports,
-              names = ctx.names,
-              functions = Option((c, i)),
-              elements = ctx.elements
+              functions = Option((c, i))
             )
           case (ctx, (c: Section.Imports, i)) => {
             ctx.copy(
-              sections = ctx.sections,
-              types = ctx.types,
-              code = ctx.code,
-              imported = Option((c, i)),
-              exports = ctx.exports,
-              names = ctx.names,
-              functions = ctx.functions,
-              elements = ctx.elements
+              imported = Option((c, i))
             )
           }
           case (ctx, (c: Section.Code, i)) => {
             ctx.copy(
-              sections = ctx.sections,
-              types = ctx.types,
-              imported = ctx.imported,
-              code = Option((c, i)),
-              exports = ctx.exports,
-              names = ctx.names,
-              functions = ctx.functions,
-              elements = ctx.elements
+              code = Option((c, i))
             )
           }
           case (ctx, (c: Section.Exports, i)) =>
             ctx.copy(
-              sections = ctx.sections,
-              types = ctx.types,
-              imported = ctx.imported,
-              code = ctx.code,
-              exports = Option((c, i)),
-              names = ctx.names,
-              functions = ctx.functions,
-              elements = ctx.elements
+              exports = Option((c, i))
             )
           case (ctx, (c: Section, i)) =>
             ctx.copy(
-              sections = ctx.sections.appended((c, i)),
-              types = ctx.types,
-              imported = ctx.imported,
-              code = ctx.code,
-              exports = ctx.exports,
-              names = ctx.names,
-              functions = ctx.functions,
-              elements = ctx.elements
+              sections = ctx.sections.appended((c, i))
             )
         }
 
       ctx = firstPass.copy(
-        sections = firstPass.sections,
-        types = firstPass.types,
-        code = firstPass.code,
-        imported = firstPass.imported,
-        exports = firstPass.exports,
-        names = firstPass.names,
+        cbFuncIndex = firstPass.functions.get._1.functions.length + firstPass.imported.get._1.imports.collect {
+          case x: Import.Function => x
+        }.length, // Set new function index
         functions = Option(
           (
             Section.Functions(firstPass.functions.get._1.functions :+ firstPass.tpeIndex),
             firstPass.functions.get._2
-          )),
-        elements = firstPass.elements
+          ))
       )
 
       ctxExports = ctx.copy(
-        sections = ctx.sections,
-        types = ctx.types,
-        code = ctx.code,
-        imported = ctx.imported,
-        exports = ctx.exports,
         names = ctx.names match { // The names section is not needed, only debugging reasons, TODO remove after
           case Some(m) => {
             val decoded =
@@ -206,7 +139,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
                 case Attempt.Successful(names) =>
                   Option(Names(names.subsections.collect {
                     case FunctionNames(fnames) =>
-                      FunctionNames(fnames.updated(ctx.cbFuncIndex, "__swam_swam_cb"))
+                      FunctionNames(fnames.updated(ctx.cbFuncIndex, "__swam_cb"))
                   }))
                 case _ => None // simply ignore malformed name section
               }
@@ -221,14 +154,20 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
 
           }
           case None => ctx.names
-        },
-        functions = ctx.functions,
-        elements = ctx.elements
+        }
       )
 
       wrappingCode = ctxExports.copy(
-        sections = ctxExports.sections,
-        types = ctxExports.types,
+        data = Option(
+          Section.Datas(
+            ctx.data.get._1.data :+
+              Data(
+                0, // In the current version of WebAssembly, at most one memory is allowed in a module. Consequently, the only valid memidxmemidx is 00.
+                Vector(i32.Const(ctxExports.lastDataOffsetAndLength._1.toInt)),
+                BitVector(new Array[Byte](1 << 17))
+              )),
+          ctxExports.data.get._2
+        ),
         code = Option(
           (Section.Code(
              ctxExports.code.get._1.bodies
@@ -236,11 +175,10 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
                :+ FuncBody(Vector(), Vector(Nop))
            ),
            ctxExports.code.get._2)),
-        imported = ctxExports.imported,
-        exports = ctxExports.exports,
-        names = ctxExports.names,
-        functions = ctxExports.functions,
-        elements = ctxExports.elements
+        exports = Option(
+          Section.Exports(
+            ctxExports.exports.get._1.exports :+ Export("__swam_cb", ExternalKind.Function, ctxExports.cbFuncIndex)),
+          ctxExports.exports.get._2)
       )
 
     } yield wrappingCode
@@ -248,7 +186,8 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
     //r.map(t => Stream.emits(t.sections))
     r.flatMap(t => {
 
-      println(t.functions)
+      println(t.data)
+      println(t.lastDataOffsetAndLength)
       // Output JSON with the metadata
       println(writePretty(new CoverageMetadaDTO(instructionCount, blockCount)))
 
