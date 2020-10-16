@@ -17,7 +17,7 @@ import swam.syntax.i32.Xor
 /**
   * @author Javier Cabrera-Arteaga on 2020-10-16
   */
-class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 17)(implicit F: MonadError[F, Throwable])
+class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 10)(implicit F: MonadError[F, Throwable])
     extends Instrumenter[F] {
 
   val ran = scala.util.Random
@@ -248,6 +248,9 @@ class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 17)(
               :+ Export("__coverage_size",
                         ExternalKind.Global,
                         ctxExports.previousIdGlobalIndex + 2) // Coverage memory size
+              :+ Export("__mem",
+                        ExternalKind.Memory,
+                        0) // Export memory, by default index 0 since only one memory is allowed
           ),
           ctxExports.exports.get._2
         )
