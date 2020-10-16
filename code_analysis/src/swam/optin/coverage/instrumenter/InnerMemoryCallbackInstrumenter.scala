@@ -17,7 +17,8 @@ import swam.syntax.i32.Xor
 /**
   * @author Javier Cabrera-Arteaga on 2020-10-16
   */
-class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]) extends Instrumenter[F] {
+class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 17)(implicit F: MonadError[F, Throwable])
+    extends Instrumenter[F] {
 
   val ran = scala.util.Random
   var blockCount = 0
@@ -175,12 +176,13 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
               case Some(realData) => realData._1.data
               case None           => Vector()
             })
-              :+
+              :+ // Coverage memory piece
                 Data(
                   0, // In the current version of WebAssembly, at most one memory is allowed in a module. Consequently, the only valid memidxmemidx is 00.
                   Vector(i32.Const(ctxExports.lastDataOffsetAndLength._1.toInt)),
-                  BitVector(new Array[Byte](1 << 10))
-                )),
+                  BitVector(new Array[Byte](coverageMemSize))
+                )
+          ),
           ctx.data match {
             case Some(realData) => realData._2
             case None           => 11
@@ -188,7 +190,14 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
         ),
         globals = Option(
           Section.Globals(
-            ctx.globals.get._1.globals :+ Global(GlobalType(ValType.I32, Mut.Var), Vector(i32.Const(-1)))),
+            ctx.globals.get._1.globals
+              :+ Global(GlobalType(ValType.I32, Mut.Var), Vector(i32.Const(-1))) // Previous ID
+              :+ Global(
+                GlobalType(ValType.I32, Mut.Const),
+                Vector(i32.Const(ctxExports.lastDataOffsetAndLength._1.toInt))
+              ) // MemoryOffset to collect memory
+              :+ Global(GlobalType(ValType.I32, Mut.Const), Vector(i32.Const(coverageMemSize))) // MemorySize
+          ),
           ctxExports.globals.get._2
         ),
         code = Option(
@@ -231,8 +240,15 @@ class InnerMemoryCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]
         exports = Option(
           Section.Exports( // TODO patch with mnatch option in case the section does not exist
             ctxExports.exports.get._1.exports :+
-              Export("__swam_cb", ExternalKind.Function, ctxExports.cbFuncIndex)
-              :+ Export("__previous_id", ExternalKind.Global, ctxExports.previousIdGlobalIndex)),
+              Export("__swam_cb", ExternalKind.Function, ctxExports.cbFuncIndex) // Callback function
+              :+ Export("__previous_id", ExternalKind.Global, ctxExports.previousIdGlobalIndex) // Previous id index
+              :+ Export("__coverage_offset",
+                        ExternalKind.Global,
+                        ctxExports.previousIdGlobalIndex + 1) // Coverage memory offset
+              :+ Export("__coverage_size",
+                        ExternalKind.Global,
+                        ctxExports.previousIdGlobalIndex + 2) // Coverage memory size
+          ),
           ctxExports.exports.get._2
         )
       )
