@@ -19,7 +19,9 @@ case class InnerTransformationContext(sections: Seq[(Section, Long)],
                                       data: Option[(Section.Datas, Long)],
                                       globals: Option[(Section.Globals, Long)],
                                       cbFuncIndex: Int,
-                                      previousIdGlobalIndex: Int) {
+                                      previousIdGlobalIndex: Int,
+                                      blockCount: Int,
+                                      AFLCoverageSize: Int) {
 
   def reduceSections(prepend: Vector[Option[(Section, Long)]],
                      sections: Option[(Section, Long)]*): Seq[(Section, Long)] = {
@@ -46,6 +48,9 @@ case class InnerTransformationContext(sections: Seq[(Section, Long)],
         }
       case None => (0, 0)
     }
+
+  lazy val blockCoverageDataOffsetAndLength: (Long, Int) =
+    (lastDataOffsetAndLength._1 + AFLCoverageSize, blockCount + 1)
 
   lazy val sortedSections: Seq[Section] =
     reduceSections(sections.map(t => Option(t)).toVector,
