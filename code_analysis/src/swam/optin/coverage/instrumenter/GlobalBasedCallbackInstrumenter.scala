@@ -9,7 +9,11 @@ import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization.writePretty
 import scodec.Attempt
 import swam.binary.custom.{FunctionNames, NameSectionHandler, Names}
-import swam.code_analysis.coverage.utils.{CoverageMetadaDTO, InnerTransformationContext}
+import swam.code_analysis.coverage.utils.{
+  CoverageMetadaDTO,
+  GlobalBasedTransformationContext,
+  InnerTransformationContext
+}
 import swam.syntax._
 
 /**
@@ -18,7 +22,7 @@ import swam.syntax._
 class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(implicit F: MonadError[F, Throwable])
     extends Instrumenter[F] {
 
-  def instrumentVector(instr: Vector[Inst], ctx: InnerTransformationContext): Vector[Inst] = {
+  def instrumentVector(instr: Vector[Inst], ctx: GlobalBasedTransformationContext): Vector[Inst] = {
 
     instr.zipWithIndex.flatMap {
 
@@ -42,7 +46,7 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
         instructionCount += 1
         blockCount += 1
         id += 1
-        Vector(BrIf(lbl), i32.Const(id), Call(ctx.cbFuncIndex))
+        Vector(BrIf(lbl), Nop) // TODO
       }
 
       case (x, i) => {
@@ -50,43 +54,10 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
         if (i == 0) {
           blockCount += 1
           id += 1
-          Vector(i32.Const(id), Call(ctx.cbFuncIndex), x)
+          Vector(Nop, x) // TODO
         } else
           Vector(x)
       }
-
-    }
-  }
-
-  def redefineMem(instr: Vector[Inst], ctx: InnerTransformationContext): Vector[Inst] = {
-
-    instr.flatMap {
-
-      case i32.Load(align, offset) =>
-        Vector(i32.Load(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
-      case i64.Load(align, offset) =>
-        Vector(i64.Load(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
-      case f32.Load(align, offset) =>
-        Vector(f32.Load(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
-      case f64.Load(align, offset) =>
-        Vector(f64.Load(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
-      case i32.Store(align, offset) =>
-        Vector(i32.Store(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
-      case i64.Store(align, offset) =>
-        Vector(i64.Store(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
-      case f32.Store(align, offset) =>
-        Vector(f32.Store(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
-      case f64.Store(align, offset) =>
-        Vector(f64.Store(align, offset + ctx.AFLCoverageSize + ctx.blockCount + 1))
-      case Block(tpe, instr) =>
-        Vector(Block(tpe, redefineMem(instr, ctx)))
-      case Loop(tpe, instr) =>
-        Vector(Loop(tpe, redefineMem(instr, ctx)))
-      case If(tpe, thn, els) =>
-        Vector(If(tpe, redefineMem(thn, ctx), redefineMem(els, ctx)))
-
-      case x =>
-        Vector(x)
 
     }
   }
@@ -97,22 +68,7 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
 
     val r = for {
       firstPass <- sections.zipWithIndex
-        .fold(
-          InnerTransformationContext(Seq(),
-                                     None,
-                                     None,
-                                     None,
-                                     None,
-                                     None,
-                                     None,
-                                     None,
-                                     None,
-                                     None,
-                                     0,
-                                     -1,
-                                     1 << 21,
-                                     0,
-                                     coverageMemSize)) {
+        .fold(GlobalBasedTransformationContext(Seq(), None, None, None, None, None, None, None, None, None, 0, 0)) {
           case (ctx, (c: Section.Types, i)) =>
             ctx.copy(
               types = Option((c, i))
@@ -168,45 +124,13 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
             )
         }
 
-      ctx = firstPass.copy(
-        cbFuncIndex = firstPass.functions.get._1.functions.length + (firstPass.imported match {
-          case Some(x) =>
-            x._1.imports.collect {
-              case x: Import.Function => x
-            }.length
-          case None => 0
-        }), // Set new function index
-        functions = Option(
-          (
-            Section.Functions(firstPass.functions.get._1.functions :+ firstPass.tpeIndex),
-            firstPass.functions.get._2
-          ))
-      )
+      ctx = firstPass
 
       ctxExports = ctx.copy(
-        previousIdGlobalIndex = ctx.globals.get._1.globals.length,
-        names = ctx.names match { // The names section is not needed, only debugging reasons, TODO remove after
-          case Some(m) => {
-            val decoded =
-              NameSectionHandler.codec.decodeValue(m._1.payload) match {
-                case Attempt.Successful(names) =>
-                  Option(Names(names.subsections.collect {
-                    case FunctionNames(fnames) =>
-                      FunctionNames(fnames.updated(ctx.cbFuncIndex, "__swam_cb"))
-                  }))
-                case _ => None // simply ignore malformed name section
-              }
-            decoded match {
-              case Some(d) =>
-                NameSectionHandler.codec.encode(d) match {
-                  case Attempt.Successful(bv) => Option((Section.Custom("name", bv), m._2))
-                  case Attempt.Failure(err)   => ctx.names
-                }
-              case None => ctx.names
-            }
-
-          }
-          case None => ctx.names
+        names = ctx.names,
+        AFLOffset = ctx.globals match {
+          case Some(g) => g._1.globals.length
+          case None    => 0
         }
       )
 
@@ -219,46 +143,24 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
            ctxExports.code.get._2)),
         exports = Option(
           Section.Exports( // TODO patch with mnatch option in case the section does not exist
-            ctxExports.exports.get._1.exports :+
-              Export("__swam_cb", ExternalKind.Function, ctxExports.cbFuncIndex) // Callback function
-              :+ Export("__previous_id", ExternalKind.Global, ctxExports.previousIdGlobalIndex) // Previous id index
-              :+ Export("__afl_coverage_offset",
-                        ExternalKind.Global,
-                        ctxExports.previousIdGlobalIndex + 1) // AFL Coverage memory offset
-              :+ Export("__afl_coverage_size",
-                        ExternalKind.Global,
-                        ctxExports.previousIdGlobalIndex + 2) // AFL Coverage memory size
-              :+ Export("__block_coverage_offset",
-                        ExternalKind.Global,
-                        ctxExports.previousIdGlobalIndex + 3) // AFL Coverage memory size
-              :+ Export("__block_coverage_size",
-                        ExternalKind.Global,
-                        ctxExports.previousIdGlobalIndex + 4) // AFL Coverage memory size
-              :+ Export("__mem",
-                        ExternalKind.Memory,
-                        0) // Export memory, by default index 0 since only one memory is allowed
-          ),
+            ctxExports.exports.get._1.exports.concat(
+              Range(0, blockCount).map(i => Export(s"cg${i}", ExternalKind.Global, i + ctxExports.AFLOffset))
+            )),
           ctxExports.exports.get._2
         ),
-        blockCount = blockCount,
-        AFLOffset = (1 << 26) + 10
+        blockCount = blockCount
       )
 
       dataCtx = wrappingCode.copy(
         globals = Option(
           Section.Globals(
-            wrappingCode.globals.get._1.globals
-              :+ Global(GlobalType(ValType.I32, Mut.Var), Vector(i32.Const(-1))) // Previous ID
-              :+ Global(
-                GlobalType(ValType.I32, Mut.Const),
-                Vector(i32.Const(wrappingCode.AFLOffset))
-              ) // MemoryOffset to collect AFL coverage memory
-              :+ Global(GlobalType(ValType.I32, Mut.Const), Vector(i32.Const(coverageMemSize))) // AFLMemorySize
-              :+ Global(
-                GlobalType(ValType.I32, Mut.Const),
-                Vector(i32.Const(coverageMemSize + wrappingCode.AFLOffset))
-              ) // BLOCK Coverage offset
-              :+ Global(GlobalType(ValType.I32, Mut.Const), Vector(i32.Const(blockCount + 1))) // BLOCK Coverage size
+            wrappingCode.globals match {
+              case Some(g) =>
+                g._1.globals.concat(Range(0, blockCount).map(_ =>
+                  Global(GlobalType(ValType.I32, Mut.Var), Vector(i32.Const(0)))))
+              case None =>
+                Range(0, blockCount).map(_ => Global(GlobalType(ValType.I32, Mut.Var), Vector(i32.Const(0)))).toVector
+            }
           ),
           wrappingCode.globals.get._2
         ),
@@ -302,11 +204,9 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
           new CoverageMetadaDTO(
             instructionCount,
             blockCount,
-            1,
+            2,
             t.AFLOffset,
-            t.AFLCoverageSize,
-            t.AFLCoverageSize + t.AFLOffset,
-            blockCount + 1
+            -1
           )))
 
       //System.err.println(s"Number of instrumented blocks $blockCount. Number of instructions $instructionCount")
