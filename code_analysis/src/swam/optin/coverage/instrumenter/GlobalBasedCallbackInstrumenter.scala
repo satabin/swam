@@ -46,7 +46,7 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
         instructionCount += 1
         blockCount += 1
         id += 1
-        Vector(BrIf(lbl), Nop) // TODO
+        Vector(BrIf(lbl), i32.Const(1), GlobalSet(id + ctx.AFLOffset - 1))
       }
 
       case (x, i) => {
@@ -54,7 +54,7 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
         if (i == 0) {
           blockCount += 1
           id += 1
-          Vector(Nop, x) // TODO
+          Vector(i32.Const(1), GlobalSet(id + ctx.AFLOffset - 1), x)
         } else
           Vector(x)
       }
