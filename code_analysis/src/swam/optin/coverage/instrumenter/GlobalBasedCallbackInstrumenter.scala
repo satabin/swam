@@ -8,16 +8,14 @@ import fs2.Stream
 import org.json4s.DefaultFormats
 import org.json4s.jackson.Serialization.writePretty
 import scodec.Attempt
-import scodec.bits.BitVector
 import swam.binary.custom.{FunctionNames, NameSectionHandler, Names}
-import swam.code_analysis.coverage.utils.{CoverageMetadaDTO, InnerTransformationContext, JSTransformationContext}
+import swam.code_analysis.coverage.utils.{CoverageMetadaDTO, InnerTransformationContext}
 import swam.syntax._
-import swam.syntax.i32.Xor
 
 /**
   * @author Javier Cabrera-Arteaga on 2020-10-16
   */
-class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(implicit F: MonadError[F, Throwable])
+class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(implicit F: MonadError[F, Throwable])
     extends Instrumenter[F] {
 
   def instrumentVector(instr: Vector[Inst], ctx: InnerTransformationContext): Vector[Inst] = {
@@ -288,46 +286,7 @@ class InnerMemoryCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
           }
         ),
         code = Option(
-          Section.Code(
-            wrappingCode.code.get._1.bodies
-              :+ FuncBody(
-                Vector(),
-                Vector(
-                  /*LocalGet(0), // l0
-                  i32.Const(1), // 1, l0
-                  i32.Store(2, wrappingCode.AFLOffset + coverageMemSize), // mem[offset + l0] = 1
-                  GlobalGet(wrappingCode.previousIdGlobalIndex),
-                  i32.Const(-1),
-                  i32.GtS,
-                  If(
-                    BlockType.NoType,
-                    Vector(
-                      LocalGet(0), // l0
-                      GlobalGet(wrappingCode.previousIdGlobalIndex), // g0, lo
-                      Xor, // gx ^ l0
-                      i32.Const(coverageMemSize), // size, gx ^ l0
-                      i32.RemU, //  gx ^ l0 % size
-                      LocalGet(0), // l0, gx ^ l0
-                      GlobalGet(wrappingCode.previousIdGlobalIndex),
-                      Xor, // gx ^ l0, gx ^ l0,
-                      i32.Const(coverageMemSize), // size, gx ^ l0, gx ^ l0 % size
-                      i32.RemU, //  gx ^ l0 % size, gx ^ l0 % size
-                      i32.Load(2, wrappingCode.AFLOffset), // mem[gx ^ l0], gx ^ l0
-                      i32.Const(1), // 1, mem[gx ^ l0], gx ^ l0
-                      i32.Add, // 1 + mem[gx ^ l0], gx ^ l0
-                      i32.Store(2, wrappingCode.AFLOffset), // mem[gx ^ l0] = 1 + mem[gx ^ l0]
-                      LocalGet(0), // l0
-                      i32.Const(1), // l0, 1
-                      i32.ShrS, // l0 >> 1
-                      GlobalSet(wrappingCode.previousIdGlobalIndex) // g0 = l0 >> 1
-                    ),
-                    Vector(
-                      LocalGet(0),
-                      GlobalSet(wrappingCode.previousIdGlobalIndex) // g0 = l0 >> 1
-                    )
-                  ) */ Nop /*endof*/
-                )
-              )),
+          Section.Code(wrappingCode.code.get._1.bodies),
           wrappingCode.code.get._2
         )
       )

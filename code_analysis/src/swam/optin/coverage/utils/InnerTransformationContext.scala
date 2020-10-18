@@ -22,20 +22,8 @@ case class InnerTransformationContext(sections: Seq[(Section, Long)],
                                       previousIdGlobalIndex: Int,
                                       blockCount: Int,
                                       AFLOffset: Int,
-                                      AFLCoverageSize: Int) {
-
-  def reduceSections(prepend: Vector[Option[(Section, Long)]],
-                     sections: Option[(Section, Long)]*): Seq[(Section, Long)] = {
-
-    val v: Vector[(Section, Long)] = Vector()
-    prepend.concat(sections).foldLeft(v) {
-      case (cumul, o) =>
-        o match {
-          case Some(x) => cumul.appended(x)
-          case None    => cumul
-        }
-    }
-  }
+                                      AFLCoverageSize: Int)
+    extends TransformationContext {
 
   lazy val sortedSections: Seq[Section] =
     reduceSections(sections.map(t => Option(t)).toVector,

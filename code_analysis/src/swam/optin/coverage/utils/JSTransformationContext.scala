@@ -16,22 +16,20 @@ case class JSTransformationContext(sections: Seq[(Section, Long)],
                                    exports: Option[(Section.Exports, Long)],
                                    names: Option[(Section.Custom, Long)],
                                    functions: Option[(Section.Functions, Long)],
-                                   elements: Option[(Section.Elements, Long)]) {
+                                   elements: Option[(Section.Elements, Long)])
+    extends TransformationContext {
 
   lazy val cbFuncIndex: Int = numberOfImportedFunctions - 1
 
   lazy val sortedSections: Seq[Section] =
-    names match {
-      case Some(m) =>
-        (redefinedTypes +: imported.get +: elements.get +: functions.get +: m +: sections :+ code.get :+ exports.get)
-          .sortBy(t => t._2)
-          .map(t => t._1)
-      case None =>
-        (redefinedTypes +: imported.get +: elements.get +: functions.get +: sections :+ code.get :+ exports.get)
-          .sortBy(t => t._2)
-          .map(t => t._1)
-
-    }
+    reduceSections(sections.map(t => Option(t)).toVector,
+                   Option(redefinedTypes),
+                   imported,
+                   elements,
+                   functions,
+                   names,
+                   code,
+                   exports).sortBy(t => t._2).map(t => t._1)
 
   lazy val numberOfImportedFunctions: Int = imported.get._1.imports.collect {
     case x: Import.Function => x

@@ -16,6 +16,12 @@ import swam.syntax.Section
   * @author Javier Cabrera-Arteaga on 2020-10-16
   */
 abstract class Instrumenter[F[_]](implicit F: MonadError[F, Throwable]) {
+
+  val ran = scala.util.Random
+  var blockCount = 0
+  var instructionCount = 0
+  var id = 0
+
   def instrument(sections: Stream[F, Section]): Stream[F, Section]
 }
 

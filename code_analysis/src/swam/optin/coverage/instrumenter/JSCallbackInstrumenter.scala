@@ -35,11 +35,6 @@ import org.json4s.jackson.Serialization.writePretty
   */
 class JSCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]) extends Instrumenter[F] {
 
-  val ran = scala.util.Random
-  var blockCount = 0
-  var instructionCount = 0
-  var id = 0
-
   //TODO fix the count of instructions
 
   def instrumentVector(instr: Vector[Inst], ctx: JSTransformationContext): Vector[Inst] = {
@@ -99,24 +94,10 @@ class JSCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]) extends
         .fold(JSTransformationContext(Seq(), None, None, None, None, None, None, None)) {
           case (ctx, (c: Section.Types, i)) =>
             ctx.copy(
-              sections = ctx.sections,
-              types = Option((c, i)),
-              imported = ctx.imported,
-              code = ctx.code,
-              exports = ctx.exports,
-              names = ctx.names,
-              functions = ctx.functions,
-              elements = ctx.elements
+              types = Option((c, i))
             )
           case (ctx, (c: Section.Elements, i)) => {
             ctx.copy(
-              sections = ctx.sections,
-              types = ctx.types,
-              imported = ctx.imported,
-              code = ctx.code,
-              exports = ctx.exports,
-              names = ctx.names,
-              functions = ctx.functions,
               elements = Option((c, i))
             )
           }
@@ -125,109 +106,50 @@ class JSCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]) extends
               c match {
                 case Section.Custom("name", _) =>
                   ctx.copy(
-                    sections = ctx.sections,
-                    types = ctx.types,
-                    imported = ctx.imported,
-                    code = ctx.code,
-                    exports = ctx.exports,
-                    names = Option((c, i)),
-                    functions = ctx.functions,
-                    elements = ctx.elements
+                    names = Option((c, i))
                   )
                 case _ =>
                   ctx.copy(
-                    sections = ctx.sections.appended((c, i)),
-                    types = ctx.types,
-                    imported = ctx.imported,
-                    code = ctx.code,
-                    exports = ctx.exports,
-                    functions = ctx.functions,
-                    elements = ctx.elements
+                    sections = ctx.sections.appended((c, i))
                   )
               }
 
             }
           case (ctx, (c: Section.Functions, i)) =>
             ctx.copy(
-              sections = ctx.sections,
-              types = ctx.types,
-              code = ctx.code,
-              imported = ctx.imported,
-              exports = ctx.exports,
-              names = ctx.names,
-              functions = Option((c, i)),
-              elements = ctx.elements
+              functions = Option((c, i))
             )
           case (ctx, (c: Section.Imports, i)) => {
             ctx.copy(
-              sections = ctx.sections,
-              types = ctx.types,
-              code = ctx.code,
               imported =
-                Option((Section.Imports(c.imports.appended(Import.Function("swam", "swam_cb", ctx.tpeIndex))), i)),
-              exports = ctx.exports,
-              names = ctx.names,
-              functions = ctx.functions,
-              elements = ctx.elements
+                Option((Section.Imports(c.imports.appended(Import.Function("swam", "swam_cb", ctx.tpeIndex))), i))
             )
           }
           case (ctx, (c: Section.Code, i)) => {
             ctx.copy(
-              sections = ctx.sections,
-              types = ctx.types,
-              imported = ctx.imported,
-              code = Option((c, i)),
-              exports = ctx.exports,
-              names = ctx.names,
-              functions = ctx.functions,
-              elements = ctx.elements
+              code = Option((c, i))
             )
           }
           case (ctx, (c: Section.Exports, i)) =>
             ctx.copy(
-              sections = ctx.sections,
-              types = ctx.types,
-              imported = ctx.imported,
-              code = ctx.code,
-              exports = Option((c, i)),
-              names = ctx.names,
-              functions = ctx.functions,
-              elements = ctx.elements
+              exports = Option((c, i))
             )
           case (ctx, (c: Section, i)) =>
             ctx.copy(
-              sections = ctx.sections.appended((c, i)),
-              types = ctx.types,
-              imported = ctx.imported,
-              code = ctx.code,
-              exports = ctx.exports,
-              names = ctx.names,
-              functions = ctx.functions,
-              elements = ctx.elements
+              sections = ctx.sections.appended((c, i))
             )
         }
 
       ctx = firstPass.copy(
-        sections = firstPass.sections,
-        types = firstPass.types,
-        code = firstPass.code,
         imported =
           if (firstPass.imported.isEmpty)
             Option(
               (Section.Imports(Vector(Import.Function("swam", "swam_cb", firstPass.tpeIndex))),
                firstPass.imported.get._2))
           else
-            firstPass.imported,
-        exports = firstPass.exports,
-        names = firstPass.names,
-        functions = firstPass.functions,
-        elements = firstPass.elements
+            firstPass.imported
       )
       ctxExports = ctx.copy(
-        sections = ctx.sections,
-        types = ctx.types,
-        code = ctx.code,
-        imported = ctx.imported,
         exports = Option(
           (Section.Exports(
              ctx.exports.get._1.exports.map(x =>
@@ -270,18 +192,12 @@ class JSCallbackInstrumenter[F[_]](implicit F: MonadError[F, Throwable]) extends
       )
 
       wrappingCode = ctxExports.copy(
-        sections = ctxExports.sections,
-        types = ctxExports.types,
         code = Option(
           (Section.Code(
              ctxExports.code.get._1.bodies
                .map(f => FuncBody(f.locals, instrumentVector(f.code, ctxExports)))
            ),
            ctxExports.code.get._2)),
-        imported = ctxExports.imported,
-        exports = ctxExports.exports,
-        names = ctxExports.names,
-        functions = ctxExports.functions,
         elements = Option(
           (Section.Elements(
              ctx.elements.get._1.elements
