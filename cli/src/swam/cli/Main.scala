@@ -27,7 +27,6 @@ import swam.binary.custom.{FunctionNames, ModuleName}
 import swam.cli.Main.wasiOption
 import swam.code_analysis.coverage.instrument.{
   GlobalBasedCallbackInstrumenter,
-  InnerMemoryCallbackInstrumenter,
   InstrumentationType,
   Instrumenter,
   JSCallbackInstrumenter
@@ -341,7 +340,6 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
                 instrumenter: Option[Instrumenter[IO]] = if (exportInstrumented != null)
                   instrumentationType match {
                     case InstrumentationType.JSCallback     => Option(new JSCallbackInstrumenter[IO]())
-                    case InstrumentationType.InnerCallback  => Option(new InnerMemoryCallbackInstrumenter[IO]())
                     case InstrumentationType.GlobalCallback => Option(new GlobalBasedCallbackInstrumenter[IO]())
                   }
                 else None

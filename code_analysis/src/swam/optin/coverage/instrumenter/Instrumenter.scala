@@ -29,7 +29,6 @@ sealed trait InstrumentationType extends EnumEntry with EnumEntry.Hyphencase
 object InstrumentationType extends Enum[InstrumentationType] {
 
   case object JSCallback extends InstrumentationType
-  case object InnerCallback extends InstrumentationType
   case object GlobalCallback extends InstrumentationType
 
   def values: IndexedSeq[InstrumentationType] = findValues
