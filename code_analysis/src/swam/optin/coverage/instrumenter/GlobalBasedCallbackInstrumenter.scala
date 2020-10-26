@@ -24,41 +24,40 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
 
   def instrumentVector(instr: Vector[Inst], ctx: GlobalBasedTransformationContext): Vector[Inst] = {
 
-    instr.zipWithIndex.flatMap {
+    def addCallback(): Vector[Inst] = {
+      id += 1
+      blockCount += 1
+      Vector(i32.Const(1), GlobalSet(id + ctx.AFLOffset - 1 + ctx.pad))
+    }
 
-      case (CallIndirect(funcidx), i) => {
-        instructionCount += 1
-        Vector(CallIndirect(funcidx))
-      }
-      case (Block(tpe, instr), i) => {
-        instructionCount += 1
-        Vector(Block(tpe, instrumentVector(instr, ctx)))
-      }
-      case (Loop(tpe, instr), i) => {
-        instructionCount += 1
-        Vector(Loop(tpe, instrumentVector(instr, ctx)))
-      }
-      case (If(tpe, thn, els), i) => {
-        instructionCount += 1
-        Vector(If(tpe, instrumentVector(thn, ctx), instrumentVector(els, ctx)))
-      }
-      case (BrIf(lbl), i) => {
-        instructionCount += 1
-        blockCount += 1
-        id += 1
-        Vector(BrIf(lbl), i32.Const(1), GlobalSet(id + ctx.AFLOffset - 1))
-      }
-
-      case (x, i) => {
-        instructionCount += 1
-        if (i == 0) {
+    def instrumentInstruction(i: Inst): Vector[Inst] = {
+      i match {
+        case CallIndirect(funcidx) =>
+          Vector(CallIndirect(funcidx))
+        case Block(tpe, instr) => {
+          Vector(Block(tpe, instrumentVector(instr, ctx))).concat(addCallback())
+        }
+        case Loop(tpe, instr) => {
+          Vector(Loop(tpe, instrumentVector(instr, ctx))).concat(addCallback())
+        }
+        case If(tpe, thn, els) =>
+          Vector(If(tpe, instrumentVector(thn, ctx), instrumentVector(els, ctx)))
+        case BrIf(lbl) =>
           blockCount += 1
           id += 1
-          Vector(i32.Const(1), GlobalSet(id + ctx.AFLOffset - 1), x)
-        } else
+          Vector(BrIf(lbl)).concat(addCallback())
+        case x =>
           Vector(x)
       }
+    }
 
+    instr.zipWithIndex.flatMap {
+      case (ins, i) =>
+        instructionCount += 1
+        if (i == 0) {
+          addCallback().concat(instrumentInstruction(ins))
+        } else
+          instrumentInstruction(ins)
     }
   }
 
@@ -68,7 +67,7 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
 
     val r = for {
       firstPass <- sections.zipWithIndex
-        .fold(GlobalBasedTransformationContext(Seq(), None, None, None, None, None, None, None, None, None, 0, 0)) {
+        .fold(GlobalBasedTransformationContext(Seq(), None, None, None, None, None, None, None, None, None, 0, 0, 15)) {
           case (ctx, (c: Section.Types, i)) =>
             ctx.copy(
               types = Option((c, i))
@@ -129,7 +128,7 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
       ctxExports = ctx.copy(
         names = ctx.names,
         AFLOffset = ctx.globals match {
-          case Some(g) => g._1.globals.length
+          case Some(g) => g._1.globals.length + 1
           case None    => 0
         }
       )
@@ -144,7 +143,10 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
         exports = Option(
           Section.Exports( // TODO patch with mnatch option in case the section does not exist
             ctxExports.exports.get._1.exports.concat(
-              Range(0, blockCount).map(i => Export(s"cg${i}", ExternalKind.Global, i + ctxExports.AFLOffset))
+              Range(0, blockCount).map(i =>
+                Export(s"cg${i + ctxExports.AFLOffset + ctxExports.pad}",
+                       ExternalKind.Global,
+                       i + ctxExports.AFLOffset + ctxExports.pad))
             )),
           ctxExports.exports.get._2
         ),
@@ -154,13 +156,15 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
       dataCtx = wrappingCode.copy(
         globals = Option(
           Section.Globals(
-            wrappingCode.globals match {
+            (wrappingCode.globals match {
               case Some(g) =>
-                g._1.globals.concat(Range(0, blockCount).map(_ =>
-                  Global(GlobalType(ValType.I32, Mut.Var), Vector(i32.Const(0)))))
+                g._1.globals
               case None =>
-                Range(0, blockCount).map(_ => Global(GlobalType(ValType.I32, Mut.Var), Vector(i32.Const(0)))).toVector
-            }
+                Vector()
+            }).concat(
+                Range(0, ctx.pad + 1).map(_ => Global(GlobalType(ValType.I32, Mut.Var), Vector(i32.Const(-1))))
+              ) // Padding control
+              .concat(Range(0, blockCount).map(_ => Global(GlobalType(ValType.I32, Mut.Var), Vector(i32.Const(0)))))
           ),
           wrappingCode.globals.get._2
         ),
@@ -205,8 +209,9 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16)(
             instructionCount,
             blockCount,
             2,
-            t.AFLOffset,
-            -1
+            t.AFLOffset + t.pad,
+            -1,
+            t.pad
           )))
 
       //System.err.println(s"Number of instrumented blocks $blockCount. Number of instructions $instructionCount")

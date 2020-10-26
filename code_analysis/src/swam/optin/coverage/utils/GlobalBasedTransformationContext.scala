@@ -19,7 +19,8 @@ case class GlobalBasedTransformationContext(sections: Seq[(Section, Long)],
                                             data: Option[(Section.Datas, Long)],
                                             globals: Option[(Section.Globals, Long)],
                                             blockCount: Int,
-                                            AFLOffset: Int)
+                                            AFLOffset: Int,
+                                            pad: Int)
     extends TransformationContext {
 
   lazy val sortedSections: Seq[Section] =
