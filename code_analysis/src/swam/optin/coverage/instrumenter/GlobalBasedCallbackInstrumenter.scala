@@ -19,7 +19,7 @@ import swam.syntax._
 /**
   * @author Javier Cabrera-Arteaga on 2020-10-16
   */
-class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16, val threshold: Int = 0)(
+class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16, val threshold: Int = 1)(
     implicit F: MonadError[F, Throwable])
     extends Instrumenter[F] {
 

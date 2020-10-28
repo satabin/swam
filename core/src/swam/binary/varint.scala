@@ -56,7 +56,7 @@ private class Varuint(bits: Int) extends Codec[Int] {
         else
           decode(n - 7, buffer.tail).map(_.map(s => x | (s << 7)))
       } else {
-        Attempt.failure(Err("integer too large"))
+        Attempt.failure(Err(s"integer too large"))
       }
     }
 
