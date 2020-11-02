@@ -18,13 +18,12 @@ package swam
 package binary
 
 import syntax._
-
 import scodec._
 import scodec.bits._
 import scodec.codecs._
 import scodec.codecs.literals._
 
-import scala.annotation.switch
+import scala.annotation.{switch, tailrec}
 
 trait InstCodec extends TypeCodec {
 
@@ -53,8 +52,8 @@ trait InstCodec extends TypeCodec {
 
   private val misc: Codec[Miscop] =
     mappedEnum(
-      byte,
-      Map[Miscop, Byte](
+      varuint32,
+      Map[Miscop, Int](
         i32.TruncSatSF32 -> 0x00,
         i32.TruncSatUF32 -> 0x01,
         i32.TruncSatSF64 -> 0x02,
@@ -92,8 +91,10 @@ trait InstCodec extends TypeCodec {
           (opcode: @switch) match {
             case OpCode.Unreachable =>
               Attempt.successful(DecodeResult(Unreachable, remainder))
-            case OpCode.Nop     => Attempt.successful(DecodeResult(Nop, remainder))
-            case OpCode.Block   => block.decode(remainder).map(_.map(Block))
+            case OpCode.Nop => Attempt.successful(DecodeResult(Nop, remainder))
+            case OpCode.Block => {
+              block.decode(remainder).map(_.map(Block))
+            }
             case OpCode.Loop    => block.decode(remainder).map(_.map(Loop))
             case OpCode.If      => ifThenElse.decode(remainder).map(_.map(If))
             case OpCode.Br      => varuint32.decode(remainder).map(_.map(Br))
@@ -433,16 +434,17 @@ trait InstCodec extends TypeCodec {
               Attempt.Failure(Err(f"Unknown opcode 0x$opcode%02x"))
           }
       }
-
+    var count = 0
     def encode(inst: Inst): Attempt[BitVector] =
       inst match {
         case Unreachable =>
           Attempt.successful(BitVector.fromByte(OpCode.Unreachable.toByte))
         case Nop => Attempt.successful(BitVector.fromByte(OpCode.Nop.toByte))
-        case Block(tpe, insts) =>
+        case Block(tpe, insts) => {
           block
             .encode(tpe ~ insts)
             .map(BitVector.fromByte(OpCode.Block.toByte) ++ _)
+        }
         case Loop(tpe, insts) =>
           block
             .encode(tpe ~ insts)

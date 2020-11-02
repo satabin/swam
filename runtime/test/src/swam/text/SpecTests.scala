@@ -37,12 +37,14 @@ object SpecTests extends TestSuite {
   implicit val cs = IO.contextShift(ExecutionContext.Implicits.global)
 
   def run(wast: File) = {
-    val positioner = new WastPositioner(wast.path)
     val script = parse(wast.contentAsString, TestScriptParser.script(_)).get.value
     Blocker[IO]
       .use { blocker =>
         val engine = new ScriptEngine(blocker)
-        engine.run(script, positioner)
+        for {
+          positioner <- WastPositioner[IO](wast.path, blocker)
+          res <- engine.run(script, positioner)
+        } yield res
       }
       .unsafeRunSync()
   }

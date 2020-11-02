@@ -19,21 +19,19 @@ package text
 
 import util._
 
+import fs2._
+
 import java.nio.file.Path
 
 import cats.effect._
+import cats.syntax.all._
 
 import scala.collection.Searching._
 import scala.collection.immutable.VectorBuilder
 
-import scala.io.Source
-
 /** Loads the content of the file and renders a [[TextFilePosition]].
   */
-class WastPositioner(file: Path) extends Positioner[TextFilePosition] {
-
-  private val lines =
-    IO(Source.fromFile(file.toFile, "UTF-8").getLines.toVector).unsafeRunSync()
+class WastPositioner(file: Path, lines: List[String]) extends Positioner[TextFilePosition] {
 
   private val offsets =
     lines
@@ -56,5 +54,14 @@ class WastPositioner(file: Path) extends Positioner[TextFilePosition] {
     val column = pos - offsets(line)
     TextFilePosition(file, line + 1, column, lines(line))
   }
+
+}
+
+object WastPositioner {
+
+  def apply[F[_]: Sync: ContextShift](file: Path, blocker: Blocker): F[WastPositioner] =
+    fs2.io.file.readAll[F](file, blocker, 1024).through(text.utf8Decode).through(text.lines).compile.toList.map {
+      lines => new WastPositioner(file, lines)
+    }
 
 }

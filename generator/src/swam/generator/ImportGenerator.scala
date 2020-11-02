@@ -6,7 +6,6 @@ import java.nio.file.{Paths, StandardOpenOption}
 import swam.ValType.{F32, F64, I32, I64}
 import swam.runtime.Import
 
-import scala.reflect.runtime.universe._
 import org.scalafmt.interfaces.Scalafmt
 import org.fusesource.scalate.TemplateEngine
 import cats.implicits._

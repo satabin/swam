@@ -27,7 +27,7 @@ val pureconfigVersion = "0.13.0"
 
 trait SwamModule extends ScalaModule with ScalafmtModule {
 
-  def scalaVersion = "2.13.2"
+  def scalaVersion = "2.13.3"
 
   def scalacOptions =
     Seq(
@@ -39,7 +39,7 @@ trait SwamModule extends ScalaModule with ScalafmtModule {
       "-Ywarn-unused:locals,imports",
       "-Ymacro-annotations",
       "-Wvalue-discard",
-      "-Xfatal-warnings"
+      //"-Xfatal-warnings"
     )
 
   def scalacPluginIvyDeps =

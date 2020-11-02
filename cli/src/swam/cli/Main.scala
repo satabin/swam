@@ -49,6 +49,9 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
   val wasmFile =
     Opts.argument[Path](metavar = "wasm")
 
+  val readChunkSize =
+    Opts.option[Int]("read-chunk-size", "Size in bytes of the WASM file read buffer (default 1024)").withDefault(1024)
+
   val func_name =
     Opts.argument[String](metavar = "functionName")
 
@@ -76,6 +79,13 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
 
   val wasi =
     Opts.flag("wasi", "Program is using wasi (default false)", short = "W").orFalse
+
+  val wasiOptions =
+    Opts
+      .options[WasiOption](
+        "wasi-opt",
+        s"Implementation specific wasi options. Possible values are: ${WasiOption.values.map(_.entryName).mkString(", ")}")
+      .orEmpty
 
   val time =
     Opts.flag("time", "Measure execution time (default false)", short = "C").orFalse
@@ -258,6 +268,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     }
 
   val decompileOpts: Opts[Options] = Opts.subcommand("decompile", "Decompile a wasm file") {
+    (wasmFile, textual, out.orNone, readChunkSize).mapN(Decompile(_, _, _, _))
     (textual, wasmFile, out.orNone, readChunkSizeOpt).mapN { (textual, wasm, out, chunkSize) =>
       Decompile(wasm, textual, out, chunkSize)
     }
@@ -269,6 +280,7 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
     }
 
   val validateOpts: Opts[Options] = Opts.subcommand("validate", "Validate a wasm file") {
+    (wasmFile, wat, dev, readChunkSize).mapN(Validate(_, _, _, _))
     (wasmFile, wat, dev, readChunkSizeOpt).mapN(Validate)
   }
 
@@ -348,9 +360,11 @@ object Main extends CommandIOApp(name = "swam-cli", header = "Swam from the comm
 
                 tcompiler <- swam.text.Compiler[IO](blocker)
                 module = if (wat) tcompiler.stream(file, debug, blocker) else engine.sections(file, blocker)
+                _ <- IO(println("Module parsed"))
                 _ <- if (exportInstrumented != null) {
 
                   for {
+                    _ <- IO(println("Starting coding"))
                     _ <- (Stream.emits(ModuleStream.header.toArray) ++ module
                       .through(coverageListener.instrument)
                       .through(ModuleStream.encoder.encode[IO])

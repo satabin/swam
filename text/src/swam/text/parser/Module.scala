@@ -21,7 +21,6 @@ package parser
 import unresolved._
 import fastparse._
 import WastWhitespace._
-import swam.text.parser.Instructions.table_func
 
 object ModuleParsers {
 

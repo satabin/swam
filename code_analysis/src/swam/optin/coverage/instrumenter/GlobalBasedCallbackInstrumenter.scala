@@ -40,8 +40,6 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16, 
 
     def instrumentInstruction(i: Inst, idx: Int): Vector[Inst] = {
       i match {
-        case CallIndirect(funcidx) =>
-          Vector(CallIndirect(funcidx))
         case Block(tpe, instr) => {
           Vector(Block(tpe, instrumentVector(instr, ctx))).concat(addCallback())
         }
@@ -71,6 +69,7 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16, 
 
   def instrument(sections: Stream[F, Section]): Stream[F, Section] = {
 
+    println("Starting instrumentation")
     val r = for {
       firstPass <- sections.zipWithIndex
         .fold(GlobalBasedTransformationContext(Seq(), None, None, None, None, None, None, None, None, None, 0, 0, 50)) {
@@ -88,6 +87,7 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16, 
           }
           case (ctx, (c: Section.Custom, i)) => // Patch removing custom section
             {
+              println("Parsing name section")
               c match {
                 case Section.Custom("name", _) =>
                   ctx.copy(
@@ -133,9 +133,12 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16, 
 
       ctxExports = ctx.copy(
         names = ctx.names,
-        AFLOffset = ctx.globals match {
-          case Some(g) => g._1.globals.length + 1
-          case None    => 0
+        AFLOffset = {
+          println("First pass done")
+          ctx.globals match {
+            case Some(g) => g._1.globals.length + 1
+            case None    => 0
+          }
         }
       )
 
@@ -176,10 +179,13 @@ class GlobalBasedCallbackInstrumenter[F[_]](val coverageMemSize: Int = 1 << 16, 
         ),
         data = Option(
           Section.Datas(
-            (wrappingCode.data match {
-              case Some(realData) =>
-                realData._1.data
-              case None => Vector()
+            ({
+              println("Writing the data")
+              wrappingCode.data match {
+                case Some(realData) =>
+                  realData._1.data
+                case None => Vector()
+              }
             }) /*.appended(Data(
                 0, // In the current version of WebAssembly, at most one memory is allowed in a module. Consequently, the only valid memidxmemidx is 00.
                 Vector(i32.Const(wrappingCode.AFLOffset)),

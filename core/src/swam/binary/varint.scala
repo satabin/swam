@@ -56,16 +56,18 @@ private class Varuint(bits: Int) extends Codec[Int] {
         else
           decode(n - 7, buffer.tail).map(_.map(s => x | (s << 7)))
       } else {
-        Attempt.failure(Err(s"integer too large"))
+        //new Exception().printStackTrace(System.out)
+        Attempt.failure(Err(s"Varuint integer too large"))
       }
     }
 
   def encode(value: Int): Attempt[BitVector] =
     if (value > MaxValue)
       Attempt.failure(Err(s"$value is greater than maximum value $MaxValue for $description"))
-    else if (value < MinValue)
+    else if (value < MinValue) {
+
       Attempt.failure(Err(s"$value is less than minimum value $MinValue for $description"))
-    else
+    } else
       Attempt.successful(encode(value, ByteVector.empty))
 
   @tailrec
@@ -124,7 +126,7 @@ private class Varint(bits: Int) extends Codec[Long] {
         else
           decode(n - 7, buffer.tail).map(s => s.map(s => x | (s << 7)))
       } else {
-        Attempt.failure(Err("integer too large"))
+        Attempt.failure(Err("Varint integer too large"))
       }
     }
 

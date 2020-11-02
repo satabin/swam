@@ -40,7 +40,7 @@ package object string {
               else
                 m.readByte(i).flatMap { b =>
                   if (b == 0) {
-                    F.pure(Right(new String(bytes.result, "ASCII")))
+                    F.pure(Right(new String(bytes.result(), "ASCII")))
                   } else {
                     m.readByte(i).map { b =>
                       bytes += b
@@ -73,7 +73,7 @@ package object string {
                 val bytes = ArrayBuilder.make[Byte]
                 F.tailRecM(0) { i =>
                   if (i >= ssize)
-                    F.pure(Right(new String(bytes.result, "UTF8")))
+                    F.pure(Right(new String(bytes.result(), "UTF8")))
                   else
                     m.readByte(idx + 4 + i).map { b =>
                       bytes += b

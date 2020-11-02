@@ -53,7 +53,7 @@ class Compiler[F[_]] private (validator: Validator[F])(implicit val F: Sync[F]) 
   def stream(module: unresolved.Module, debug: Boolean): Stream[F, Section] =
     Stream.force(resolver.resolve(module, debug))
 
-  def stream(file: Path, debug: Boolean, blocker: Blocker, chunkSize: Int = 1024)(
+  def stream(file: Path, debug: Boolean, blocker: Blocker, chunkSize: Int = 1 << 20)(
       implicit cs: ContextShift[F]): Stream[F, Section] =
     Stream.force(for {
       input <- readFile(file, blocker, chunkSize)
