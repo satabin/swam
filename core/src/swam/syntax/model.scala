@@ -21,9 +21,33 @@ import scodec.bits.BitVector
 
 case class Global(tpe: GlobalType, init: Expr)
 
-case class Elem(table: TableIdx, offset: Expr, init: Vector[FuncIdx])
+sealed trait ElemExpr {
+  def isFuncRef: Boolean
+}
+object ElemExpr {
+  case object RefNull extends ElemExpr {
+    def isFuncRef: Boolean = false
+  }
+  case class RefFunc(idx: FuncIdx) extends ElemExpr {
+    def isFuncRef: Boolean = true
+  }
+}
 
-case class Data(data: MemIdx, offset: Expr, init: BitVector)
+sealed trait ElemMode
+object ElemMode {
+  case object Passive extends ElemMode
+  case class Active(table: TableIdx, offset: Expr) extends ElemMode
+}
+
+case class Elem(tpe: ElemType, init: Vector[ElemExpr], mode: ElemMode)
+
+sealed trait DataMode
+object DataMode {
+  case object Passive extends DataMode
+  case class Active(memory: MemIdx, offset: Expr) extends DataMode
+}
+
+case class Data(init: BitVector, mode: DataMode)
 
 sealed trait ExternalKind
 object ExternalKind {
@@ -46,6 +70,7 @@ object Section {
   case class Elements(elements: Vector[Elem]) extends Section(9)
   case class Code(bodies: Vector[FuncBody]) extends Section(10)
   case class Datas(data: Vector[Data]) extends Section(11)
+  case class DataCount(count: Int) extends Section(12)
   case class Custom(name: String, payload: BitVector) extends Section(0)
 }
 

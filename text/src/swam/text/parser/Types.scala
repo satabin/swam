@@ -87,4 +87,11 @@ object Types {
     P(
       (("(" ~ word("type") ~ index ~ ")").? ~ params ~ results)
         .map(TypeUse.tupled))
+
+  def tableuse[_: P]: P[Index] =
+    P("(" ~ word("table") ~ index ~ ")").?.map(_.getOrElse(Left(0)))
+
+  def memuse[_: P]: P[Index] =
+    P("(" ~ word("memory") ~ index ~ ")").?.map(_.getOrElse(Left(0)))
+
 }

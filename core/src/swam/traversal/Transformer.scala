@@ -427,6 +427,13 @@ class Transformer[F[_], Ctx](implicit F: Monad[F]) {
   val globalSetTransform: (Ctx, GlobalSet) => F[(Ctx, Inst)] = id
   val memorySizeTransform: (Ctx, MemorySize.type) => F[(Ctx, Inst)] = id
   val memoryGrowTransform: (Ctx, MemoryGrow.type) => F[(Ctx, Inst)] = id
+  val memoryInitTransform: (Ctx, MemoryInit) => F[(Ctx, Inst)] = id
+  val dataDropTransform: (Ctx, DataDrop) => F[(Ctx, Inst)] = id
+  val memoryCopyTransform: (Ctx, MemoryCopy.type) => F[(Ctx, Inst)] = id
+  val memoryFillTransform: (Ctx, MemoryFill.type) => F[(Ctx, Inst)] = id
+  val tableInitTransform: (Ctx, TableInit) => F[(Ctx, Inst)] = id
+  val elemDropTransform: (Ctx, ElemDrop) => F[(Ctx, Inst)] = id
+  val tableCopyTransform: (Ctx, TableCopy.type) => F[(Ctx, Inst)] = id
   val nopTransform: (Ctx, Nop.type) => F[(Ctx, Inst)] = id
   val unreachableTransform: (Ctx, Unreachable.type) => F[(Ctx, Inst)] = id
   val blockTransform: (Ctx, Block) => F[(Ctx, Inst)] = id
@@ -458,6 +465,13 @@ class Transformer[F[_], Ctx](implicit F: Monad[F]) {
     case inst @ VarInst(_)         => varInstTransform(ctx, inst)
     case inst: MemorySize.type     => memorySizeTransform(ctx, inst)
     case inst: MemoryGrow.type     => memoryGrowTransform(ctx, inst)
+    case inst @ MemoryInit(_)      => memoryInitTransform(ctx, inst)
+    case inst @ DataDrop(_)        => dataDropTransform(ctx, inst)
+    case inst: MemoryCopy.type     => memoryCopyTransform(ctx, inst)
+    case inst: MemoryFill.type     => memoryFillTransform(ctx, inst)
+    case inst @ TableInit(_)       => tableInitTransform(ctx, inst)
+    case inst @ ElemDrop(_)        => elemDropTransform(ctx, inst)
+    case inst: TableCopy.type      => tableCopyTransform(ctx, inst)
     case inst: Nop.type            => nopTransform(ctx, inst)
     case inst: Unreachable.type    => unreachableTransform(ctx, inst)
     case inst @ Block(_, _)        => blockTransform(ctx, inst)
@@ -2539,6 +2553,83 @@ object Transformer {
             else { (ctx: Ctx, t: MemoryGrow.type) =>
               first.memoryGrowTransform(ctx, t).flatMap {
                 case (ctx, t: MemoryGrow.type) => second.memoryGrowTransform(ctx, t)
+                case (ctx, t)                  => second.transform(ctx, t)
+              }
+            }
+          override val memoryInitTransform: (Ctx, MemoryInit) => F[(Ctx, Inst)] =
+            if (first.memoryInitTransform == id)
+              second.memoryInitTransform
+            else if (second.memoryInitTransform == id)
+              first.memoryInitTransform
+            else { (ctx: Ctx, t: MemoryInit) =>
+              first.memoryInitTransform(ctx, t).flatMap {
+                case (ctx, t: MemoryInit) => second.memoryInitTransform(ctx, t)
+                case (ctx, t)                  => second.transform(ctx, t)
+              }
+            }
+          override val dataDropTransform: (Ctx, DataDrop) => F[(Ctx, Inst)] =
+            if (first.dataDropTransform == id)
+              second.dataDropTransform
+            else if (second.dataDropTransform == id)
+              first.dataDropTransform
+            else { (ctx: Ctx, t: DataDrop) =>
+              first.dataDropTransform(ctx, t).flatMap {
+                case (ctx, t: DataDrop) => second.dataDropTransform(ctx, t)
+                case (ctx, t)                  => second.transform(ctx, t)
+              }
+            }
+          override val memoryCopyTransform: (Ctx, MemoryCopy.type) => F[(Ctx, Inst)] =
+            if (first.memoryCopyTransform == id)
+              second.memoryCopyTransform
+            else if (second.memoryCopyTransform == id)
+              first.memoryCopyTransform
+            else { (ctx: Ctx, t: MemoryCopy.type) =>
+              first.memoryCopyTransform(ctx, t).flatMap {
+                case (ctx, t: MemoryCopy.type) => second.memoryCopyTransform(ctx, t)
+                case (ctx, t)                  => second.transform(ctx, t)
+              }
+            }
+          override val memoryFillTransform: (Ctx, MemoryFill.type) => F[(Ctx, Inst)] =
+            if (first.memoryFillTransform == id)
+              second.memoryFillTransform
+            else if (second.memoryFillTransform == id)
+              first.memoryFillTransform
+            else { (ctx: Ctx, t: MemoryFill.type) =>
+              first.memoryFillTransform(ctx, t).flatMap {
+                case (ctx, t: MemoryFill.type) => second.memoryFillTransform(ctx, t)
+                case (ctx, t)                  => second.transform(ctx, t)
+              }
+            }
+          override val tableInitTransform: (Ctx, TableInit) => F[(Ctx, Inst)] =
+            if (first.tableInitTransform == id)
+              second.tableInitTransform
+            else if (second.tableInitTransform == id)
+              first.tableInitTransform
+            else { (ctx: Ctx, t: TableInit) =>
+              first.tableInitTransform(ctx, t).flatMap {
+                case (ctx, t: TableInit) => second.tableInitTransform(ctx, t)
+                case (ctx, t)                  => second.transform(ctx, t)
+              }
+            }
+          override val elemDropTransform: (Ctx, ElemDrop) => F[(Ctx, Inst)] =
+            if (first.elemDropTransform == id)
+              second.elemDropTransform
+            else if (second.elemDropTransform == id)
+              first.elemDropTransform
+            else { (ctx: Ctx, t: ElemDrop) =>
+              first.elemDropTransform(ctx, t).flatMap {
+                case (ctx, t: ElemDrop) => second.elemDropTransform(ctx, t)
+                case (ctx, t)                  => second.transform(ctx, t)
+              }
+            }
+          override val tableCopyTransform: (Ctx, TableCopy.type) => F[(Ctx, Inst)] =
+            if (first.tableCopyTransform == id)
+              second.tableCopyTransform
+            else if (second.tableCopyTransform == id)
+              first.tableCopyTransform
+            else { (ctx: Ctx, t: TableCopy.type) =>
+              first.tableCopyTransform(ctx, t).flatMap {
+                case (ctx, t: TableCopy.type) => second.tableCopyTransform(ctx, t)
                 case (ctx, t)                  => second.transform(ctx, t)
               }
             }

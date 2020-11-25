@@ -319,8 +319,16 @@ package object pretty {
         case GlobalGet(idx) => nest(2, str("global.get") ++ idx.pretty)
         case GlobalSet(idx) => nest(2, str("global.set") ++ idx.pretty)
 
-        case MemorySize() => str("memory.size")
-        case MemoryGrow() => str("memory.grow")
+        case MemorySize()    => str("memory.size")
+        case MemoryGrow()    => str("memory.grow")
+        case MemoryInit(idx) => nest(2, str("memory.init") ++ idx.pretty)
+        case DataDrop(idx)   => nest(2, str("data.drop") ++ idx.pretty)
+        case MemoryCopy()    => str("memory.copy")
+        case MemoryFill()    => str("memory.fill")
+
+        case TableInit(idx) => nest(2, str("table.init") ++ idx.pretty)
+        case ElemDrop(idx)  => nest(2, str("elem.drop") ++ idx.pretty)
+        case TableCopy()    => str("table.copy")
 
         case Nop()         => str("nop")
         case Unreachable() => str("unreachable")
@@ -489,6 +497,32 @@ package object pretty {
       str((b & 0xff).toHexString)
   }
 
+  implicit def DataModePretty(implicit E: Pretty[Expr]): Pretty[DataMode] = new Pretty[DataMode] {
+    def pretty(mode: DataMode): Doc =
+      mode match {
+        case DataMode.Passive(_) => empty
+        case DataMode.Active(idx, offset) =>
+          group(idx.pretty ++ line ++ nest(2, str("(offset") ++ line ++ offset.pretty) ++ str(")"))
+      }
+  }
+
+  implicit def ElemModePretty(implicit E: Pretty[Expr]): Pretty[ElemMode] = new Pretty[ElemMode] {
+    def pretty(mode: ElemMode): Doc =
+      mode match {
+        case ElemMode.Passive(_) => empty
+        case ElemMode.Active(idx, offset) =>
+          group(idx.pretty ++ line ++ nest(2, str("(offset") ++ line ++ offset.pretty) ++ str(")"))
+      }
+  }
+
+  implicit object ElemExprPretty extends Pretty[ElemExpr] {
+    def pretty(eexpr: ElemExpr): Doc =
+      eexpr match {
+        case ElemExpr.RefNull(_)   => str("(ref.null func)")
+        case ElemExpr.RefFunc(idx) => str("(ref.func ") ++ idx.pretty ++ str(")")
+      }
+  }
+
   implicit def FieldPretty(implicit E: Pretty[Expr]): Pretty[Field] = new Pretty[Field] {
     def pretty(f: Field): Doc =
       f match {
@@ -520,17 +554,16 @@ package object pretty {
             nest(2, str("(export") ++ line ++ str("\"") ++ str(name) ++ str("\"") ++ line ++ desc.pretty) ++ str(")"))
         case StartFunc(idx) =>
           str("(start ") ++ idx.pretty ++ str(")")
-        case Elem(table, offset, init) =>
-          group(
-            nest(2,
-                 str("(elem") ++ table.pretty ++ line ++ group(
-                   nest(2, str("(offset") ++ line ++ offset.pretty) ++ str(")")) ++ line ++ seq(line, init)) ++ str(
-              ")"))
-        case Data(mem, offset, init) =>
+        case Elem(id, tpe, init, mode) =>
+          group(nest(
+            2,
+            str("(elem ") ++ id.pretty ++ line ++ mode.pretty ++ line ++ tpe.pretty ++ line ++ seq(line, init)) ++ str(
+            ")"))
+        case Data(id, init, mode) =>
           group(
             nest(
               2,
-              str("(data") ++ mem.pretty ++ line ++ group(nest(2, str("(offset") ++ line ++ offset.pretty) ++ str(")")) ++ line ++ str(
+              str("(data ") ++ id.pretty ++ line ++ mode.pretty ++ line ++ str(
                 "\"\\") ++ seq(str("\\"), init.toIndexedSeq.map(b => str(f"$b%02x")))
             ) ++ str("\"") ++ str(")"))
       }

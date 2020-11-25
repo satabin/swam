@@ -29,6 +29,8 @@ package object validation {
       Vector.empty[GlobalType],
       Vector.empty[ValType],
       Vector.empty[ResultType],
+      0,
+      0,
       None,
       Nil,
       false,

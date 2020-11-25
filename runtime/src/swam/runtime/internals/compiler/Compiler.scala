@@ -208,6 +208,8 @@ class Compiler[F[_]](engine: Engine[F], asm: Asm[F])(implicit F: MonadError[F, T
           ctx.copy(data = cdata)
         case (ctx, Section.Start(idx)) =>
           ctx.copy(start = Some(idx))
+        case (ctx, Section.DataCount(_)) =>
+          ctx
       }
       .map { ctx =>
         new runtime.Module(

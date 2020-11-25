@@ -454,6 +454,10 @@ case class GlobalSet(idx: LocalIdx) extends VarInst(OpCode.GlobalSet)
 
 case object MemorySize extends Inst(OpCode.MemorySize)
 case object MemoryGrow extends Inst(OpCode.MemoryGrow)
+case class MemoryInit(dataidx: DataIdx) extends Miscop(0x08)
+case class DataDrop(dataidx: DataIdx) extends Miscop(0x09)
+case object MemoryCopy extends Miscop(0x0a)
+case object MemoryFill extends Miscop(0x0b)
 
 case object Nop extends Inst(OpCode.Nop)
 case object Unreachable extends Inst(OpCode.Unreachable)
@@ -466,3 +470,7 @@ case class BrTable(table: Vector[LabelIdx], lbl: LabelIdx) extends Inst(OpCode.B
 case object Return extends Inst(OpCode.Return)
 case class Call(funcidx: FuncIdx) extends Inst(OpCode.Call)
 case class CallIndirect(typeidx: TypeIdx) extends Inst(OpCode.CallIndirect)
+
+case class TableInit(idx: ElemIdx) extends Miscop(0x0c)
+case class ElemDrop(idx: ElemIdx) extends Miscop(0x0d)
+case object TableCopy extends Miscop(0x0e)

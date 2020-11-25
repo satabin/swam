@@ -226,6 +226,13 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
       case GlobalSet(idx)             => resolveIndex(idx, instr.pos, ctx.globals, "global").map(idx => (r.GlobalSet(idx), ctx))
       case MemorySize()               => F.pure((r.MemorySize, ctx))
       case MemoryGrow()               => F.pure((r.MemoryGrow, ctx))
+      case MemoryInit(idx)            => resolveIndex(idx, instr.pos, ctx.datas, "data") map (idx => (r.MemoryInit(idx), ctx))
+      case DataDrop(idx)              => resolveIndex(idx, instr.pos, ctx.datas, "data") map (idx => (r.DataDrop(idx), ctx))
+      case MemoryCopy()               => F.pure((r.MemoryCopy, ctx))
+      case MemoryFill()               => F.pure((r.MemoryFill, ctx))
+      case TableInit(idx)             => resolveIndex(idx, instr.pos, ctx.elems, "elem") map (idx => (r.TableInit(idx), ctx))
+      case ElemDrop(idx)              => resolveIndex(idx, instr.pos, ctx.elems, "elem") map (idx => (r.ElemDrop(idx), ctx))
+      case TableCopy()                => F.pure((r.TableCopy, ctx))
       case Nop()                      => F.pure((r.Nop, ctx))
       case Unreachable()              => F.pure((r.Unreachable, ctx))
       case Block(label, TypeUse(tpe, params, result), is, endlabel) =>
@@ -290,6 +297,35 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
           F.pure(idx)
         else
           F.raiseError(new ResolutionException(f"Unknown $kind with name $id", Seq(pos)))
+    }
+
+  private def resolveDataMode(mode: DataMode, ctx: ResolverContext, debug: Boolean) =
+    mode match {
+      case DataMode.Passive(_) =>
+        F.pure((r.DataMode.Passive, ctx))
+      case m @ DataMode.Active(idx, offset) =>
+        for {
+          idx <- resolveIndex(idx, m.pos, ctx.tables, "elem")
+          (instrs, ctx) <- resolveAll(offset, ctx.copy(inFunction = false), debug)
+        } yield (r.DataMode.Active(idx, instrs), ctx)
+    }
+
+  private def resolveElemMode(mode: ElemMode, ctx: ResolverContext, debug: Boolean) =
+    mode match {
+      case ElemMode.Passive(_) =>
+        F.pure((r.ElemMode.Passive, ctx))
+      case m @ ElemMode.Active(idx, offset) =>
+        for {
+          idx <- resolveIndex(idx, m.pos, ctx.mems, "data")
+          (instrs, ctx) <- resolveAll(offset, ctx.copy(inFunction = false), debug)
+        } yield (r.ElemMode.Active(idx, instrs), ctx)
+    }
+
+  private def resolveElemExpr(expr: ElemExpr, ctx: ResolverContext): F[r.ElemExpr] =
+    expr match {
+      case ElemExpr.RefNull(_) => F.pure(r.ElemExpr.RefNull)
+      case e @ ElemExpr.RefFunc(id) =>
+        resolveIndex(id, e.pos, ctx.funcs, "function").map(idx => r.ElemExpr.RefFunc(idx))
     }
 
   private def resolveBlock(label: Id,
@@ -589,23 +625,20 @@ class Resolver[F[_]](implicit F: MonadError[F, Throwable]) {
                   for (idx <- resolveIndex(idx, fld.pos, ctx.funcs, "function"))
                     yield Left((ctx, fields, resolved.copy(start = Some(idx))))
               }
-            case Elem(tidx, offset, init) =>
+            case Elem(_, tpe, init, mode) =>
               for {
-                tidx <- resolveIndex(tidx, fld.pos, ctx.tables, "table")
-                init <- resolveIndices(init, fld.pos, ctx.funcs, "function")
-                isctx <- resolveAll(offset, ctx.copy(inFunction = false), debug)
-                (offset, ctx) = isctx
-              } yield Left((ctx, fields, resolved.copy(elem = resolved.elem :+ r.Elem(tidx, offset, init))))
-            case Data(midx, offset, data) =>
-              for {
-                midx <- resolveIndex(midx, fld.pos, ctx.mems, "memory")
-                isctx <- resolveAll(offset, ctx.copy(inFunction = false), debug)
-                (offset, ctx) = isctx
-              } yield Left(
-                (ctx,
-                 fields,
-                 resolved.copy(data = resolved.data :+ r
-                   .Data(midx, offset, BitVector(data)))))
+                init <- init.toVector.traverse(resolveElemExpr(_, ctx))
+                (mode, ctx) <- resolveElemMode(mode, ctx, debug)
+              } yield Left((ctx, fields, resolved.copy(elem = resolved.elem :+ r.Elem(tpe, init, mode))))
+            case Data(_, data, mode) =>
+              resolveDataMode(mode, ctx, debug).map {
+                case (mode, ctx) =>
+                  Left(
+                    (ctx,
+                     fields,
+                     resolved.copy(data = resolved.data :+ r
+                       .Data(BitVector(data), mode))))
+              }
           }
       }
     }

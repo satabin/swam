@@ -243,8 +243,16 @@ package object pretty {
         case GlobalGet(idx) => str(s"global.get $idx")
         case GlobalSet(idx) => str(s"global.set $idx")
 
-        case MemorySize => str("memory.size")
-        case MemoryGrow => str("memory.grow")
+        case MemorySize      => str("memory.size")
+        case MemoryGrow      => str("memory.grow")
+        case MemoryInit(idx) => str(s"memory.init $idx")
+        case DataDrop(idx)   => str(s"data.drop $idx")
+        case MemoryCopy      => str("memory.copy")
+        case MemoryFill      => str("memory.fill")
+
+        case TableInit(idx) => str(s"table.init $idx")
+        case ElemDrop(idx)  => str(s"elem.drop $idx")
+        case TableCopy      => str("table.copy")
 
         case Nop         => str("nop")
         case Unreachable => str("unreachable")
@@ -315,17 +323,38 @@ package object pretty {
         seq(newline, body.locals) ++ newline ++ seq(newline, body.code)
   }
 
+  implicit object ElemExprPretty extends Pretty[ElemExpr] {
+    def pretty(eexpr: ElemExpr): Doc = eexpr match {
+      case ElemExpr.RefNull      => str("ref.null end")
+      case ElemExpr.RefFunc(idx) => str(s"(ref.func $idx) end")
+    }
+  }
+
+  implicit object ElemModePretty extends Pretty[ElemMode] {
+    def pretty(mode: ElemMode): Doc = mode match {
+      case ElemMode.Passive => str("passive")
+      case ElemMode.Active(idx, offset) =>
+        str("active") ++ newline ++ str("table ") ++ int(idx) ++ newline ++ seq(newline, offset)
+    }
+  }
+
   implicit object ElemPretty extends Pretty[Elem] {
     def pretty(elem: Elem): Doc =
-      str("; table") ++ newline ++ int(elem.table) ++ newline ++ str("; offset") ++ newline ++ seq(newline, elem.offset) ++ newline ++ indexedseq(
-        str("; func "),
-        elem.init)
+      str("; type") ++ newline ++ elem.tpe.pretty ++ newline ++ indexedseq(str("; init"), elem.init) ++ newline ++
+        str("; mode") ++ newline ++ elem.mode.pretty
+  }
+
+  implicit object DataModePretty extends Pretty[DataMode] {
+    def pretty(mode: DataMode): Doc = mode match {
+      case DataMode.Passive => str("passive")
+      case DataMode.Active(idx, offset) =>
+        str("active") ++ newline ++ str("memory ") ++ int(idx) ++ newline ++ seq(newline, offset)
+    }
   }
 
   implicit object DataPretty extends Pretty[Data] {
     def pretty(data: Data): Doc =
-      str("; memory") ++ newline ++ int(data.data) ++ newline ++ str("; offset") ++ newline ++ seq(newline, data.offset) ++ newline ++ str(
-        "; data") ++ str(data.init.toHex)
+      str("; memory") ++ newline ++ str("; init") ++ str(data.init.toHex) ++ newline ++ str("; mode") ++ newline ++ data.mode.pretty
   }
 
   implicit object SectionPretty extends Pretty[Section] {
@@ -353,6 +382,8 @@ package object pretty {
           str("""; section "Code"""") ++ newline ++ group(indexedseq(str("; function body "), bodies))
         case Section.Datas(data) =>
           str("""; section "Data"""") ++ newline ++ seq(newline, data)
+        case Section.DataCount(count) =>
+          str("""; section "Data Count"""") ++ newline ++ int(count)
         case Section.Custom(name, payload) =>
           str("""; custom section """") ++ str(name) ++ str("\"") ++ newline ++ str(payload.toHex)
       }

@@ -257,6 +257,78 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
         }
     }
 
+    override val memoryInitTraverse = {
+      case (ctx, MemoryInit(idx)) =>
+        ctx.mems.lift(0) match {
+          case Some(_) =>
+            if (idx < ctx.dataCount)
+              ctx.pop(Vector(ValType.I32, ValType.I32, ValType.I32))
+            else
+              F.raiseError(new ValidationException(s"unknown data segment $idx."))
+          case None =>
+            F.raiseError(new ValidationException("unknown memory 0."))
+        }
+    }
+
+    override val dataDropTraverse = {
+      case (ctx, DataDrop(idx)) =>
+        if (idx < ctx.dataCount)
+          F.pure(ctx)
+        else
+          F.raiseError(new ValidationException(s"unknown data segment $idx."))
+    }
+
+    override val memoryCopyTraverse = {
+      case (ctx, MemoryCopy) =>
+        ctx.mems.lift(0) match {
+          case Some(_) =>
+            ctx.pop(Vector(ValType.I32, ValType.I32, ValType.I32))
+          case None =>
+            F.raiseError(new ValidationException("unknown memory 0."))
+        }
+    }
+
+    override val memoryFillTraverse = {
+      case (ctx, MemoryFill) =>
+        ctx.mems.lift(0) match {
+          case Some(_) =>
+            ctx.pop(Vector(ValType.I32, ValType.I32, ValType.I32))
+          case None =>
+            F.raiseError(new ValidationException("unknown memory 0."))
+        }
+    }
+
+    override val tableInitTraverse = {
+      case (ctx, TableInit(idx)) =>
+        ctx.tables.lift(0) match {
+          case Some(_) =>
+            if (idx < ctx.elemCount)
+              ctx.pop(Vector(ValType.I32, ValType.I32, ValType.I32))
+            else
+              F.raiseError(new ValidationException(s"unknown element segment $idx."))
+          case None =>
+            F.raiseError(new ValidationException("unknown table 0."))
+        }
+    }
+
+    override val elemDropTraverse = {
+      case (ctx, ElemDrop(idx)) =>
+        if (idx < ctx.elemCount)
+          F.pure(ctx)
+        else
+          F.raiseError(new ValidationException(s"unknown element segment $idx."))
+    }
+
+    override val tableCopyTraverse = {
+      case (ctx, TableCopy) =>
+        ctx.tables.lift(0) match {
+          case Some(_) =>
+            ctx.pop(Vector(ValType.I32, ValType.I32, ValType.I32))
+          case None =>
+            F.raiseError(new ValidationException("unknown table 0."))
+        }
+    }
+
     override val unreachableTraverse = {
       case (ctx, Unreachable) =>
         F.pure(ctx.markUnreachable)
@@ -470,17 +542,20 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
       F.pure(())
 
     def validateData(data: Data, ctx: Ctx): F[Unit] = {
-      val Data(d, offset, init) = data
-      ctx.mems.lift(d) match {
-        case Some(_) =>
-          for {
-            _ <- validateConst(offset, ctx)
-            ctx1 <- validateExpr(ctx, offset)
-            ctx1 <- ctx1.pop(ValType.I32)
-            _ <- ctx1.emptyOperands
-          } yield ()
-        case None =>
-          F.raiseError(new ValidationException(s"unknown mem $d."))
+      data.mode match {
+        case DataMode.Passive => F.unit
+        case DataMode.Active(idx, offset) =>
+          ctx.mems.lift(idx) match {
+            case Some(_) =>
+              for {
+                _ <- validateConst(offset, ctx)
+                ctx1 <- validateExpr(ctx, offset)
+                ctx1 <- ctx1.pop(ValType.I32)
+                _ <- ctx1.emptyOperands
+              } yield ()
+            case None =>
+              F.raiseError(new ValidationException(s"unknown mem $idx."))
+          }
       }
     }
 
@@ -602,25 +677,27 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
       } yield ()
     }
 
-    def validateElem(elem: Elem, ctx: Ctx): F[Unit] = {
-      val Elem(table, offset, init) = elem
-      ctx.tables.lift(table) match {
-        case Some(_) =>
-          init.find(!ctx.funcs.isDefinedAt(_)) match {
-            case Some(y) =>
-              F.raiseError(new ValidationException(s"unknown init functions $y."))
-            case None =>
-              for {
-                _ <- validateConst(offset, ctx)
-                ctx1 <- validateExpr(ctx, offset)
-                ctx1 <- ctx1.pop(ValType.I32)
-                _ <- ctx1.emptyOperands
-              } yield ()
-          }
+    def validateElem(elem: Elem, ctx: Ctx): F[Unit] =
+      elem.init.collectFirst { case ElemExpr.RefFunc(idx) if idx >= ctx.funcs.size => idx } match {
+        case Some(y) =>
+          F.raiseError(new ValidationException(s"unknown init functions $y."))
         case None =>
-          F.raiseError(new ValidationException(s"unknown table $table."))
+          elem.mode match {
+            case ElemMode.Passive => F.unit
+            case ElemMode.Active(idx, offset) =>
+              ctx.tables.lift(idx) match {
+                case Some(_) =>
+                  for {
+                    _ <- validateConst(offset, ctx)
+                    ctx1 <- validateExpr(ctx, offset)
+                    ctx1 <- ctx1.pop(ValType.I32)
+                    _ <- ctx1.emptyOperands
+                  } yield ()
+                case None =>
+                  F.raiseError(new ValidationException(s"unknown table $idx."))
+              }
+          }
       }
-    }
 
     def validateConst(instr: Vector[Inst], ctx: Ctx): F[Unit] =
       F.tailRecM((0, ctx)) {
@@ -725,7 +802,12 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
     override val elementsTraverse = {
       case ((idx, tpes, imports, codes, ctx), sec @ Section.Elements(elem)) =>
         for (_ <- validateAll(elem, ctx, validateElem))
-          yield (sec.id, tpes, imports, codes, ctx)
+          yield (sec.id, tpes, imports, codes, ctx.copy(elemCount = elem.size))
+    }
+
+    override val dataCountTraverse = {
+      case ((idx, tpes, imports, codes, ctx), sec @ Section.DataCount(count)) =>
+        F.pure((sec.id, tpes, imports, codes, ctx.copy(dataCount = count)))
     }
 
     override val codeTraverse = {
@@ -761,7 +843,7 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
     stream.noneTerminate
       .evalMapAccumulate((0, Vector.empty[Int], Vector.empty[Import], 0, EmptyContext[F])) {
         case (acc @ (idx, _, _, _, _), Some(sec)) =>
-          if (sec.id > 0 && sec.id <= idx)
+          if ((sec.id > 0 && sec.id <= idx) || (sec.id == 12 && idx >= 10))
             F.raiseError[(Acc, Option[Section])](
               new ValidationException(s"${nameOf(sec.id)} section may not appear after ${nameOf(idx)} section")
             )
@@ -791,6 +873,7 @@ private class SpecValidator[F[_]](dataHardMax: Int)(implicit F: MonadError[F, Th
       case 9  => "element"
       case 10 => "code"
       case 11 => "data"
+      case 12 => "datacount"
       case _  => "unknown"
     }
 

@@ -52,19 +52,23 @@ trait InstCodec extends TypeCodec {
     varuint32 ~ varuint32
 
   private val misc: Codec[Miscop] =
-    mappedEnum(
-      varuint32,
-      Map[Miscop, Int](
-        i32.TruncSatSF32 -> 0x00,
-        i32.TruncSatUF32 -> 0x01,
-        i32.TruncSatSF64 -> 0x02,
-        i32.TruncSatUF64 -> 0x03,
-        i64.TruncSatSF32 -> 0x04,
-        i64.TruncSatUF32 -> 0x05,
-        i64.TruncSatSF64 -> 0x06,
-        i64.TruncSatUF64 -> 0x07
-      )
-    )
+    discriminated[Miscop]
+      .by(varuint32)
+      .|(0x00) { case i32.TruncSatSF32 => () }(_ => i32.TruncSatSF32)(noop)
+      .|(0x01) { case i32.TruncSatUF32 => () }(_ => i32.TruncSatUF32)(noop)
+      .|(0x02) { case i32.TruncSatSF64 => () }(_ => i32.TruncSatSF64)(noop)
+      .|(0x03) { case i32.TruncSatUF64 => () }(_ => i32.TruncSatUF64)(noop)
+      .|(0x04) { case i64.TruncSatSF32 => () }(_ => i64.TruncSatSF32)(noop)
+      .|(0x05) { case i64.TruncSatUF32 => () }(_ => i64.TruncSatUF32)(noop)
+      .|(0x06) { case i64.TruncSatSF64 => () }(_ => i64.TruncSatSF64)(noop)
+      .|(0x07) { case i64.TruncSatUF64 => () }(_ => i64.TruncSatUF64)(noop)
+      .|(0x08) { case MemoryInit(idx) => idx }(MemoryInit(_))(varuint32 <~ hex"00")
+      .|(0x09) { case DataDrop(idx) => idx }(DataDrop(_))(varuint32)
+      .|(0x0a) { case MemoryCopy => () }(_ => MemoryCopy)(hex"00" <~ hex"00")
+      .|(0x0b) { case MemoryFill => () }(_ => MemoryFill)(hex"00")
+      .|(0x0c) { case TableInit(idx) => idx }(TableInit(_))(varuint32 <~ hex"00")
+      .|(0x0d) { case ElemDrop(idx) => idx }(ElemDrop(_))(varuint32)
+      .|(0x0e) { case TableCopy => () }(_ => TableCopy)(hex"00" <~ hex"00")
 
   val opcode: Codec[OpCode] = new Codec[OpCode] {
     def decode(bits: BitVector): Attempt[DecodeResult[OpCode]] =

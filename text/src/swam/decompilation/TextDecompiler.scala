@@ -342,10 +342,14 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
                             localNames: Map[(Int, Int), String],
                             labelNames: Map[(Int, Int), String]): Seq[u.Data] =
     data.map {
-      case Data(idx, offset, init) =>
-        u.Data(Left(idx),
-               decompileExpr(0, offset, -1, functypes, functionNames, localNames, labelNames)._2,
-               init.toByteArray)(-1)
+      case Data(data, mode) =>
+        val umode = mode match {
+          case DataMode.Passive => u.DataMode.Passive(-1)
+          case DataMode.Active(idx, offset) =>
+            u.DataMode.Active(u.Id.fromOptionOrElse(functionNames.get(idx), idx),
+                              decompileExpr(0, offset, -1, functypes, functionNames, localNames, labelNames)._2)(-1)
+        }
+        u.Data(u.NoId, data.toByteArray, umode)(-1)
     }
 
   private def decompileTables(tables: Seq[TableType], tableNames: Map[Int, String], tidx: Int): Seq[u.Table] =
@@ -375,9 +379,19 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
                              localNames: Map[(Int, Int), String],
                              labelNames: Map[(Int, Int), String]): Seq[u.Elem] =
     elems.map {
-      case Elem(idx, offset, init) =>
-        val funs = init.map(idx => u.Id.fromOptionOrElse(functionNames.get(idx), idx))
-        u.Elem(Left(idx), decompileExpr(0, offset, -1, functypes, functionNames, localNames, labelNames)._2, funs)(-1)
+      case Elem(tpe, init, mode) =>
+        val funs = init.map {
+          case ElemExpr.RefNull => u.ElemExpr.RefNull(-1)
+          case ElemExpr.RefFunc(idx) =>
+            u.ElemExpr.RefFunc(u.Id.fromOptionOrElse(functionNames.get(idx), idx))(-1)
+        }
+        val umode = mode match {
+          case ElemMode.Passive => u.ElemMode.Passive(-1)
+          case ElemMode.Active(idx, offset) =>
+            u.ElemMode.Active(u.Id.fromOptionOrElse(functionNames.get(idx), idx),
+                              decompileExpr(0, offset, -1, functypes, functionNames, localNames, labelNames)._2)(-1)
+        }
+        u.Elem(u.NoId, tpe, funs, umode)(-1)
     }
 
   private def decompileStart(s: Option[FuncIdx], functionNames: Map[Int, String]): Seq[u.StartFunc] =
@@ -625,6 +639,13 @@ class TextDecompiler[F[_]] private (validator: Validator[F])(implicit F: Sync[F]
       case GlobalSet(idx)     => (lblidx, u.GlobalSet(Left(idx))(-1))
       case MemorySize         => (lblidx, u.MemorySize()(-1))
       case MemoryGrow         => (lblidx, u.MemoryGrow()(-1))
+      case MemoryInit(idx)    => (lblidx, u.MemoryInit(Left(idx))(-1))
+      case DataDrop(idx)      => (lblidx, u.DataDrop(Left(idx))(-1))
+      case MemoryCopy         => (lblidx, u.MemoryCopy()(-1))
+      case MemoryFill         => (lblidx, u.MemoryFill()(-1))
+      case TableInit(idx)     => (lblidx, u.TableInit(Left(idx))(-1))
+      case ElemDrop(idx)      => (lblidx, u.ElemDrop(Left(idx))(-1))
+      case TableCopy          => (lblidx, u.TableCopy()(-1))
       case Nop                => (lblidx, u.Nop()(-1))
       case Unreachable        => (lblidx, u.Unreachable()(-1))
       case Block(tpe, is) =>
