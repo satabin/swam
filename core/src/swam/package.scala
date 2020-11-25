@@ -25,6 +25,8 @@ package object swam {
   type GlobalIdx = Int
   type LocalIdx = Int
   type LabelIdx = Int
+  type DataIdx = Int
+  type ElemIdx = Int
 
   type Name = String
 

@@ -37,6 +37,7 @@ class SectionTransformer[F[_], Ctx](implicit F: Applicative[F]) {
   val elementsTransform: (Ctx, Section.Elements) => F[(Ctx, Option[Section])] = id
   val codeTransform: (Ctx, Section.Code) => F[(Ctx, Option[Section])] = id
   val datasTransform: (Ctx, Section.Datas) => F[(Ctx, Option[Section])] = id
+  val dataCountTransform: (Ctx, Section.DataCount) => F[(Ctx, Option[Section])] = id
   val customTransform: (Ctx, Section.Custom) => F[(Ctx, Option[Section])] = id
 
   final def transform(ctx: Ctx, sec: Section): F[(Ctx, Option[Section])] = sec match {
@@ -51,6 +52,7 @@ class SectionTransformer[F[_], Ctx](implicit F: Applicative[F]) {
     case sec @ Section.Elements(_)  => elementsTransform(ctx, sec)
     case sec @ Section.Code(_)      => codeTransform(ctx, sec)
     case sec @ Section.Datas(_)     => datasTransform(ctx, sec)
+    case sec @ Section.DataCount(_) => dataCountTransform(ctx, sec)
     case sec @ Section.Custom(_, _) => customTransform(ctx, sec)
   }
 

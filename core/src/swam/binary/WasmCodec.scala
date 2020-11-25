@@ -70,21 +70,77 @@ object WasmCodec extends InstCodec {
   val globals: Codec[Vector[Global]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, globalVariable))
 
+  val elemkind: Codec[ElemType] =
+    constant(hex"00") ~> provide(ElemType.FuncRef)
+
+  val elemexpr: Codec[ElemExpr] =
+    discriminated
+      .by(byte)
+      .typecase((0xd0 & 0xff).toByte, constant(hex"700b") ~> provide(ElemExpr.RefNull).upcast[ElemExpr])
+      .typecase(
+        (0xd2 & 0xff).toByte,
+        varuint32.widen[ElemExpr](ElemExpr.RefFunc(_), {
+          case ElemExpr.RefFunc(idx) => Attempt.successful(idx)
+          case ElemExpr.RefNull      => Attempt.failure(Err("ref.func expected"))
+        }) <~ constant(hex"0b")
+      )
+
   val elemSegment: Codec[Elem] =
-    (("index" | varuint32) ::
-      ("offset" | expr) ::
-      ("elems" | vectorOfN(varuint32, varuint32))).as[Elem]
+    discriminated[Elem]
+      .by(byte)
+      .|(0x00) {
+        case Elem(ElemType.FuncRef, init, ElemMode.Active(0, e)) if init.forall(_.isFuncRef) =>
+          (e, init.collect { case ElemExpr.RefFunc(idx) => idx })
+      } {
+        case (e, init) => Elem(ElemType.FuncRef, init.map(ElemExpr.RefFunc(_)), ElemMode.Active(0, e))
+      }(expr ~ vectorOfN(varuint32, varuint32))
+      .|(0x01) {
+        case Elem(kind, init, ElemMode.Passive) if init.forall(_.isFuncRef) =>
+          (kind, init.collect { case ElemExpr.RefFunc(idx) => idx })
+      } { case (kind, init) => Elem(kind, init.map(ElemExpr.RefFunc(_)), ElemMode.Passive) }(
+        elemkind ~ vectorOfN(varuint32, varuint32))
+      .|(0x02) {
+        case Elem(kind, init, ElemMode.Active(idx, e)) if init.forall(_.isFuncRef) =>
+          idx ~ e ~ kind ~ init.collect { case ElemExpr.RefFunc(idx) => idx }
+      } {
+        case idx ~ e ~ kind ~ init => Elem(kind, init.map(ElemExpr.RefFunc(_)), ElemMode.Active(idx, e))
+      }(varuint32 ~ expr ~ elemkind ~ vectorOfN(varuint32, varuint32))
+      .|(0x04) {
+        case Elem(ElemType.FuncRef, init, ElemMode.Active(0, e)) =>
+          (e, init)
+      } {
+        case (e, init) => Elem(ElemType.FuncRef, init, ElemMode.Active(0, e))
+      }(expr ~ vectorOfN(varuint32, elemexpr))
+      .|(0x05) {
+        case Elem(kind, init, ElemMode.Passive) =>
+          (kind, init)
+      } { case (kind, init) => Elem(kind, init, ElemMode.Passive) }(elemkind ~ vectorOfN(varuint32, elemexpr))
+      .|(0x06) {
+        case Elem(kind, init, ElemMode.Active(idx, e)) =>
+          idx ~ e ~ kind ~ init
+      } {
+        case idx ~ e ~ kind ~ init => Elem(kind, init, ElemMode.Active(idx, e))
+      }(varuint32 ~ expr ~ elemkind ~ vectorOfN(varuint32, elemexpr))
 
   val elem: Codec[Vector[Elem]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, elemSegment))
 
   val dataSegment: Codec[Data] =
-    (("index" | varuint32) ::
-      ("offset" | expr) ::
-      ("data" | variableSizeBytes(varuint32, scodec.codecs.bits))).as[Data]
+    discriminated[Data]
+      .by(byte)
+      .|(0x00) { case Data(b, DataMode.Active(0, e)) => (e, b) } { case (e, b) => Data(b, DataMode.Active(0, e)) }(
+        expr ~ variableSizeBytes(varuint32, scodec.codecs.bits))
+      .|(0x01) { case Data(b, DataMode.Passive) => b }(Data(_, DataMode.Passive))(variableSizeBytes(varuint32,
+                                                                                                    scodec.codecs.bits))
+      .|(0x02) { case Data(b, DataMode.Active(idx, e)) => idx ~ e ~ b } {
+        case idx ~ e ~ b => Data(b, DataMode.Active(idx, e))
+      }(varuint32 ~ expr ~ variableSizeBytes(varuint32, scodec.codecs.bits))
 
   val data: Codec[Vector[Data]] =
     variableSizeBytes(varuint32, vectorWithN(varuint32, dataSegment))
+
+  val dataCount: Codec[Int] =
+    variableSizeBytes(varuint32, varuint32)
 
   val start: Codec[FuncIdx] =
     variableSizeBytes(varuint32, varuint32)
@@ -128,5 +184,6 @@ object WasmCodec extends InstCodec {
       .|(9) { case Section.Elements(elem) => elem }(Section.Elements)(elem)
       .|(10) { case Section.Code(code) => code }(Section.Code)(code)
       .|(11) { case Section.Datas(data) => data }(Section.Datas)(data)
+      .|(12) { case Section.DataCount(count) => count }(Section.DataCount)(dataCount)
 
 }

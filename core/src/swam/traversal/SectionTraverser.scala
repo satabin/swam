@@ -36,6 +36,7 @@ class SectionTraverser[F[_], Res](implicit F: Applicative[F]) {
   val elementsTraverse: (Res, Section.Elements) => F[Res] = fst
   val codeTraverse: (Res, Section.Code) => F[Res] = fst
   val datasTraverse: (Res, Section.Datas) => F[Res] = fst
+  val dataCountTraverse: (Res, Section.DataCount) => F[Res] = fst
   val customTraverse: (Res, Section.Custom) => F[Res] = fst
 
   final def traverse(outer: Res, sec: Section): F[Res] = sec match {
@@ -50,6 +51,7 @@ class SectionTraverser[F[_], Res](implicit F: Applicative[F]) {
     case sec @ Section.Elements(_)  => elementsTraverse(outer, sec)
     case sec @ Section.Code(_)      => codeTraverse(outer, sec)
     case sec @ Section.Datas(_)     => datasTraverse(outer, sec)
+    case sec @ Section.DataCount(_) => dataCountTraverse(outer, sec)
     case sec @ Section.Custom(_, _) => customTraverse(outer, sec)
   }
 

@@ -406,6 +406,13 @@ class Traverser[F[_], Res](implicit F: Monad[F]) {
   val globalSetTraverse: (Res, GlobalSet) => F[Res] = fst
   val memorySizeTraverse: (Res, MemorySize.type) => F[Res] = fst
   val memoryGrowTraverse: (Res, MemoryGrow.type) => F[Res] = fst
+  val memoryInitTraverse: (Res, MemoryInit) => F[Res] = fst
+  val dataDropTraverse: (Res, DataDrop) => F[Res] = fst
+  val memoryCopyTraverse: (Res, MemoryCopy.type) => F[Res] = fst
+  val memoryFillTraverse: (Res, MemoryFill.type) => F[Res] = fst
+  val tableInitTraverse: (Res, TableInit) => F[Res] = fst
+  val elemDropTraverse: (Res, ElemDrop) => F[Res] = fst
+  val tableCopyTraverse: (Res, TableCopy.type) => F[Res] = fst
   val nopTraverse: (Res, Nop.type) => F[Res] = fst
   val unreachableTraverse: (Res, Unreachable.type) => F[Res] = fst
   val blockTraverse: (Res, Block) => F[Res] = fst
@@ -438,6 +445,13 @@ class Traverser[F[_], Res](implicit F: Monad[F]) {
     case inst @ VarInst(_)         => varInstTraverse(zero, inst)
     case MemorySize                => memorySizeTraverse(zero, MemorySize)
     case MemoryGrow                => memoryGrowTraverse(zero, MemoryGrow)
+    case inst @ MemoryInit(_)      => memoryInitTraverse(zero, inst)
+    case inst @ DataDrop(_)        => dataDropTraverse(zero, inst)
+    case MemoryCopy                => memoryCopyTraverse(zero, MemoryCopy)
+    case MemoryFill                => memoryFillTraverse(zero, MemoryFill)
+    case inst @ TableInit(_)       => tableInitTraverse(zero, inst)
+    case inst @ ElemDrop(_)        => elemDropTraverse(zero, inst)
+    case TableCopy                 => tableCopyTraverse(zero, TableCopy)
     case Nop                       => nopTraverse(zero, Nop)
     case Unreachable               => unreachableTraverse(zero, Unreachable)
     case inst @ Block(_, _)        => blockTraverse(zero, inst)

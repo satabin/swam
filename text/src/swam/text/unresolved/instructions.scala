@@ -342,6 +342,14 @@ case class GlobalSet(idx: Index)(val pos: Int) extends Inst
 
 case class MemorySize()(val pos: Int) extends Inst
 case class MemoryGrow()(val pos: Int) extends Inst
+case class MemoryInit(dataidx: Index)(val pos: Int) extends Miscop(0x08)
+case class DataDrop(dataidx: Index)(val pos: Int) extends Miscop(0x09)
+case class MemoryCopy()(val pos: Int) extends Miscop(0x0a)
+case class MemoryFill()(val pos: Int) extends Miscop(0x0b)
+
+case class TableInit(dataidx: Index)(val pos: Int) extends Miscop(0x0c)
+case class ElemDrop(dataidx: Index)(val pos: Int) extends Miscop(0x0d)
+case class TableCopy()(val pos: Int) extends Miscop(0x0e)
 
 case class Nop()(val pos: Int) extends Inst
 case class Unreachable()(val pos: Int) extends Inst

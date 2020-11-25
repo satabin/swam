@@ -98,14 +98,14 @@ object ModuleParsers {
             .map(Export(_, ExportDesc.Table(Right(id1))(idx))(idx)) :+ Table(id1, tpe)(idx)
         }
     }
-      | (elemtype ~ "(" ~ word("elem") ~/ index.rep ~ ")").map {
-        case (tpe, fs) =>
+      | (elemtype ~ "(" ~ word("elem") ~/ elemlist ~ ")").map {
+        case (tpe, (etpe, fs)) =>
           (idx: Int, id: Option[String], exports: Seq[String]) => {
             val id1 = idOrFresh(id, idx)
             exports
               .map(Export(_, ExportDesc.Table(Right(id1))(idx))(idx)) ++ Seq(
               Table(id1, TableType(tpe, Limits(fs.size, Some(fs.size))))(idx),
-              Elem(Right(id1), Seq(i32.Const(0)(idx)), fs)(idx)
+              Elem(NoId, etpe, fs, ElemMode.Active(Right(id1), Seq(i32.Const(0)(idx)))(idx))(idx)
             )
           }
       }
@@ -135,10 +135,9 @@ object ModuleParsers {
             val m = math.ceil(ds.length.toDouble / 65536).toInt
             val id1 = idOrFresh(id, idx)
             exports
-              .map(Export(_, ExportDesc.Memory(Right(id1))(idx))(idx)) ++ Seq(Memory(id1, MemType(Limits(m, m)))(idx),
-                                                                              Data(Right(id1),
-                                                                                   Seq(i32.Const(0)(idx)),
-                                                                                   ds)(idx))
+              .map(Export(_, ExportDesc.Memory(Right(id1))(idx))(idx)) ++
+              Seq(Memory(id1, MemType(Limits(m, m)))(idx),
+                Data(NoId, ds, DataMode.Active(Right(id1), Seq(i32.Const(0)(idx)))(idx))(idx))
           }
       }
       // format: off
@@ -189,19 +188,30 @@ object ModuleParsers {
       case (idx, f) => Seq(StartFunc(f)(idx))
     })
 
+  private def elemexpr[_: P]: P[ElemExpr] =
+    "(" ~ ((Index ~ word("ref.null") ~ word("func")).map(ElemExpr.RefNull(_))
+      | ((Index ~ word("ref.func") ~ index).map{ case (idx, func) => ElemExpr.RefFunc(func)(idx) })) ~ ")"
+
+  private def elemlist[_: P]: P[(ElemType, Seq[ElemExpr])] =
+    P((word("func") ~/ ((Index ~ index).rep).map(ElemType.FuncRef -> _.map { case (idx, func) => ElemExpr.RefFunc(func)(idx) })) | (elemtype ~ elemexpr.rep))
+
   private def elem[_: P]: P[Seq[Elem]] =
     P(
-      (Index ~ word("elem") ~/ (index | Pass(Left(0))) ~ ("(" ~ word("offset") ~/ expr ~ ")" | foldedinstr | instr
-        .map(Seq(_))) ~ index.rep ~ ")").map {
-        case (idx, x, e, y) => Seq(Elem(x, e, y)(idx))
-      })
+      (Index ~ word("elem") ~/  id.? ~ (elemlist.map(Left(_)) | (tableuse ~ (("(" ~ word("offset") ~/ expr ~ ")") | foldedinstr) ~ elemlist).map(Right(_)))).map {
+        case (idx, id, Left((tpe, init))) =>
+          Seq(Elem(makeId(id), tpe, init, ElemMode.Passive(idx))(idx))
+        case (idx, id, Right((tu, offset, (tpe, init)))) =>
+          Seq(Elem(makeId(id), tpe, init, ElemMode.Active(tu, offset)(idx))(idx))
+      } ~ ")")
 
   private def data[_: P]: P[Seq[Data]] =
     P(
-      (Index ~ word("data") ~/ (index | Pass(Left(0))) ~ ("(" ~ word("offset") ~/ expr ~ ")" | foldedinstr) ~ bstring.rep
-        .map(_.flatten.toArray) ~ ")").map {
-        case (idx, x, e, b) => Seq(Data(x, e, b)(idx))
-      })
+      (Index ~ word("data") ~/  id.? ~ (bstring.rep.map(Left(_)) | (memuse ~ (("(" ~ word("offset") ~/ expr ~ ")") | foldedinstr) ~ bstring.rep).map(Right(_)))).map {
+        case (idx, id, Left(data)) =>
+          Seq(Data(makeId(id), data.flatten.toArray, DataMode.Passive(idx))(idx))
+        case (idx, id, Right((mu, offset, data))) =>
+          Seq(Data(makeId(id), data.flatten.toArray, DataMode.Active(mu, offset)(idx))(idx))
+      } ~ ")")
 
   private def field[_: P]: P[Seq[Field]] =
     P("(" ~ (`type` | `import` | function | table | memory | global | export | start | elem | data))

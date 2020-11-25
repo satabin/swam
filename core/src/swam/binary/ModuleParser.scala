@@ -71,6 +71,8 @@ class ModuleParser[F[_]](validator: Validator[F])(implicit F: Sync[F]) {
             mod.copy(funcs = funcs)
           case Section.Datas(data) =>
             mod.copy(data = data)
+          case Section.DataCount(count) =>
+            mod
           case Section.Custom(_, _) =>
             // ignore the custom sections
             mod

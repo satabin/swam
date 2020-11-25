@@ -56,8 +56,26 @@ object ExportDesc {
 
 case class StartFunc(index: Index)(val pos: Int) extends Field
 
-case class Elem(table: Index, offset: Expr, init: Seq[Index])(val pos: Int) extends Field
+sealed trait ElemExpr
+object ElemExpr {
+  case class RefNull(val pos: Int) extends ElemExpr
+  case class RefFunc(index: Index)(val pos: Int) extends ElemExpr
+}
 
-case class Data(mem: Index, offset: Expr, data: Array[Byte])(val pos: Int) extends Field
+sealed trait ElemMode
+object ElemMode {
+  case class Passive(val pos: Int) extends ElemMode
+  case class Active(table: Index, offset: Expr)(val pos: Int) extends ElemMode
+}
+
+case class Elem(id: Id, tpe: ElemType, init: Seq[ElemExpr], mode: ElemMode)(val pos: Int) extends Field
+
+sealed trait DataMode
+object DataMode {
+  case class Passive(val pos: Int) extends DataMode
+  case class Active(memory: Index, offset: Expr)(val pos: Int) extends DataMode
+}
+
+case class Data(id: Id, data: Array[Byte], mode: DataMode)(val pos: Int) extends Field
 
 case class Module(id: Id, fields: Seq[Field])(val pos: Int)
